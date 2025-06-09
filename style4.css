@@ -1,0 +1,60 @@
+span.nb { white-space:nowrap; }
+span.nobr { white-space:nowrap; }
+p.centered {text-align:center; }
+p.cn { text-align: center}
+img {border:0px; max-width:100%; height:auto;}
+img.center {   display: block;   margin-left: auto;   margin-right: auto;} 
+div.cn { text-align: center}
+ul{
+	  list-style-type: a;
+padding: 0px;
+margin: 20px;}
+
+span.small { font-size:87%; }
+.bigger {font-size:110%;	font-weight:700; }
+div { font-style:normal; font-family: 'Lucida Sans Unicode', 'Lucida Grande', Helvetica, Arial, sans-serif; }
+td {font-family: 'Lucida Sans Unicode', 'Lucida Grande', Helvetica, Arial, sans-serif;  font-size:80%;}
+p {text-align:left; font-style:normal; font-family: 'Lucida Sans Unicode', 'Lucida Grande', Helvetica, Arial, sans-serif;  }
+strong, em, b, ul {font-family: 'Lucida Sans Unicode', 'Lucida Grande', Helvetica, Arial, sans-serif; }
+blockquote {text-align:left; font-style:normal; font-family: 'Lucida Sans Unicode', 'Lucida Grande', Helvetica, Arial, sans-serif; }
+h1 {
+	font-size: 25px;
+	color: #54321F;
+	margin-top: 50px;
+	margin-bottom: 20px;
+	font-family:'Courier New',Courier,monospace;
+	font-weight:700;
+	text-align:center;
+    line-height:100%;
+}
+h2 {
+   font-size:20px; 
+   margin-top:0px;
+   margin-bottom: 40px;
+   color: #54321F;
+   font-family:'Courier New',Courier,monospace;
+   font-weight:500;
+   text-align:center;
+   line-height:100%;		
+}
+h4 {
+	font-size: 18px;
+	color: #000000;
+	margin-top: 40px;
+	margin-bottom: 0px;
+	font-family: 'Courier New',Courier,monospace;
+	font-weight:600;
+	text-align:center;
+    line-height:100%;	
+}
+
+
+body
+{
+background-color:#EEEEDF;
+font-size:84%;
+margin-left:10%;
+margin-right:10%;
+max-width:75%;
+line-height: 1.2;
+}

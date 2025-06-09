@@ -1,0 +1,69 @@
+p.centered {text-align:center; }
+span.small { font-size:12px; }
+span.xsmall { font-size:11px; }
+sub { font-size:11px; }
+span.georgia { font-size:20px; font-family:Georgia,Verdana; 	font-style:italic;	COLOR:#800000; 	font-weight:500; }
+span.nb { white-space:nowrap; }
+span.nobr { white-space:nowrap; }
+p {text-align:left;}
+blockquote {text-align:left}
+.bigger {font-size:110%;	font-weight:700; }
+.smaller { font-size:87%; }
+a:link {color:#000000;}      /* unvisited link */
+a:visited {color:#000000;}  /* visited link */
+a:hover {color:#0000FF;}  /* mouse over link */
+a:active {color:#0000FF;}  /* selected link */
+SPAN.shead 
+{	
+	font-weight:800; 
+	font-family: Verdana, Geneva, sans-serif;
+}
+h1.georgia {
+	COLOR:#800000; 
+	font-weight:500; 
+	font-size:25px; 
+	font-family: Georgia,Utopia,Charter,serif,Verdana; 
+	font-style:italic;
+}
+h1 {
+	font-size: 25px;
+	color: #54321F;
+	margin-top:0px;
+	font-family: 'Courier New', Courier, monospace;
+}
+h2 {
+font-size:20px; 
+color: #54321F;
+font-family: 'Courier New', Courier, monospace;
+}
+
+h6 {
+font-size:17px; 
+color: #54321F;
+font-family: 'Courier New', Courier, monospace;
+}
+div {text-align:left;}
+div.middle
+{
+background-color:#F1F1F1;
+font-family: Verdana, Geneva, sans-serif, 'Courier New', Courier, monospace;
+font-size:80%;
+color:#000000;
+text-align:center;
+padding:40px; 
+}
+div.main
+{
+margin-left:180px; 
+float: left;
+overflow: auto;
+width: 80%
+}
+body
+{
+background-image:url('gifs/waterway.jpg');
+background-repeat:repeat-y;
+background-attachment:fixed;
+background-color:#F1F1F1;
+margin:0px; 
+}
