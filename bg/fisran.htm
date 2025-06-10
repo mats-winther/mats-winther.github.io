@@ -1,0 +1,345 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+  <HEAD>
+    
+    <META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+    <META HTTP-EQUIV="content-type" CONTENT="text/html; charset=us-ascii">
+    <LINK HREF="style4b.css" REL="stylesheet" TYPE="text/css">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <TITLE>
+      FischeRandom
+    </TITLE>
+    <META HTTP-EQUIV="keywords" CONTENT="schack, Fischer Random">
+    <STYLE TYPE="text/css">
+
+     img.center {   display: block;   margin-left: auto;   margin-right: auto;} p.cn { text-align: center}
+    </STYLE>
+  </HEAD>
+  <BODY>
+    <P>
+      <BR>
+    </P>
+    <P class="cn">
+      <IMG SRC="fisran.gif" ALT="Fischer Random Chess">
+    </P>
+    <P class="cn">
+      <A HREF="#rules">(Rules in English)</A>
+    </P>
+    <TABLE   CELLPADDING="20">
+      <TR>
+        <TD>
+          <P>
+            <BR>
+            <BR>
+            <BR>
+            <BR>
+          </P>
+          <P>
+            I Fischer Random Chess ing&aring;r den normala utg&aring;ngsst&auml;llningen som en av 960 m&ouml;jliga. Man kan antingen anv&auml;nda ett program som genererar utg&aring;ngspositionen slumpm&auml;ssigt, eller man kan l&aring;ta den ena spelaren best&auml;mma utg&aring;ngst&auml;llningen. Man turas sedan om att best&auml;mma utg&aring;ngsst&auml;llning. Det g&aring;r till som s&aring; att man f&ouml;rst placerar ut l&ouml;parna p&aring; olika f&auml;rger. Sedan placeras kungen och de b&aring;da tornen ut. Kungen skall alltid placeras mellan tornen. D&auml;refter placeras springarna och damen ut. B&ouml;nderna placeras p&aring; sina normala utg&aring;ngsrutor. Man kan ocks&aring; turas om att placera ut de enskilda pj&auml;serna inf&ouml;r varje parti.
+            <BR>
+            I &ouml;vrigt &auml;r det endast rockadreglerna som &auml;r lite speciella i FischeRandom (se nedan). Om du vill ladda ner en FischeRandom-generator kan du g&ouml;ra det <A HREF="http://www.winsite.com/search/index.html">h&auml;r</A> eller <A HREF="http://sunsite.informatik.rwth-aachen.de/Mirror/winsite/win95/games.html">h&auml;r</A> (s&ouml;k p&aring; FischeRandom). F&ouml;r att programmet ska kunna fungera beh&ouml;vs dessutom en fil &acute;vb40032.dll&acute;. Om du inte redan har den s&aring; kan du ladda ner den <A HREF="http://www.offsitelabs.com/vb40032.htm">h&auml;r.</A>
+            <BR>
+            <BR>
+            F&ouml;rdelen med denna spelform &auml;r att man omedelbart i f&ouml;rsta draget konfronteras med intressanta strategiska problem. Min id&eacute; &auml;r att FischeRandom skulle kunna komplettera normalt schack. Man kan t&auml;nka sig att i framtiden konstruera turneringar d&auml;r man spelar FischeRandom i varannan rond samt normalt schack i varannan. Alternativt skulle man kunna till&auml;mpa FischeRandom endast i de fall d&aring; spelarnas ratingskillnad &auml;r v&auml;l stor, t&nbsp;ex 400 po&auml;ng. Om man g&ouml;r p&aring; det s&auml;ttet s&aring; blir partiet givande och intressant f&ouml;r b&aring;da spelarna trots den stora ratingskillnanden. En f&ouml;rdel med ett s&aring;dant arrangemang &auml;r dessutom att den starkare spelaren slipper bekymra sig f&ouml;r preparationer. Det b&ouml;r helt enkelt bli den starkare spelaren som vinner. Jag tror att m&aring;nga h&ouml;grankade spelare skulle uppleva detta som ganska bekv&auml;mt. Dessutom slipper b&aring;da spelarna bli uttr&aring;kade av att den h&ouml;grankade rutinm&auml;ssigt &quot;slaktar&quot; den l&aring;grankade.
+            <BR>
+            Schackets karakt&auml;r i v&auml;rldseliten har blivit alltmer tekniskt. I m&aring;nga fall till&auml;mpar spelaren endast sina st&auml;llningskunskaper i aktuellt system samt sina &ouml;ppningsteoretiska kunskaper. Det h&auml;r beror dels p&aring; monotonin i spel&ouml;ppningsvalet samt teorins utveckling tack vare databaserna. Om man inf&ouml;rde FischeRandom i vissa partier s&aring; skulle man komma till r&auml;tta med detta problem. Jag h&aring;ller med Fischer om att FischeRandom &auml;r en b&auml;ttre v&auml;rdem&auml;tare p&aring; schackspelarens styrka. Emellertid ska inte heller l&auml;rdom f&ouml;raktas; d&auml;rf&ouml;r skulle man kunna anv&auml;nda en blandning av normalt schack och FischeRandom. Faktum &auml;r att FischeRandom &auml;r riktigt kul.
+            <BR>
+            Det finns idag endast ett schackspelande program som strikt till&auml;mpar FischeRandom, n&auml;mligen <A HREF="schack.htm#TascBase">The King 2.55 (Tascbase 2.1).</A> Den beh&auml;rskar allts&aring; de komplicerade rockadreglerna och utf&ouml;r ocks&aring; rockad n&auml;r det &auml;r l&auml;mpligt.
+            <BR>
+            <BR>
+            <BR>
+            <B>Regler f&ouml;r FischeRandom (Fischer Random Chess)</B>
+            <BR>
+            <BR>
+          </P>
+          <UL>
+            <LI>B&ouml;nderna placeras p&aring; sina normala utg&aring;ngsrutor
+            </LI>
+            <LI>De tv&aring; l&ouml;parna m&aring;ste placeras p&aring; olika f&auml;rger
+            </LI>
+            <LI>Kungen m&aring;ste placeras mellan de b&aring;da tornen
+            </LI>
+            <LI>Rockad kan g&ouml;ras oberoende av kungens och tornens initiala placering, men det f&aring;r inte f&ouml;rekomma n&aring;gra pj&auml;ser emellan, inga rutor f&aring;r vara hotade och kungen och tornen f&aring;r ej tidigare ha flyttats
+            </LI>
+            <LI>St&auml;llning efter rockaden motsvarar den i normalt i schack
+            </LI>
+          </UL>
+          <P>
+            <BR>
+            <B>Exempel p&aring; rockad</B>
+            <BR>
+            <BR>
+          </P>
+          <P>
+            I denna st&auml;llning g&ouml;r vit rockad genom att flytta kungen till c1 och tornet till d1. Svart g&ouml;r rockad genom att flytta tornet till f8.
+            <BR>
+            <BR>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<IMG ALT="image" SRC="fischpos.gif">
+            <BR>
+            <BR>
+            H&auml;r nedan f&ouml;ljer de kompletta reglerna f&ouml;r FischeRandom i Robert Fischers formulering p&aring; engelska.
+            <BR>
+            <BR>
+            <A NAME="rules" ID="rules"></A>
+          </P>
+          <HR>
+          <P>
+            <BR>
+            <B>RULES OF FISCHERANDOM CHESS</B>
+            <BR>
+            <BR>
+            A little known and long-discarded offshoot of Classical Chess is the realm of so-called &quot;Randomized Chess&quot; in its various forms.
+            <BR>
+            <BR>
+            Fischerandom Chess (hereinafter referred to as &quot;F.R. Chess&quot;) stands for Bobby Fischer&#39;s new and improved version of &quot;Randomized Chess&quot;.
+            <BR>
+            <BR>
+            F.R. Chess uses algebraic notation exclusively.
+            <BR>
+            <BR>
+            At the start of every game of F.R. Chess, both players&#39; Pawns are set up exactly as they are at the start of every game of Classical Chess.
+            <BR>
+            <BR>
+            In F.R. Chess, just before the start of every game, both players&#39; pieces on their respective back rows receive an identical random shuffle using the Fischerandom Chess Computerized Shuffler, which is programmed to set up the pieces in any combination, with the provisos that one Rook has to be to the left and one Rook has to be to the right of the King, and one Bishop has to be on a light-colored square and one Bishop has to be on a dark-colored square. White and Black have identical positions. From behind their respective Pawns the opponents&#39; pieces are facing each other directly, symmetrically. Thus for example, if the shuffler places White&#39;s back row pieces in the following position: Ra1, Bb1, Kc1, Nd1, Be1, Nf1, Rg1, Qh1, it will place Black&#39;s back row Pieces in the following position, Ra8, Bb8, Kc8, Nd8, Be8, Nf8, Rg8, Qh8, etc. (See diagram)
+            <BR>
+            <BR>
+            <BR>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<IMG ALT="image" SRC="fispos.gif">
+            <BR>
+            <BR>
+            In F.R. Chess there are 960 possible starting positions, the Classical Chess starting position and 959 other starting positions.
+            <BR>
+            <BR>
+            Of necessity, In F.R. Chess the castling rule is somewhat modified and broadened to allow for the possibility of each player castling either on or into his or her left side or on or into his or her right side of the board from all of these 960 starting positions.
+            <BR>
+            <BR>
+            Please note the following points:
+            <BR>
+            <BR>
+            a) In F.R. Chess, depending on the pre-castling position of the castling King and Rook, the castling maneuver is performed by one of these four methods:
+            <BR>
+            <BR>
+          </P>
+          <P>
+            <BR>
+          </P>
+          <OL>
+            <LI>By on one turn making one move with the King, and making one move with the Rook (&quot;double-move&quot; castling).
+            </LI>
+            <LI>By transposing the position of the King and the Rook (&quot;transposition&quot; castling).
+            </LI>
+            <LI>By making only one move - with the King (&quot;King-move-only&quot; castling).
+            </LI>
+            <LI>By making only one move - with the Rook (&quot;Rook-move-only&#39; castling).
+            </LI>
+          </OL>
+          <P>
+            <BR>
+          </P>
+          <P>
+            Clarification: In F.R. Chess, whether you &quot;double-move&quot; castle, &quot;transposition&quot; castle, &quot;King-move-only&quot; castle, or &quot;Rook-move-only&quot; castle, in all cases always both the King and the Rook jointly are deemed to be castling, and to have castled.
+            <BR>
+            <BR>
+            b) In F.R. Chess when &quot;double-move&quot; castling, if the King is standing on the square the Rook will occupy naturally you must move the King first and then the Rook; if the Rook is standing on the square the King will occupy naturally you must move the Rook first and then the King; otherwise whether you move the King first and then the Rook, or the Rook first and then the King is strictly your choice.
+            <BR>
+            <BR>
+            c) In F.R. Chess, when &quot;double-move&quot; castling either the King jumps over the Rook or else the Rook jumps over the King.
+            <BR>
+            <BR>
+            d) In F.R. Chess, when &quot;King-move-only&quot; castling the King always jumps over the Rook.
+            <BR>
+            <BR>
+            e) In F.R. Chess, when &quot;Rook-move-only&quot; castling the Rook always jumps over the King.
+            <BR>
+            <BR>
+            f) &quot;a&quot;-side castling (0-0-0), and &quot;h&quot;-side castling (0-0) are the F.R. Chess equivalents of Queen-side or long castling (0-0-0), and King-side or short castling (0-0) respectively, of Classical Chess.
+            <BR>
+            <BR>
+            g) In F.R. Chess:
+            <BR>
+            <BR>
+            1. White&#39;s &quot;a&quot;-side castling (0-0-0) is performed with the hitherto unmoved White King and the hitherto unmoved Rook standing to its left. After White&#39;s &quot;a&quot;-side castling (0-0-0) the White King stands on c1 and the aforementioned Rook stands on d1.
+            <BR>
+            <BR>
+            Black&#39;s &quot;a&quot;-side castling (... 0-0-0) is performed with the hitherto unmoved Black King and the hitherto unmoved Rook standing to its right. After White&#39;s &quot;a&quot;-side castling (0-0-0) the Black King stands on c8 and the aforementioned Rook stands on d8.
+            <BR>
+            <BR>
+            2. White&#39;s &quot;h&quot;-side castling (0-0) is performed with the hitherto unmoved White King and the hitherto unmoved Rook standing to its right. After White&#39;s &quot;h&quot;-side castling (0-0) the White King stands on g1 and the aforementioned Rook stands on f1.
+            <BR>
+            <BR>
+            Black&#39;s &quot;h&quot;-side castling (... 0-0) is performed with the hitherto unmoved Black King and the hitherto unmoved Rook standing to its left. After Black&#39;s &quot;h&quot;-side castling (... 0-0) the Black King stands on g8 and the aforementioned Rook stands on f8.
+            <BR>
+            <BR>
+            h) When castling in F.R. Chess, you are not allowed to make any capture(s).
+            <BR>
+            <BR>
+            i) When castling in F.R. Chess, no other piece(s), yours or your opponent&#39;s, are allowed to stand between the castling King and Rook.
+            <BR>
+            <BR>
+            j) In F.R. Chess, when in check, you are not allowed to castle. Or, put another way: In F.R. Chess you are not allowed to castle &quot;out&quot; of check.
+            <BR>
+            <BR>
+            k) In F.R. Chess you are not allowed to castle into check.
+            <BR>
+            <BR>
+            l) When castling in F.R. Chess, your King is not allowed to move through check, or shall we say any &quot;checked&quot; square (same thing), nor is your King allowed to jump over you own Rook if and when said Rook stands on a &quot;checked&quot; square. (A &quot;checked&quot; square is a square that is attacked by one or more of your opponent&#39;s pieces.)
+            <BR>
+            <BR>
+            m) In F.R. Chess, after completing your first move of &quot;double-move&quot; castling it is quite possible and not at all illegal for your opponent to be in a position where, were it your opponent&#39;s move, your opponent would be in stalemate, check, or checkmate. Should after completing your first move of &quot;double-move&quot; castling one of these three aforementioned situations exist you are to ignore it and make your prescribed second move of &quot;double-move&quot; castling.
+            <BR>
+            <BR>
+            n) Exception: In F.R. Chess, when your first move of &quot;double-move&quot; castling, or at least what could become your first move of &quot;double-move&quot; castling, also constitutes a completely standard non-castling King or Rook move, the choice of whether to proceed with your second move of &quot;double-move&quot; castling or to consider your move as an already completed non-castling move is yours to make. You signify your choice for the former by first making your second move of &quot;double-move&quot; castling and then pushing the appropriate button on the chess clock, you signify your choice for the latter simply by pushing the appropriate button on the chess clock.
+            <BR>
+            <BR>
+            o) Suggestion: When playing a friendly game of F.R. Chess without benefit of a chess clock, to avoid any possible confusion or disputes, it might sometimes be a good idea to announce to your opponent just before you castle, &quot;I&#39;m going to castle.&quot;
+            <BR>
+            <BR>
+            p) In F.R. Chess:
+            <BR>
+            <BR>
+            1. Once the White King has moved, White is not allowed to castle for the rest of the game.
+            <BR>
+            <BR>
+            Once the Black King has moved, Black is not allowed to castle for the rest of the game.
+            <BR>
+            <BR>
+            2. Once the heretofore unmoved Rook standing to the left of the unmoved White King has moved, White is not allowed to &quot;a&quot;-side castle (0-0-0) for the rest of the game.
+            <BR>
+            <BR>
+            Once the heretofore unmoved Rook standing to the right of the unmoved Black King has moved, Black is not allowed to &quot;a&quot;-side castle (... 0-0-0) for the rest of the game.
+            <BR>
+            <BR>
+            3. Once the heretofore unmoved Rook standing to the right of the unmoved White King has moved, White is not allowed to &quot;h&quot;-side castle (0-0) for the rest of the game.
+            <BR>
+            <BR>
+            Once the heretofore unmoved Rook standing to the left of the unmoved Black King has moved, Black is not allowed to &quot;h&quot;-side castle (... 0-0) for the rest of the game.
+            <BR>
+            <BR>
+            4. Any appearances to the contrary notwithstanding, you are not considered to be castled or to have castled unless you yourself have actually castled, i.e. performed the castling maneuver. In other words: If you haven&#39;t castled, you haven&#39;t castled.
+            <BR>
+            <BR>
+            5. Once White has castled, White is not allowed to castle again for the rest of the game. Once Black has castled, Black is not allowed to castle again for the rest of the game.
+            <BR>
+            <BR>
+            q) Tip: In F.R. Chess, when it is momentarily impossible to &quot;a&quot;-side castle (0-0-0) because of the obstructing position of your other unmoved Rook, or vice versa, when it is momentarily impossible to &quot;h&quot;-side castle (0-0) because of the obstructing position of your other unmoved Rook, do not be confounded. These are frequent occurrences in F.R. Chess. Play proceeds in accordance with the rules in this rulebook.
+            <BR>
+            <BR>
+            r) Remark: In F.R. Chess, depending upon the starting position, and how the game develops, it may often occur that in the positions produced immediately after &quot;a&quot;-side castling (0-0-0), one, two, or all three of the squares for White a1, b1, and e1 (for Black a8, b8, and e8), and after &quot;h&quot;-side castling (0-0), one or both of the squares for White e1 and h1 (for Black e8 and h8) are not vacant, as they automatically are, for example, in Classical Chess.
+            <BR>
+            <BR>
+            All the other rules are the same as in Classical Chess.
+            <BR>
+            <BR>
+            If you are ever in any doubt about the correct &quot;before&quot; and &quot;after&quot; castling positions in F.R. Chess, please consult the following tables, showing all (84) possibilities of castling, (42) for White, and (42) for Black:
+            <BR>
+            <BR>
+            <B>All twenty-one White &quot;Before&quot; and the one &quot;After&quot; position of &quot;a&quot;-side castling (0-0-0):</B>
+            <BR>
+            <BR>
+            Before: Kg1; Rf1, e1, d1, c1, b1 or a1. After: Kc1; Rd1.
+            <BR>
+            <BR>
+            Before: Kf1; Re1, d1, c1, b1, or a1. After: Kc1; Rd1.
+            <BR>
+            <BR>
+            Before: Ke1; Rd1, c1, b1, or a1. After: Kc1; Rd1.
+            <BR>
+            <BR>
+            Before: Kd1; Rc1, b1 or a1. After: Kc1; Rd1.
+            <BR>
+            <BR>
+            Before: Kc1; Rb1 or a1 After: Kc1; Rd1.
+            <BR>
+            <BR>
+            Before: Kb1; Ra1 After: Kc1; Rd1.
+            <BR>
+            <BR>
+            <B>All twenty-one White &quot;Before&quot; and the one &quot;After&quot; position of &quot;h&quot;-side castling (0-0):</B>
+            <BR>
+            <BR>
+            Before: Kb1; Rc1, d1, e1, f1, g1 or h1. After: Kg1; Rf1.
+            <BR>
+            <BR>
+            Before: Kc1; Rd1, e1, f1, g1 or h1 After: Kg1; Rf1.
+            <BR>
+            <BR>
+            Before: Kd1; Re1, f1, g1 or h1 After: Kg1; Rf1.
+            <BR>
+            <BR>
+            Before: Ke1; Rf1, g1 or h1 After: Kg1; Rf1.
+            <BR>
+            <BR>
+            Before: Kf1; Rg1 or h1 After: Kg1; Rf1.
+            <BR>
+            <BR>
+            Before: Kg1; Rh1 After: Kg1; Rf1.
+            <BR>
+            <BR>
+            <B>All twenty-one Black &quot;Before&quot; and the one &quot;After&quot; position of &quot;a&quot;-side castling (... 0-0-0):</B>
+            <BR>
+            <BR>
+            Before: Kg8; Rf8, e8, d8, c8, b8 or a8 After: Kc8; Rd8.
+            <BR>
+            <BR>
+            Before: Kf8; Re8, d8, c8, b8 or a8 After: Kc8; Rd8.
+            <BR>
+            <BR>
+            Before: Ke8; Rd8, c8, b8 or a8 After: Kc8; Rd8.
+            <BR>
+            <BR>
+            Before: Kd8; Rc8, b8 or a8 After: Kc8; Rd8.
+            <BR>
+            <BR>
+            Before: Kc8; Rb8 or a8 After: Kc8; Rd8.
+            <BR>
+            <BR>
+            Before: Kb8; Ra8 After: Kc8; Rd8.
+            <BR>
+            <BR>
+            <B>All twenty-one Black &quot;Before&quot; and the one &quot;After&quot; position of &quot;h&quot;-side castling (... 0-0):</B>
+            <BR>
+            <BR>
+            Before: Kb8; Rc8, d8, e8, f8, g8 or h8 After: Kg8; Rf8.
+            <BR>
+            <BR>
+            Before: Kc8; Rd8, e8, f8, g8 or h8 After: Kg8; Rf8.
+            <BR>
+            <BR>
+            Before: Kd8; Re8, f8, g8 or h8 After: Kg8; Rf8.
+            <BR>
+            <BR>
+            Before: Ke8; Rf8, g8 or h8 After: Kg8; Rf8.
+            <BR>
+            <BR>
+            Before: Kf8; Rg8 or h8 After: Kg8; Rf8.
+            <BR>
+            <BR>
+            Before: Kg8; Rh8 After: Kg8; Rf8.
+            <BR>
+            <BR>
+            <BR>
+            <BR>
+          </P>
+          <HR>
+          <P>
+            <BR>
+          </P>
+          <P>
+            MW 1998
+          </P>
+          <P>
+            <BR>
+            <BR>
+          </P>
+          <P>
+            <BR>
+            <BR>
+          </P>
+    <P class="cn">
+            <A HREF="fram2.htm"><IMG ALT="image" SRC="home.gif"  ></A>
+          </P>
+        </TD>
+      </TR>
+    </TABLE>
+  </BODY>
+</HTML>

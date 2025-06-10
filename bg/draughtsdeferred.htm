@@ -1,0 +1,95 @@
+<!DOCTYPE HTML>
+<HTML lang="en">
+<HEAD>   
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<LINK href="style4.css" rel="stylesheet" type="text/css">
+<META name="description" content="Introducing 'deferred backwards capture' into International Draughts, a major rules improvement. A Windows program is provided.">
+<META
+NAME="keywords" CONTENT="deferred backwards capture, verzögerte rückwärts Erfassung, uitgesteld achteruit vangst, captura diferido hacia atrás, Capturer retardée sursitaire, Stockholm rule, International Draughts, Polish draughts, jeu de dames, dammen, checkers, damspel, tammi, damspil, Damespiel, Dame, Dama, Damas, draughts">
+<META NAME="author" CONTENT="Mats Winther"> <link rel="canonical" href="http://mlwi.magix.net/bg/draughtsdeferred.htm">
+<TITLE>Draughts with Deferred Backwards Capture</TITLE>
+</HEAD>  
+  
+  <BODY><H1>Draughts with Deferred Backwards Capture</H1>   
+  
+    <div style="max-width:318px; margin:auto;"><p><br>
+<img src="gifs/killerboard.gif" width="318" height="318"  alt="International Draughts piece setup" >
+<BR><span class="small">Setup for International Draughts on a standard 10x10 board.</span></p></div>
+
+<blockquote><p><br><i>Abstract</i>: This interesting draughts variant follows the same rules as International Draughts, except for one important difference: a Man may only capture backwards <i>subsequently</i>, as part of a capture sequence  (&ldquo;deferred backwards capture&rdquo;). So it cannot capture backwards as immediate move.
+<br><br>
+<i>Keywords</i>: Verzögerte rückwärts Erfassung, Uitgesteld achteruit vangst, Captura diferido hacia atrás, Capturer retardée sursitaire, Polish draughts, Stockholm rule, dammen, jeu de dames, checkers, damspel, tammi, damspil, Damespiel, Dame, Dama, Damas, draughts.</p></blockquote>
+<p>
+<br>
+<span class="bigger">Discussion</span>
+<br><br>
+Most Western checkers variants belong to either of two groups, International/Polish (<a href="checkersvariants.htm" title="International/Polish Checkers Variants">here</a>) or Spanish (<a href="spanishcheckersvariants.htm" title="Spanish Checkers Variants">here</a>). In the former, a Man may capture backwards; in the latter only forwards. The problem with backwards capture is that the defence becomes easy. Although a Man advances, it retains control of squares in the rear. The problem with the Spanish group is that it has less combinatorial complexity, due to less capture directions.
+<br><br>
+Draughts with deferred backwards capture (&ldquo;Stockholm rule&rdquo;) keeps the advantages of both. Although A Man can also capture backwards, it may only do this later, as part of a series. It means that the defence becomes more difficult. A Man may sneak behind the back of an enemy Man and reach a promotion square. This vouches for a less drawish game. Moreover, the advanced and interesting combinatorial aspects of International/Polish Draughts are retained. Arguably, the introduction of deferred backwards capture is a significant improvement. Worse endgames will become more difficult to hold. Although this variant is an invention of undersigned, the rule already exists in a traditional Gothic (orthogonal) checkers variant (&ldquo;Armenian checkers&nbsp;II&rdquo;, <a href="gothiccheckersvariants.htm" title="Gothic Checkers Variants">here</a>), where a Man may not capture southwards as immediate move. However, here the strategical impact of the rule is less pronounced.
+<br><br>
+<img src="gifs/damedeferred1.gif" style="margin-right:8px; margin-bottom:9px; float:left;" alt="Draughts with Deferred Backwards Capture">Here,&nbsp;White&nbsp;must&nbsp;choose&nbsp;the sequence that picks up two pieces, by jumping to the square marked green. Comparatively, in International Draughts, White would be compelled to capture three pieces with the leftmost piece. But since immediate rearwards capture is prohibited in this variant, it is not possible here.
+</p>
+<p style="clear:left;"><br>	
+<span class="bigger">Proposed variants</span>
+<br><br>
+The following variants have been implemented. The deferred backwards capture rule is combined with any of the following. In International Draughts, three Kings against one King is seldom a win, which tends to make the game drawish in grandmaster practice. Diverse halt rules have been proposed as a remedy. I introduce a new one, below.
+<br><br>
+<b>Killer rule</b> (Freeling, C.)<br>
+When a King occurs as final capture, the captor must halt behind the enemy piece (<a href="killerdraughts.htm" title="Killer Draughts">here</a>). Thus, <i>two</i> Kings will win against a lone King. (Arguably, this means an overly radical departure from the standard rules. After all, one should be able to play confidently for a draw with one Man less.)<br><br>
+<b>Sequential killer rule</b> (&ldquo;Killer light&rdquo;) (Anikejev, J.)<br>
+When a King occurs as the final capture <i>of a series</i>, the captor must halt behind the enemy piece (<a href="moderndraughts.htm" title="Modern Draughts">here</a>). Thus, <i>three</i> Kings will win against a lone King. This variant (deferred backwards capture&nbsp;+ killer light) would definitely solve the draw problem.<br><br>
+<b>Sequential halt rule</b> (Damme, A.K.W.)<br>
+When <i>any</i> piece occurs as the final capture of a series, the captor must halt behind the enemy piece. Thus, <i>three</i> Kings will win against a lone King. (Arguably, this reduces the power of the King too much during the middlegame.)<br><br>
+<b>Sequential halt rule II</b> (&ldquo;Killer extra-light&rdquo;) (Winther, M.)<br>
+When <i>two</i> Kings occur as the final captures of a series, the captor must halt behind the enemy piece. Thus, <i>three</i> Kings will win against a lone King. This variant (deferred backwards capture&nbsp;+ sequential halt rule&nbsp;II) would definitely solve the draw problem. With this rule, middlegame play is hardly affected at all.
+<br><br>		
+<span class="bigger">Piece movement</span>
+<br><br>
+A Man steps diagonally forwards. It captures, by the short leap, in all diagonal directions. A King slides and captures in all diagonal directions over any distance. It also jumps to capture, but only one Man at a time. A King may &ldquo;fly&rdquo; over empty squares (&ldquo;long King&rdquo;).
+<br><br>
+A Man promotes to King at the last rank. If a Man makes an intermediate landing on a promotion square and can continue capturing, it does not promote. One must continue capturing as long as possible. It is mandatory to select the longest capturing line. Captured pieces are removed only after the move is finished. The goal is to capture all the opponent&rsquo;s pieces.
+<br><br>
+The game is played on an 10x10 board with 20 pieces per player. Minor Polish draughts, the forebear of this variant, was known already in the 16th century, and possibly even earlier. It was a popular board game in Holland, especially in Amsterdam.
+		
+		<BR><BR><BR>
+		
+See also: 
+<br><br>
+<b>Winther, M.</b> (2015). &lsquo;International/Polish Checkers Variants&rsquo;. (<a href="checkersvariants.htm" title="International/Polish Checkers Variants">here</a>)
+<br><br>
+&nbsp;&nbsp;<b>-------</b>&nbsp;&nbsp;&nbsp; (2017). &lsquo;Spanish Checkers Variants&rsquo;. (<a href="spanishcheckersvariants.htm" title="Spanish Checkers Variants">here</a>)
+<br><br>
+&nbsp;&nbsp;<b>-------</b>&nbsp;&nbsp;&nbsp; (2017). &lsquo;Gothic Checkers Variants&rsquo;. (<a href="gothiccheckersvariants.htm" title="Gothic Checkers Variants">here</a>)
+<br><br>
+&nbsp;&nbsp;<b>-------</b>&nbsp;&nbsp;&nbsp; (2017). &lsquo;Stockholm Checkers&rsquo;. (<a href="stockholmcheckers.htm" title="Stockholm Checkers">here</a>)
+</p><p><BR><br>	
+</P>
+    <hr>
+         <p> &#x261B;&nbsp;&nbsp;You can download my free &ldquo;Draughts with Deferred Backwards Capture&rdquo; program <A HREF="DraughtswithDeferredBackwardsCapture.zip" title="Draughts with Deferred Backwards Capture Windows program">here</A> (updated 2020-10-07), but you must own the software <A HREF="http://www.zillions-of-games.com">Zillions of Games</A> to be able to run it. (I recommend the download version.)
+<BR>
+          </p>
+      <hr>    
+        
+    <P>
+      <BR>
+      <BR>
+      &copy; Mats Winther (May 2017).
+      <BR>
+      <BR>
+    </P>
+    <P class="cn">
+      <BR>
+      <BR>
+      <A HREF="index.htm"  title="Traditional board games"><IMG ALT="HOME" SRC="home.gif"></A>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+    </P>
+  </BODY>
+</HTML>

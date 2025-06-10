@@ -1,0 +1,96 @@
+<!DOCTYPE HTML>
+<HTML lang="en">
+<HEAD>   
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<LINK href="style4.css" rel="stylesheet" type="text/css">
+<META name="description" content="Egyptian Siga (Seega) is an archaic African board game, inscribed in the temple at Kurna, Egypt. A Windows program is provided.">
+<META
+NAME="keywords" CONTENT="Egyptian Siga, Seega, Arabic, African, board game">
+<META NAME="author" CONTENT="Mats Winther"> <link rel="canonical" href="http://mlwi.magix.net/bg/Egyptian_Siga.htm">
+<TITLE>Egyptian Siga - mother of all board games</TITLE>
+</HEAD>
+  <BODY><H1>Egyptian Siga</H1> <H2>mother of all board games</H2>   
+    <P class="cn">
+      <IMG ALT="Egyptian Siga" style="width="247" height="248" SRC="gifs/siga.jpg">
+    </P><p><br><br></p>
+    <P>    
+      <span class="bigger">Introduction</span>
+      <BR>
+      <BR>
+      <I>Egyptian Siga (Seega)</I> is a quite original game. In the first stage stones are dropped on the board, two by two. The central square must be left empty. When all stones are dropped they may move one step orthogonally in all directions. An enemy stone is captured by surrounding the stone with two of one&rsquo;s own, either horizontally or vertically (so called <I>interception-capture</I> or <I>custodian</I> capture). If the piece with which one began capture has more possibilities of capture then one may continue capturing. Win is achieved by capturing all (or a majority) of the opponent&rsquo;s pieces. If a party cannot move a piece then his turn is passed and the opponent must remove one of his own pieces so that the other party can move. When dropping stones, try to drop them so they are safe from multiple capture (which is easier said than done). The following discussion builds on the information in Parker&rsquo;s book and the rest are my own assumptions.
+      <BR>
+      <BR>    
+      <span class="bigger">Discussion</span>
+      <BR>
+      <BR>
+      Several game designs are cut on the great slabs which roofed part of the temple at Kurna, in Upper Egypt, on the western side of the Nile valley. This temple was begun by Rameses&nbsp;I (1400-1366, B.C.) and completed by Seti&nbsp;I (1366-1333 B.C.) Among these designs are several Siga boards of shallow saucers, the numbers of the holes being 25 and 49. It&rsquo;s difficult to know whether these are as old as the temple or whether they have been chiselled out later. However, there are many other designs on the same roof, some of them Nerenchi games (i.e., cross designs of different type), and three of them certainly were incised before the stones were finally laid, since in trimming the edges of the slabs on which they occur so as to make them fit against the adjoining ones, the masons cut away part of these diagrams (cf. Parker, 1909). The question immediately arises of why they made these designs in the first place (it&rsquo;s not an easy handiwork to cut in stone). Parker says that it is probable that in early times such game designs may have been thought to have mystical or magical significance (p.580). I would add that games often have been used for divination purposes. For example, the outcome of the game, and the number of remaining stones, could be understood as indications deriving from the gods. It seems to me that Egyptian Siga would be ideal for this purpose.
+      <BR>
+      <BR>
+      Parker, who gives the above rules, calls this game Arabic/African Siga to differentiate it from other games by the name Siga. However, the name &ldquo;Egyptian Siga&rdquo; is more catchy, and it&rsquo;s appropriate too since the oldest depictions derive from Egypt. Parker gives three board variants, of 25, 49, and 81 squares, which have all been implemented in the below program. Keep in mind that Parker&rsquo;s account of the rules builds on the game that was still played in his own time, and we cannot be certain that the games appearing on the temple slabs were exactly the same.
+      <BR>
+      <BR>
+      The title &ldquo;mother of all games&rdquo; is, of course, somewhat overbearing. At least, I&rsquo;d argue that this game is the forefather of Alquerque, while we here find the prototype of the crammed Alquerque board with its singular vacant central square. Furthermore, it is possible to argue that this is the precursor of Ancient Greek <I>petteia</I> and Roman <I>latrunculi.</I> Plato tells us that petteia originally came from Egypt. If so, he was perhaps referring to Egyptian Siga. However, we don&rsquo;t really know what Plato meant by <I>petteia</I> because it was evidently a generic term for board games. Anyway, since these games employ interception-capture a historical link between them is quite probable. There is an obvious kinship with U.&nbsp;Schädler&rsquo;s&nbsp;(1994) interpretation of Roman Latrunculi.
+      <BR>
+      <BR>
+      Although I am uninformed of the history of <I>Go,</I> an interesting hypothesis of mine is that this noble game has its precursor in Egyptian Siga (but the Chinese would probably say it&rsquo;s the reverse). When studying Siga one is struck by a curious similarity with Go, at least in an intuitive sense. China had extensive trading contacts with the outside world during the Tang dynasty (618-906), and from 1405 onwards mighty Chinese trading armadas began to visit ports in Arabia and eastern Africa. So it&rsquo;s not unthinkable that the Chinese imported Siga along with so many other curious things from the African continent, like giraffes.
+      <BR>
+      <BR>
+      <span class="bigger">Game characteristics</span>
+      <BR>
+      <BR>
+      During the dropping phase one cannot expect to foresee the consequences of all one&rsquo;s drops. It incorporates an element of chance into this game which only adds to its attraction. On the 5x5 board the game ends when enemy stones are reduced to zero (or stalemate occurs). It works quite well, although a one stone majority is not always sufficient to reducing the enemy stones to zero. In this type of game it&rsquo;s common practice to adjudicate the game when it&rsquo;s obvious that nothing more is going to happen. The party with the stone majority wins. Especially on the bigger boards the weaker party can sometimes succeed in building a &ldquo;fortress,&rdquo; like in the bottom left corner of the 9x9 board below. Inside the fortress the defender can go back and forth with one stone and the attacker cannot make any progress. Thus the game ends and stones are counted. Presumably, the difference in the number of stones was important to determine the score. There is no function to adjudicate games built into this program.
+      <BR>
+      <BR>
+      One would expect the 5x5 game to be simplistic, but it&rsquo;s not. It&rsquo;s a game of great sophistication. In order to avoid tedious endgames, in the 7x7 game I have set win-condition to the reduction of enemy stones to 7. In the 9x9 game I have set win-condition to the reduction of enemy stones to 11. I am not certain if these are the best figures, but they can be easily altered.
+      <BR>
+      <BR>
+    </P>
+    <P class="cn">
+      <BR>
+      <IMG ALT="Big Egyptian Siga" style="border:3px solid #7D6843;"  width="438" height="434" SRC="gifs/bigboard.jpg">
+    </P>
+    <P>
+      <BR>
+      <BR>
+      <BR>
+      <span class="bigger">References</span>
+      <BR>
+      <BR>
+      <B>Murray, HJR.</B> (1952). A History of Board-games other than Chess. Oxford University Press.
+      <BR>
+      <BR>
+      <B>Parker, H.</B> (1909). Ancient Ceylon - An Account of the Aborigines and of Part of the Early Civilisation. London: Luzac&nbsp;&amp; Co. Publishers.
+      <BR>
+      <BR>
+      <B>Schädler, U.</B> (1994). &lsquo;Latrunculi, ein verlorenes strategisches Brettspiel der Römer,&rsquo; Homo Ludens IV, 1994, 47-67 (also discussed in Abstract Games Magazine 7, 2001).
+      <BR>
+      <BR>
+    </P>
+    <HR>
+    <P>
+      &#x261B;&nbsp;&nbsp;You can download my free Egyptian Siga program <A HREF="Egyptian_Siga.zip" title="Egyptian Siga Windows program">here</A>, (updated 2008-06-22) but you must own the software <A HREF="http://www.zillions-of-games.com">Zillions of Games</A> to be able to run it.
+    </P>
+    <HR>
+    <P>
+      <BR>
+      <BR>
+      &copy; Mats Winther 2005
+      <BR>
+      <BR>
+    </P>
+    <P class="cn">
+      <BR>
+      <BR>
+      <A HREF="index.htm"  title="Traditional board games"><IMG ALT="HOME" SRC="home.gif" ></A>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+    </P>
+  </BODY>
+</HTML>
