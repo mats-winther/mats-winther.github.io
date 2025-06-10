@@ -1,0 +1,72 @@
+<!DOCTYPE HTML>
+<HTML lang="en">
+<HEAD>   
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<LINK href="style4b.css" rel="stylesheet" type="text/css">
+<META name="description" content="In Bario, the Quantum chess pieces are undefined (potential) pieces. A Windows program is provided.">
+<META
+NAME="keywords" CONTENT="Bario, chess, variant">
+<META NAME="author" CONTENT="Mats Winther"> <link rel="canonical" href="http://mlwi.magix.net/bg/bario.htm">
+<TITLE>Bario</TITLE>
+</HEAD>
+
+
+<BODY>
+  <H4>Panos Louridas&#39;s</H4> 
+  <H1>Bario</H1>
+   <P class="cn"><BR><BR>
+  <IMG ALT="Bario" SRC="gifs/Bario.gif"></p>
+  <p><BR>
+  
+  <BR>
+  <B>Introduction</B>
+  <BR>
+  <BR>
+  In <I>Bario</I> the objective is to checkmate the opponent&#39;s King. You start with a King, eight pawns, and seven Quantum pieces. These are undefined (potential) pieces that, when they are put into use, must be defined as either Queen, Rook, Bishop or Knight. On your turn you can either move a regular piece with the usual chess rules or move one of your Quantum-pieces, which is at that moment transformed to a normal piece of your choice, provided that a piece of that type exists in the reserve.
+  <BR>
+  <BR>
+  When the pieces of one player have all been employed and there are only regular pieces of his colour on the board, then it&#39;s time to do a recycle. All pieces on the board (except kings and pawns) are then substituted with Quantum pieces (on a real board checkers could be used). The pieces on the board will be transferred to the reserve. The cycle now begins anew, and it&#39;s now possible to drop the pieces again. When, for one player, only pieces of one type (not counting kings and pawns) remain on the board, recycles will cease. The reason for this rule is that the player with only one type of piece should not be at disadvantage, as his Quantums would be foreseeable.
+  <BR>
+  <BR>
+  If one party has made the mistake of initializing recycle (removing the last Quantum) when his king will be exposed to capture after recycle, this counts as moving the king into check. These moves are prohibited, if not used as a means to resign. Bario uses a special rule for Quantum capture. The player whose Quantum is captured must choose which piece in the reserve he wants to remove. Castling is possible with a Quantum on the corner square instead of a rook. It turns into a rook while castling. A prerequisite is naturally that there exists a rook in the reserve. Note that a Quantum can give check, too, provided that there exist pieces in the reserve that can threaten the enemy king. This means that the king must take measures immediately, just like it was a threat from a regular piece. This will feel unusual to the regular chessplayer.
+  <BR>
+  <BR>
+  <B>Discussion</B>
+  <BR>
+  <BR>
+  Bario was invented by Panos Louridas. It is described in German chess magazine Rochade 3/1998 (&quot;Eine Skala der Intelligenz&quot;). The name is derived from a Greek word which means &#39;difficult&#39; or &#39;heavy&#39; because the intention of the author was to create a quite difficult game. There is an affinity between Bario and modern quantum physics. A quantum particle can exist in an &quot;undefined&quot; state, until it is observed, when it obtains its properties. Hence the name &quot;Quantum&quot; for the undefined piece in Bario.
+  <BR>
+  <BR>
+  Opening theory is different in Bario. 1...b6 and 1...g6 are both strong moves as a Bishop or Queen are potentially on the diagonal. Even 1...f6 is a good move. You can play much more with the pawns in Bario as pieces are &quot;potentially&quot; placed very good where they are on the first rank. Contrary to regular chess, piece development is not an acute problem.
+  <BR>
+  <BR>
+  Although this Bario implementation does not play strongly (code could possibly be effectivized), it provides an excellent means of studying the game. An awkward aspect of Bario is that a rook and a bishop can become much stronger than a queen, due to the movement choice he has when the pieces are in potential state. It wrecks the relation between the pieces. If you play well and gain material, it might turn out that the opponent is stronger anyway. That&#39;s why I think this variant is for entertainment, not serious chess. This program implements this rule somewhat differently, to try to maintain the relation between the pieces. This program can also be used for playing Bario on the net, that is, against other human players.
+  <BR>
+  <BR>
+  <BR>
+  <BR></P>
+  <HR>
+
+  <P>You can download my free Bario program <A HREF="Bario.zip">here</A>, but you must own the software <A HREF="http://www.zillions-of-games.com">Zillions of Games</A> to be able to run it.</P>
+  <HR>
+
+  <P><BR>
+  <BR>
+  &copy; M. Winther 2006
+  <BR>
+  <BR>
+  <BR>
+  <BR>
+  <BR>
+  <BR></P>
+
+  <P class="cn"><BR>
+  <BR>
+  <A HREF="index.htm"  ><IMG ALT="" SRC="home.gif"  ></A></p>
+  <p><BR>
+  <BR><br><br>
+  <BR>
+  <BR></P>
+</BODY>
+</HTML>

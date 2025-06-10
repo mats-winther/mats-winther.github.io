@@ -1,0 +1,87 @@
+<!DOCTYPE HTML>
+<HTML lang="en">
+<HEAD>   
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<LINK href="style4b.css" rel="stylesheet" type="text/css">
+<META name="description" content="Players swap the chess pieces around before play begins. Rooks remain in their positions. A Windows program is provided.">
+<META
+NAME="keywords" CONTENT="Arrangement Chess, Chess100, relocation, swap">
+<META NAME="author" CONTENT="Mats Winther"> <link rel="canonical" href="http://mlwi.magix.net/bg/arrangementchess.htm">
+<TITLE>Arrangement Chess - rearranging the piece array</TITLE>
+</HEAD>
+
+<BODY>
+  <h1>Arrangement Chess</h1>
+  <h2 style="margin-bottom:20px;">(and Chess100)</h2>
+  <h2>rearranging the piece array</h2>
+  <P class="cn">
+  <IMG ALT="Arrangement Chess" width="289" height="304" SRC="gifs/arrangement1.gif">
+  </P><P><BR><BR><BR></P>
+
+ <p><span class="bigger">Abstract</span> 
+  <BR><BR>
+<i>Arrangement Chess</i> is a <A HREF="relocationvariants.htm" title="Chess Relocation variants">Relocation variant</A>. The arrangement method allows the players optionally to relocate king and queen before play begins, whilst retaining the castling rights. The players can forgo this if both prefer the standard setup. The method enhances opening ramification while allowing the players to remain in control. The resultant positions, with mirrored king positions, are 100 by number. They deviate marginally from the standard position and most chessplayers would view them as strategically sound.
+
+ <BR><BR>
+  <span class="bigger">Introduction</span>
+  <BR>
+  <BR>
+  In <I>Arrangement Chess</I> Black can decide the initial positions of the kings, whose positions are mirrored, but the placement of the queens are decided independently. Arrangement Chess is like standard chess except that the players can, before play begins, swap places of the king + queen and another piece except the rooks. Thus, when the king is swapped (<I>relocated</I>), the other piece (the <I>relocatee</I>) ends up on the king&rsquo;s square. When the queen is swapped, the relocatee ends up on the queen&rsquo;s square. One restriction is that bishops mustn&rsquo;t end up on the same square colour and the king cannot become a relocatee (i.e. swapped by the queen). Note that black begins by swapping his king. Alternatively he can choose to leave the position as it is. The white player then mirrors black&rsquo;s swap. After the kings thus have been swapped, Black can now relocate the queen, if he so wishes. Next White relocates his queen and immediately starts the game by making the first move.
+  <BR>
+  <BR>
+  Note that the king retains his castling rights even if it has been relocated. The castling rules are simple and derive from Chess960. King and rook end up on their usual squares. The only difference is that the king can make longer (or shorter, or none at all) leaps than usual. All squares between king and rook must be empty, and all squares between the king and its landing square must be unthreatened. Neither of the pieces must have moved before.
+  <BR>
+  <BR>
+  <I>Curtailed castling</I>: in an alternative variant, if the king is positioned on the g or b file, castling is restricted to the side on which the king is positioned. The variant could be useful to enhance strategical predictability.
+  <BR>
+  <BR>
+  <span class="bigger">Discussion</span>
+  <BR>
+  <BR>
+  With these relocation rules the rooks remain in their natural positions, and the bishops are always positioned so that there is still a choice to develop them on either of the queenside or the kingside. This maintains the strategical ambiguity of the initial position, since sound positions are produced where no definitive advantage can be obtained. Black relocates first. Thus white gets a chance to make a strategical decision that suits himself, which enables him to create an initiative, as in the standard position. The initial positions are a subgroup of Fischer Random Chess. The most conservative relocation, it seems, is to change place between king and queen, which is a convenient way of avoiding theory. Remember that the <i>resultant</i> castling positions are always the same as in standard chess.
+  <BR>
+  <BR>
+  Arguably, this method of reconfiguration of the initial array makes randomization redundant (cmp. Fischer Random Chess, <A HREF="http://www.chessvariants.com/diffsetup.dir/fischer.html"  title="Fischer Random Chess" >here</A>). Thus it answers to the chessplayer&rsquo;s predilection for remaining in control. Black can choose to relocate to a position which somewhat improves his chances against, for instance, e4 openings. But White can adjust to this and try to predict his opening plans and on which side Black is going to castle. This can inform his choice of queen position. The standard position is an active and strategically ambiguous position, which could often be advantageous to White. However, for Black, the standard position is not necessarily the best defensive position. As White is recompenced by having the last word in the setup of the pieces, I believe that this gives him a slight chance to acquire an advantage. It is necessary to maintain the first move advantage in order to retain strategical tension.</p>
+
+<img src="gifs/arrangement2.gif" width="220" height="220" alt="Arrangement Chess, example position" style="float:left; margin-top:3px; margin-bottom:9px; margin-right:7px;">
+
+<p>Black&nbsp;has&nbsp;relocated&nbsp;the&nbsp;king to g8 and the relocatee to e8. White is compelled to mirror this move. Black has then relocated the queen to e8 and the relocatee to d8. White, finally, has relocated the queen to b1 and the relocatee to d1. Black can later castle short by moving the rook to f8, or castle long by moving the king to c8, as usual. Thanks to the king&rsquo;s protected position, the player can wait a longer time before deciding on which side to castle. So, despite the many pieces in between, long castle is likely to occur. Now white begins the play.
+      </p><p style="clear:left;"><BR>
+ <span class="bigger">Randomization</span>
+  <BR>
+  <BR>
+  The randomized version of Arrangement Chess (<I>Arrangement Random Chess</I>) implies that the initial position is randomized according to the above rules of king and queen relocation. It is supported in the program. It is also called <I>Chess100</I> as there are 100 possible board positions. It is comparable to Fischer Random Chess. Arrangement Chess is designed to overcome the problem of opening monotony.
+  
+	     </P><P><BR></P>
+<HR>
+		<p>&#x261B;&nbsp;&nbsp;You can download my free Arrangement Chess program <A HREF="ArrangementChess.zip" title="Arrangement Chess Windows program">here</A> (updated 2009-10-11), but you must own the software <A HREF="http://www.zillions-of-games.com">Zillions of Games</A> to be able to run it (I recommend the download version).
+      <BR>
+      <BR>
+		&#x261B;&nbsp;&nbsp;See also related variants in my article about <A HREF="relocationvariants.htm" title="Chess Relocation variants">Relocation variants</A>.<BR><BR>
+		&#x261B;&nbsp;&nbsp;You can play Arrangement Chess against a human opponent <A HREF="http://www.chessvariants.org/index/msdisplay.php?itemid=MParrangement_ch"  title="Arrangement Chess preset" >here.</A>
+          <BR>
+          <BR>
+		  &#x261B;&nbsp;&nbsp;You can play Chess100 (Arrangement Random Chess) online or by email <A HREF="http://www.chessvariants.org/index/msdisplay.php?itemid=MPchess100"  title="Arrangement Random Chess" >here.</A> (This also functions as a Chess100 position generator.)<BR><BR>
+&#x261B;&nbsp;&nbsp;Don&rsquo;t miss my other <A HREF="chessvar.htm" title="Chess variants">chess variants.</A></p>
+ <HR>    
+
+  <P></p><p style="clear:left;">
+  <BR>
+  <BR>
+  <BR>
+  &copy; Mats Winther, 2009 April
+  <BR>
+  <BR></P>
+
+   <P class="cn"><BR>
+  <BR>
+  <A HREF="chessvar.htm"  title="Chess variants" ><IMG ALT="HOME" SRC="home.gif"  ></A>
+  <BR>
+  <BR>
+  <BR>
+  <BR>
+  <BR>
+  <BR></P>
+</BODY>
+</HTML>

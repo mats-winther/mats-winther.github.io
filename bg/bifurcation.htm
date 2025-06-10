@@ -1,0 +1,893 @@
+<!DOCTYPE HTML>
+<HTML lang="en">
+<HEAD>   
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<LINK href="style4.css" rel="stylesheet" type="text/css">
+<META name="description" content="Bifurcation pieces is a class of chess pieces whose movement branch into two.">
+<META
+NAME="keywords" CONTENT="bifurcation, chess, piece movement">
+  <STYLE TYPE="text/css">
+  td {padding:5px; border: 1px solid grey;}
+  td.c17 { background-color: #A3DADA}
+  td.c16 {background-color: #A6FF88}
+  td.c15 {background-color: #A3DADA; }
+  td.c14 {padding:4px; background-color: #A6FF88;}
+  td.c13 {padding:4px; background-color: #DCFFB9}
+  td.c12 {background-color: #81FEEB}
+  td.c11 {background-color: #D0D5FF}
+  td.c10 {background-color: #B9E9FF}
+  td.c9 {background-color: #D5AAFF}
+  td.c8 {background-color: #FFBFFF}
+  td.c7 {background-color: #FFBFDF}
+  td.c6 {background-color: #FFBFBF}
+  td.c5 {background-color: #FFD5AA}
+  td.c4 {background-color: #FFFF80}
+  td.c3 {background-color: #FFFFFF}
+  span.c2 {font-weight: bold}
+
+  </STYLE>
+  <META NAME="author" CONTENT="Mats Winther"> <link rel="canonical" href="http://mlwi.magix.net/bg/bifurcation.htm">
+<TITLE>Bifurcation pieces</TITLE>
+</HEAD>
+
+<BODY><H1>Bifurcation pieces</H1>
+  <P><BR><BR>Bifurcation pieces is a class of pieces that employs movement in two legs of arbitrary length. In chess history there is one important predecessor, namely the <A HREF="http://www.chessvariants.com/piececlopedia.dir/mao.html"  title="Mao, Xiangqi piece">Horse</A> (&lsquo;ma&rsquo;) in <A HREF="chinesechess.htm">Chinese Chess</A> (Xiangqi). The Horse makes one orthogonal and one diagonal step. Another example of an historical two leg piece is the <A HREF="http://www.chessvariants.com/piececlopedia.dir/griffon.html"  title="Griffon, chess piece">Griffon</A>. Independently of chess history, the game <A HREF="gala.htm">Gala</A> introduced two pieces whose movement consisted of two legs, namely the <I>Horsa</I> and the <I>Korna.</I> Also here the legs were diagonal and orthogonal, but length of legs were arbitrary.
+  <BR>
+  <BR>
+  Bifurcation pieces can change from diagonal to orthogonal movement, or vice versa. Only a diagonal/orthogonal in the prolonged movement direction can be chosen, which is plausible from an intuitive standpoint. Thus there could be two directions to choose from, which is why these pieces are called bifurcation pieces. Bifurcation always occurs at a screen. The screen can be any piece, or in some cases the margin of the board. There are five ways in which a bifurcation piece interacts with another piece to enter the second leg of the move. The first is <I>leaping on 1st leg,</I> whereby the piece jumps over another piece to the position immediately behind, and from there deviates in either of two directions. The second is <I>leaping on 2nd leg,</I> whereby the piece jumps over a piece positioned beside the diagonal/orthogonal on which the bifurcation piece is moving. The jumped piece could be positioned anywhere on the second leg. The third method is <I>bouncing,</I> whereby the piece bounces against another piece and deviates in the alignment direction. The piece which is used to bounce against is positioned beside the diagonal/orthogonal on which the bifurcation piece is moving. The fourth method is <I>deflection,</I> whereby the piece bends around another piece, as if affected by gravity. The piece which is used as screen is positioned beside the diagonal/orthogonal on which the piece is moving on its first leg. The fifth method is <I>collision,</I> whereby the piece advances against another piece and &ldquo;bumps&rdquo; into it, deviating on either of two diagonals/orthogonals beside the confronted piece (which remains in place). This is reminiscent of a billiard ball. In case of <I>collision</I> or <I>bouncing</I> the pieces can sometimes interact with the margin, in which case only one continued direction is available.
+  </P>
+
+  <div style="float:left; margin-right:20px;">
+    <p class="centered"><IMG width="145" height="165" ALT="Bifurcation chess piece: Leaping on 1st leg" SRC="gifs/leaping1.gif">
+      <BR>
+      Leaping on 1st leg</p>
+  </div>
+
+  <div  style="float:left; margin-right:20px;">
+    <p class="centered"><IMG width="145" height="165" ALT="Bifurcation chess piece: Leaping on 2nd leg" SRC="gifs/leaping2.gif">
+      <BR>
+      Leaping on 2nd leg</p>
+  </div>
+
+  <div  style="float:left;  margin-right:20px;">
+    <p class="centered"><IMG width="145" height="165" ALT="Bifurcation chess piece: Bouncing" SRC="gifs/bouncing1.gif">
+      <BR>
+      Bouncing</p>
+  </div>
+
+
+  <div style="float:left; margin-right:20px;">
+    <p class="centered"><IMG width="145" height="165" ALT="Bifurcation chess piece: Deflecting" SRC="gifs/deflect1.gif">
+      <BR>
+      Deflecting</p>
+  </div>
+
+  <div style="float:left;">
+    <p class="centered"><IMG width="145" height="165" ALT="Bifurcation chess piece: Colliding" SRC="gifs/colliding1.gif">
+      <BR>
+      Colliding</p>
+  </div>
+
+  <P style="clear:left;">
+  <BR>
+  Bifurcation pieces are further differentiated with respect to their capture and movement capability. A piece that <I>moves on 1st leg</I> can move around freely while it&rsquo;s not dependent on screens to make non-capturing moves. A piece that <I>moves on 2nd leg</I> is dependent on screens to make non-capturing moves. A piece that <I>captures on 1st leg</I> captures like a bishop or rook, whereas a piece that <I>captures on 2nd leg</I> can only make the oblique form of capture move. Obviously, a piece that both <I>moves on 2nd leg</I> and <I>captures on 2nd leg</I> is a demanding piece because you are forced to foresee the consequences of a move. If there are no screens then the piece is stranded. On the other hand, this type of bifurcation piece has immense tactical capabilities.
+  <BR>
+  <BR>
+  While the values of the bifurcation pieces rhyme with the traditional Western pieces they are easily integrable in this context. The change between orthogonal and diagonal, and vice versa, explains their relatively high value. Diagonal movement is well served to penetrate the enemy position. As soon as a pawn moves new diagonals are opened. Bifurcation pieces are dependent on other pieces for movement. Thus they are attractive to the positional player, while it&rsquo;s necessary to plan ahead and make the pieces cooperate. Interesting new tactical themes are introduced. The movement of some pieces are perhaps difficult to visualize, but it is a matter of training. Collision movement is probably the most intuitive of the four types. The following table describes the properties of the different pieces and provides links to game implementations.
+  <BR>
+  <BR>
+  <BR>
+  <BR>
+<span class="bigger">Table 1: Bifurcation Pieces</span>
+  <BR>
+  <BR>
+  <BR></P>
+
+  <TABLE style="float:left; border: 1px solid grey; margin-right:20px;">
+    <TR>
+      <TD CLASS="c3"><SPAN CLASS="small c2">Piece</SPAN></TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">1</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">2</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">3</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">4</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">5</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">6</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">7</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">8</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">9</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="xsmall c2">10</SPAN></TD>
+
+      <TD CLASS="c14"><SPAN CLASS="xsmall c2">11</SPAN></TD>
+
+      <TD CLASS="c15"><SPAN CLASS="xsmall c2">12</SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Gladiatrix</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="gladiatrixchess.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Amiral</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="amiralchess.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Crossrook</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="crossrook.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Crossbishop</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small"><B><A HREF="crossbishop.htm">1</A></B> <B><A HREF="crossbishopb.htm">2</A></B></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Doublebarrel</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="doublebarrel.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Doublecannon</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small"><B><A HREF="doublecannon.htm">1</A></B> <B><A HREF="doublecannonb.htm">2</A></B></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Helmsman</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="helmsmanchess.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Buccaneer</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="buccaneerchess.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Murmillo</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="murmillochess.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Secutor</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="secutorchess.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Provocator</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="provocatorchess.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Dimachaer</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="dimachaerchess.htm">1</A> <A HREF="alternativechess.htm">2</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Hoplit</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="hoplitchess.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Hoplomach</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="hoplomachchess.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Retiar</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="retiarchess.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Pegniar</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="pegniarchess.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Sagittar</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="sagittarchess.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Venator</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="venatorchess.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Laquear</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="laquearchess.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Essedar</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="essedarchess.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Meridian</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="meridianchess.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Samnis</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="samnischess.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Gaul</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="gaulchess.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Thraex</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="thraexchess.htm">1</A></SPAN></TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c3">Veles</TD>
+
+      <TD CLASS="c4"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c5"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c6"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c7"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c8"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c9"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c10"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c11"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c12"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c13"><SPAN CLASS="small c2">&nbsp;</SPAN></TD>
+
+      <TD CLASS="c16"><SPAN CLASS="small c2">x</SPAN></TD>
+
+      <TD CLASS="c17"><SPAN CLASS="small c2"><A HREF="veleschess.htm">1</A></SPAN></TD>
+    </TR>
+  </TABLE>
+
+
+
+  <TABLE >
+    <TR >
+      <TD CLASS="c4"><B>1.</B> orthogonal to diagonal</TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c5"><B>2.</B> diagonal to orthogonal</TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c6"><B>3.</B> jump on 1st leg</TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c7"><B>4.</B> jump on 2nd leg</TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c8"><B>5.</B> bounce</TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c9"><B>6.</B> deflection</TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c10"><B>7.</B> collision</TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c11"><B>8.</B> captures on 1st leg</TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c12"><B>9.</B> captures on 2nd leg</TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c13"><B>10.</B> moves on 1st leg</TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c16"><B>11.</B> moves on 2nd leg</TD>
+    </TR>
+
+    <TR>
+      <TD CLASS="c17"><B>12.</B> game reference</TD>
+    </TR>
+  </TABLE>
+
+  <P style="clear:left;">
+  <BR>
+  <BR>
+  <BR>
+  &copy; M. Winther 2006
+  </P><p><br><br></p>
+
+  <P class="cn"><span style="color:red; font-weight:600;">To go back, press &lt;BACK&gt; in the browser or on the keyboard!</span>
+  <BR>
+  <BR>
+  <BR><br><br><br><br><br><br>
+  <A HREF="chessvar.htm"  title="Chess variants"><IMG ALT="HOME" SRC="home.gif" ></A>
+  <BR>
+  <BR>
+  <BR>
+  <BR>
+  <BR>
+  <BR>
+  <BR>
+  <BR>
+  <BR>
+  <BR>
+  <BR></P>
+</BODY>
+</HTML>
