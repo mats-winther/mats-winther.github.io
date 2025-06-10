@@ -1,0 +1,95 @@
+<!DOCTYPE HTML>
+<HTML lang="en">
+<HEAD>   
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<LINK href="style4b.css" rel="stylesheet" type="text/css">
+<META name="description" content="In Placement Chess players can change the position of their pieces before play begins.">
+<META
+NAME="keywords" CONTENT="Placement Chess, swap, Zillions">
+<TITLE>Placement Chess</TITLE>
+</HEAD>    
+  
+
+  <BODY>
+        <H1>Placement Chess</H1>
+      <H2>(and Chess20)</H2>
+      <H2>reconfiguring the piece array</H2>
+       <P class="cn"><img src="gifs/mirror1.gif" width="289" height="304" alt="Placement Chess"></P>
+          <P><BR><BR><BR></P>
+    <P>
+          <span class="bigger">Abstract</span><BR><BR>The mirrored relocation method allows the players optionally to relocate the king and the queen before the play begins, whilst retaining the castling rights. The players can abstain from this if they both prefer the standard setup. It is a cogent method of rearranging the initial position to enhance opening ramification, while allowing the players to remain in control. The resultant positions are all mirrored and are 20 by number. They are a subset of Fischer Random Chess (Chess960) and deviate marginally from the standard position. Thus, chessplayers would feel at home in any of these positions.<BR>
+      <BR>
+      <span class="bigger">Introduction</span>
+      <BR>
+      <BR>
+      In <I>Placement Chess</I> Black can decide the initial positions of the kings, while White can decide the initial positions of the queens. The positions must mirror each other. Placement Chess is like standard chess except that the players can, before play begins, swap places of the king + queen and another piece except the rooks. Thus, when the king is swapped (<I>relocated</I>), the other piece (the <I>relocatee</I>) ends up on the king&#39;s square. When the queen is swapped, the relocatee ends up on the queen&#39;s square. One restriction is that the bishops mustn&#39;t end up on the same square colour, and the king cannot become a relocatee (i.e. swapped by the queen). Note that black begins by swapping his king. Alternatively he can choose to leave the position as it is. The white player then mirrors black&#39;s swap. After the kings thus have been swapped the turn is still with white. White can now relocate the queen, if he so wishes, and black then mirrors this. Next white starts the game by making the first move. Diagrams of the 20 possible positions can be viewed <A HREF="placementpos.htm" title="Placement Chess: the 20 possible positions">here.</A>
+      <BR>
+      <BR>
+      Note that the king retains his castling rights even if it has been relocated. The castling rules are simple and derive from Chess960. King and rook end up on their usual squares. The only difference is that the king can make longer (or shorter, or none at all) leaps than usual. All squares between king and rook must be empty, and all squares between the king and its landing square must be unthreatened. Neither of the pieces must have moved before.
+      </P>
+	  <ul >
+<li><I>Curtailed castling</I>: in an alternative variant, if the king is positioned on the g or b file, castling is restricted to the side on which the king is positioned. The variant could be useful to enhance strategical predictability.<BR><BR></li>
+<li><I>Reduced Placement Chess (Chess-8)</I>: In this variant, black is only allowed to relocate the king to d8, if he wishes. The method 
+gives rise to 8 different positions (<A HREF="chess8pos.htm" title="Reduced Placement Chess: the 8 possible positions (Chess-8)">here</A>), with the kings on either of the central files. This variant is also implemented in the software. Also in the case when the king alone is relocated, it means a thorough kill of theory since the king must jump three squares when castling short, but only one square when castling long.<BR><BR></li>
+<li><I>Fischer Placement Chess</I> (<A HREF="fischerplacement.htm" title="Fischer Placement Chess (Chess25)">here</A>) is a closely related variant, which is the same, except that the queen can also relocate the rook.<BR><BR></li>
+<li><I>Future Chess</I> (<A HREF="futurechess.htm" title="Future Chess - a relocation variant with extra corner squares">here</A>) employs the same relocation method on a <I>Gustavian board</I>, with extended castle rules. This vouches for an enormous strategical variance.</li>
+</ul>
+      <P>
+      <span class="bigger">Discussion</span>
+      <BR>
+      <BR>
+      I want to strike a blow for alternative setups of pieces. This will enhance creativity in chess; at least it&#39;s good for chess training. I think chess journalist should seriously begin to discuss this option in today&#39;s era of computerized opening preparation. With these relocation rules the rooks remain in their natural positions, and the bishops are always positioned so that there is still a choice to develop them on either of the queenside or the kingside. This maintains the strategical ambiguity of the initial position, while sound positions are produced where no definitive advantage can be obtained. Black relocates first. Thusly white gets a chance to make a strategical decision that suits himself, which enables him to create an initiative, as in the standard position. The initial positions are a subgroup of Fischer Random Chess. The most conservative relocation, it seems, is to change place between king and queen, which is a convenient way of avoiding theory. Remember that the resultant castling positions are always the same as in standard chess.
+      <BR>
+      <BR>
+      Arguably, this method of reconfiguration of the initial array makes the procedure of randomization redundant (cmp. Fischer Random Chess, <A HREF="http://www.chessvariants.com/diffsetup.dir/fischer.html" title="Fischer Random Chess (FRC)" >here</A>). Thus it answers to the chessplayer&#39;s predilection for remaining in control. Black can choose to relocate to a position which somewhat improves his chances against, for instance, the e4 openings. But White can adjust to this and try to predict his opening plans and on which side Black is going to castle. This can inform his choice of queen positioning. The standard position is an active and strategically ambiguous position, which could often be advantageous to White. However, as Black, the standard position is not necessarily the best defensive position. As White is recompenced by giving him the last word in the setup of the pieces, I believe that this gives him a slight possibility to maintain an advantage. It is necessary to maintain the first move advantage in order to retain the strategical tension.
+    </P>
+    <P>
+      <BR>
+    </P>
+   
+          <img src="gifs/mirror2.gif" width="221" height="221" alt="Placement Chess, example" style="float:left; margin-right:5px;">
+       
+          <P>Black&nbsp;has&nbsp;relocated&nbsp;the king to g8 and the relocatee to e8. White has mirrored this move and then relocated the queen to e1 and the relocatee to d1. Black has mirrored the latter relocation. Black can later castle short by moving the rook to f8, or castle long by moving the king to c8, as usual. Paradoxically, despite the many pieces in between, the likelihood of long castling is greater. Thanks to the king&#39;s protected position, the player can wait a longer time before deciding on which side to castle. Now white starts the game.</p><p style="clear:left;"></P>
+          
+       
+    <P>
+      <BR>
+    </P>
+    <P>
+      <span class="bigger">Randomization</span>
+      <BR>
+      <BR>
+      The randomized version of Placement Chess (<I>Placement Random Chess</I>) implies that the initial position is randomized according to the above rules of king and queen relocation. It is supported in the program. It is also called <I>Chess20</I> as there are 20 possible board positions. It is comparable to Fischer Random Chess. Placement Chess is designed to overcome the problem of opening monotony.
+    </P><P><BR><BR></P>
+<HR><P><BR></P>
+		<ul >
+		<li>You can download my free Placement Chess program <A HREF="PlacementChess.zip" title="Placement Chess Windows program" >here</A> (updated 2020-10-20), but you must own the software <A HREF="http://www.zillions-of-games.com">Zillions of Games</A> to be able to run it (I recommend the download version).<BR><BR></li>
+		<LI>See also related variants in my article about <A HREF="relocationvariants.htm">Relocation variants</A>.<BR><BR></LI>
+		<LI>You can play Placement Chess against a human opponent <A HREF="http://www.chessvariants.org/index/msdisplay.php?itemid=MPplacementchess" title="Placement Chess online" >here.</A><BR><BR></LI>
+<LI>You can play Chess20 (Placement Random Chess) online or by email <A HREF="http://www.chessvariants.org/index/msdisplay.php?itemid=MPplacementrando" title="Placement Random Chess online" >here.</A> (This also functions as a Chess20 position generator.)<BR><BR></LI>
+<LI>See also <A HREF="relocvar.htm">Relocation Chess Variants.</A><br><br>
+<LI>Don&#39;t miss my other <A HREF="chessvar.htm">chess variants.</A></LI>
+</ul><P><BR></P>
+ <HR>    
+    <P>
+      </p><p style="clear:left;">
+      <BR>
+      <BR>
+      <BR>
+      &copy;&nbsp;M. Winther, 2009 April
+      <BR>
+      <BR>
+    </P><P><BR><BR></P>
+     <P class="cn">
+      
+      <A HREF="chessvar.htm"  ><IMG ALT="image" SRC="home.gif"  ></A>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+    </P>
+  </BODY>
+</HTML>

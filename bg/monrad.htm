@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+  <HEAD>
+    
+    <META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+    <META HTTP-EQUIV="content-type" CONTENT="text/html; charset=us-ascii">
+    <LINK HREF="style4b.css" REL="stylesheet" TYPE="text/css">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <TITLE>
+      monrad.htm
+    </TITLE>
+    <META HTTP-EQUIV="keywords" CONTENT="chess, Monrad">
+    <META HTTP-EQUIV="author" CONTENT="Mats Winther"> <link rel="canonical" href="http://mlwi.magix.net/bg/monrad.htm">
+    <STYLE TYPE="text/css">
+body {
+    background-image: url(./back2.gif);
+    }
+    table.c3 {background-color: #DDDDDD}
+    h6.c2 {text-align: center}
+     img.center {   display: block;   margin-left: auto;   margin-right: auto;} p.cn { text-align: center}
+    </STYLE>
+  </HEAD>
+  <BODY>
+    <P>
+      <BR>
+    </P>
+        <P class="cn">
+      <IMG SRC="mini.gif" ALT="MiniMonrad" ALIGN="top" VSPACE="0">
+    </P>
+    <H6 CLASS="c2">
+      <A HREF="minimonrad.htm">Svensk version</A>
+    </H6>
+    <H6 CLASS="c2">
+      (an extended version of this document, which includes a Monrad pairing course, is enclosed with the downloadable zip-file)
+    </H6>
+    <P>
+      <BR>
+      <BR>
+    </P>
+    <TABLE CLASS="c3"   ALIGN="center" CELLPADDING="20">
+      <TR>
+        <TD>
+          <H2>
+            Introduction:
+          </H2>
+          <P></P>
+          <P>
+            MiniMonrad is a Swiss pairing program according to Monrad&#39;s system, for Windows 95/98 and later. The program is simple (primitive!) and easy to learn. After an hour of study one is already a full-fledged pairing director. Although this program cannot compete with the commercial programs it has the advantage of being very easy to learn. It is also free of charge. It is therefore suitable for tournament arrangers that only once or occasionally arrange a tournament. This document contains a MiniMonrad pairing course that I encourage the reader to go through. The program emulates how Monrad pairing is done when it&#39;s performed by hand. So one could use this program when learning Monrad pairing. We need more people that engage in tournament directorship and learn to handle Monrad pairing (and other systems). You may think that the interface is a little awkward, but on the other hand it puts the demand on the tournament director to understand the principles of pairing. This is essential. <I>However, today there are probably more advanced programs to download freely.</I>
+            <BR>
+            <BR>
+            [Known bug(?): a user reported that two players that had the same score in the final result list were placed in the wrong order according to Buchholz score. I haven&#39;t verified this, but it will occur only seldom and in that case it&#39;s easy to edit the final result list and correct the order.]
+          </P>
+          <P>
+            Monrad is the most common Swiss system in Scandinavia. It is an entertaining tournament form compared with other systems that can be excruciating to players in the average rating stratum. MiniMonrad has all the functions you need. The program calculates Buchholz score (Kvp); checks whether players have met before, etcetera. It&#39;s possible to remove players after the tournament has started. One can even add players after the tournament has started (although this is forbidden one generally allows it during club tournaments). The program creates lists for placement according to table, etcetera. You will here and there see concepts in Swedish instead of English. This is because the initial version was made in Swedish. Anyway this shouldn&#39;t cause any misunderstandings. MiniMonrad does pairing strictly according to Monrads system. The algorithm has been thoroughly checked by using real Monrad pairing courses. The program always makes the correct pairing.
+          </P>
+          <P></P>
+          <BR>
+          <BR>
+          <H2>
+            Facts about Monrad&#39;s Swiss system:
+          </H2>
+          <P></P>
+          <UL>
+            <LI>The players are paired according to certain rules (i.e there is no chance event except in the first round). The rules strictly defines the outcome. So the outcome cannot vary. What affects the pairing outcome are the results of the players and how many white games they have had. Whether the player has had a free round or whether he has met the person concerned, is also taken into consideration.
+            </LI>
+            <LI>There is no in-built limitation to the amount of black games a player can have. However, the probability of yet another black game is reduced the more black games you have had (even Grandmasters have a problem understanding this although they have played chess all their life). If you lead the tournament, the probability of getting black is higher.
+            </LI>
+            <LI>It is not always the case that you will be paired with a player that has the same score. There is no limitation to the disparity of score. However, the probability is high that you will meet a player with a similar score.
+            </LI>
+            <LI>At the calculation of the Buchholz core the results of ones opponents are summed up. Thereafter the worst game result is removed. The latter is unique for Monrads system. That&#39;s why every player has zero Buchholz score after round 1.
+            </LI>
+            <LI>If two players have the same score and also the same Buchholz score, the players are separated by counting the number of wins. If that is the same too they will be separated by mutual result. Thereafter the drawing of lots will determine the outcome.
+            </LI>
+            <LI>Postponed games are regarded as draws (until the result has been established).
+            </LI>
+            <LI>Adjourned (interrupted) games are regarded as a win for both players (until the result has been established).
+            </LI>
+          </UL>
+          <BR>
+          <BR>
+          <H2>
+            Abstract concerning the program MiniMonrad:
+          </H2>
+          <P>
+            The program is simple and easy to learn since it builds on the principle of Monrad cards. The tournament leader fills in the Monrad cards that are in the file &quot;Monradkort.txt&quot; (Swedish for &quot;Monrad cards.txt&quot;).
+          </P>
+          <P>
+            So if you learn a minute amount of Swedish you will always have all the necessary information available on these cards. This is very useful since you will not only be able to inform any bewildered players, but you can also modify the different numbers and scores at any time.
+          </P>
+          <P>
+            The player&#39;s name is filled in after the dot on the first line on each Monrad card. Subsequently the MiniMonrad program is started and the pairing is made by pushing a button. The program is then terminated after it has created certain files. The file &quot;Monradkort.txt&quot; is modified according to the pairing result. The individual Monrad cards grow bigger for every round (after round 1) since two lines are added for every round, namely the two last lines that show the last round&#39;s opponent and the adherent result.
+          </P>
+          <P>
+            Note that &quot;0.0&quot; is already filled in so you never will have to enter any zero results. Normally you don&#39;t have to update the total score (&quot;totalpo&auml;ng&quot;) or any other items on the cards since the program updates these. Although the results of the round are a little slow to fill in, it will go smoothly after you have acquired the technique. You step forward by holding down the down-arrow key.
+          </P>
+          <P>
+            The technique using Monrad cards is straightforward and the tournament director has a lucid view of the information all the time. For instance, the director might want to alter the total score after a postponed game is finalized. He then alters the score on the &quot;totalpo&auml;ng&quot; line on respective Monrad cards. One can account for the whole course of events if a player questions the amount of blacks he has had (a very common occurence), etcetera.
+          </P>
+          <P></P>
+          <HR>
+
+          <BR>
+          Download MiniMonrad <A HREF="mini_e.ZIP">here</A> (zipped). Actual version is: 1.02e . The program is free of charge. It functions in Windows 95/98 and later. This page including a course (in txt-format) are enclosed with the zip-file.
+          <BR>
+          <BR>
+          <HR>
+
+          <BR>
+          <BR>
+          <P>
+            &copy; M. Winther 1998
+          </P>
+        </TD>
+      </TR>
+    </TABLE>
+    <P>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+    </P>
+      <P class="cn">
+      <A HREF="index.htm"><IMG ALT="image" SRC="home.gif"  ></A>
+    </P>
+    <P>
+      <BR>
+      <BR>
+      <BR>
+    </P>
+  </BODY>
+</HTML>

@@ -1,0 +1,93 @@
+<!DOCTYPE HTML>
+<HTML lang="en">
+<HEAD>   
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<LINK href="style4.css" rel="stylesheet" type="text/css">
+<META name="description" content="Shatranj for four players is an historical game from India. A Windows program is provided.">
+<META
+NAME="keywords" CONTENT="Neoteric Chess, variant">
+<META NAME="author" CONTENT="Mats Winther"> <link rel="canonical" href="http://mlwi.magix.net/bg/neotericchess.htm">
+
+<TITLE>Neoteric Chess</TITLE>
+</HEAD>
+  
+  <BODY>  <H1>Neoteric Chess</H1>      <H2>relocation chess with extra piece</H2>
+    <P class="cn">
+      <IMG ALT="Neoteric Chess" SRC="gifs/neoter1.gif" width="289" height="304"></P>
+      
+
+    <P>
+      <BR><br>
+      In <I>Neoteric Chess</I> (N-chess) one extra piece per player is placed in the reserve. The piece is automatically introduced at the position that is first left vacant when a piece leaves its initial square. The piece that <I>first</I> moves will also bring the external piece into play, so it is a double-move, comparable to castling.
+      <BR>
+      <BR>
+      Neoteric Chess is also a <A HREF="relocationvariants.htm">relocation variant.</A> Before play begins, Black can decide the initial positions of the kings, and White can then decide the initial positions of the queens. The positions must mirror each other. Neoteric Chess is like standard chess except that the players can, before play begins, swap places of the king + queen and another piece. The king may not swap with any of the rooks. The queen can be swapped with one of the rooks provided that the king remains between the rooks (this is a requirement of Chess960).
+      <BR>
+      <BR>
+      Thus, when the king is swapped (relocated), the other piece (the relocatee) ends up on the king&#39;s square. When the queen is swapped, the relocatee ends up on the queen&#39;s square. One restriction is that the bishops mustn&#39;t end up on the same square colour, and the king cannot become a relocatee (i.e. swapped by the queen). <I>Note that black begins by swapping his king.</I> Alternatively he can choose to leave the position as it is (by pressing the king). The white player then mirrors black&#39;s swap. After the kings thus have been swapped the turn is still with white. White can now relocate the queen, if he so wishes, and black then mirrors this. Next white starts the game by making the first move.
+      <BR>
+      <BR>
+      Note that the king retains his castling rights even if it has been relocated. The castling rules are simple and derive from Chess960. King and rook end up on their usual squares. The only difference is that the king can make longer leaps than usual (or shorter, or none at all). All squares between king and rook must be empty and unthreatened.
+      <BR>
+      NOTE! If the King starts the game on a castling destination square (c or g), castling on that side is done by moving the Rook instead of the King.
+      <BR>
+      <BR>
+      With these relocation rules the bishops are always positioned so that there is still a choice to develop them on either of the queen&#39;s or the king&#39;s wing. There is at least one rook in its standard position. This maintains the strategical ambiguity of the initial position, while sound positions are produced where no definitive advantage can be obtained. Black relocates first. Thusly white gets a chance to make a strategical decision and create an initiative, as in the standard position. The possible twentyfive initial positions are a subgroup of Fischer Random Chess. The most conservative relocation, it seems, is to change place between king and queen, which is a convenient way of avoiding theory. Remember that the resultant castling positions are always the same as in standard chess. This variant can also be played without the relocation feature and is then called <A HREF="reservechess.htm">Reserve Chess.</A>
+      <BR>
+      <BR>
+      This implementation will allow the user to test which pieces are suitable. It will be enhanced with more alternative pieces in later editions. Neoteric Chess is a relocation variant, designed to overcome the problem of opening monotony. Arguably, this method of reconfiguration of the initial array makes the procedure of Fischer randomization redundant. It also answers to the chessplayer&#39;s predilection for remaining in control.
+     
+    </P>
+ <div style="max-width:600px;">
+         <p><br> <IMG ALT="Neoteric Chess, example" SRC="gifs/pioneer1.gif" width="231" height="276" style="float:left; margin-right: 10px;">The&nbsp;piece&nbsp;that&nbsp;<I>first</I> moves will also bring the external piece into play.</p>
+        </div>
+    <p style="clear:left;"><br>
+    </P>
+    <P>
+      So far, these pieces have been implemented: <A HREF="swedishcannon.htm">Swedish Cannon</A>, <A HREF="capablanca.htm">Chancellor</A>, <A HREF="capablanca.htm">Archbishop</A>, <A HREF="gustaviii.htm">Amazon</A>, <A HREF="mastodon.htm">Mastodon</A>, <A HREF="dimachaerchess.htm">Dimachaer</A>, <A HREF="trebuchetchess.htm">Trebuchet</A>, <A HREF="bodyguardchess.htm">Kwagga</A>, <A HREF="neoorthodoxchess.htm">Divaricator</A>, <A HREF="murmillochess.htm">Murmillo</A>, <A HREF="culverinchess.htm">Culverin</A>, <A HREF="belfrychess.htm">Belfry</A>, <A HREF="adjutantchess.htm">Adjutant</A> and <A HREF="zeppelinchess.htm">Zeppelin</A>, Consul, Dragonet, Camel (3+1), Llama, Alpaca, Guanaco, and Vicu&ntilde;a (see below).
+    </P>
+    <P><br></P>
+   <div style="max-width:600px;">
+          <p><IMG ALT="Consul chess piece movement" SRC="gifs/consul1.gif" width="212" height="212" style="float:left; margin-right: 10px;">The&nbsp;Consul&nbsp;jumps&nbsp;like a Camel (3+1), or slides orthogonally on the same square colour only. The other square colour is simply ignored. It is a colourbound piece which is worth 5 (estimate). Note that it cannot jump over occupied squares of its own colour.</p>
+     <p style="clear:left;"><br>
+        <IMG ALT="Dragonet chess piece movement" SRC="gifs/dragonet1.gif" width="212" height="212" style="float:left; margin-right: 10px;">The&nbsp;Dragonet&nbsp;(&#39;little dragon&#39;) <I>flies</I> to any empty square, of the same colour, in any direction. It captures an enemy piece by landing immediately beyond its victim. The Dragonet&#39;s value is 4, i.e. light piece + pawn (estimate). It&#39;s a colourbound variant of Schmittberger&#39;s Airplane, and was invented by me in Oct 2009.</p>
+       
+       <p style="clear:left;"><br><br>
+            The <A HREF="llamapieces.htm" title="Lama chess pieces">Lama</A> family of pieces jump orthogonally on every second square, but have only four capture squares. They can, however, easily change square colour by moving to the adjacent orthogonal square. Any pair of these pieces can achieve checkmate together with a king.
+           
+          </P>
+		  </div>
+       
+<p><br><br><br></p>
+   <hr>
+      <p>    <b>&bull;</b>&nbsp;&nbsp;You can download my free Neoteric Chess program <A HREF="NeotericChess.zip" title="Neoteric Chess Windows program">here</A> (updated 2011-02-21), but you must own the software <A HREF="http://www.zillions-of-games.com"  >Zillions of Games</A> to be able to run it (I recommend the download version).
+          <BR>
+          <BR>
+          <b>&bull;</b>&nbsp;&nbsp;You can play Dragonet Chess (a variant of Neoteric Chess without relocation) against a human opponent <A HREF="http://www.chessvariants.org/index/msdisplay.php?itemid=MPdragonetchess" title="Play Dragonet Chess online" >here.</A>
+          <BR>
+          <BR>
+          <b>&bull;</b>&nbsp;&nbsp;Don&#39;t miss my other <A HREF="chessvar.htm">chess variants.</A></p>
+         <hr>
+    <P>
+    
+      <BR>
+      <BR>
+      <BR>
+      &copy;&nbsp;M. Winther, 2011 January
+      <BR>
+      <BR>
+    </P>
+<P class="cn">
+      <BR>
+      <BR>
+      <A HREF="index.htm"  ><IMG ALT="HOME" SRC="home.gif"  ></A>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+    </P>
+  </BODY>
+</HTML>

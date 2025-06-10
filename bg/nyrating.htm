@@ -1,0 +1,555 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+  <HEAD>
+    
+    <META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+    <META HTTP-EQUIV="content-type" CONTENT="text/html; charset=us-ascii">
+    <LINK HREF="style4b.css" REL="stylesheet" TYPE="text/css">
+    <META HTTP-EQUIV="keywords" CONTENT="schack, rating">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <TITLE>
+      Ny rating
+    </TITLE>
+    <STYLE TYPE="text/css">
+
+    :link { color: #00FFFF }
+    :visited { color: #800040 }
+    table.c3 {background-color: #DDDDDD}
+    p.c2 {text-align: left}
+     img.center {   display: block;   margin-left: auto;   margin-right: auto;} p.cn { text-align: center}
+    </STYLE>
+  </HEAD>
+  <BODY>
+    <P>
+      <BR>
+      <BR>
+    </P>
+      <P class="cn">
+      <IMG SRC="nyrat.gif" ALT="En ny ratingtabell" ALIGN="top" VSPACE="0">
+    </P>
+    <TABLE   CELLPADDING="20">
+      <TR>
+        <TD>
+          <P>
+            (Senaste uppdatering <B>980627</B>)
+            <BR>
+            (lade till senaste versionen av NyRating och StandardRating)
+            <BR>
+            <BR>
+            <BR>
+          </P>
+          <P></P>
+          <P CLASS="c2">
+            En ny ratingtabell presenterades av P. S. i Tidskrift f&ouml;r Schack nr 10/97. Han var med om att ta fram den gamla tabellen i b&ouml;rjan av 70-talet. S. h&auml;vdar att den gamla tabellen &auml;r felaktig eftersom den inte tar h&auml;nsyn till att den svagare spelaren uppn&aring;r remi oftare &auml;n vad underlaget till den gamla tabellen visar. Den b&auml;ttre spelaren f&aring;r f&ouml;r lite utdelning om ratingdifferensen &auml;r 300 po&auml;ng eller mer. &Auml;r ratingskillnaden 500 eller mer s&aring; f&aring;r inte den starkare spelaren sl&auml;ppa en enda remi p&aring; 15 ronder. Dessutom inneh&aring;ller den gamla tabellen ett tabellfel som &auml;r borttaget i den nya versionen. Personligen tycker jag ocks&aring; det &auml;r m&auml;rkligt att starka spelares slit vid br&auml;det mot l&aring;grankade inte skulle vara v&auml;rt n&aring;got som prestation. Speciellt om dom som svart r&aring;kar ut f&ouml;r den vederv&auml;rdiga Avbytesvarianten i Franskt. Notera dock att T. W. har framf&ouml;rt kraftig kritik mot den nya tabellen. Se <A HREF="http://www.schacknyheter.com"  >Schacknyheters</A> debattforum. W. h&auml;vdar med ledning av en utf&ouml;rd simulering, att ratingspridningen blir &auml;nnu st&ouml;rre med den nya tabellen &auml;n med den gamla, dvs. att de h&ouml;gst rankade kommer att bli &ouml;verrankade medan de l&auml;gst rankade kommer att sjunka &auml;nnu mer och bli underrankade.
+            <BR>
+            <BR>
+            Jag har skapat ett program &quot;NyRating&quot; f&ouml;r att ni ska kunna testa den nya tabellen. Programmet ber&auml;knar rating endast enligt den nya tabellen. NyRating halverar resultatet om spelaren har 2200 och &ouml;ver. Programmet r&auml;knar &auml;ven med halva po&auml;ng (men avrundar enligt vedertagna avrundningsregler vid utskrift). Programmet skapar en lista i &quot;Resultat.txt&quot; som &auml;ven visar hur mycket spelaren g&aring;tt plus respektive minus. NyRating &auml;r l&auml;mpligt att anv&auml;nda b&aring;de f&ouml;r klubbarnas ratingf&ouml;rare samt f&ouml;r spelare som endast vill h&aring;lla reda p&aring; sin egen rating.
+            <BR>
+            <BR>
+            Den nya ratingtabellen ser ut som f&ouml;ljer. Inom parentes st&aring;r talen som g&auml;ller f&ouml;r spelare p&aring; 2200 och &ouml;ver. Jag &auml;r dock oklar &ouml;ver om skaparen av intervallen avs&aring;g att denna halvering ska g&auml;lla. Tills vidare antar jag det och programmet &auml;r ocks&aring; programmerat enligt detta.
+          </P>
+          <P>
+            <BR>
+          </P>
+          <P>
+            <BR>
+            Ny ratingtabell:
+            <BR>
+          </P>
+          <TABLE CLASS="c3" BORDER="5" ALIGN="center">
+            <TR>
+              <TD>
+                Differens
+              </TD>
+              <TD>
+                Vinst f&ouml;r
+                <BR>
+                den b&auml;ttre
+              </TD>
+              <TD>
+                Vinst f&ouml;r
+                <BR>
+                den s&auml;mre
+              </TD>
+              <TD>
+                Remi f&ouml;r
+                <BR>
+                den b&auml;ttre
+              </TD>
+              <TD>
+                Remi f&ouml;r
+                <BR>
+                den s&auml;mre
+              </TD>
+              <TD>
+                F&ouml;rlust f&ouml;r
+                <BR>
+                den b&auml;ttre
+              </TD>
+              <TD>
+                F&ouml;rlust f&ouml;r
+                <BR>
+                den s&auml;mre
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                0 - 14
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 16 (+8)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 16 (+8)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 0 (-0)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 0 (+0)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 16 (-8)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 16 (-8)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                15 - 39
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 15 (+7&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 17 (+8&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 1 (-&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 1 (+&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 17 (-8&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 15 (-7&frac12;)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                40 - 69
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 14 (+7)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 18 (+9)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 2 (-1)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 2 (+1)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 18 (-9)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 14 (-7)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                70 - 99
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 13 (+6&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 19 (+9&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 3 (-1&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 3 (+1&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 19 (-9&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 13 (-6&frac12;)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                100 - 129
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 12 (+6)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 20 (+10)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 4 (-2)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 4 (+2)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 20 (-10)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 12 (-6)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                130 - 159
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 11 (+5&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 21 (+10&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 5 (-2&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 5 (+2&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 21 (-10&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 11 (-5&frac12;)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                160 - 199
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 10 (+5)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 22 (+11)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 6 (-3)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 6 (+3)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 22 (-11)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 10 (-5)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                200 - 239
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 9 (+4&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 23 (+11&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 7 (-3&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 7 (+3&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 23 (-11&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 9 (-4&frac12;)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                240 - 289
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 8 (+4)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 24 (+12)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 8 (-4)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 8 (+4)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 24 (-12)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 8 (-4)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                290 - 349
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 7 (+3&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 25 (+12&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 9 (-4&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 9 (+4&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 25 (-12&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 7 (-3&frac12;)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                350 - 419
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 6 (+3)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 26 (+13)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 10 (-5)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 10 (+5)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 26 (-13)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 6 (-3)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                420 - 499
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 5 (+2&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 27 (+13&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 11 (-5&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 11 (+5&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 27 (-13&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 5 (-2&frac12;)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                500 - 599
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 4 (+2)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 28 (+14)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 12 (-6)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 12 (+6)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 28 (-14)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 4 (-2)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                600 - 699
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 3 (+1&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 29 (+14&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 13 (-6&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 13 (+6&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 29 (-14&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 3 (-1&frac12;)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                700 - 799
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 2 (+1)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 30 (+15)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 14 (-7)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 14 (+7)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 30 (-15)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 2 (-1)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                800 -
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 1 (+&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 31 (+15&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 15 (-7&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 15 (+7&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 31 (-15&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 1 (-&frac12;)</SPAN>
+              </TD>
+            </TR>
+          </TABLE>
+          <P>
+            <BR>
+            <BR>
+            Instruktioner:
+            <BR>
+          </P>
+          <P>
+            Programmet NyRating &auml;r simpelt men det beh&ouml;vs inget mer sofistikerat . Programmet inneh&aring;ller inte mycket felhantering s&aring; det kan m&ouml;jligtvis krascha eller avslutas om man angett felaktiga data. Men eftersom data anges i en fil (&quot;Rating.txt&quot;) s&aring; g&ouml;r det ingenting. Det &auml;r bara att g&aring; in i filen, korrigera samt d&auml;refter k&ouml;ra programmet igen. Programmet skapar en ratinglista i filen &quot;Resultat.txt&quot;. Man kan ber&auml;kna rating f&ouml;r hur m&aring;nga partier som helst. Dock finns det en begr&auml;nsning f&ouml;r antal spelare som ska ing&aring; i listan: max 1000. Spelarna sorteras i ratingordning.
+            <BR>
+            I &quot;Rating.txt&quot; anger man p&aring; f&ouml;rsta raden spelarens namn. P&aring; n&auml;sta rad anger man spelarens aktuella rating. P&aring; n&auml;sta rad anger man po&auml;ngen mot motst&aring;ndaren samt motst&aring;ndarens ratingtal. Man kan p&aring; denna rad &auml;ven ange ytterligare uppgifter som spelarens namn, osv (de senare uppgifterna ignoreras av programmet). P&aring; n&auml;sta rad anger man uppgifterna f&ouml;r n&auml;sta motst&aring;ndare, osv. N&auml;r man skrivit in alla motst&aring;ndare s&aring; l&auml;gger man in en avslutande rad med ett #-tecken. Om man inte endast ber&auml;knar ens egen rating utan &auml;ven ratingen f&ouml;r de andra spelarna i klubben s&aring; forts&auml;tter man nu med att p&aring; n&auml;sta rad ange nytt spelarnamn,osv enligt ovan. Notera att po&auml;ngen anges med 1 eller 0 eller x. (x = remi). Observera att det ska vara mellanslag mellan po&auml;ng, rating, osv (det g&ouml;r inget om det skulle r&aring;ka bli ett par mellanslag).
+            <BR>
+            <BR>
+            _____________________
+            <BR>
+            <BR>
+            Ex: (p&aring; filen &quot;Rating.txt&quot;)
+            <BR>
+            <BR>
+            Anders Andersson
+            <BR>
+            2051
+            <BR>
+            1 1898 Nils Nilsson, Allsvenskan
+            <BR>
+            x 2000 Sven Svensson
+            <BR>
+            0 2450 ?
+            <BR>
+            1 1990 Karl Karlsson, KM
+            <BR>
+            #
+            <BR>
+            Karl Karlsson
+            <BR>
+            1990
+            <BR>
+            0 2051 Anders Andersson, KM
+            <BR>
+            #
+            <BR>
+            Bengt Bengtsson
+            <BR>
+            1880
+            <BR>
+            #
+            <BR>
+            _____________________
+            <BR>
+            <BR>
+            Gl&ouml;m inte att avsluta &quot;Rating.txt&quot; med ett # enligt ovan. I exemplet betyder raden &quot;1 1898 Nils Nilsson,..&quot; att Anders Andersson vann &ouml;ver Nils Nilsson.
+            <BR>
+            N&auml;r man nu k&ouml;r progammet NyRating s&aring; produceras en lista i &quot;Resultat.txt&quot; som inneh&aring;ller tre spelare (Anders Andersson, Karl Karlsson samt Bengt Bengtsson). Bengt Bengtsson har inte spelat n&aring;gra partier.
+            <BR>
+            Observera att n&auml;r programmet k&ouml;rs s&aring; avslutas det automatiskt n&auml;r man trycker p&aring; knappen.
+            <BR>
+            <BR>
+            Man kan p&aring; detta s&auml;tt producera listor med flytande rating. N&auml;r man har gjort en permanent rating&auml;ndring m&aring;ste man d&auml;refter byta ut ratingtalen som st&aring;r p&aring; raden under spelarnamnen. De ska bytas ut mot de nya talen i &quot;Resultat.txt&quot;. Dessutom tar man naturligtvis bort motst&aring;ndar-raderna (s&aring; att det ser ut som vid &quot;Bengt Bengtsson&quot; ovan).
+            <BR>
+            <BR>
+            Om inte &quot;Resultat.txt&quot; finns s&aring; skapas den. Om den finns s&aring; skrivs den &ouml;ver n&auml;r man k&ouml;r programmet (n&auml;r man trycker p&aring; knappen). Filen &quot;Rating.txt&quot; m&aring;ste naturligtvis finnas innan programmet k&ouml;rs.
+            <BR>
+            <BR>
+            NyRating &auml;r ett gratisprogram. Ladda ner det <A HREF="nyrat.ZIP">h&auml;r</A> (zippat). Aktuell version &auml;r 1.0(1) 980627
+            <BR>
+            Det medf&ouml;ljer ett exempel p&aring; filen &quot;Rating.txt&quot;. L&auml;gg l&auml;mpligen filerna i en egen mapp. Programmet fungerar i Win9x (eventuellt i NT4).
+            <BR>
+            <BR>
+            OBS! Du kan &auml;ven ladda ner ett program &quot;StandardRating&quot; som ber&auml;knar rating enligt den g&auml;llande tabellen. Ladda ner programmet <A HREF="standard.ZIP">h&auml;r</A> (zippat). Det fungerar likadant som NyRating och &auml;r ocks&aring; gratis. Aktuell version &auml;r 1.12001-01-28
+          </P>
+          <P>
+            <BR>
+          </P>
+          <HR>
+          <P>
+                   
+        
+            <A HREF="spelstil.htm">Schackspelarens spelstil</A> (f&ouml;rfattarens teori om schackspelarens spelstil)
+            <BR>
+            <BR>
+            <A HREF="minimonrad.htm">MiniMonrad</A> (Monradprogram inklusive kurs)
+            
+          </P>
+          <P>
+            <BR>
+         <br>
+            &copy; MW 1998
+          </P>
+        </TD>
+      </TR>
+    </TABLE>
+  </BODY>
+</HTML>
