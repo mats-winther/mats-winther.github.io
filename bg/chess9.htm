@@ -1,0 +1,83 @@
+<!DOCTYPE HTML>
+<HTML lang="en">
+<HEAD>   
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<LINK href="style4b.css" rel="stylesheet" type="text/css">
+<META name="description" content="Players can regroup their forces before play begins. The rooks are left in the corners. A Windows program is provided.">
+<META
+NAME="keywords" CONTENT="regroupment, Chess, Chess484, Fischer Random Chess, arrangement, relocation, swap">
+<META NAME="author" CONTENT="Mats Winther"> <link rel="canonical" href="http://mlwi.magix.net/bg/chess9.htm">
+<TITLE>Chess-9 (Nonary Chess)</TITLE>
+</HEAD>    
+  
+  <BODY><H1>Chess-9</H1>  
+  
+  <H2 style="margin-bottom:20px;">(Nonary Chess)</H2>    
+  
+  <H2>regroupment in the initial array</H2>
+    
+    <P class="cn">
+
+      <IMG ALT="Chess-9 (Nonary Chess)" SRC="gifs/chess9board.gif"></p><P><BR></P>
+     
+    <p>
+          <span class="bigger">Abstract</span> 
+		  <BR><BR>
+		  The relocation method allows the players optionally to relocate the king or queen before the play begins, whilst retaining the castling rights. The method enhances opening ramification, but allows the players to remain in control. The resultant 9 positions, mostly non-mirrored, are strategically sound and would be experienced as natural by most chessplayers.
+       <BR>
+      <BR>
+      <span class="bigger">Introduction</span>
+      <BR>
+      <BR>
+      Chess-9 is like standard chess except that the players can, before play begins, swap places of the king/queen with one of the bishops. The method generates 9 different positions, mostly non-mirrored. The players in turn swap either the king or queen. Thus, when the king is swapped (relocated), the other piece (the relocatee) ends up on the king&#39;s square. When the queen is swapped, the relocatee ends up on the queen&#39;s square. The king can only swap with the queen bishop and the queen can only swap with the king bishop.
+      <BR>
+      <BR>
+      Black begins by swapping either his king or queen. Alternatively he can forgo this possibility. When White has made his king or queen swap (or dispensed with this possibility) he immediately starts the game by making the first move.
+      <BR>
+      <BR>
+      Note that the king retains his castling rights even if it has been relocated. The castling rules are simple and derive from Chess960. King and rook end up on their usual squares. The only difference is that the king can make longer leaps than usual (or shorter, or none at all). All squares between king and rook must be empty, and all squares between the king and its landing square must be unthreatened. Neither of the pieces must have moved before. With these relocation rules the rooks remain in their natural positions, and the bishops are always positioned so that there is still a choice to develop them on either of the kingside or queenside. The knights are ready to immediately attack in the centre. This maintains the strategical ambiguity of the initial position. Non-mirrored positions ensure that there exists a strategical tension, which makes games interesting. Black relocates first. White should command the game, and in this way he can take command of the strategical situation. Remember that the resultant castling positions are always the same as in standard chess.
+      <BR>
+      <BR>
+      Chess-9 is designed to overcome the problem of opening monotony. The mirrored Chess960 (FRC) positions have one major drawback, namely that they tend to be lacking in strategical variety, and many times it can be hard for White to claim the initiative, strategically or tactically. It is easier to find strategically interesting positions if we go outside FRC and investigate <I>non-mirrored</I> positions. If we keep the criterion that the king must be placed between the rooks, then Chess960 castling rules can be retained. For instance, if the kings are initially placed on different wings, then there is already a strategical tension (even though the king can castle on both wings). The good thing is that pieces end up on non-mirrored natural positions, bishops can be developed to either wing, the knights can immediately attack in the centre, and the king is placed between the rooks. Balanced non-mirrored positions might actually be a better idea than mirrored ones.
+      <BR>
+      <BR>
+      This method of <I>regroupment</I> in the initial array can be used instead of randomization (cmp. Fischer Random Chess, <A HREF="http://www.chessvariants.com/diffsetup.dir/fischer.html"  title="Fischer Random Chess" >here</A>). Thus it answers to the chessplayer&#39;s predilection for remaining in control. A famous regroupment occurred in the battle between Julius&nbsp;Caesar and Gnaeus&nbsp;Pompeius, where Caesar regrouped behind his lines. The maneuver was essential as he could counter the cavalry attack on the right flank, and this was also how he won the battle.
+      <BR>
+      <BR>
+            <BR>
+            <IMG ALT="Chess-9, relocation example" SRC="gifs/chess9board.gif" style="float:left; margin-right: 5px;">Black&nbsp;has&nbsp;relocated&nbsp;the queen to f8 and the relocatee to d8. White has relocated the king to c1, and the relocatee is thus placed on e1. White can later castle short by moving the king to g1, as usual, or castle long by moving the rook to d1.
+            </p><p style="clear:left;">
+            <BR><BR>
+       
+      <span class="bigger">Randomization</span>
+      <BR>
+      <BR>
+      The randomized version of Chess-9 (<I>Nonary Random Chess</I>) implies that the initial position of each side is independently randomized according to the above rules of king and queen relocation. It is supported in the program. It is comparable to Fischer Random Chess. Chess-9 is designed to overcome the problem of opening monotony.
+     </P><P><BR></P>
+<HR><p>&#x261B;&nbsp;&nbsp;You can download my free Chess-9 program <A HREF="Chess-9.zip" title="Chess-9 Windows program">here</A>, but you must own the software <A HREF="http://www.zillions-of-games.com">Zillions of Games</A> to be able to run it (I recommend the download version).
+      <BR>
+      <BR>&#x261B;&nbsp;&nbsp;See also related variants in my article about <A HREF="relocationvariants.htm">Relocation variants</A>.
+<BR><BR>You can play Chess-9 against a human opponent <A HREF="http://www.chessvariants.org/index/msdisplay.php?itemid=MPnonarychess"  title="Chess-9 online" >here.</A>
+          <BR>
+          <BR>&#x261B;&nbsp;&nbsp;You can play related variant, Chess484 (Regroupment Random Chess), online or by email <A HREF="http://www.chessvariants.org/index/msdisplay.php?itemid=MPchess484"  title="Chess484 online" >here.</A></P>
+ <HR>    
+    <P>
+      </p><p style="clear:left;">
+      &copy;&nbsp;M. Winther, 2010 April
+      <BR>
+      <BR>
+    </P>
+    <P class="cn">
+      <BR>
+      <BR>
+      <A HREF="chessvar.htm"  ><IMG ALT="HOME" SRC="home.gif"  ></A>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+    </P>
+  </BODY>
+</HTML>

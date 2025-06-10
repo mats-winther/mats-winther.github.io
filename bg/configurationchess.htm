@@ -1,0 +1,99 @@
+<!DOCTYPE HTML>
+<HTML lang="en">
+<HEAD>   
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<LINK href="style4b.css" rel="stylesheet" type="text/css">
+<META name="description" content="Players rearrange the chess pieces before play begins. Rooks remain in their positions. A Windows program is provided.">
+<META
+NAME="keywords" CONTENT="Configuration Chess, Chess400, arrangement, relocation, swap">
+<META NAME="author" CONTENT="Mats Winther"> <link rel="canonical" href="http://mlwi.magix.net/bg/configurationchess.htm">
+<TITLE>Configuration Chess - reconfiguring the piece array</TITLE>
+</HEAD>  
+  
+  <BODY>      
+  <H1>Configuration Chess</H1>      
+  <H2 style="margin-bottom:20px;">(and Chess400)</H2>      
+  <H2>reconfiguring the piece array</H2>
+    <P class="cn">
+   
+      <IMG ALT="Configuration Chess" width="289" height="304" SRC="gifs/configurationboard.gif">
+      
+    </P><P>
+      <BR>
+      <BR></P>
+    <P>
+<span class="bigger">Abstract</span>
+<BR><BR>
+The alternate relocation method allows the players optionally to relocate the king and the queen before the play begins, whilst retaining the castling rights. The players can abstain from this if they prefer the standard setup. The method enhances opening ramification, yet allows the players to remain in control. The resultant positions, 400 by number, are strategically congenial with the standard position and would be regarded as strategically sound by most players.
+      <BR>
+      <BR>
+      <span class="bigger">Introduction</span>
+      <BR>
+      <BR>
+      <I>Configuration Chess</I> is like standard chess except that the players can, before play begins, swap places of the king + queen and another piece except the rooks. The players in turn swap, firstly, the king, secondly, the queen. Thus, when the king is swapped (<I>relocated</I>), the other piece (the <I>relocatee</I>) ends up on the king&rsquo;s square. When the queen is swapped, the relocatee ends up on the queen&rsquo;s square. One restriction is that the bishops mustn&rsquo;t end up on the same square colour, and the king cannot become a relocatee (i.e. swapped by the queen). Note that black begins by swapping his king. Alternatively he can choose to leave the position as it is. The white player then has the option to relocate his king. After the kings thus have been swapped the turn goes back to black. The queens can now optionally be relocated. When white has made his queen swap (or dispensed with this possibility) he immediately starts the game by making the first move.
+      <BR>
+      <BR>
+      Note that the king retains his castling rights even if it has been relocated. The castling rules are simple and derive from Chess960. King and rook end up on their usual squares. The only difference is that the king can make longer (or shorter, or none at all) leaps than usual. All squares between king and rook must be empty, and all squares between the king and its landing square must be unthreatened. Neither of the pieces must have moved before.
+      <BR>
+      <BR>
+      <i>Curtailed castling:</i> as an alternative rule, the king may retain its castling right only if it is placed on any of the four central files. In other words, if the king is positioned on the g or b file, the castling right is forfeited. After all, such a safety move brings certain advantages so it should cost something. This restrictive rule would also enhance strategical predictability.
+<BR><BR>
+<span class="bigger">Restricted relocation</span>
+<BR><BR>
+<img src="gifs/8setups.gif" style="float:left; margin-right:8px; margin-bottom:9px;" width="219" height="269" alt="Restricted Configuration Chess" >Alternatively,&nbsp;the&nbsp;king&nbsp;may only  swap with the queen. These are the eight possible setups. Combined with the eight setups of white, the method renders <span class="nobr">8 x 8 = 64</span> mirrored and non-mirrored positions with kings positioned in the centre.</p><p style="clear:left;"><br>
+     
+      <span class="bigger">Discussion</span>
+      <BR>
+      <BR>
+      With these relocation rules the rooks remain in their natural positions, and the bishops are always positioned so that there is still a choice to develop them on either of the queenside or the kingside. This maintains the strategical ambiguity of the initial position, while sound positions are produced where no definitive advantage can be obtained. Black relocates first. Thusly white gets a chance to make a strategical decision that suits himself, which enables him to create an initiative, as in the standard position. Although the initial positions are, as such, a subgroup of Fischer Random, the two parties may choose different setups. The most conservative relocation, it seems, is to change place between king and queen, which is a convenient way of avoiding theory. Remember that the resultant castling positions are always the same as in standard chess.
+      <BR>
+      <BR>
+      Are non-mirrored positions viable? It is for you to judge. I think these variants are wholly adequate. The reason why it works is because they build on a particular subset of Fischer Random, whose positions are strategically quite close to the standard position. It&rsquo;s the same 20 mirrored positions that are employed in <A HREF="placementchess.htm">Placement Chess</A>, and their diagrams can be viewed <A HREF="placementpos.htm" title="Placement Chess positions">here.</A> If these positions are combined we get 20&nbsp;x&nbsp;20&nbsp;=&nbsp;400 positions, which constitute Configuration Chess. There are two advantages with this method. Firstly, the positions are &quot;natural&quot; for chessplayers. Secondly, it is possible to achieve them by decision from the players themselves, without recourse to a randomization procedure. As White is recompenced by giving him the last word in the setup of the pieces, I believe that this gives him a slight possibility to maintain an advantage by choosing a position that suits himself.
+   <BR><BR><BR>
+   	 	  <img src="gifs/config1.gif" style="float:left; margin-right:8px; margin-bottom:9px;" width="221" height="220" alt="Configuration Chess, example" >Black&nbsp;has&nbsp;relocated&nbsp;the king to g8 and the relocatee to e8. In the second turn he has decided to leave the queen on d8. White has first dispensed with his relocation move by letting the king stay on e1. In the second turn he has relocated the queen to f1, and the relocatee is thus placed on d1. Black can later castle short by moving the rook to f8, or castle long by moving the king to c8, as usual. Paradoxically, despite the many pieces in between, the likelihood of long castle is greater. Thanks to the king&rsquo;s protected position, the player can wait a longer time before deciding on which side to castle. Now white starts the game.
+          </p><p style="clear:left;"><br>
+    </P>
+    <P>
+      <span class="bigger">Randomization</span>
+      <BR>
+      <BR>
+      The randomized version of Configuration Chess (<I>Configuration Random Chess</I>) implies that the initial position of each side is independently randomized according to the above rules of king and queen relocation. It is supported in the program. It is also called <I>Chess400</I> as there are 400 possible board positions. It is comparable to Fischer Random Chess. Configuration Chess is designed to overcome the problem of opening monotony.
+	
+	     </P><P><BR></P>
+<HR>
+		<ul >
+		<li>You can download my free Configuration Chess program <A HREF="ConfigurationChess.zip" title="Configuration Chess Windows program">here</A> (updated 2020-10-20), but you must own the software <A HREF="http://www.zillions-of-games.com">Zillions of Games</A> to be able to run it (I recommend the download version).<BR><BR></li>
+		<LI>See also related variants in my article about <A HREF="relocationvariants.htm">Relocation variants</A>.<BR><BR></LI>
+		<LI>You can play Configuration Chess against a human player <A HREF="http://www.chessvariants.org/index/msdisplay.php?itemid=MPconfigurationc"  title="Configuration Chess online" >here.</A>
+          <BR>
+          <BR></LI>
+		  <LI>You can play Chess400 (Configuration Random Chess) online or by email <A HREF="http://www.chessvariants.org/index/msdisplay.php?itemid=MPchess400"  title="Configuration Random Chess online" >here.</A> (This also functions as a Chess400 position generator.)<BR><BR></LI>
+<LI>Don&rsquo;t miss my other <A HREF="chessvar.htm">chess variants.</A></LI>
+</ul>
+ <HR>    
+    
+          
+    <P>
+	
+      </p><p style="clear:left;">
+      <BR>
+      <BR>
+      <BR>
+      &copy; Mats Winther, 2009 April
+      <BR>
+      <BR>
+    </P>
+    <P class="cn">
+      <BR><BR><BR><BR>
+      <BR>
+      <A HREF="chessvar.htm"  title="Chess variants" ><IMG ALT="HOME" SRC="home.gif"  ></A>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+    </P>
+  </BODY>
+</HTML>

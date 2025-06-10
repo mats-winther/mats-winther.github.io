@@ -1,0 +1,87 @@
+<!DOCTYPE HTML>
+<HTML lang="en">
+<HEAD>   
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<LINK href="style4b.css" rel="stylesheet" type="text/css">
+<META name="description" content="Burmese Chess is a traditional chess variant where pieces are dropped onto the board. A Windows program is provided.">
+<META
+NAME="keywords" CONTENT="Burmese Chess, Sittuyin">
+<META NAME="author" CONTENT="Mats Winther"> <link rel="canonical" href="http://mlwi.magix.net/bg/burmese.htm">
+  <TITLE>Burmese Chess (Sittuyin)</TITLE>
+</HEAD>  
+
+<BODY><H1>Burmese Chess</H1>
+ 
+    <P class="cn"><B></B>
+  <BR>
+ <BR>
+  <IMG ALT="Burmese Chess, Sittuyin"  width="336" height="335" SRC="gifs/BurmeseChess.gif">
+ 
+  </P>
+
+  <P>
+  <BR>
+  <BR>
+  <I>Burmese Chess</I> (Sittuyin) is still played in parts of Burma. It is a descendant of Indian <I>Chaturanga</I> and is believed to be quite old. The pieces are often red and black and are usually carved. The red pawns are carved as demons, the black as monkeys, in reference to the battle of the demons versus the god R&atilde;ma and Hanuman&rsquo;s monkeys.
+  <BR>
+  <BR>
+  The objective is checkmate. The <B>king, chariot</B> (rook), and <B>horse</B> (knight), move as in orthodox chess. The <B>pawns</B> also move as in orthodox chess, but have no initial double move. The <B>General</B> (equivalent: queen) moves one step diagonally in all directions. The <B>Elephant</B> (equivalent: bishop) moves one step diagonally in all directions, or one step forwards. Pawns promote to General only, and only if the General is missing from the board. Pawn promotion occurs only on the marked squares on the enemy side of the board. Promotion occurs not immediately, but when the pawn leaves the square. <I>Note!</I> When leaving the square, a pawn is not allowed to promote if that implies capturing an enemy King or General. Alternatively, the pawn can promote on the spot, that is, promote without moving. It is possible for a pawn to move past the squares where he can promote: in that case, promotion is no longer possible for that pawn.
+  <BR>
+  <BR>
+  <IMG ALT="Burmese Chess" SRC="gifs/burm2.gif" style="float:left; margin-right:8px;">In&nbsp;the&nbsp;first&nbsp;phase&nbsp;the pieces are dropped on the board, either behind the pawn chain, or on a friendly pawn. In the latter case the removed friendly pawn must immediately be relocated to another empty position. Before dropping begins, the pawns are positioned as in this image. The rooks must be dropped on the first rank, which is reserved for the rooks only. After all the pieces have been dropped the play begins. Stalemate is not allowed in Burmese Chess. Should you put the opponent in a stalemate position, you must take the move back.
+  </p><p style="clear:left;">
+  <BR>
+  Don&rsquo;t underestimate the curiously moving Elephant. Although it is slow, it is very suitable for giving mate. Together with a king, or some other piece, it can often give mate in the endgame. Knights and bishops can seldom achieve this. The Elephant has about the same value as a knight. Passed pawns are much less dangerous in Burmese Chess than in orthodox chess. Play aggressively with the General, because when it is exchanged, you can promote a pawn and get a new one.
+  <BR>
+  <BR>
+  <I>Note!</I> According to the standard rules of the Burmese Chess Federation, pieces are always dropped behind the pawn chain and Red drops all his pieces first. This variant has also been implemented.
+  <BR>
+  <BR>
+   <span class="bigger">Discussion</span>
+  <BR>
+  <BR>
+  Both the rules and the board markings vary somewhat. The board pattern in the main variant of this implementation is the most common (above), but the board pattern according to the Burmese Chess Federation has also been implemented (X pattern). There is a rule, referenced by Murray, which allows relocation of pieces also after the dropping phase, until a pawn is moved. But this would probably create an erratic game, as relocation of the king, or a rook, clearly changes the strategical situation. This rule is omitted (as it also is in some renditions). I find the rule of &ldquo;on the spot&rdquo; promotion quite logical. However, the rule that disallows giving check with the promotion move, is incomprehensible. This rule is referenced in at &ldquo;The Chess Variants Pages&rdquo; (<A HREF="http://www.chessvariants.org/oriental.dir/burmese.html" title="Burmese Chess">here</A>), but is not mentioned in Murray. This rule is omitted. Instead I have prohibited promotion whilst <I>capturing</I> an enemy King or an enemy General. Prohibition of King capture is natural, but why disallow the capture of an enemy General? The point seems to be that such a move would help to improve defensive possibilities, making the game too drawish. One can put the General <I>en prise</I>, and when the general is removed the player is allowed to promote a pawn. Thus, he can often capture the General back, as the attacking piece not seldom is a General. The rule is also designed to give greater potency to the General.
+  <BR>
+  <BR>
+  Sources differ concerning the rule of promotion. Should pawns be forced to promote when reaching a marked square (if the General is missing) or should promotion occur only when leaving the square? Three variants have been implemented. As stated above, when leaving the square, a pawn is not allowed to promote if that implies capturing an enemy King or General. In the two additional variants promotion is allowed upon entering a marked square. In these cases, should the pawn&rsquo;s capture-destination be a marked square, then, naturally, capture of the General is allowed, and promotion may occur. Although, in some circumstances, the newly promoted General&rsquo;s capturing move is prohibited, we cannot prohibit the pawn&rsquo;s natural move. If that were the case, then a King, or General, could step onto a square which is formally threathened by a pawn, and pawn-capture would be prohibited. This would be illogical. For this reason, pawn promotion upon <I>leaving</I> a marked square, is never obligatory, in any variant.
+  <BR>
+  <BR>
+  Burmese Chess is attractive. It reminds me of very complex practical endgames in orthodox chess. The dropping phase ensures that the strategical variegation is practically endless. Eight standard positions have also been added as variants.
+  <BR>
+  <BR>
+  <BR>
+   <span class="bigger">References</span>
+  <BR>
+  <BR>
+  <B>Murray, HJR</B> (1913). A History of Chess. Oxford: At the Clarendon Press.
+  <BR>
+  <BR>
+  See also: <A HREF="http://www.chessvariants.org/oriental.dir/burmese.html" title="Burmese Chess">The Chess Variants pages</A>
+ 
+  <BR>
+  <BR>
+  <BR></P>
+  <HR>
+
+  <P>
+  &#x261B;&nbsp;&nbsp;You can download my free Burmese Chess program <A HREF="BurmeseChess.zip" title="Burmese Chess Windows program">here</A> (updated 2020-11-30), but you must own the software <A HREF="http://www.zillions-of-games.com">Zillions of Games</A> to be able to run it (I recommend the download version).
+  </P>
+  <HR>
+
+  <P><BR>
+  <BR>
+  &copy; Mats Winther 2006
+  <BR>
+  <BR>
+  <BR></P>
+
+    <P class="cn"><BR>
+  <BR>
+  <A HREF="index.htm"  title="Traditional board games" ><IMG ALT="HOME" SRC="home.gif"  ></A>
+  <BR>
+  <BR>
+  <BR>
+  <BR></P>
+</BODY>
+</HTML>

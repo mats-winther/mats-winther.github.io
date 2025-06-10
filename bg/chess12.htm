@@ -1,0 +1,455 @@
+<!DOCTYPE HTML>
+<HTML lang="en">
+<HEAD>   
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<LINK href="style4b.css" rel="stylesheet" type="text/css">
+<META name="description" content="Players may optionally relocate the king and the queen before the play begins. A Windows program is provided.">
+<META
+NAME="keywords" CONTENT="Chess12, variant">
+<META NAME="author" CONTENT="Mats Winther"> <link rel="canonical" href="http://mlwi.magix.net/bg/chess12.htm">
+<TITLE>Chess12</TITLE>
+</HEAD>
+
+<BODY><H1>Chess12</H1> <H2>reconfiguring the piece array</H2>
+    
+    <P class="cn">
+      <BR>
+      <IMG ALT="Chess1" SRC="gifs/mirror1.gif">
+      <BR>
+      <BR>
+      <BR>
+    </P>
+    
+          <p><I>Abstract:</I> The mirrored relocation method allows the players optionally to relocate the king and the queen before the play begins, whilst retaining the castling rights. The players can abstain from this if they both prefer the standard setup. It is a cogent method of rearranging the initial position to enhance opening ramification, while allowing the players to remain in control. The resultant positions are all mirrored and are 12 by number. They are a subset of Fischer Random Chess and deviate marginally from the standard position. Thus the general chessplayer would feel at home in any of these positions.</p>
+       
+    <P>
+      <BR>
+      <B>Introduction</B>
+      <BR>
+      <BR>
+      In <I>Chess12</I> Black can decide the initial positions of the kings, while White can decide the initial positions of the queens. The positions must mirror each other. Chess12 is like standard chess except that the players can, before play begins, swap places of the king + queen and another piece except the rooks. Thus, when the king is swapped (<I>relocated</I>), the other piece (the <I>relocatee</I>) ends up on the king&#39;s square. When the queen is swapped, the relocatee ends up on the queen&#39;s square.
+      <BR>
+      <BR>
+      The restrictions are the following: the bishops mustn&#39;t end up on the same square colour, and the king cannot become a relocatee (i.e. swapped by the queen). The knights may not end up two squares apart. This is simply to prevent that they stand in the way of each other. As the one knight blocks the other knight from an attractive square, the positioning of the knights just two squares apart is slightly uncomfortable. The rule can be expressed like this: the black king can swap with queen, kingside knight, or queenside bishop. The white queen can swap with queenside knight or kingside bishop.
+      <BR>
+      <BR>
+      Note that black begins by swapping his king. Alternatively he can choose to leave the position as it is. The white player then mirrors black&#39;s swap. After the kings thus have been swapped the turn is still with white. White can now relocate the queen, if he so wishes, and black then mirrors this. Next white starts the game by making the first move.
+      <BR>
+      <BR>
+      Note that the king retains his castling rights even if it has been relocated. The castling rules are simple and derive from Chess960. King and rook end up on their usual squares. The only difference is that the king can make longer leaps than usual (or shorter, or none at all). All squares between king and rook must be empty and unthreatened.
+      <BR>
+      <BR>
+      <I>Curtailed castling</I>: in an alternative variant, if the king is positioned on the g or b file, castling is restricted to the side on which the king is positioned. The variant could be useful to enhance strategical predictability.
+      <BR>
+      <BR>
+      <BR>
+      <B>Discussion</B>
+      <BR>
+      <BR>
+      With these relocation rules the rooks remain in their natural positions, and the bishops are always positioned so that there is still a choice to develop them on either of the queenside or the kingside. This maintains the strategical ambiguity of the initial position while sound positions are produced, rather like the standard position. This method of reconfiguration of the initial array answers to the chessplayer&#39;s predilection for remaining in control.
+      <BR>
+      <BR>
+      Black relocates first. As White is given the last word in the setup of the pieces, he has a chance to choose a position that suits him better than the opponent. It is necessary to maintain the first move advantage in order to retain the strategical tension. White can try to predict Black&#39;s opening plans and on which side he is going to castle. This can inform his choice of queen positioning. The initial positions are a subgroup of <A HREF="http://www.chessvariants.com/diffsetup.dir/fischer.html"  >Fischer Random Chess</A>. The most conservative relocation, it seems, is to change place between king and queen, which is a convenient way of avoiding theory. Remember that the resultant castling positions are always the same as in standard chess.
+      <BR>
+      <BR>
+      In the above image, Black has relocated the king to g8 and the relocatee to e8. White has mirrored this move and then relocated the queen to b1 and the relocatee to d1. Black has mirrored the latter relocation. Black can later castle short by moving the rook to f8, or castle long by moving the king to c8, as usual. Paradoxically, despite the many pieces in between, the likelihood of long castle should be greater. Thanks to the king&#39;s protected position, the player can wait a longer time before deciding on which side to castle. Now white starts the game.
+      </p><p style="clear:left;">
+    </P>
+    <P>
+      <BR>
+      <B>Chess12: the 12 possible positions</B>
+      <BR>
+      <BR>
+    </P>
+    <P>
+      &nbsp;<IMG ALT="Chess12" SRC="ppos/pos1.gif">&nbsp; &nbsp; <IMG ALT="image" SRC="ppos/pos2.gif">&nbsp; &nbsp; <IMG ALT="image" SRC="ppos/pos3.gif">
+      <BR>
+      <BR>
+      &nbsp; <IMG ALT="Chess12" SRC="ppos/pos9.gif">&nbsp; &nbsp; <IMG ALT="image" SRC="ppos/pos10.gif">&nbsp; &nbsp; <IMG ALT="image" SRC="ppos/pos11.gif"> &nbsp; &nbsp;
+      <BR>
+      <BR>
+      &nbsp; <IMG ALT="Chess12" SRC="ppos/pos13.gif">&nbsp; &nbsp; <IMG ALT="image" SRC="ppos/pos15.gif">&nbsp; &nbsp; <IMG ALT="image" SRC="ppos/pos16.gif">
+      <BR>
+      <BR>
+      &nbsp; <IMG ALT="Chess12" SRC="ppos/pos17.gif">&nbsp; &nbsp; <IMG ALT="image" SRC="ppos/pos18.gif">&nbsp; &nbsp; <IMG ALT="image" SRC="ppos/pos20.gif">
+      <BR>
+      <BR>
+      <BR>
+      <B>Analysis of a position</B>
+      <BR>
+      <BR>
+      <IMG ALT="Chess12" SRC="ppos/pos2.gif" style="float:left; margin-right:5px;">This position deviates visually very little from the standard position. Can white succeed in developing an initiative? A Queen&#39;s gambit seems logical, and it seems to work, too. After the moves <B>1.d4 d5 2.c4 dxc4 3.e4 b5 4.a4 a6 5.Nc3</B> White can try and maintain the initiative (see below diagram).
+      </p><p style="clear:left;">
+      <BR>
+      <IMG ALT="Chess12" SRC="gifs/chess12a.gif">
+      </p><p style="clear:left;">
+      <BR>
+      <IMG ALT="Chess12" SRC="gifs/chess12b.gif" style="float:left; margin-right:5px;">But how about e4-openings? Can White fight for the initiative despite the fact that the d4 square is weakened? As the queen isn&#39;t positioned to support d2-d4, how can e4 succeed against the Sicilian, for instance? This position arises after <B>1.e4 c5 2.Nf3 Nc6 3.c3 Nf6 4.d4</B>. The queen is ideally placed to support the e4 pawn. This means that White can develop slowly with c3 followed by d4, without having to worry about the black knight threatening the e4 pawn. White should be able to maintain an edge.
+      </p><p style="clear:left;">
+      <BR>
+      <BR>
+      <BR>
+      <B>Chess12: the 12 positions in PGN/FEN description</B>
+      <BR>
+      <BR>
+      (the following FENs can be imported (or copy &amp; pasted) to your chess program, provided that it knows Chess960 castling rules. In TascBase the SetUp value should be 2, and HAha should be changed to KQkq.)
+      <BR>
+      <BR>
+      [Event &quot;?&quot;]
+      <BR>
+      [Site &quot;?&quot;]
+      <BR>
+      [Date &quot;*&quot;]
+      <BR>
+      [Round &quot;?&quot;]
+      <BR>
+      [White &quot;?&quot;]
+      <BR>
+      [Black &quot;?&quot;]
+      <BR>
+      [Result &quot;*&quot;]
+      <BR>
+      [Variant &quot;chess 960&quot;]
+      <BR>
+      [SetUp &quot;1&quot;]
+      <BR>
+      [FEN &quot;rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w HAha - 0 1&quot;]
+      <BR>
+      [PlyCount &quot;0&quot;]
+      <BR>
+      *
+      <BR>
+      <BR>
+      <BR>
+      [Event &quot;?&quot;]
+      <BR>
+      [Site &quot;?&quot;]
+      <BR>
+      [Date &quot;*&quot;]
+      <BR>
+      [Round &quot;?&quot;]
+      <BR>
+      [White &quot;?&quot;]
+      <BR>
+      [Black &quot;?&quot;]
+      <BR>
+      [Result &quot;*&quot;]
+      <BR>
+      [Variant &quot;chess 960&quot;]
+      <BR>
+      [SetUp &quot;1&quot;]
+      <BR>
+      [FEN &quot;rqbnkbnr/pppppppp/8/8/8/8/PPPPPPPP/RQBNKBNR w HAha - 0 1&quot;]
+      <BR>
+      [PlyCount &quot;0&quot;]
+      <BR>
+      *
+      <BR>
+      <BR>
+      <BR>
+      [Event &quot;?&quot;]
+      <BR>
+      [Site &quot;?&quot;]
+      <BR>
+      [Date &quot;*&quot;]
+      <BR>
+      [Round &quot;?&quot;]
+      <BR>
+      [White &quot;?&quot;]
+      <BR>
+      [Black &quot;?&quot;]
+      <BR>
+      [Result &quot;*&quot;]
+      <BR>
+      [Variant &quot;chess 960&quot;]
+      <BR>
+      [SetUp &quot;1&quot;]
+      <BR>
+      [FEN &quot;rnbbkqnr/pppppppp/8/8/8/8/PPPPPPPP/RNBBKQNR w HAha - 0 1&quot;]
+      <BR>
+      [PlyCount &quot;0&quot;]
+      <BR>
+      *
+      <BR>
+      <BR>
+      <BR>
+      [Event &quot;?&quot;]
+      <BR>
+      [Site &quot;?&quot;]
+      <BR>
+      [Date &quot;*&quot;]
+      <BR>
+      [Round &quot;?&quot;]
+      <BR>
+      [White &quot;?&quot;]
+      <BR>
+      [Black &quot;?&quot;]
+      <BR>
+      [Result &quot;*&quot;]
+      <BR>
+      [Variant &quot;chess 960&quot;]
+      <BR>
+      [SetUp &quot;1&quot;]
+      <BR>
+      [FEN &quot;rnkqbbnr/pppppppp/8/8/8/8/PPPPPPPP/RNKQBBNR w HAha - 0 1&quot;]
+      <BR>
+      [PlyCount &quot;0&quot;]
+      <BR>
+      *
+      <BR>
+      <BR>
+      <BR>
+      [Event &quot;?&quot;]
+      <BR>
+      [Site &quot;?&quot;]
+      <BR>
+      [Date &quot;*&quot;]
+      <BR>
+      [Round &quot;?&quot;]
+      <BR>
+      [White &quot;?&quot;]
+      <BR>
+      [Black &quot;?&quot;]
+      <BR>
+      [Result &quot;*&quot;]
+      <BR>
+      [Variant &quot;chess 960&quot;]
+      <BR>
+      [SetUp &quot;1&quot;]
+      <BR>
+      [FEN &quot;rqknbbnr/pppppppp/8/8/8/8/PPPPPPPP/RQKNBBNR w HAha - 0 1&quot;]
+      <BR>
+      [PlyCount &quot;0&quot;]
+      <BR>
+      *
+      <BR>
+      <BR>
+      <BR>
+      [Event &quot;?&quot;]
+      <BR>
+      [Site &quot;?&quot;]
+      <BR>
+      [Date &quot;*&quot;]
+      <BR>
+      [Round &quot;?&quot;]
+      <BR>
+      [White &quot;?&quot;]
+      <BR>
+      [Black &quot;?&quot;]
+      <BR>
+      [Result &quot;*&quot;]
+      <BR>
+      [Variant &quot;chess 960&quot;]
+      <BR>
+      [SetUp &quot;1&quot;]
+      <BR>
+      [FEN &quot;rnkbbqnr/pppppppp/8/8/8/8/PPPPPPPP/RNKBBQNR w HAha - 0 1&quot;]
+      <BR>
+      [PlyCount &quot;0&quot;]
+      <BR>
+      *
+      <BR>
+      <BR>
+      <BR>
+      [Event &quot;?&quot;]
+      <BR>
+      [Site &quot;?&quot;]
+      <BR>
+      [Date &quot;*&quot;]
+      <BR>
+      [Round &quot;?&quot;]
+      <BR>
+      [White &quot;?&quot;]
+      <BR>
+      [Black &quot;?&quot;]
+      <BR>
+      [Result &quot;*&quot;]
+      <BR>
+      [Variant &quot;chess 960&quot;]
+      <BR>
+      [SetUp &quot;1&quot;]
+      <BR>
+      [FEN &quot;rnbkqbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBKQBNR w HAha - 0 1&quot;]
+      <BR>
+      [PlyCount &quot;0&quot;]
+      <BR>
+      *
+      <BR>
+      <BR>
+      <BR>
+      [Event &quot;?&quot;]
+      <BR>
+      [Site &quot;?&quot;]
+      <BR>
+      [Date &quot;*&quot;]
+      <BR>
+      [Round &quot;?&quot;]
+      <BR>
+      [White &quot;?&quot;]
+      <BR>
+      [Black &quot;?&quot;]
+      <BR>
+      [Result &quot;*&quot;]
+      <BR>
+      [Variant &quot;chess 960&quot;]
+      <BR>
+      [SetUp &quot;1&quot;]
+      <BR>
+      [FEN &quot;rnqkbbnr/pppppppp/8/8/8/8/PPPPPPPP/RNQKBBNR w HAha - 0 1&quot;]
+      <BR>
+      [PlyCount &quot;0&quot;]
+      <BR>
+      *
+      <BR>
+      <BR>
+      <BR>
+      [Event &quot;?&quot;]
+      <BR>
+      [Site &quot;?&quot;]
+      <BR>
+      [Date &quot;*&quot;]
+      <BR>
+      [Round &quot;?&quot;]
+      <BR>
+      [White &quot;?&quot;]
+      <BR>
+      [Black &quot;?&quot;]
+      <BR>
+      [Result &quot;*&quot;]
+      <BR>
+      [Variant &quot;chess 960&quot;]
+      <BR>
+      [SetUp &quot;1&quot;]
+      <BR>
+      [FEN &quot;rnbknbqr/pppppppp/8/8/8/8/PPPPPPPP/RNBKNBQR w HAha - 0 1&quot;]
+      <BR>
+      [PlyCount &quot;0&quot;]
+      <BR>
+      *
+      <BR>
+      <BR>
+      <BR>
+      [Event &quot;?&quot;]
+      <BR>
+      [Site &quot;?&quot;]
+      <BR>
+      [Date &quot;*&quot;]
+      <BR>
+      [Round &quot;?&quot;]
+      <BR>
+      [White &quot;?&quot;]
+      <BR>
+      [Black &quot;?&quot;]
+      <BR>
+      [Result &quot;*&quot;]
+      <BR>
+      [Variant &quot;chess 960&quot;]
+      <BR>
+      [SetUp &quot;1&quot;]
+      <BR>
+      [FEN &quot;rnbqnbkr/pppppppp/8/8/8/8/PPPPPPPP/RNBQNBKR w HAha - 0 1&quot;]
+      <BR>
+      [PlyCount &quot;0&quot;]
+      <BR>
+      *
+      <BR>
+      <BR>
+      <BR>
+      [Event &quot;?&quot;]
+      <BR>
+      [Site &quot;?&quot;]
+      <BR>
+      [Date &quot;*&quot;]
+      <BR>
+      [Round &quot;?&quot;]
+      <BR>
+      [White &quot;?&quot;]
+      <BR>
+      [Black &quot;?&quot;]
+      <BR>
+      [Result &quot;*&quot;]
+      <BR>
+      [Variant &quot;chess 960&quot;]
+      <BR>
+      [SetUp &quot;1&quot;]
+      <BR>
+      [FEN &quot;rqbnnbkr/pppppppp/8/8/8/8/PPPPPPPP/RQBNNBKR w HAha - 0 1&quot;]
+      <BR>
+      [PlyCount &quot;0&quot;]
+      <BR>
+      *
+      <BR>
+      <BR>
+      <BR>
+      [Event &quot;?&quot;]
+      <BR>
+      [Site &quot;?&quot;]
+      <BR>
+      [Date &quot;*&quot;]
+      <BR>
+      [Round &quot;?&quot;]
+      <BR>
+      [White &quot;?&quot;]
+      <BR>
+      [Black &quot;?&quot;]
+      <BR>
+      [Result &quot;*&quot;]
+      <BR>
+      [Variant &quot;chess 960&quot;]
+      <BR>
+      [SetUp &quot;1&quot;]
+      <BR>
+      [FEN &quot;rnbbnqkr/pppppppp/8/8/8/8/PPPPPPPP/RNBBNQKR w HAha - 0 1&quot;]
+      <BR>
+      [PlyCount &quot;0&quot;]
+      <BR>
+      *
+      <BR>
+      <BR>
+      <BR>
+    </P>
+    <P>
+      <BR>
+      <B>Randomization</B>
+      <BR>
+      <BR>
+      The randomized version of Chess12 implies that the initial position of each side is independently randomized according to the above rules of king and queen relocation. It is supported in the program. It is comparable to Fischer Random Chess. Chess12 is designed to overcome the problem of opening monotony.
+      <BR>
+      <BR>
+      <BR>
+    </P><hr>
+    <p>
+          <b>&bull;</b>&nbsp;&nbsp;You can download my free Chess12 program <A HREF="Chess12.zip">here</A>, but you must own the software <A HREF="http://www.zillions-of-games.com">Zillions of Games</A> to be able to run it (I recommend the download version).
+          <BR>
+          <BR>
+          <b>&bull;</b>&nbsp;&nbsp;See also related variants in my article about <A HREF="relocationvariants.htm">Relocation variants</A>.
+          <BR>
+          <BR>
+          <b>&bull;</b>&nbsp; You can play related variant Chess20 (Placement Random Chess) online or by email <A HREF="http://www.chessvariants.org/index/msdisplay.php?itemid=MPplacementrando"  >here.</A>
+          <BR>
+          <BR>
+          <b>&bull;</b>&nbsp;&nbsp;Don&#39;t miss my other <A HREF="chessvar.htm"  >chess variants.</A>
+          <BR>
+       </p><hr>
+    <P>
+      <BR>
+      <BR>
+      &copy; M. Winther 2010
+      <BR>
+      <BR>
+      <BR>
+    </P>
+    <P class="cn">
+      <BR>
+      <BR>
+      <A HREF="chessvar.htm"  ><IMG ALT="" SRC="home.gif"  ></A>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+    </P>
+  </BODY>
+</HTML>

@@ -1,0 +1,97 @@
+<!DOCTYPE HTML>
+<HTML lang="en">
+<HEAD>   
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<LINK href="style4b.css" rel="stylesheet" type="text/css">
+<META name="description" content="Players relocate pieces before play begins. The rooks stay in the corners. A Windows program is provided.">
+<META
+NAME="keywords" CONTENT="Multi-chess, Chess57, Multiple Chess, Fischer Random Chess, arrangement, relocation, swap">
+<META NAME="author" CONTENT="Mats Winther"> <link rel="canonical" href="http://mlwi.magix.net/bg/chess57.htm">
+<TITLE> Multi-chess (Chess57)</TITLE>
+</HEAD>   
+  
+  <BODY><H1>Multi-chess</H1> <H2 style="margin-bottom:20px;">(Chess57)</H2> <H2>regroupment in the initial array</H2>
+    
+    <P class="cn">
+
+      <IMG ALT="Multi-chess (Chess57)" SRC="gifs/regroupmentboard.gif"></p>
+      <p><BR>
+      <BR>   
+          <span class="bigger">Abstract</span> 
+		  <BR><BR>
+		  The relocation method allows the players optionally to relocate the king and the queen before the play begins, whilst retaining the castling rights. The players can forgo this if they prefer the standard setup. It is a cogent method of rearranging the initial position to enhance opening ramification, while allowing the players to remain in control. The resultant non-mirrored positions, 57 by number, have the rooks placed in the corners and are strategically sound.
+      
+   <BR>
+      <BR>
+      <span class="bigger">Introduction</span>
+      <BR>
+      <BR>
+      <I>Multi-chess</I> (Multiple Chess, Chess57) is like standard chess except that the players can, before play begins, swap places of the king + queen with each other, or the bishops. The method generates 57 different positions, all non-mirrored (except the standard position). The players in turn swap, firstly, the king, secondly, the queen. Thus, when the king is swapped (relocated), the other piece (the relocatee) ends up on the king&#39;s square. When the queen is swapped, the relocatee ends up on the queen&#39;s square. Knights and rooks cannot be swapped. The bishops mustn&#39;t end up on the same square colour, and the king cannot become a relocatee (i.e. swapped by the queen).
+      <BR>
+      <BR>
+      Black begins by swapping his king. Alternatively he can forgo this possibility. While the turn is still with Black, he now has the option to relocate his queen. <I>White may not relocate his queen so that a mirrored position occurs.</I> When White has made his king + queen swap (or dispensed with this possibility) he immediately starts the game by making the first move. Note that it is possible for the king to swap with the kingside bishop, but this necessitates that the queen be swapped with one of the bishops so that the bishops end up on different colours.
+      <BR>
+      <BR>
+      Note that the king retains his castling rights even if it has been relocated. The castling rules are simple and derive from Chess960. King and rook end up on their usual squares. The only difference is that the king can make longer leaps than usual (or shorter, or none at all). All squares between king and rook must be empty, and all squares between the king and its landing square must be unthreatened. Neither of the pieces must have moved before.
+      <BR>
+      <BR>
+      With these relocation rules the rooks remain in their natural positions, and the bishops are always positioned so that there is still a choice to develop them on either of the queenside or the kingside. The knights are ready to immediately attack in the centre. This maintains the strategical ambiguity of the initial position. All positions are non-mirrored. This ensures that there exists a strategical tension, which makes games interesting. Black relocates first. White should command the game, and in this way he can take command of the strategical situation. The most conservative relocation, it seems, is to change place between king and queen, which is a convenient way of avoiding theory. Remember that the resultant castling positions are always the same as in standard chess.
+      <BR>
+      <BR>
+      <span class="bigger">Discussion</span>
+      <BR>
+      <BR>
+      Comparatively, the mirrored Chess960 (FRC) positions have one major drawback, namely that they tend to be lacking in strategical variety, and many times it can be hard for White to claim the initiative, strategically or tactically. It is easier to find strategically interesting positions if we go outside FRC and investigate <I>non-mirrored</I> positions. If we keep the criterion that the king must be placed between the rooks, then Chess960 castling rules can be retained. For instance, if the kings are initially placed on different wings, then there is already a strategical tension (even though the king can castle on both wings). The good thing is that pieces end up on non-mirrored natural positions, bishops can be developed to either wing, the knights can immediately attack in the centre, and the king is placed between the rooks. Balanced non-mirrored positions might actually be a better idea than mirrored ones.
+      <BR>
+      <BR>
+      This method of <I>regroupment</I> in the initial array can be used instead of randomization (cmp. <A HREF="http://www.chessvariants.com/diffsetup.dir/fischer.html"  title="Fischer Random Chess" >Fischer Random Chess</A>). Thus it answers to the chessplayer&#39;s predilection for remaining in control. Regroupment behind the lines is a warfare stratagem. A famous regroupment occurred in the battle between Julius&nbsp;Caesar and Gnaeus&nbsp;Pompeius, where Caesar regrouped behind his lines. The maneuver was essential as he could counter the cavalry attack on the right flank, and this was also how he won the battle.</p>
+   <div style="max-width:600px;">
+    
+         <p><br><IMG ALT="Multi-chess relocation example" SRC="gifs/regroup1.gif" style="float:left; margin-right:5px;">
+        
+          Black&nbsp;has&nbsp;relocated&nbsp;the king to f8 and the relocatee to e8. This necessitates that he swaps the queen with one of the bishops. White has relocated the king to c1, and the relocatee is thus placed on e1. He has dispensed with his queen relocation move by letting it stay on d1. Black can later castle short by moving the king to g8, or castle long by moving the king to c8, as usual.
+          </p>
+		  </div>
+		  <p style="clear:left;">
+       <BR>
+
+      <BR>
+   
+      <span class="bigger">Randomization</span>
+      <BR>
+      <BR>
+      The randomized version of Multi-chess (<I>Multiple Random Chess</I>) implies that the initial position of each side is independently randomized according to the above rules of king and queen relocation. It is supported in the program. It is comparable to Fischer Random Chess. Multi-chess is designed to overcome the problem of opening monotony.
+     </P><P><BR></P>
+<HR>
+		<p>&#x261B;&nbsp;&nbsp;You can download my free Multi-chess program <A HREF="Multi-chess.zip" title="Multi-chess Windows program">here</A> (updated 2010-04-05), but you must own the software <A HREF="http://www.zillions-of-games.com">Zillions of Games</A> to be able to run it (I recommend the download version).
+      <BR>
+      <BR>
+		&#x261B;&nbsp;&nbsp;See also related variants in my article about <A HREF="relocationvariants.htm">Relocation variants</A>.<BR><BR>
+		&#x261B;&nbsp;&nbsp;You can play related variant, Chess484 (Regroupment Random Chess), online or by email <A HREF="http://www.chessvariants.org/index/msdisplay.php?itemid=MPchess484"  title="Chess484 online" >here.</A>
+          
+		  <br><br>
+&#x261B;&nbsp;&nbsp;Don&#39;t miss my other <A HREF="chessvar.htm">chess variants.</A></p>
+
+ <HR>    
+	
+         
+    <P>
+      </p><p style="clear:left;"><br><br>
+      &copy;&nbsp;M. Winther, 2010 February
+      <BR>
+      <BR>
+    </P>
+    <P class="cn">
+      <BR>
+      <BR>
+      <A HREF="index.htm"  title="Traditional board games"><IMG ALT="HOME" SRC="home.gif"  ></A>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+    </P>
+  </BODY>
+</HTML>
