@@ -1,0 +1,125 @@
+<!DOCTYPE HTML>
+<HTML lang="en">
+<HEAD>   
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<LINK href="style4b.css" rel="stylesheet" type="text/css">
+<META name="description" content="Black decides the positions of the kings, but only White has the option to relocate the queen. A Windows program is provided.">
+<META
+NAME="keywords" CONTENT="Regiment Chess, variant, Fischer Random Chess">
+<link rel="canonical" href="http://mlwi.magix.net/bg/regimentchess.htm">
+<TITLE>Regiment Chess</TITLE>
+</HEAD>    
+  
+  <BODY><H1>Regiment Chess</H1>
+      
+      <H2 style="margin-bottom:20px;">(and Regiment Random Chess)</H2>
+     
+      <H2>reordering the piece array</H2>
+    <P class="centered">
+      
+      <IMG ALT="Regiment Chess" SRC="gifs/regiment1.gif"></p>
+      <P><br><br>
+      
+          <span class="bigger">Abstract</span> 
+		  <BR><BR>
+		  The relocation method allows the players optionally to relocate the king/queen before the play begins, whilst retaining the castling rights. The players can abstain from this if they both prefer the standard setup. It is a cogent method of rearranging the initial position to enhance opening ramification, while allowing the players to remain in control. The resultant 20 positions deviate marginally from the standard position and the general chessplayer would feel at home in them.      
+      <BR>
+      <BR>
+      <span class="bigger">Introduction</span>
+      <BR>
+      <BR>
+      In <I>Regiment Chess</I> (also <I>Regimentation Chess</I>) Black can decide the initial positions of the kings, whose positions are mirrored, but only White has the option to relocate the queen. Regiment Chess is like standard chess except that the players can, before play begins, swap places of the king/queen and another piece except the rooks. Thus, when the king is swapped (<I>relocated</I>), the other piece (the <I>relocatee</I>) ends up on the king&rsquo;s square. When the queen is swapped, the relocatee ends up on the queen&rsquo;s square. One restriction is that the bishops mustn&rsquo;t end up on the same square colour, and the king cannot become a relocatee (i.e. swapped by the queen). Note that black begins by swapping his king. Alternatively he can choose to leave the position as it is. The white player then mirrors black&rsquo;s swap. After the kings thus have been swapped, White can now relocate the queen, if he so wishes. Then he immediately start the game by making the first move.
+      <BR>
+      <BR>
+      Note that the king retains his castling rights even if it has been relocated. The castling rules are simple and derive from Chess960. King and rook end up on their usual squares. The only difference is that the king can make longer (or shorter, or none at all) leaps than usual. All squares between king and rook must be empty, and all squares between the king and its landing square must be unthreatened. Neither of the pieces must have moved before.
+      <BR>
+      <BR>
+      <I>Curtailed castling</I>: in an alternative variant, if the king is positioned on the g or b file, castling is restricted to the side on which the king is positioned. The variant could be useful to enhance strategical predictability.
+      <BR>
+      <BR>
+      <B>regiment :</B>
+      <BR>
+      1 : <I>n</I>&nbsp; a military unit consisting usu. of a number of battalions
+      <BR>
+      2 <I>vt</I>
+      <BR>
+      a : to form into or assign to a regiment
+      <BR>
+      b : to organize rigidly esp. for the sake of regulation or control
+      <BR>
+      c : to subject to order or uniformity (regimentation <I>n</I>)
+      <BR>
+      (from Webster&rsquo;s Dictionary)
+      <BR>
+      <BR>
+      <span class="bigger">Discussion</span>
+      <BR>
+      <BR>
+      Regrouping is very natural in warfare, and that&rsquo;s why it belongs in chess, too. Before the battle against Pompeius, Julius&nbsp;Caesar regrouped behind his lines. The maneuver was essential as he could counter the cavalry attack on the right flank, and this was also how he won the battle. There are two advantages with this method. Firstly, the positions are &quot;natural&quot; for chessplayers. Secondly, it is possible to achieve them by decision from the players themselves, without recourse to a randomization procedure.
+    <BR><BR>
+          <IMG ALT="Regiment Chess, example" SRC="gifs/regiment2.gif" style="float:left; margin-right:5px;">
+    
+          Black&nbsp;has&nbsp;relocated&nbsp;the king to g8 and the relocatee to e8. White is compelled to mirror this move. White has then relocated the queen to b1 and the relocatee to d1. Black can later castle short by moving the rook to f8, or castle long by moving the king to c8, as usual. Despite the many pieces in between, the likelihood of long castle is, paradoxically, greater. This is because the king, thanks to its protected position, can wait a longer time before deciding on which side to castle. Now white starts the game.
+          </p><p style="clear:left;">
+       <BR>
+   I want to strike a blow for alternative setups of pieces. This will enhance creativity in chess, and at least it&rsquo;s good for chess training. I think chess journalists should seriously begin to discuss this issue in this era of computerized opening preparation. In <I>Regiment Chess</I> White&rsquo;s extra queen relocation allows him to choose a position that suits his style of play. Thus White can hope to retain the strategical initiative even if Black has relocated the kings to a safer square. I have suggested other ways of generating moderate alterations of the intial setup. Besides the present one, I have investigated several other alternatives:
+      </p>
+      <ul >
+		<li><I><A HREF="placementchess.htm">Placement Chess</A>,</I> where the positions are mirrored. Black first determines the position of the kings, and white then determines the position of the queens. This is a subset of Fischer Random.
+      <BR>
+      <BR></li>
+     <li><I><A HREF="relocationchess.htm">Relocation Chess</A>,</I> where either the king or queen is relocated. This is the simplest method in that it only uses two half-moves.
+      <BR>
+      <BR></li>
+    <li><I><A HREF="configurationchess.htm">Configuration Chess</A>,</I> where queen and king are relocated independently, creating 400 different alternatives that are strategically sound.
+      <BR>
+      <BR></li>
+      <li><I><A HREF="arrangementchess.htm">Arrangement Chess</A>,</I> where Black decides the position of the king, but the queens are relocated independently. White makes the last relocation.
+      <BR>
+      <BR></li>
+      <li><I><A HREF="regroupmentchess.htm">Regroupment Chess</A>,</I> where queen and king are relocated independently, creating 484 different alternatives that are strategically sound.
+      </li></ul>
+	  <p>
+      The above methods of relocation can also be automatized and thus randomized. On the pages you can find links to email presets capable of performing this randomization. Of course, Placement Chess is not controversial while it consists of a very modest subset of Fischer Random. However, the difficult question are the other variants. Are non-mirrored positions viable? It is for you to judge. My standpoint is that these variants are wholly adequate. The reason why it works is because they build on the very modest subset of Fischer Random containing 20 positions that only moderately deviate from the standard position. The rooks are in their standard position, which is preferable. The bishops are not yet locked on a certain diagonal but must be developed (i.e. the bishops are only allowed to appear on the middle four ranks). It maintains strategical ambiguity and probably assures that a clear advantage cannot be forced.
+      <BR>
+      <BR>
+      <span class="bigger">Randomization</span>
+      <BR>
+      <BR>
+      The randomized version of Regiment Chess (<I>Regiment Random Chess</I>) implies that the initial position of each side is independently randomized according to the above rules of king and queen relocation. It is supported in the program. There are 20 possible board positions. (The variant is not to be confused with Chess20.) It is comparable to Fischer Random Chess. Regiment Chess is designed to overcome the problem of opening monotony.
+    </P><P><BR></P>
+<HR>
+		<ul >
+		<li>You can download my free Regiment Chess program <A HREF="RegimentChess.zip">here</A> (updated 2009-05-06), but you must own the software <A HREF="http://www.zillions-of-games.com">Zillions of Games</A> to be able to run it (I recommend the download version).
+      <BR>
+      <BR></li>
+		<LI>See also related variants in my article about <A HREF="relocationvariants.htm">Relocation variants</A>.<BR><BR></LI>
+		<LI>You can play Regiment Chess against a human opponent <A HREF="http://www.chessvariants.org/index/msdisplay.php?itemid=MPregimentchess"  >here.</A>
+          <BR>
+          <BR></LI>
+		  <LI>You can play Regiment Random Chess (i.e. the randomized version) online or by email <A HREF="http://www.chessvariants.org/index/msdisplay.php?itemid=MPregementrandom"  >here.</A> (This also functions as a Regiment Random Chess position generator.)<BR><BR></LI>
+<LI>Don&rsquo;t miss my other <A HREF="chessvar.htm">chess variants.</A></LI>
+</ul>
+ <HR>    
+ 
+    <P>
+   </p><p style="clear:left;">
+      <BR>
+      &#169;&nbsp;Mats Winther, 2009 May
+      <BR>
+      <BR>
+    </P>
+    <P class="centered">
+ <BR>
+      <BR>
+      <A HREF="chessvar.htm"  title="Chess variants" ><IMG ALT="HOME" SRC="home.gif"  ></A>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+    </P>
+  </BODY>
+</HTML>

@@ -1,0 +1,88 @@
+<!DOCTYPE HTML>
+<HTML lang="en">
+<HEAD>   
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<LINK href="style4.css" rel="stylesheet" type="text/css">
+<META name="description" content="In Relocation Chess players can, before play begins, swap places of the king/queen and another piece except the rooks. A Windows program is provided.">
+<META
+NAME="keywords" CONTENT="Relocation Chess, Relocation Random Chess, arrangement, swap, Chess960, Fischer Random, FischeRandom Chess">
+<link rel="canonical" href="http://mlwi.magix.net/bg/relocationchess.htm">
+<TITLE>Relocation Chess - rearranging the piece array</TITLE>
+</HEAD> 
+  
+<BODY>
+   <H1>Relocation Chess</H1>
+      <H2 style="margin-bottom:20px;">(and Chess64)</H2>    
+      <H2>rearranging the piece array</H2>
+
+    <P class="centered">  
+      <IMG ALT="Relocation Chess" width="289" height="304" SRC="gifs/relocationboard.gif">
+     
+    </P><P><BR><br></P>
+   <p>
+          <span class="bigger">Abstract</span> 
+		  <BR><BR>
+		  The relocation method allows the players optionally to relocate either the king or queen before the play begins, whilst retaining the castling rights. The players can forgo this if they prefer the standard setup. The method  enhances opening ramification without recourse to randomization. It allows players to remain in control. The resultant positions deviate marginally from the standard position and would be experienced as strategically sound by most chessplayers. 
+      <BR>
+      <BR>
+      <span class="bigger">Introduction</span>
+      <BR>
+      <BR>
+      <I>Relocation Chess</I> is like standard chess except that the players can, before play begins, swap places of the king/queen and another piece except the rooks. Thus, if the king is swapped (<I>relocated</I>), the other piece (the <I>relocatee</I>) ends up on the king&rsquo;s square. If the queen is swapped, the relocatee ends up on the queen&rsquo;s square. One restriction is that the bishops mustn&rsquo;t end up on the same square colour. Note that black begins by making the initial swap. Alternatively he can choose to leave the position as it is. The white player then has the option to relocate his king or queen, whereupon he starts the game by making the first move. This is the simplest of my proposed relocation methods in that it only needs two half-moves to execute. Nevertheless, it can produce 64 different positions.
+      <BR>
+      <BR>
+      Note that the king retains his castling rights even if it has been relocated. The castling rules are simple and derive from Chess960. King and rook end up on their usual squares. The only difference is that the king can make longer (or shorter, or none at all) leaps than usual. All squares between king and rook must be empty, and all squares between the king and its landing square must be unthreatened. Neither of the pieces must have moved before. Castle on the queeside is denoted O-O-O. Castle on the kingside is denoted O-O.
+      <BR>
+      <BR>
+      <i>Curtailed castling</i>: as an alternative rule, the king may retain its castling right only if it is placed on any of the four central files. In other words, if the king is positioned on the g or b file, the castling right is forfeited. After all, such a safety move brings certain advantages so it should cost something. This restrictive rule would also enhance strategical predictability.
+      <BR>
+      <BR>
+      <span class="bigger">Discussion</span>
+      <BR>
+      <BR>
+      Regrouping is very natural in warfare, and that&rsquo;s why it belongs in chess, too. Before the battle against Pompeius, Julius&nbsp;Caesar regrouped behind his lines. The maneuver was essential as he could counter the cavalry attack on the right flank, and this was also how he won the battle.
+      <BR>
+      <BR>
+      I want to strike a blow for alternative setups of pieces. This will enhance creativity in chess, at least it&rsquo;s good for chess training. I think chess journalists should seriously begin to discuss this issue in this era of computerized opening preparation. With these relocation rules the rooks remain in their natural positions, and the bishops are always positioned so that there is still a choice to develop them on either of the queenside or the kingside. This maintains the strategical ambiguity of the initial position, while sound positions are produced where no definitive advantage can be obtained. Black relocates first. Thusly white gets a chance to make a strategical decision that suits himself, which enables him to create an initiative, as in the standard position. Although the initial positions are, as such, a subgroup of Fischer Random, the two parties may choose different setups. The most conservative relocation, it seems, is to change place between king and queen, which is a convenient way of avoiding theory. Remember that the resultant castling positions are always the same as in standard chess.
+      <BR>
+      <BR>
+      Arguably, this method of reconfiguration of the initial array makes the procedure of randomization redundant (cmp. Fischer Random Chess, <A HREF="http://www.chessvariants.com/diffsetup.dir/fischer.html" title="Fischer Random Chess">here</A>). Thus it answers to the chessplayer&rsquo;s predilection for remaining in control. Black can choose to relocate to a position which somewhat improves his chances against, for instance, the e4 openings. But White can adjust to this and try to predict his opening plans and on which side Black is going to castle. This can inform his choice of queen positioning. The standard position is an active and strategically ambiguous position, which could often be advantageous to White. However, as Black, the standard position is not necessarily the best defensive position. As White is recompenced by giving him the last word in the setup of the pieces, I believe that this gives him a slight possibility to maintain an advantage. It is necessary to maintain the first move advantage in order to retain the strategical tension. Interestingly, the number of possible positions is sixtyfour, the same as the number of squares. Only eight of these are mirrored.
+  <BR><BR>
+          <IMG ALT="Relocation Chess, example" SRC="gifs/reloc1.gif" style="float:left; margin-right:8px; margin-bottom:9px;">
+        
+          Black&nbsp;has&nbsp;relocated&nbsp;the king to g8 and the relocatee to e8. White has relocated the queen to f1, and the relocatee is thus placed on d1. Black can later castle short by moving the rook to f8, or castle long by moving the king to c8, as usual. Paradoxically, despite the many pieces in between, the likelihood of long castle is greater. Thanks to the king&rsquo;s protected position, the player can wait a longer time before deciding on which side to castle. Now white starts the game.
+          </p><p style="clear:left;">
+        
+      <BR>
+      <span class="bigger">Randomization</span>
+      <BR>
+      <BR>
+      The randomized version of Relocation Chess (<I>Relocation Random Chess</I>) implies that the initial position of each side is independently randomized according to the above rules of king/queen relocation. It is supported in the program. It is also called <I>Chess64</I> as there are 64 possible board positions. It is comparable to Fischer Random Chess (Chess960). Alternatively, as suggested by M.&nbsp;Rosenkranz, the players can write down their relocation moves secretly, and then disclose it before play begins. This is a form of semi-randomization. Relocation Chess is designed to overcome the problem of opening monotony.
+     </P><P><BR></P>
+<HR>
+		<p>&#x261B;&nbsp;&nbsp;You can download my free Relocation Chess program <A HREF="RelocationChess.zip" title="Relocation Chess Windows program">here</A> (updated 2020-10-19), but you must own the software <A HREF="http://www.zillions-of-games.com">Zillions of Games</A> to be able to run it (I recommend the download version).
+      <BR>
+      <BR>
+		&#x261B;&nbsp;&nbsp;See also related variants in my article about <A HREF="relocationvariants.htm">Relocation variants</A>.<BR><BR>
+		&#x261B;&nbsp;&nbsp;You can play Relocation Chess online or by email <A HREF="http://www.chessvariants.org/index/msdisplay.php?itemid=MPrelocationches" title="Relocation Chess online">here.</A>
+          <BR>
+          <BR>
+		  &#x261B;&nbsp;&nbsp;You can play Chess64 (i.e. the randomized version) online or by email <A HREF="http://www.chessvariants.org/index/msdisplay.php?itemid=MPchess64"   title="Chess64 online">here.</A> (This also functions as a Chess64 position generator.)<BR><BR>
+&#x261B;&nbsp;&nbsp;Don&rsquo;t miss my other <A HREF="chessvar.htm">chess variants.</A></p>
+ <HR>    
+    <P>
+      <BR>
+      <BR>
+      <BR>
+      &copy; Mats Winther, 2009 April
+      <BR>
+      <BR>
+    </P><P><BR><BR><BR><BR></P>
+    <P class="centered">
+     
+      <A HREF="chessvar.htm"  title="Chess variants" ><IMG ALT="HOME" SRC="home.gif"  ></A>
+    
+    </P><P><BR><BR><BR><BR><BR></P>
+  </BODY>
+</HTML>

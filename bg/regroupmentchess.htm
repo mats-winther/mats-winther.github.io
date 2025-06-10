@@ -1,0 +1,88 @@
+<!DOCTYPE HTML>
+<HTML lang="en">
+<HEAD>   
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<LINK href="style4b.css" rel="stylesheet" type="text/css">
+<META name="description" content="Players change positions of pieces before play begins. The rooks are left in the corners. A Windows program is provided.">
+<META
+NAME="keywords" CONTENT="Regroupment Chess, Chess484, Fischer Random Chess, arrangement, relocation, swap">
+<link rel="canonical" href="http://mlwi.magix.net/bg/regroupmentchess.htm">
+<TITLE>Regroupment Chess - regroupment in the piece array</TITLE>
+</HEAD>   
+  
+  <BODY>
+   <H1>Regroupment Chess</H1>    
+      <H2 style="margin-bottom:20px;">(and Chess484)</H2>    
+      <H2>regroupment in the piece array</H2>   
+    <P class="centered">
+      <IMG ALT="Regroupment Chess" width="289" height="304" SRC="gifs/regroupmentboard.gif"></p><P><BR></P>
+      <P>
+          <span class="bigger">Abstract</span> 
+		  <BR><BR>
+		  The relocation method allows the players optionally to relocate either the king or queen before the play begins, whilst retaining the castling rights. The players can forgo this if they prefer the standard setup. The method enhances opening ramification, but also allows the players to remain in control. The resultant positions, 484 by number, are strategically congenial with the standard position and would be experienced as natural by most chessplayers.
+      <BR>
+      <BR>
+      <span class="bigger">Introduction</span>
+      <BR>
+      <BR>
+      <I>Regroupment Chess</I> is like standard chess except that the players can, before play begins, swap places of the king + queen and another piece except the rooks. The players in turn swap, firstly, the king, secondly, the queen. Thus, when the king is swapped (<I>relocated</I>), the other piece (the <I>relocatee</I>) ends up on the king&rsquo;s square. When the queen is swapped, the relocatee ends up on the queen&rsquo;s square. One restriction is that the bishops mustn&rsquo;t end up on the same square colour, and the king cannot become a relocatee (i.e. swapped by the queen). Black begins by swapping his king. Alternatively he can forgo this possibility. While the turn is still with Black, he now has the option to relocate his queen. When White has made his king + queen swap (or dispensed with this possibility) he immediately starts the game by making the first move. (Alternatively, the relocation can be performed in a different move order, B-W-B-W.) Note that it is possible for the king to swap with the kingside bishop, but this necessitates that the queen be swapped with one of the bishops so that the bishops end up on different colours.
+      <BR>
+      <BR>
+      Note that the king retains his castling rights even if it has been relocated. The castling rules are simple and derive from Chess960. King and rook end up on their usual squares. The only difference is that the king can make longer leaps than usual (or shorter, or none at all). All squares between king and rook must be empty, and all squares between the king and its landing square must be unthreatened. Neither of the pieces must have moved before. A related variant, Multi-chess (Chess57, <A HREF="chess57.htm" title="Multi-chess, swap variant">here</A>), represents a subset of Regroupment Chess.
+      <BR>
+      <BR>
+      <i>Curtailed castling</i>: as an alternative rule, the king may retain its castling right only if it is placed on any of the four central files. In other words, if the king is positioned on the g or b file, the castling right is forfeited. After all, such a safety move brings certain advantages so it should cost something. This restrictive rule would also enhance strategical predictability. <I>In an alternative variant the king is not allowed to swap with the 
+knights.</I> Thus, the king cannot immediately achieve a secure position.
+      <BR>
+      <BR>
+      <span class="bigger">Discussion</span>
+      <BR>
+      <BR>
+      With these relocation rules the rooks remain in their natural positions, and the bishops are always positioned so that there is still a choice to develop them on either of the queenside or kingside. This maintains the strategical ambiguity of the initial position, while sound positions are produced where no definitive advantage can be obtained. Black relocates first. Thusly white gets a chance to make a strategical decision and create an initiative, as in the standard position. The most conservative relocation, it seems, is to change place between king and queen, which is a convenient way of avoiding theory. Remember that the resultant castling positions are always the same as in standard chess.
+      <BR>
+      <BR>
+      Arguably, this method of reconfiguration of the initial array makes the procedure of randomization redundant (cmp. Fischer Random Chess, <A HREF="http://www.chessvariants.com/diffsetup.dir/fischer.html"  title="Fischer Random Chess">here</A>). Thus it answers to the chessplayer&rsquo;s predilection for remaining in control. As White is allowed the last word in the setup of the pieces, I believe that this gives him a slight possibility to maintain an advantage by choosing a position that suits his style. It is necessary to maintain the first move advantage in order to retain the strategical tension.
+      <BR>
+      <BR>
+      <B>regroup</B> : to alter the tactical formation of a military force (regroupment <I>n</I>)
+      <BR>
+      <BR>
+      A famous regroupment occurred in the battle between Julius&nbsp;Caesar and Gnaeus&nbsp;Pompeius, where Caesar regrouped behind his lines. The maneuver was essential as he could counter the cavalry attack on the right flank, and this was also how he won the battle.
+    <BR><BR>
+          <IMG ALT="Regroupment Chess, example" SRC="gifs/regroup1.gif" style="float:left; margin-right:8px; margin-bottom:9px;">
+          Black&nbsp;has&nbsp;relocated&nbsp;the king to f8 and the relocatee to e8. This necessitates that he swaps the queen with one of the bishops. White has relocated the king to c1, and the relocatee is thus placed on e1. He has dispensed with his queen relocation move by letting it stay on d1. Black can later castle short by moving the king to g8, or castle long by moving the king to c8, as usual.
+          </p><p style="clear:left;">
+      <BR>
+      <span class="bigger">Randomization</span>
+      <BR>
+      <BR>
+      The randomized version of Regroupment Chess (<I>Regroupment Random Chess</I>) implies that the initial position of each side is independently randomized according to the above rules of king and queen relocation. It is supported in the program. It is also called <I>Chess484</I> as there are 484 possible board positions. It is comparable to Fischer Random Chess. Regroupment Chess is designed to overcome the problem of opening monotony.
+	
+	</P><P><BR></P>
+<HR><p>
+		&#x261B;&nbsp;&nbsp;You can download my free Regroupment Chess program <A HREF="RegroupmentChess.zip" title="Regroupment Chess Windows program">here</A> (updated 2020-10-20), but you must own the software <A HREF="http://www.zillions-of-games.com">Zillions of Games</A> to be able to run it (I recommend the download version).
+      <BR>
+      <BR>&#x261B;&nbsp;&nbsp;See also related variants in my article about <A HREF="relocationvariants.htm">Relocation variants</A>.
+<BR><BR>&#x261B;&nbsp;&nbsp;You can play Chess484 (Regroupment Random Chess) online or by email <A HREF="http://www.chessvariants.org/index/msdisplay.php?itemid=MPchess484"  title="Regroupment Random Chess online">here.</A>
+          <BR>
+          <BR>
+		  
+&#x261B;&nbsp;&nbsp;Don&rsquo;t miss my other <A HREF="chessvar.htm">chess variants.</A></p>
+
+ <HR>    
+    <P>
+      </p><p style="clear:left;">
+      <BR>
+      <BR>
+      <BR>
+      &copy; Mats Winther, 2009 May
+      
+    </P><P><BR><BR><BR><BR><BR></P>
+    <P class="centered">
+      
+      <A HREF="index.htm" title="Traditional board games"><IMG ALT="HOME" SRC="home.gif"  ></A>
+     
+    </P><P><BR><BR><BR><BR><BR><BR><BR></P>
+  </BODY>
+</HTML>

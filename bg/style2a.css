@@ -1,0 +1,19 @@
+p {text-align:left;}
+span.small { font-size:87%; }
+.nobr  { white-space:nowrap; }
+a:link {color:#0000ff; text-decoration:none; font-family:'Courier New', Courier, monospace; font-size:95%;}
+a:visited {text-decoration:none; font-family:'Courier New', Courier, monospace; font-size:95%;}
+a:hover { text-decoration:underline; color:#ff0000; font-family:'Courier New', Courier, monospace; font-size:95%;}
+
+a.x:link {color:#0000ff; text-decoration:none; font-family:'Courier New', Courier, monospace;  font-size:110%;}
+a.x:visited {text-decoration:none; font-family:'Courier New', Courier, monospace;  font-size:110%;}
+a.x:hover { text-decoration:underline; color:#ff0000; font-family:'Courier New', Courier, monospace;  font-size:110%;}
+body 
+{
+background-color:#F8F8C8;
+font-family: 'Courier New', Courier, monospace;
+font-size:95%;
+text-align:center;
+line-height: 1.2;
+font-weight:300;
+}
