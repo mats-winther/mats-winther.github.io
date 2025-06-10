@@ -1,0 +1,126 @@
+<!DOCTYPE HTML>
+<HTML lang="en">
+<HEAD>   
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<LINK href="style4.css" rel="stylesheet">
+<META name="description" content=" Korean Chess (Changgi) is similar to Chinese Chess, but pieces move slightly differently. A Windows program is provided.">
+<META
+NAME="keywords" CONTENT="Korean Chess, Changgi, variant">
+<META NAME="author" CONTENT="Mats Winther"> <link rel="canonical" href="http://mlwi.magix.net/bg/koreanchess.htm">
+<TITLE>Korean Chess (Changgi)</TITLE>
+</HEAD>
+
+<BODY><H1>Korean Chess (Changgi)</H1>
+    <P class="cn"><br><br>
+    <img src="gifs/koreanboard.gif" width="409" height="457" alt="Korean Chess (Changgi)" >
+     
+    </P>
+
+    
+    <P><br><br>
+     
+      <span class="bigger">Introduction</span>
+      <BR>
+      <BR>
+      Korean Chess, or Changgi (Tjyang Keui), is similar to <A HREF="chinesechess.htm">Chinese Chess.</A> The pieces have similar names, but their moves differ somewhat from Chinese Chess. The goal is to checkmate the opponent&rsquo;s General. The river is unimportant to the rules, and there is no promotion. Soldiers, Chariots, and Cannons can move along diagonals when in either side&rsquo;s fortress. Players are allowed to interchange a Horse and Elephant if they want before the game commences. It&rsquo;s allowable to pass a move anytime, so stalemate does not exist (according to some sources pass is only allowed when no legal move exists. Variants which honour this rule have also been implemented).
+      <BR>
+      <BR>
+      Korean Chess takes longer to play than Chinese Chess, often 100 moves before a conclusion is reached. On the other hand, it is relatively fast paced. Initially the Cannons have no moves, so opening play usually involves getting the Cannons active. Despite the fact that Cannons can&rsquo;t move without screens they are quite mobile pieces. Korean Chess evolved either from Xiangqi or from a common ancestor. There has not been much written about Korean Chess. The first Korean Chess association was formed in Korea in 1956. Players are ranked using a Dan system similar to the one used for Go.
+      There are seven pieces in Korean Chess:
+      <BR>
+      <BR>
+      <B>Soldier</B> (Pawn)
+      <BR>
+      The Soldier can move (and capture) forward, left or right. While inside the enemy fortress, Soldiers can also move diagonally along the lines.
+      <BR>
+      <BR>
+      <B>Horse</B> (Knight)
+      <BR>
+      The Horse moves like a Knight in Chess, except that they can&rsquo;t jump over other pieces. They step outward on a row or column, then diagonally outward one step. If something is adjacent to a Horse on a row or column, it can&rsquo;t move in that direction.
+      <BR>
+      <BR>
+      <B>Elephant</B>
+      <BR>
+      The Elephant moves one step orthogonally, then two steps diagonally outward. All the intervening points must be empty.
+      <BR>
+      <BR>
+      <B>Chariot</B> (Rook)
+      <BR>
+      A Chariot moves like the Rook in Western Chess, that is, any number of squares along a row or column. While inside the opponent&rsquo;s fortress, Chariots can also move along the diagonal lines.
+      <BR>
+      <BR>
+      <B>Cannon</B>
+      <BR>
+      The Cannon moves like a Chariot, but can only move by leaping over an intervening piece, called a &quot;screen&quot;. Cannons may neither capture other Cannons nor use other Cannons as screens. While inside the opponent&rsquo;s fortress, Cannons can also jump along the diagonal lines.
+      <BR>
+      <BR>
+      <B>Mandarin</B> (Guard)
+      <BR>
+      The Mandarin must stay confined to the fortress, and can only move along the lines.
+      <BR>
+      <BR>
+      <B>General</B> (King)
+      <BR>
+      The General must stay confined to the fortress, and can only move along the lines. You cannot leave the General on the same column as the opponent&rsquo;s General if the spaces between the Generals are empty. The object of the game is to checkmate the opponent&rsquo;s General.
+      <BR>
+      <BR>
+      <span class="bigger">Discussion</span>
+      <BR>
+      <BR>
+      In this implementation I have applied tweaking to alter the relative values of the pieces. I have altered the pass procedure. Although the piece values will change somewhat during play, the initial values are as follows. I don&rsquo;t know if they are ideal but they clearly improve play. I tested my version against the version on the Zillions CD on a 1.6 GHz computer, at 15 sec per move. The colours were alternated and the openings went differently in each game. My version comfortably won five games out of five. The following relative piece values were implemented. The Chariot&rsquo;s value is defined as 1.00.
+      <BR>
+      <BR>
+    </P>
+    
+<p>          Chariot 1.00
+      <br><br>
+          Cannon 0.61
+     <br><br>
+          Horse 0.43
+     <br><br>
+          Elephant 0.32
+    <br><br>
+          Mandarin 0.27
+    <br><br>
+          Soldier 0.25</p>
+    
+    <P>
+      <BR>
+      <BR>
+    </P><hr>
+    <p>
+          <b>&bull;</b>&nbsp;&nbsp;You can download my free Korean Chess program <A HREF="KoreanChess.zip" title="Korean Chess Zillions program">here</A> (updated 2006-11-06), but you must own the software <A HREF="http://www.zillions-of-games.com"  >Zillions of Games</A> to be able to run it.
+          <BR>
+          <BR>
+          <b>&bull;</b>&nbsp;&nbsp;You can play Korean Chess by e-mail <A HREF="http://play.chessvariants.org/pbm/presets/korean_chess.html"  title="Play Korean Chess online" >here.</A>
+          <BR>
+          <BR>
+          <b>&bull;</b>&nbsp;&nbsp;Don&rsquo;t miss my other <A HREF="chessvar.htm">chess variants.</A>
+        </p><hr>
+    <P>
+      </p><p style="clear:left;">
+      <BR>
+      <BR>
+      <BR>
+      &copy;&nbsp;Mats Winther 2006
+      <BR>
+      <BR>
+    </P>
+    <P class="cn">
+      <BR>
+      <BR>
+      <A HREF="index.htm"  ><IMG ALT="" SRC="home.gif"  ></A>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+    </P>
+  </BODY>
+</HTML>
