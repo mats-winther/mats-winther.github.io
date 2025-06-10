@@ -1,0 +1,112 @@
+<!DOCTYPE HTML>
+<HTML lang="en">
+<HEAD> 
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<LINK href="style4b.css" rel="stylesheet">
+<META name="description" content="TascBase - a key-tree chess database.">
+<META
+NAME="keywords" CONTENT="TascBase, chess database">
+<META NAME="author" CONTENT="Mats Winther"> <link rel="canonical" href="http://mlwi.magix.net/tasc21.htm">
+
+  <TITLE>TascBase 2.1, chess database for DOS/Windows</TITLE>
+  <STYLE>
+      span.c2 {font-style: italic}
+      p.cn { text-align: center}
+  </STYLE>
+</HEAD>
+
+  <BODY><H1>TascBase</H1> <H2>a key-tree chess database</H2>
+   
+    
+          <P>
+            <B>TascBase 2.1</B> is a combined database and chess playing program (The King). It is a 32-bit DOS design (DOS4GW). It is both a tree and key database. It <I>combines</I> the <I>keys</I> with the <I>chess tree</I> in a way which is unique among databases. Keys are easily created from the actual position. Later, when games are imported, they are immediately placed under the relevant key. When you look at a particular position key, you can immediately retrieve the games which are placed under it. No game search is necessary, although game search, position search, and material search, etc., are also possible. TascBase has an interface to endgame databases (delivered with the program) and also interfaces Tasc SmartBoard. PGN, ChessBase (Cbf), NIC, and TascBase game formats can be imported and exported. If you want to import <I>commented</I> PGN you need to use the tool Pgntool.exe. TascBase has functions for chess editorship, that is, chess fonts, etc. TascBase is no longer being developed but the product is still (Jan 2007) being sold. This software is highly recommended considering the efficiency and speed with which one can work with openings and create opening theory. TascBase&nbsp;2.1 and its internal chess playing program, The King, can also handle Fischer Random Chess (i.e. its castling rules, randomization, storing of games, etc.). The copy-protection necessitates occasional refreshing from the CD-ROM, but the CD can be copied to a virtual drive on the harddrive.
+            <BR>
+            <BR>
+            <B>Comments on DOSBox</B>
+            <BR>
+            <BR>
+            Although the software works fine in WinXP, it might look neater in <A HREF="http://dosbox.sourceforge.net/">DOSBox.</A> In Windows 7 it works finely in DosBox. When installing in WinXP you must start the Command Interpreter (the Dos window) and install from there. Colours are configurable. <I>The ini-file should have a line VideoMode=SVGA to achieve the best looking screen.</I> This higher resolution also works in DOSBox, but it does not work directly under WinXP (in which case you get a black screen). Time-consuming operations (&quot;optimize database&quot;) are best run directly under WinXP. DOSBox should be configured to maximum speed (set &#39;cycles&#39; in the configuration file), and the program is then quite fast. To get an attractive graphics it might be necessary to change the <I>fullscreen</I> and <I>fullresolution</I> settings in the DosBox configuration file. When looking at games, and to have the ECO symbols displayed, you should remember to set the TascBase/Customize/Text Export to text (and not to PGN). In the ini-file, you should also set InternalHeap, KingHeap-Size, GameHeapSize, and MaxSelections to their maximum value. A feature which is not mentioned in the TascBase 2.1 manual is the following. You can have several ini-files where you may specify dfferent settings, e.g. <SPAN CLASS="nobr c2">BootSettings = settings\own_settings.tbs.</SPAN> But then you must specify the actual ini-file in the shortcut, e.g., <SPAN CLASS="nobr c2">C:\TBASE21\tascbase.exe -i=own.ini</SPAN>
+            <BR>
+            <BR>
+            <B>Screenshots.....</B>
+            <BR>
+            <BR>
+          </P>
+      
+    <P>
+      <BR>
+    </P>
+    <P>
+      <IMG ALT="TascBase main screen" SRC="tasc4.gif">
+    </P>
+   
+          <P>
+            <I>Fig 1.</I> The <I>main screen</I> where one can look at games, play against the strong and highly configurable chess program (The King 2.55), and also traverse the database keys. The bottom window displays the analysis of the chess engine.
+          </P>
+       
+    <P>
+      <BR>
+      <BR>
+    </P>
+    <P>
+      <IMG ALT="TascBase tree screen" SRC="tasc2.gif">
+    </P>
+   
+          <P>
+            <I>Fig 2.</I> The <I>tree screen</I>. It can be browsed with arrow keys and mouse. The Home button redraws the screen with actual position as root. The brown moves mark the occurrence of a transposition <I>from</I> this position (can be viewed with ctrl-T). The white moves mark the occurence of a transposition <I>to</I> this position. Colours are configurable. One can also move the pieces on the little board in the corner. Trees can be created from a game file and can be stored in different databases. Note that the length of the tree branches is optional, which is neat. The nodes can contain games that are much longer, and the branch can be expanded at any time from the moves of the underlying game(s). You can also add keys manually by moving pieces at the board and allowing these moves to be added as new keys in the tree. Keys can be commented with ECO symbols. Text comments, that pop up at the bottom line, can also be added.
+          </P>
+      
+    <P>
+      <BR>
+      <BR>
+    </P>
+    <P>
+      <IMG ALT="TascBase key list screen" SRC="tasc5.gif">
+    </P>
+    
+          <P>
+            <I>Fig 3.</I> This is the <I>key list</I> screen, which can be entered from any other screen. It displays the keys in the database in a different form. Here transpositions show up automatically. As you can see, games are already sorted under the current key. Games can be viewed at this screen, or brought down to the major (analysis engine) screen. Keys can be traversed by clicking on them.
+          </P>
+      
+    <P>
+      <BR>
+      <BR>
+    </P>
+    <P>
+      <IMG ALT="TascBase view game screen" SRC="tasc1.gif">
+    </P>
+   
+          <P>
+            <I>Fig 4.</I> This is the <I>view game</I> screen. Several different modes of game display are possible (ctrl-m). Games and variants can be traversed with arrow keys or mouse. Colours are configurable. Games, comments, and variants, can also be viewed from the main screen.
+          </P>
+         
+          <P><BR><BR></P>
+   
+    <P>
+     
+      See also <A HREF="http://www.ismenio.com/tasc/tascbase.html"  >archived version of the Tasc site</A>
+    </P>
+  
+       
+    <P>
+      M. Winther, Jan 2007
+      <BR>
+      <BR>
+      <BR>
+    </P>
+    <P class="cn">
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <A HREF="index.htm"  ><IMG ALT="" SRC="home.gif"  ></A>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+      <BR>
+    </P>
+  </BODY>
+</HTML>

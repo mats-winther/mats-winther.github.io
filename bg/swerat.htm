@@ -1,0 +1,491 @@
+<!DOCTYPE HTML>
+<HTML lang="en">
+<HEAD>   
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<LINK href="style4.css" rel="stylesheet" type="text/css">
+<META name="description" content="StandardRating is a chess rating program for Windows that handles Swedish chess rating.">
+<META
+NAME="keywords" CONTENT="rating program, chess, rating">
+<META NAME="author" CONTENT="Mats Winther"> <link rel="canonical" href="http://mlwi.magix.net/bg/swerat.htm">
+
+    <STYLE>
+	table {margin: 0 auto;}
+    th, td {border: 1px solid black; padding:3px; }
+    </STYLE>
+	
+<TITLE>Ratingprogram</TITLE>
+
+
+</HEAD>
+
+  <BODY>
+    <P class="cn"><br><br><span class="bigger">A program for the Swedish Rating Table (Lask)</span>
+      <BR>
+    </P>
+    <P><br></P>
+         
+          <TABLE >
+            <TR>
+              <TD>
+                Difference&nbsp;&nbsp;&nbsp;
+              </TD>
+              <TD>
+                The stronger
+                <BR>
+                wins
+              </TD>
+              <TD>
+                The weaker
+                <BR>
+                wins
+              </TD>
+              <TD>
+                The stronger
+                <BR>
+                draws
+              </TD>
+              <TD>
+                The weaker
+                <BR>
+                draws
+              </TD>
+              <TD>
+                The stronger
+                <BR>
+                loses
+              </TD>
+              <TD>
+                The weaker
+                <BR>
+                loses
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                0 - 10
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 16 (+8)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 16 (+8)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 0 (-0)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 0 (+0)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 16 (-8)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 16 (-8)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                11 - 33
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 15 (+7&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 17 (+8&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 1 (-&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 1 (+&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 17 (-8&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 15 (-7&frac12;)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                34 - 56
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 14 (+7)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 18 (+9)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 2 (-1)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 2 (+1)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 18 (-9)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 14 (-7)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                57 - 79
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 13 (+6&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 19 (+9&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 3 (-1&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 3 (+1&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 19 (-9&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 13 (-6&frac12;)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                80 - 102
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 12 (+6)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 20 (+10)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 4 (-2)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 4 (+2)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 20 (-10)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 12 (-6)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                103 - 126
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 11 (+5&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 21 (+10&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 5 (-2&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 5 (+2&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 21 (-10&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 11 (-5&frac12;)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                127 - 151
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 10 (+5)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 22 (+11)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 6 (-3)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 6 (+3)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 22 (-11)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 10 (-5)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                152 - 178
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 9 (+4&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 23 (+11&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 7 (-3&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 7 (+3&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 23 (-11&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 9 (-4&frac12;)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                179 - 207
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 8 (+4)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 24 (+12)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 8 (-4)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 8 (+4)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 24 (-12)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 8 (-4)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                208 - 236
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 7 (+3&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 25 (+12&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 9 (-4&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 9 (+4&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 25 (-12&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 7 (-3&frac12;)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                237 - 270
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 6 (+3)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 26 (+13)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 10 (-5)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 10 (+5)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 26 (-13)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 6 (-3)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                271 - 308
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 5 (+2&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 27 (+13&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 11 (-5&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 11 (+5&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 27 (-13&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 5 (-2&frac12;)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                309 - 352
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 4 (+2)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 28 (+14)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 12 (-6)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 12 (+6)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 28 (-14)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 4 (-2)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                353 - 409
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 3 (+1&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 29 (+14&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 13 (-6&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 13 (+6&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 29 (-14&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 3 (-1&frac12;)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                410 - 499
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 2 (+1)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 30 (+15)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 14 (-7)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 14 (+7)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 30 (-15)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 2 (-1)</SPAN>
+              </TD>
+            </TR>
+            <TR>
+              <TD>
+                500 -
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 1 (+&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 31 (+15&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 15 (-7&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">+ 15 (+7&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 31 (-15&frac12;)</SPAN>
+              </TD>
+              <TD>
+                <SPAN CLASS="small">- 1 (-&frac12;)</SPAN>
+              </TD>
+            </TR>
+          </TABLE>
+          <P>
+            (Please note that for players with a rating of 2200 and above, the increment is halved. For those players the number within parentheses should be used.)
+   <br><br>
+            My simple program &quot;StandardRating&quot; computes the rating according to the Swedish table. It halves the increment for players with a rating of 2200 and above. According to the Swedish system the rating is calculated anew every Jan&nbsp;1, May&nbsp;1 and Sept&nbsp;1. At those dates the official rating is set. This official rating is written into the file &quot;rating.txt&quot; under the name of the player (according to the example below). Below the official rating one may enter lines which describes his results against different players. In the first row the result against the opponent is entered (x&nbsp;= &frac12;). So in the example below Anders&nbsp;Andersson won against Nils&nbsp;Nilsson whose rating was 1898. The result and the rating of the opponent are obligatory. The rest of the line is mandatory. When the player&#39;s results are entered, you may enter other players too. But you have to separate the players with a&nbsp;#. Don&#39;t forget to enter&nbsp;# at the bottom of the file too. In the club below, there are only three members. Bengt&nbsp;Bengtsson hasn&#39;t played any games this season. You may of course create intermediate lists, i.e. you may create list at other dates than those listed, but then you shouldn&#39;t change the official rating line. After a new official rating has been established you must scrap the old data in the file &quot;rating.txt&quot; and also enter the new official ratings of the players. Whenever you want to create a new rating list you simply run the program &quot;StandardRating.exe&quot; and push the button. The program closes and the result is in the file &quot;resultat.txt&quot;.<br><br> 
+<span class="bigger">Example</span> (of the file &quot;rating.txt&quot;)
+            <BR>
+            <BR>
+            Anders Andersson
+            <BR>
+            2051
+            <BR>
+            1 1898 Nils Nilsson, Allsvenskan
+            <BR>
+            x 2000 Sven Svensson
+            <BR>
+            0 2450 ?
+            <BR>
+            1 1990 Karl Karlsson, KM
+            <BR>
+            #
+            <BR>
+            Karl Karlsson
+            <BR>
+            1990
+            <BR>
+            0 2051 Anders Andersson, KM
+            <BR>
+            #
+            <BR>
+            Bengt Bengtsson
+            <BR>
+            1880
+            <BR>
+            #
+          </P>
+          <P>
+            <BR>
+          </P>
+          <HR>
+          <P>
+            You can download the English version of the program &quot;StandardRating&quot; <A HREF="standard_e.zip">here.</A> Actual version is 1.1
+            <BR>
+          
+          </P><hr>
+          <P>
+    
+          <BR><br>
+          <P>
+            &copy; M. Winther 2001
+          </P>
+		   <P class="cn">
+      <BR>
+      <BR><br>
+      <A HREF="chessvar.htm"  ><IMG ALT="HOME" SRC="home.gif"  ></A>
+            <BR><br><br><br>
+          </P>
+
+  </BODY>
+</HTML>
