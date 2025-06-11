@@ -1,1 +1,1 @@
-http://mlwi.magix.net/sitemap.xml
+https://mats-winther.github.io/sitemap.xml
