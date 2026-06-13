@@ -2,6 +2,7 @@ span.nb { white-space:nowrap; }
 span.nobr { white-space:nowrap; }
 p.centered {text-align:center; }
 p.cn {text-align:center; }
+p.c4 {clear:left;}
 span.small { font-size:87%; line-height: 1.2;  }
 span.xsmall { font-size:75%; line-height: 1.2;  }
 sub { font-size:60%; }
