@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monradslottning i Schack</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-hover: #172554;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --border: #cbd5e1;
+      --accent: #2563eb;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 24px 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 850px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    header h1 {
+      margin: 0 0 6px;
+      font-size: 1.8rem;
+      color: var(--primary);
+    }
+
+    header p {
+      margin: 0;
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
+    }
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 1.3rem;
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 8px;
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    textarea {
+      width: 100%;
+      height: 120px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      resize: vertical;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 9px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: background-color 0.15s ease;
+    }
+
+    button:hover {
+      background-color: var(--primary-hover);
+    }
+
+    button.secondary {
+      background-color: #64748b;
+    }
+
+    button.secondary:hover {
+      background-color: #475569;
+    }
+
+    button.danger {
+      background-color: #dc2626;
+    }
+
+    button.danger:hover {
+      background-color: #b91c1c;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    th {
+      background-color: #f8fafc;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    .player-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .piece-icon {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid #94a3b8;
+      vertical-align: middle;
+    }
+
+    .piece-white {
+      background-color: #ffffff;
+      box-shadow: inset 0 0 2px rgba(0,0,0,0.3);
+    }
+
+    .piece-black {
+      background-color: #1e293b;
+    }
+
+    .score-badge {
+      background-color: #e2e8f0;
+      color: #1e293b;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .result-selector {
+      display: flex;
+      gap: 6px;
+    }
+
+    .result-selector label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #f1f5f9;
+      padding: 5px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid #cbd5e1;
+    }
+
+    .frirond-box {
+      background-color: #fef3c7;
+      color: #92400e;
+      padding: 10px 14px;
+      border-radius: 6px;
+      margin-top: 14px;
+      font-size: 0.95rem;
+      border: 1px solid #fde68a;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Monradslottning</h1>
+    <p>Turneringssystem för schack</p>
+  </header>
+
+  <!-- 1. INMATNING -->
+  <section id="section-setup" class="card">
+    <h2>1. Mata in spelare</h2>
+    <p style="color: #64748b; font-size: 0.9rem; margin-top: 0;">
+      Skriv ett namn per rad. Minst 2 spelare krävs.
+    </p>
+    <textarea id="input-players" placeholder="Magnus Carlsen&#10;Hikaru Nakamura&#10;Alireza Firouzja&#10;Ding Liren&#10;Fabiano Caruana&#10;Gukesh D&#10;Anish Giri"></textarea>
+    
+    <div class="btn-group">
+      <button onclick="startTournament()">🎲 Slumpa ordning & Starta rond 1</button>
+      <button class="secondary" onclick="loadSamplePlayers()">Fyll i exempel (7 spelare)</button>
+    </div>
+  </section>
+
+  <!-- 2. RONDVISNING -->
+  <section id="section-round" class="card hidden">
+    <h2><span id="round-title">Rond 1</span></h2>
+
+    <form id="form-round" onsubmit="event.preventDefault(); submitRoundResults();">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 55px;">Bord</th>
+            <th>Vit</th>
+            <th style="width: 200px;">Resultat</th>
+            <th>Svart</th>
+          </tr>
+        </thead>
+        <tbody id="pairings-tbody"></tbody>
+      </table>
+
+      <div id="bye-container"></div>
+
+      <div class="btn-group" style="margin-top: 18px;">
+        <button type="submit">✅ Bekräfta resultat & Lotta nästa rond</button>
+        <button type="button" class="secondary" onclick="finishTournamentEarly()">Avsluta tävling & Visa slutresultat</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- 3. AKTUELL TABELL -->
+  <section id="section-standings" class="card hidden">
+    <h2>Aktuell ställning</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 60px;">Plac</th>
+          <th>Spelare</th>
+          <th style="width: 80px;">Poäng</th>
+          <th style="width: 100px;">Vit / Svart</th>
+          <th style="width: 80px;">Frirond</th>
+        </tr>
+      </thead>
+      <tbody id="standings-tbody"></tbody>
+    </table>
+  </section>
+
+  <!-- 4. SLUTRESULTAT -->
+  <section id="section-final" class="card hidden">
+    <h2>🏆 Slutresultat</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 70px;">Plac</th>
+          <th>Spelare</th>
+        </tr>
+      </thead>
+      <tbody id="final-tbody"></tbody>
+    </table>
+
+    <div class="btn-group" style="margin-top: 20px;">
+      <button onclick="resetTournament()" class="danger">🔄 Ny tävling</button>
+      <button onclick="window.print()" class="secondary">🖨️ Skriv ut</button>
+    </div>
+  </section>
+</div>
+
+<script>
+  let players = [];
+  let currentRound = 1;
+  let currentPairings = [];
+  let currentByePlayer = null;
+
+  // Formaterar poäng utan "p" (t.ex. 0, ½, 1, 1½, 2)
+  function formatPoints(pts) {
+    if (pts % 1 === 0.5) {
+      const whole = Math.floor(pts);
+      return whole === 0 ? "½" : whole + "½";
+    }
+    return pts.toString();
+  }
+
+  function loadSamplePlayers() {
+    document.getElementById("input-players").value = 
+`Nils Grandelius
+Pia Cramling
+Ferdinand Hellers
+Tiger Hillarp Persson
+Ulf Andersson
+Evgenij Agrest
+Jonny Hector`;
+  }
+
+  // Starta turneringen
+  function startTournament() {
+    const text = document.getElementById("input-players").value.trim();
+    if (!text) {
+      alert("Mata in minst två spelare.");
+      return;
+    }
+
+    let names = text.split("\n").map(n => n.trim()).filter(n => n.length > 0);
+    if (names.length < 2) {
+      alert("Du måste ange minst 2 spelare.");
+      return;
+    }
+
+    // Slumpmässig lottning så de får startnummer 1, 2, 3...
+    for (let i = names.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [names[i], names[j]] = [names[j], names[i]];
+    }
+
+    players = names.map((name, index) => ({
+      id: index + 1,
+      name: name,
+      originalPos: index + 1, // Ursprungligt positionsnummer (algoritm)
+      currentPos: index + 1,  // Aktuellt positionsnummer (algoritm)
+      score: 0,
+      whites: 0,
+      blacks: 0,
+      hasHadBye: false,
+      opponents: []
+    }));
+
+    currentRound = 1;
+    document.getElementById("section-setup").classList.add("hidden");
+    document.getElementById("section-round").classList.remove("hidden");
+    document.getElementById("section-standings").classList.remove("hidden");
+
+    lotRound();
+  }
+
+  // Lottning av rond
+  function lotRound() {
+    document.getElementById("round-title").innerText = `Rond ${currentRound}`;
+    sortPlayers();
+
+    let pool = [...players];
+    currentByePlayer = null;
+
+    // Vid udda antal: sämsta placering som inte haft frirond får frirond
+    if (pool.length % 2 !== 0) {
+      for (let i = pool.length - 1; i >= 0; i--) {
+        if (!pool[i].hasHadBye) {
+          currentByePlayer = pool[i];
+          pool.splice(i, 1);
+          break;
+        }
+      }
+    }
+
+    currentPairings = generateMonradPairings(pool);
+
+    if (!currentPairings) {
+      alert("Inga fler giltiga möten kan skapas utan att samma spelare möts igen. Tävlingen avslutas.");
+      finishTournamentEarly();
+      return;
+    }
+
+    renderRoundView();
+    renderStandings();
+  }
+
+  // Rekursiv parning så ingen möts 2 ggr
+  function generateMonradPairings(pool) {
+    function solve(remaining) {
+      if (remaining.length === 0) return [];
+
+      const p1 = remaining[0];
+      for (let i = 1; i < remaining.length; i++) {
+        const p2 = remaining[i];
+        if (!p1.opponents.includes(p2.id)) {
+          const nextRemaining = remaining.filter((p, idx) => idx !== 0 && idx !== i);
+          const subResult = solve(nextRemaining);
+          if (subResult !== null) {
+            const match = determineColors(p1, p2);
+            return [match, ...subResult];
+          }
+        }
+      }
+      return null;
+    }
+    return solve(pool);
+  }
+
+  // Färgregler enligt dokumentet
+  function determineColors(pA, pB) {
+    const pLow = pA.currentPos < pB.currentPos ? pA : pB;
+    const pHigh = pA.currentPos < pB.currentPos ? pB : pA;
+
+    let whitePlayer, blackPlayer;
+
+    if (currentRound === 1) {
+      // Rond 1: Högst nummer får vit
+      whitePlayer = pHigh;
+      blackPlayer = pLow;
+    } else {
+      // 1. Minst antal vit får vit
+      if (pLow.whites < pHigh.whites) {
+        whitePlayer = pLow;
+        blackPlayer = pHigh;
+      } else if (pHigh.whites < pLow.whites) {
+        whitePlayer = pHigh;
+        blackPlayer = pLow;
+      } else {
+        // Om lägre positionsnumret har haft fler svarta, får denne vit
+        if (pLow.blacks > pHigh.blacks) {
+          whitePlayer = pLow;
+          blackPlayer = pHigh;
+        } else {
+          // Normalt får det högre positionsnumret vit
+          whitePlayer = pHigh;
+          blackPlayer = pLow;
+        }
+      }
+    }
+
+    return { white: whitePlayer, black: blackPlayer };
+  }
+
+  // Rendera rondbord
+  function renderRoundView() {
+    const tbody = document.getElementById("pairings-tbody");
+    tbody.innerHTML = "";
+
+    currentPairings.forEach((match, idx) => {
+      const boardNum = idx + 1;
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td style="font-weight: bold; color: #64748b;">${boardNum}</td>
+        <td>
+          <div class="player-box">
+            <span class="piece-icon piece-white" title="Vit"></span>
+            <strong>${match.white.name}</strong>
+            <span class="score-badge">${formatPoints(match.white.score)}</span>
+          </div>
+        </td>
+        <td>
+          <div class="result-selector">
+            <label>
+              <input type="radio" name="board_${boardNum}" value="1-0" required>
+              <span>1 - 0</span>
+            </label>
+            <label>
+              <input type="radio" name="board_${boardNum}" value="0.5-0.5">
+              <span>½ - ½</span>
+            </label>
+            <label>
+              <input type="radio" name="board_${boardNum}" value="0-1">
+              <span>0 - 1</span>
+            </label>
+          </div>
+        </td>
+        <td>
+          <div class="player-box">
+            <span class="piece-icon piece-black" title="Svart"></span>
+            <strong>${match.black.name}</strong>
+            <span class="score-badge">${formatPoints(match.black.score)}</span>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const byeContainer = document.getElementById("bye-container");
+    if (currentByePlayer) {
+      byeContainer.innerHTML = `
+        <div class="frirond-box">
+          ℹ️ <strong>Frirond:</strong> ${currentByePlayer.name} (${formatPoints(currentByePlayer.score)}) tilldelas 1 poäng.
+        </div>
+      `;
+    } else {
+      byeContainer.innerHTML = "";
+    }
+  }
+
+  // Registrera rondresultat
+  function submitRoundResults() {
+    for (let i = 0; i < currentPairings.length; i++) {
+      const boardNum = i + 1;
+      const selectedRadio = document.querySelector(`input[name="board_${boardNum}"]:checked`);
+      if (!selectedRadio) {
+        alert(`Välj resultat för bord ${boardNum}!`);
+        return;
+      }
+
+      const match = currentPairings[i];
+      const val = selectedRadio.value;
+
+      match.white.opponents.push(match.black.id);
+      match.black.opponents.push(match.white.id);
+
+      match.white.whites++;
+      match.black.blacks++;
+
+      if (val === "1-0") {
+        match.white.score += 1;
+      } else if (val === "0.5-0.5") {
+        match.white.score += 0.5;
+        match.black.score += 0.5;
+      } else if (val === "0-1") {
+        match.black.score += 1;
+      }
+    }
+
+    if (currentByePlayer) {
+      currentByePlayer.score += 1;
+      currentByePlayer.hasHadBye = true;
+    }
+
+    currentRound++;
+    lotRound();
+  }
+
+  // Sortera spelare efter poäng och sedan ursprungligt startnummer
+  function sortPlayers() {
+    players.sort((a, b) => {
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      return a.originalPos - b.originalPos;
+    });
+
+    players.forEach((p, idx) => {
+      p.currentPos = idx + 1;
+    });
+  }
+
+  // Aktuell ställningstabell
+  function renderStandings() {
+    const tbody = document.getElementById("standings-tbody");
+    tbody.innerHTML = "";
+
+    players.forEach((p, idx) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="font-weight: 600; color: #64748b;">${idx + 1}</td>
+        <td><strong>${p.name}</strong></td>
+        <td><span class="score-badge">${formatPoints(p.score)}</span></td>
+        <td>⚪ ${p.whites} / ⚫ ${p.blacks}</td>
+        <td>${p.hasHadBye ? "Ja" : "—"}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Slutresultat
+  function finishTournamentEarly() {
+    sortPlayers();
+
+    document.getElementById("section-round").classList.add("hidden");
+    document.getElementById("section-standings").classList.add("hidden");
+    document.getElementById("section-final").classList.remove("hidden");
+
+    const tbody = document.getElementById("final-tbody");
+    tbody.innerHTML = "";
+
+    players.forEach((p, idx) => {
+      const tr = document.createElement("tr");
+      // Endast placering och "Namn Poäng" utan 'p' eller startnummer
+      tr.innerHTML = `
+        <td style="font-weight: bold; font-size: 1.05rem;">${idx + 1}</td>
+        <td style="font-size: 1.05rem;">
+          ${p.name} <strong>${formatPoints(p.score)}</strong>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function resetTournament() {
+    if (confirm("Vill du starta en ny turnering?")) {
+      location.reload();
+    }
+  }
+</script>
+
+</body>
+</html>
