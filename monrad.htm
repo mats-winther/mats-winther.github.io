@@ -225,7 +225,7 @@
     </p>
     <textarea id="input-players" placeholder="Magnus Carlsen&#10;Hikaru Nakamura&#10;Alireza Firouzja&#10;Ding Liren&#10;Fabiano Caruana&#10;Gukesh D&#10;Anish Giri"></textarea>
     
-    <!-- Dold input för filval om lokal fil behöver läsas -->
+    <!-- Dold input för lokal filväljare -->
     <input type="file" id="file-input" accept=".txt" class="hidden" onchange="handleFileSelect(event)">
 
     <div class="btn-group">
@@ -304,12 +304,12 @@
   let currentPairings = [];
   let currentByePlayer = null;
 
-  // Ladda in filen spelare.txt (via server/fetch, annars filväljare som reserv)
+  // Ladda in filen spelare.txt (via fetch/server, annars filväljare)
   function loadPlayersFile() {
     fetch('spelare.txt')
       .then(response => {
         if (!response.ok) {
-          throw new Error("Kunde inte hämta automatiskt");
+          throw new Error("Kunde inte hämta via fetch");
         }
         return response.text();
       })
@@ -317,7 +317,7 @@
         document.getElementById("input-players").value = text.trim();
       })
       .catch(() => {
-        // Om fetch misslyckas (t.ex. vid körning lokalt via file://), öppna filläsaren
+        // Reserv om webbläsaren blockerar file://
         document.getElementById('file-input').click();
       });
   }
@@ -333,7 +333,7 @@
     reader.readAsText(file, "UTF-8");
   }
 
-  // Formaterar poäng utan "p" (t.ex. 0, ½, 1, 1½, 2)
+  // Visning av poäng utan 'p' (0, ½, 1, 1½, 2...)
   function formatPoints(pts) {
     if (pts % 1 === 0.5) {
       const whole = Math.floor(pts);
@@ -353,7 +353,6 @@ Evgenij Agrest
 Jonny Hector`;
   }
 
-  // Starta turneringen
   function startTournament() {
     const text = document.getElementById("input-players").value.trim();
     if (!text) {
@@ -367,7 +366,7 @@ Jonny Hector`;
       return;
     }
 
-    // Slumpmässig lottning
+    // Slumpmässig lottning inför rond 1
     for (let i = names.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [names[i], names[j]] = [names[j], names[i]];
@@ -393,7 +392,6 @@ Jonny Hector`;
     lotRound();
   }
 
-  // Lottning av rond
   function lotRound() {
     document.getElementById("round-title").innerText = `Rond ${currentRound}`;
     sortPlayers();
@@ -423,7 +421,6 @@ Jonny Hector`;
     renderStandings();
   }
 
-  // Rekursiv parning så ingen möts 2 ggr
   function generateMonradPairings(pool) {
     function solve(remaining) {
       if (remaining.length === 0) return [];
@@ -445,7 +442,6 @@ Jonny Hector`;
     return solve(pool);
   }
 
-  // Färgregler
   function determineColors(pA, pB) {
     const pLow = pA.currentPos < pB.currentPos ? pA : pB;
     const pHigh = pA.currentPos < pB.currentPos ? pB : pA;
@@ -476,7 +472,6 @@ Jonny Hector`;
     return { white: whitePlayer, black: blackPlayer };
   }
 
-  // Rendera rondbord
   function renderRoundView() {
     const tbody = document.getElementById("pairings-tbody");
     tbody.innerHTML = "";
@@ -533,7 +528,6 @@ Jonny Hector`;
     }
   }
 
-  // Registrera rondresultat
   function submitRoundResults() {
     for (let i = 0; i < currentPairings.length; i++) {
       const boardNum = i + 1;
@@ -571,7 +565,6 @@ Jonny Hector`;
     lotRound();
   }
 
-  // Sortera spelare efter poäng och sedan ursprungligt startnummer
   function sortPlayers() {
     players.sort((a, b) => {
       if (b.score !== a.score) {
@@ -585,7 +578,6 @@ Jonny Hector`;
     });
   }
 
-  // Aktuell ställningstabell
   function renderStandings() {
     const tbody = document.getElementById("standings-tbody");
     tbody.innerHTML = "";
@@ -603,7 +595,6 @@ Jonny Hector`;
     });
   }
 
-  // Slutresultat
   function finishTournamentEarly() {
     sortPlayers();
 
