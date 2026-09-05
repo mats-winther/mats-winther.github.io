@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Ett enkelt lottningsprogram enligt Monrad som kan köras online.">
+  <meta name="author" content="Mats Winther">
+  <link rel="canonical" href="https://mats-winther.github.io/monrad.htm">
   <title>Monradslottning i Schack</title>
   <style>
     :root {
@@ -263,7 +266,7 @@
           <th style="width: 60px;">Plac</th>
           <th>Spelare</th>
           <th style="width: 80px;">Poäng</th>
-          <th style="width: 100px;">Vit / Svart</th>
+          <th style="white-space: nowrap; width: 130px;">Vit / Svart</th>
           <th style="width: 80px;">Frirond</th>
         </tr>
       </thead>
@@ -331,7 +334,7 @@ Jonny Hector`;
       return;
     }
 
-    // Slumpmässig lottning så de får startnummer 1, 2, 3...
+    // Slumpmässig lottning
     for (let i = names.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [names[i], names[j]] = [names[j], names[i]];
@@ -340,8 +343,8 @@ Jonny Hector`;
     players = names.map((name, index) => ({
       id: index + 1,
       name: name,
-      originalPos: index + 1, // Ursprungligt positionsnummer (algoritm)
-      currentPos: index + 1,  // Aktuellt positionsnummer (algoritm)
+      originalPos: index + 1,
+      currentPos: index + 1,
       score: 0,
       whites: 0,
       blacks: 0,
@@ -365,7 +368,6 @@ Jonny Hector`;
     let pool = [...players];
     currentByePlayer = null;
 
-    // Vid udda antal: sämsta placering som inte haft frirond får frirond
     if (pool.length % 2 !== 0) {
       for (let i = pool.length - 1; i >= 0; i--) {
         if (!pool[i].hasHadBye) {
@@ -410,7 +412,7 @@ Jonny Hector`;
     return solve(pool);
   }
 
-  // Färgregler enligt dokumentet
+  // Färgregler
   function determineColors(pA, pB) {
     const pLow = pA.currentPos < pB.currentPos ? pA : pB;
     const pHigh = pA.currentPos < pB.currentPos ? pB : pA;
@@ -418,11 +420,9 @@ Jonny Hector`;
     let whitePlayer, blackPlayer;
 
     if (currentRound === 1) {
-      // Rond 1: Högst nummer får vit
       whitePlayer = pHigh;
       blackPlayer = pLow;
     } else {
-      // 1. Minst antal vit får vit
       if (pLow.whites < pHigh.whites) {
         whitePlayer = pLow;
         blackPlayer = pHigh;
@@ -430,12 +430,10 @@ Jonny Hector`;
         whitePlayer = pHigh;
         blackPlayer = pLow;
       } else {
-        // Om lägre positionsnumret har haft fler svarta, får denne vit
         if (pLow.blacks > pHigh.blacks) {
           whitePlayer = pLow;
           blackPlayer = pHigh;
         } else {
-          // Normalt får det högre positionsnumret vit
           whitePlayer = pHigh;
           blackPlayer = pLow;
         }
@@ -565,7 +563,7 @@ Jonny Hector`;
         <td style="font-weight: 600; color: #64748b;">${idx + 1}</td>
         <td><strong>${p.name}</strong></td>
         <td><span class="score-badge">${formatPoints(p.score)}</span></td>
-        <td>⚪ ${p.whites} / ⚫ ${p.blacks}</td>
+        <td style="white-space: nowrap;">⚪ ${p.whites} / ⚫ ${p.blacks}</td>
         <td>${p.hasHadBye ? "Ja" : "—"}</td>
       `;
       tbody.appendChild(tr);
@@ -585,7 +583,6 @@ Jonny Hector`;
 
     players.forEach((p, idx) => {
       const tr = document.createElement("tr");
-      // Endast placering och "Namn Poäng" utan 'p' eller startnummer
       tr.innerHTML = `
         <td style="font-weight: bold; font-size: 1.05rem;">${idx + 1}</td>
         <td style="font-size: 1.05rem;">
