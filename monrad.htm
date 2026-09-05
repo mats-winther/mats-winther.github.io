@@ -225,7 +225,6 @@
     </p>
     <textarea id="input-players" placeholder="Magnus Carlsen&#10;Hikaru Nakamura&#10;Alireza Firouzja&#10;Ding Liren&#10;Fabiano Caruana&#10;Gukesh D&#10;Anish Giri"></textarea>
     
-    <!-- Dold input för lokal filväljare -->
     <input type="file" id="file-input" accept=".txt" class="hidden" onchange="handleFileSelect(event)">
 
     <div class="btn-group">
@@ -304,20 +303,16 @@
   let currentPairings = [];
   let currentByePlayer = null;
 
-  // Ladda in filen spelare.txt (via fetch/server, annars filväljare)
   function loadPlayersFile() {
     fetch('spelare.txt')
       .then(response => {
-        if (!response.ok) {
-          throw new Error("Kunde inte hämta via fetch");
-        }
+        if (!response.ok) throw new Error("Kunde inte hämta via fetch");
         return response.text();
       })
       .then(text => {
         document.getElementById("input-players").value = text.trim();
       })
       .catch(() => {
-        // Reserv om webbläsaren blockerar file://
         document.getElementById('file-input').click();
       });
   }
@@ -333,7 +328,6 @@
     reader.readAsText(file, "UTF-8");
   }
 
-  // Visning av poäng utan 'p' (0, ½, 1, 1½, 2...)
   function formatPoints(pts) {
     if (pts % 1 === 0.5) {
       const whole = Math.floor(pts);
@@ -366,7 +360,7 @@ Jonny Hector`;
       return;
     }
 
-    // Slumpmässig lottning inför rond 1
+    // Slumpmässig ordning inför rond 1
     for (let i = names.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [names[i], names[j]] = [names[j], names[i]];
@@ -528,15 +522,30 @@ Jonny Hector`;
     }
   }
 
-  function submitRoundResults() {
+  // Gemensam funktion för att registrera den pågående rondens resultat
+  function recordCurrentRoundResults() {
+    if (!currentPairings || currentPairings.length === 0) {
+      return { status: "empty" };
+    }
+
+    let filledCount = 0;
+    for (let i = 0; i < currentPairings.length; i++) {
+      if (document.querySelector(`input[name="board_${i + 1}"]:checked`)) {
+        filledCount++;
+      }
+    }
+
+    if (filledCount === 0) {
+      return { status: "empty" };
+    }
+
+    if (filledCount < currentPairings.length) {
+      return { status: "incomplete" };
+    }
+
     for (let i = 0; i < currentPairings.length; i++) {
       const boardNum = i + 1;
       const selectedRadio = document.querySelector(`input[name="board_${boardNum}"]:checked`);
-      if (!selectedRadio) {
-        alert(`Välj resultat för bord ${boardNum}!`);
-        return;
-      }
-
       const match = currentPairings[i];
       const val = selectedRadio.value;
 
@@ -559,6 +568,18 @@ Jonny Hector`;
     if (currentByePlayer) {
       currentByePlayer.score += 1;
       currentByePlayer.hasHadBye = true;
+      currentByePlayer = null;
+    }
+
+    currentPairings = [];
+    return { status: "success" };
+  }
+
+  function submitRoundResults() {
+    const res = recordCurrentRoundResults();
+    if (res.status === "empty" || res.status === "incomplete") {
+      alert("Fyll i resultat för samtliga bord innan du går till nästa rond!");
+      return;
     }
 
     currentRound++;
@@ -596,6 +617,30 @@ Jonny Hector`;
   }
 
   function finishTournamentEarly() {
+    // Om det finns bord utlagda i den aktuella ronden
+    if (currentPairings && currentPairings.length > 0) {
+      let filledCount = 0;
+      for (let i = 0; i < currentPairings.length; i++) {
+        if (document.querySelector(`input[name="board_${i + 1}"]:checked`)) {
+          filledCount++;
+        }
+      }
+
+      if (filledCount > 0 && filledCount < currentPairings.length) {
+        alert("Alla bord i den aktuella ronden är inte ifyllda. Fyll i samtliga bord för att ta med ronden, eller avmarkera alla för att avsluta utan ronden.");
+        return;
+      }
+
+      // Alla bord är ifyllda -> registrera resultaten
+      if (filledCount === currentPairings.length) {
+        recordCurrentRoundResults();
+      } else if (filledCount === 0 && currentRound > 1) {
+        if (!confirm(`Rond ${currentRound} har inga ifyllda resultat. Vill du avsluta och visa slutresultatet fram till och med rond ${currentRound - 1}?`)) {
+          return;
+        }
+      }
+    }
+
     sortPlayers();
 
     document.getElementById("section-round").classList.add("hidden");
