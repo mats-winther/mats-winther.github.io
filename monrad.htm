@@ -221,12 +221,16 @@
   <section id="section-setup" class="card">
     <h2>1. Mata in spelare</h2>
     <p style="color: #64748b; font-size: 0.9rem; margin-top: 0;">
-      Skriv ett namn per rad. Minst 2 spelare krävs.
+      Skriv ett namn per rad eller ladda in en textfil. Minst 2 spelare krävs.
     </p>
     <textarea id="input-players" placeholder="Magnus Carlsen&#10;Hikaru Nakamura&#10;Alireza Firouzja&#10;Ding Liren&#10;Fabiano Caruana&#10;Gukesh D&#10;Anish Giri"></textarea>
     
+    <!-- Dold input för filval om lokal fil behöver läsas -->
+    <input type="file" id="file-input" accept=".txt" class="hidden" onchange="handleFileSelect(event)">
+
     <div class="btn-group">
       <button onclick="startTournament()">🎲 Slumpa ordning & Starta rond 1</button>
+      <button class="secondary" onclick="loadPlayersFile()">📁 Ladda in spelare.txt</button>
       <button class="secondary" onclick="loadSamplePlayers()">Fyll i exempel (7 spelare)</button>
     </div>
   </section>
@@ -299,6 +303,35 @@
   let currentRound = 1;
   let currentPairings = [];
   let currentByePlayer = null;
+
+  // Ladda in filen spelare.txt (via server/fetch, annars filväljare som reserv)
+  function loadPlayersFile() {
+    fetch('spelare.txt')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Kunde inte hämta automatiskt");
+        }
+        return response.text();
+      })
+      .then(text => {
+        document.getElementById("input-players").value = text.trim();
+      })
+      .catch(() => {
+        // Om fetch misslyckas (t.ex. vid körning lokalt via file://), öppna filläsaren
+        document.getElementById('file-input').click();
+      });
+  }
+
+  function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById("input-players").value = e.target.result.trim();
+    };
+    reader.readAsText(file, "UTF-8");
+  }
 
   // Formaterar poäng utan "p" (t.ex. 0, ½, 1, 1½, 2)
   function formatPoints(pts) {
