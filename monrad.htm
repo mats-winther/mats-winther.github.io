@@ -283,8 +283,10 @@
     <table>
       <thead>
         <tr>
-          <th style="width: 70px;">Plac</th>
+          <th style="width: 60px;">Plac</th>
           <th>Spelare</th>
+          <th style="width: 90px;">Poäng</th>
+          <th style="width: 110px;">Kumulativt</th>
         </tr>
       </thead>
       <tbody id="final-tbody"></tbody>
@@ -372,6 +374,7 @@ Jonny Hector`;
       originalPos: index + 1,
       currentPos: index + 1,
       score: 0,
+      cumulativeScore: 0,
       whites: 0,
       blacks: 0,
       hasHadBye: false,
@@ -522,7 +525,6 @@ Jonny Hector`;
     }
   }
 
-  // Gemensam funktion för att registrera den pågående rondens resultat
   function recordCurrentRoundResults() {
     if (!currentPairings || currentPairings.length === 0) {
       return { status: "empty" };
@@ -571,6 +573,11 @@ Jonny Hector`;
       currentByePlayer = null;
     }
 
+    // Summera löpande total efter varje rond för varje spelare
+    players.forEach(p => {
+      p.cumulativeScore += p.score;
+    });
+
     currentPairings = [];
     return { status: "success" };
   }
@@ -586,6 +593,7 @@ Jonny Hector`;
     lotRound();
   }
 
+  // Vanlig Monrad-sortering under turneringens gång
   function sortPlayers() {
     players.sort((a, b) => {
       if (b.score !== a.score) {
@@ -596,6 +604,19 @@ Jonny Hector`;
 
     players.forEach((p, idx) => {
       p.currentPos = idx + 1;
+    });
+  }
+
+  // Sortering vid slutresultat: Poäng -> Kumulativt -> Ursprunglig lottning
+  function sortFinalStandings() {
+    players.sort((a, b) => {
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      if (b.cumulativeScore !== a.cumulativeScore) {
+        return b.cumulativeScore - a.cumulativeScore;
+      }
+      return a.originalPos - b.originalPos;
     });
   }
 
@@ -617,7 +638,6 @@ Jonny Hector`;
   }
 
   function finishTournamentEarly() {
-    // Om det finns bord utlagda i den aktuella ronden
     if (currentPairings && currentPairings.length > 0) {
       let filledCount = 0;
       for (let i = 0; i < currentPairings.length; i++) {
@@ -631,17 +651,16 @@ Jonny Hector`;
         return;
       }
 
-      // Alla bord är ifyllda -> registrera resultaten
       if (filledCount === currentPairings.length) {
         recordCurrentRoundResults();
-      } else if (filledCount === 0 && currentRound > 1) {
-        if (!confirm(`Rond ${currentRound} har inga ifyllda resultat. Vill du avsluta och visa slutresultatet fram till och med rond ${currentRound - 1}?`)) {
+      } else if (filledCount === 0) {
+        if (!confirm(`Rond ${currentRound} har inga ifyllda resultat. Vill du avsluta och visa slutresultatet ändå?`)) {
           return;
         }
       }
     }
 
-    sortPlayers();
+    sortFinalStandings();
 
     document.getElementById("section-round").classList.add("hidden");
     document.getElementById("section-standings").classList.add("hidden");
@@ -653,10 +672,10 @@ Jonny Hector`;
     players.forEach((p, idx) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td style="font-weight: bold; font-size: 1.05rem;">${idx + 1}</td>
-        <td style="font-size: 1.05rem;">
-          ${p.name} <strong>${formatPoints(p.score)}</strong>
-        </td>
+        <td style="font-weight: bold; color: #64748b;">${idx + 1}</td>
+        <td><strong>${p.name}</strong></td>
+        <td><span class="score-badge">${formatPoints(p.score)}</span></td>
+        <td style="font-weight: 600;">${formatPoints(p.cumulativeScore)}</td>
       `;
       tbody.appendChild(tr);
     });
