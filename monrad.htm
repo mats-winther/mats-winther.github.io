@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Ett enkelt lottningsprogram enligt Monrad som kan köras online.">
+  <meta name="description" content="Ett enkelt lottningssystem enligt Monrad för schack som kan köras direkt i webbläsaren.">
   <meta name="author" content="Mats Winther">
   <link rel="canonical" href="https://mats-winther.github.io/monrad.htm">
-  <title>Monradslottning i Schack</title>
+  <title>Monrads lottningssystem i schack</title>
   <style>
     :root {
       --primary: #1e3a8a;
@@ -213,28 +213,28 @@
 
 <div class="container">
   <header>
-    <h1>Monradslottning</h1>
-    <p>Turneringssystem för schack</p>
+    <h1>Monradlottning</h1>
+    <p>Lottningssystem för schackturneringar</p>
   </header>
 
-  <!-- 1. INMATNING -->
+  <!-- 1. START / SPELARLISTA -->
   <section id="section-setup" class="card">
-    <h2>1. Mata in spelare</h2>
+    <h2>1. Ange spelare</h2>
     <p style="color: #64748b; font-size: 0.9rem; margin-top: 0;">
-      Skriv ett namn per rad eller ladda in en textfil. Minst 2 spelare krävs.
+      Ange ett namn per rad eller ladda upp en textfil. Minst 2 spelare krävs.
     </p>
     <textarea id="input-players" placeholder="Magnus Carlsen&#10;Hikaru Nakamura&#10;Alireza Firouzja&#10;Ding Liren&#10;Fabiano Caruana&#10;Gukesh D&#10;Anish Giri"></textarea>
     
     <input type="file" id="file-input" accept=".txt" class="hidden" onchange="handleFileSelect(event)">
 
     <div class="btn-group">
-      <button onclick="startTournament()">🎲 Slumpa ordning & Starta rond 1</button>
-      <button class="secondary" onclick="loadPlayersFile()">📁 Ladda in spelare.txt</button>
-      <button class="secondary" onclick="loadSamplePlayers()">Fyll i exempel (7 spelare)</button>
+      <button onclick="startTournament()">🎲 Lottning & Starta Rond 1</button>
+      <button class="secondary" onclick="loadPlayersFile()">📁 Ladda players.txt</button>
+      <button class="secondary" onclick="loadSamplePlayers()">Exempel (7 spelare)</button>
     </div>
   </section>
 
-  <!-- 2. RONDVISNING -->
+  <!-- 2. RONDVY -->
   <section id="section-round" class="card hidden">
     <h2><span id="round-title">Rond 1</span></h2>
 
@@ -254,19 +254,20 @@
       <div id="bye-container"></div>
 
       <div class="btn-group" style="margin-top: 18px;">
-        <button type="submit">✅ Bekräfta resultat & Lotta nästa rond</button>
-        <button type="button" class="secondary" onclick="finishTournamentEarly()">Avsluta tävling & Visa slutresultat</button>
+        <button type="submit">✅ Bekräfta resultat & lotta nästa rond</button>
+        <button type="button" class="secondary" onclick="printRound()">🖨️ Skriv ut rond</button>
+        <button type="button" class="secondary" onclick="finishTournamentEarly()">Avsluta turneringen & visa slutställning</button>
       </div>
     </form>
   </section>
 
-  <!-- 3. AKTUELL TABELL -->
+  <!-- 3. AKTUELL STÄLLNING -->
   <section id="section-standings" class="card hidden">
     <h2>Aktuell ställning</h2>
     <table>
       <thead>
         <tr>
-          <th style="width: 60px;">Plac</th>
+          <th style="width: 60px;">Plac.</th>
           <th>Spelare</th>
           <th style="width: 80px;">Poäng</th>
           <th style="white-space: nowrap; width: 130px;">Vit / Svart</th>
@@ -277,24 +278,24 @@
     </table>
   </section>
 
-  <!-- 4. SLUTRESULTAT -->
+  <!-- 4. SLUTSTÄLLNING -->
   <section id="section-final" class="card hidden">
-    <h2>🏆 Slutresultat</h2>
+    <h2>🏆 Slutställning</h2>
     <table>
       <thead>
         <tr>
-          <th style="width: 60px;">Plac</th>
+          <th style="width: 60px;">Plac.</th>
           <th>Spelare</th>
           <th style="width: 90px;">Poäng</th>
-          <th style="width: 110px;">Kumulativt</th>
+          <th style="width: 110px;">Kumulativ</th>
         </tr>
       </thead>
       <tbody id="final-tbody"></tbody>
     </table>
 
     <div class="btn-group" style="margin-top: 20px;">
-      <button onclick="resetTournament()" class="danger">🔄 Ny tävling</button>
-      <button onclick="window.print()" class="secondary">🖨️ Skriv ut</button>
+      <button onclick="resetTournament()" class="danger">🔄 Ny turnering</button>
+      <button onclick="printFinalStandings()" class="secondary">🖨️ Skriv ut slutställning</button>
     </div>
   </section>
 </div>
@@ -306,9 +307,9 @@
   let currentByePlayer = null;
 
   function loadPlayersFile() {
-    fetch('spelare.txt')
+    fetch('players.txt')
       .then(response => {
-        if (!response.ok) throw new Error("Kunde inte hämta via fetch");
+        if (!response.ok) throw new Error("Kunde inte hämta players.txt");
         return response.text();
       })
       .then(text => {
@@ -340,19 +341,19 @@
 
   function loadSamplePlayers() {
     document.getElementById("input-players").value = 
-`Nils Grandelius
-Pia Cramling
-Ferdinand Hellers
-Tiger Hillarp Persson
-Ulf Andersson
-Evgenij Agrest
-Jonny Hector`;
+`Magnus Carlsen
+Hikaru Nakamura
+Alireza Firouzja
+Ding Liren
+Fabiano Caruana
+Gukesh D
+Anish Giri`;
   }
 
   function startTournament() {
     const text = document.getElementById("input-players").value.trim();
     if (!text) {
-      alert("Mata in minst två spelare.");
+      alert("Ange minst två spelare.");
       return;
     }
 
@@ -362,7 +363,7 @@ Jonny Hector`;
       return;
     }
 
-    // Slumpmässig ordning inför rond 1
+    // Slumpa startordning inför rond 1
     for (let i = names.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [names[i], names[j]] = [names[j], names[i]];
@@ -409,7 +410,7 @@ Jonny Hector`;
     currentPairings = generateMonradPairings(pool);
 
     if (!currentPairings) {
-      alert("Inga fler giltiga möten kan skapas utan att samma spelare möts igen. Tävlingen avslutas.");
+      alert("Det går inte att skapa fler giltiga lottningar utan att spelare möts igen. Turneringen avslutas.");
       finishTournamentEarly();
       return;
     }
@@ -517,7 +518,7 @@ Jonny Hector`;
     if (currentByePlayer) {
       byeContainer.innerHTML = `
         <div class="frirond-box">
-          ℹ️ <strong>Frirond:</strong> ${currentByePlayer.name} (${formatPoints(currentByePlayer.score)}) tilldelas 1 poäng.
+          ℹ️ <strong>Frirond:</strong> ${currentByePlayer.name} (${formatPoints(currentByePlayer.score)}) erhåller 1 poäng.
         </div>
       `;
     } else {
@@ -573,7 +574,7 @@ Jonny Hector`;
       currentByePlayer = null;
     }
 
-    // Summera löpande total efter varje rond för varje spelare
+    // Beräkna kumulativ särskiljning efter ronden
     players.forEach(p => {
       p.cumulativeScore += p.score;
     });
@@ -585,7 +586,7 @@ Jonny Hector`;
   function submitRoundResults() {
     const res = recordCurrentRoundResults();
     if (res.status === "empty" || res.status === "incomplete") {
-      alert("Fyll i resultat för samtliga bord innan du går till nästa rond!");
+      alert("Fyll i resultat för samtliga bord innan du går vidare till nästa rond!");
       return;
     }
 
@@ -593,7 +594,7 @@ Jonny Hector`;
     lotRound();
   }
 
-  // Vanlig Monrad-sortering under turneringens gång
+  // Standard Monrad-sortering under pågående turnering
   function sortPlayers() {
     players.sort((a, b) => {
       if (b.score !== a.score) {
@@ -607,7 +608,7 @@ Jonny Hector`;
     });
   }
 
-  // Sortering vid slutresultat: Poäng -> Kumulativt -> Ursprunglig lottning
+  // Slutlig sortering: Poäng -> Kumulativ poäng -> Startnummer
   function sortFinalStandings() {
     players.sort((a, b) => {
       if (b.score !== a.score) {
@@ -647,14 +648,14 @@ Jonny Hector`;
       }
 
       if (filledCount > 0 && filledCount < currentPairings.length) {
-        alert("Alla bord i den aktuella ronden är inte ifyllda. Fyll i samtliga bord för att ta med ronden, eller avmarkera alla för att avsluta utan ronden.");
+        alert("Alla bord i den pågående ronden är inte ifyllda. Fyll i alla resultat för att ta med ronden, eller rensa resultaten för att avsluta utan den.");
         return;
       }
 
       if (filledCount === currentPairings.length) {
         recordCurrentRoundResults();
       } else if (filledCount === 0) {
-        if (!confirm(`Rond ${currentRound} har inga ifyllda resultat. Vill du avsluta och visa slutresultatet ändå?`)) {
+        if (!confirm(`Rond ${currentRound} saknar ifyllda resultat. Vill du ändå avsluta och visa slutställningen?`)) {
           return;
         }
       }
@@ -682,9 +683,221 @@ Jonny Hector`;
   }
 
   function resetTournament() {
-    if (confirm("Vill du starta en ny turnering?")) {
+    if (confirm("Vill du påbörja en ny turnering?")) {
       location.reload();
     }
+  }
+
+  /* --- UTSKRIFTSFUNKTIONER (ÖPPNAR SEPARAT SIDA) --- */
+
+  function openPrintPage(pageTitle, contentHtml) {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      alert("Tillåt popup-fönster för den här sidan för att öppna utskriftsvyn.");
+      return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(`<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>${pageTitle}</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 28px;
+      color: #111827;
+      background: #ffffff;
+    }
+    h1 {
+      margin: 0 0 4px;
+      font-size: 1.5rem;
+      color: #0f172a;
+    }
+    h2 {
+      margin-top: 24px;
+      margin-bottom: 8px;
+      font-size: 1.15rem;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 4px;
+      color: #1e293b;
+    }
+    p {
+      margin: 0 0 16px;
+      color: #475569;
+      font-size: 0.9rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.95rem;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 7px 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #f1f5f9;
+      color: #334155;
+      font-weight: 600;
+    }
+    .bye-note {
+      margin-top: 12px;
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      font-size: 0.9rem;
+      border-radius: 4px;
+    }
+    .toolbar {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    .btn {
+      padding: 7px 14px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid #cbd5e1;
+      background-color: #f8fafc;
+    }
+    .btn-primary {
+      background-color: #1e3a8a;
+      color: white;
+      border-color: #1e3a8a;
+    }
+    @media print {
+      .toolbar {
+        display: none !important;
+      }
+      body {
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button class="btn btn-primary" onclick="window.print()">🖨️ Skriv ut</button>
+    <button class="btn" onclick="window.close()">Stäng</button>
+  </div>
+  ${contentHtml}
+</body>
+</html>`);
+    printWindow.document.close();
+    printWindow.focus();
+  }
+
+  function printRound() {
+    let pairingsHtml = `
+      <h1>Monradlottning — Rond ${currentRound}</h1>
+      <p>Datum: ${new Date().toLocaleDateString('sv-SE')}</p>
+      
+      <h2>Lottning Rond ${currentRound}</h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 50px;">Bord</th>
+            <th>Vit</th>
+            <th style="width: 130px; text-align: center;">Resultat</th>
+            <th>Svart</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    currentPairings.forEach((match, idx) => {
+      const boardNum = idx + 1;
+      const checked = document.querySelector(`input[name="board_${boardNum}"]:checked`);
+      const resultText = checked ? checked.value : "____ - ____";
+
+      pairingsHtml += `
+        <tr>
+          <td style="font-weight: bold; text-align: center;">${boardNum}</td>
+          <td>${match.white.name} (${formatPoints(match.white.score)})</td>
+          <td style="text-align: center; font-weight: bold;">${resultText}</td>
+          <td>${match.black.name} (${formatPoints(match.black.score)})</td>
+        </tr>
+      `;
+    });
+
+    pairingsHtml += `</tbody></table>`;
+
+    if (currentByePlayer) {
+      pairingsHtml += `
+        <div class="bye-note">
+          <strong>Frirond:</strong> ${currentByePlayer.name} (${formatPoints(currentByePlayer.score)}) erhåller 1 poäng.
+        </div>
+      `;
+    }
+
+    pairingsHtml += `
+      <h2>Ställning inför Rond ${currentRound}</h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 50px;">Plac.</th>
+            <th>Spelare</th>
+            <th style="width: 70px;">Poäng</th>
+            <th style="width: 110px;">Vit / Svart</th>
+            <th style="width: 70px;">Frirond</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    players.forEach((p, idx) => {
+      pairingsHtml += `
+        <tr>
+          <td style="text-align: center; font-weight: bold;">${idx + 1}</td>
+          <td>${p.name}</td>
+          <td style="font-weight: 600;">${formatPoints(p.score)}</td>
+          <td>${p.whites} / ${p.blacks}</td>
+          <td>${p.hasHadBye ? "Ja" : "—"}</td>
+        </tr>
+      `;
+    });
+
+    pairingsHtml += `</tbody></table>`;
+
+    openPrintPage(`Rond ${currentRound} - Monradlottning`, pairingsHtml);
+  }
+
+  function printFinalStandings() {
+    let finalHtml = `
+      <h1>Monradturnering — Slutställning</h1>
+      <p>Datum: ${new Date().toLocaleDateString('sv-SE')}</p>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 55px; text-align: center;">Plac.</th>
+            <th>Spelare</th>
+            <th style="width: 85px;">Poäng</th>
+            <th style="width: 120px;">Kumulativ</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    players.forEach((p, idx) => {
+      finalHtml += `
+        <tr>
+          <td style="text-align: center; font-weight: bold;">${idx + 1}</td>
+          <td><strong>${p.name}</strong></td>
+          <td style="font-weight: bold;">${formatPoints(p.score)}</td>
+          <td>${formatPoints(p.cumulativeScore)}</td>
+        </tr>
+      `;
+    });
+
+    finalHtml += `</tbody></table>`;
+
+    openPrintPage("Slutställning - Monradturnering", finalHtml);
   }
 </script>
 
