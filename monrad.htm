@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Ett enkelt lottningssystem enligt Monrad för schack som kan köras direkt i webbläsaren.">
+  <meta name="description" content="Ett enkelt Monrad-lottningssystem för schack som kan köras direkt i webbläsaren.">
   <meta name="author" content="Mats Winther">
   <link rel="canonical" href="https://mats-winther.github.io/monrad.htm">
   <title>Monrads lottningssystem i schack</title>
@@ -229,7 +229,7 @@
 
     <div class="btn-group">
       <button onclick="startTournament()">🎲 Lottning & Starta Rond 1</button>
-      <button class="secondary" onclick="loadPlayersFile()">📁 Ladda players.txt</button>
+      <button class="secondary" onclick="loadPlayersFile()">📁 Ladda spelare.txt</button>
       <button class="secondary" onclick="loadSamplePlayers()">Exempel (7 spelare)</button>
     </div>
   </section>
@@ -307,9 +307,9 @@
   let currentByePlayer = null;
 
   function loadPlayersFile() {
-    fetch('players.txt')
+    fetch('spelare.txt')
       .then(response => {
-        if (!response.ok) throw new Error("Kunde inte hämta players.txt");
+        if (!response.ok) throw new Error("Kunde inte hämta spelare.txt");
         return response.text();
       })
       .then(text => {
