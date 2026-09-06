@@ -201,6 +201,26 @@
       border: 1px solid #cbd5e1;
     }
 
+    .tiebreak-selector {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background-color: #f8fafc;
+      padding: 10px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 0.95rem;
+      margin-top: 14px;
+    }
+
+    .tiebreak-selector label {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+    }
+
     .bye-box {
       background-color: #fef3c7;
       color: #92400e;
@@ -233,6 +253,18 @@
     <textarea id="input-players" placeholder="Magnus Carlsen&#10;Hikaru Nakamura&#10;Alireza Firouzja&#10;Ding Liren&#10;Fabiano Caruana&#10;Gukesh D&#10;Anish Giri"></textarea>
     
     <input type="file" id="file-input" accept=".txt" class="hidden" onchange="handleFileSelect(event)">
+
+    <div class="tiebreak-selector">
+      <span style="font-weight: 600; color: #334155;">Tie-break system:</span>
+      <label>
+        <input type="radio" class="tb-radio" name="tb-choice-setup" value="cumulative" checked onchange="setTieBreak(this.value)">
+        Cumulative
+      </label>
+      <label>
+        <input type="radio" class="tb-radio" name="tb-choice-setup" value="buchholz" onchange="setTieBreak(this.value)">
+        Buchholz
+      </label>
+    </div>
 
     <div class="btn-group">
       <button onclick="startTournament()">🎲 Randomize & Start Round 1</button>
@@ -288,13 +320,26 @@
   <!-- 4. FINAL STANDINGS -->
   <section id="section-final" class="card hidden">
     <h2>🏆 Final Standings</h2>
+
+    <div class="tiebreak-selector" style="margin-top: 0; margin-bottom: 14px;">
+      <span style="font-weight: 600; color: #334155;">Tie-break system:</span>
+      <label>
+        <input type="radio" class="tb-radio" name="tb-choice-final" value="cumulative" checked onchange="setTieBreak(this.value)">
+        Cumulative
+      </label>
+      <label>
+        <input type="radio" class="tb-radio" name="tb-choice-final" value="buchholz" onchange="setTieBreak(this.value)">
+        Buchholz
+      </label>
+    </div>
+
     <table>
       <thead>
         <tr>
           <th style="width: 60px;">Rank</th>
           <th>Player</th>
           <th style="width: 90px;">Points</th>
-          <th style="width: 110px;">Cumulative</th>
+          <th id="th-tiebreak" style="width: 110px;">Cumulative</th>
         </tr>
       </thead>
       <tbody id="final-tbody"></tbody>
@@ -316,6 +361,19 @@
   let currentPairings = [];
   let currentByePlayer = null;
   let roundHistory = [];
+  let tieBreakSystem = "cumulative"; // "cumulative" or "buchholz"
+
+  function setTieBreak(val) {
+    tieBreakSystem = val;
+    // Keep both setup and final view radio buttons in sync
+    document.querySelectorAll('.tb-radio').forEach(r => {
+      r.checked = (r.value === val);
+    });
+
+    if (!document.getElementById("section-final").classList.contains("hidden")) {
+      renderFinalStandings();
+    }
+  }
 
   function loadPlayersFile() {
     fetch('players.txt')
@@ -387,6 +445,7 @@ Anish Giri`;
       currentPos: index + 1,
       score: 0,
       cumulativeScore: 0,
+      buchholz: 0,
       whites: 0,
       blacks: 0,
       hasHadBye: false,
@@ -635,13 +694,29 @@ Anish Giri`;
     });
   }
 
+  function calculateBuchholz() {
+    const map = new Map(players.map(p => [p.id, p]));
+    players.forEach(p => {
+      p.buchholz = p.opponents.reduce((sum, oppId) => {
+        const opp = map.get(oppId);
+        return sum + (opp ? opp.score : 0);
+      }, 0);
+    });
+  }
+
   function sortFinalStandings() {
+    calculateBuchholz();
+
     players.sort((a, b) => {
       if (b.score !== a.score) {
         return b.score - a.score;
       }
-      if (b.cumulativeScore !== a.cumulativeScore) {
-        return b.cumulativeScore - a.cumulativeScore;
+
+      const tbA = tieBreakSystem === "buchholz" ? a.buchholz : a.cumulativeScore;
+      const tbB = tieBreakSystem === "buchholz" ? b.buchholz : b.cumulativeScore;
+
+      if (tbB !== tbA) {
+        return tbB - tbA;
       }
       return a.originalPos - b.originalPos;
     });
@@ -662,6 +737,30 @@ Anish Giri`;
       `;
       tbody.appendChild(tr);
     });
+  }
+
+  function renderFinalStandings() {
+    sortFinalStandings();
+
+    const tbLabel = tieBreakSystem === "buchholz" ? "Buchholz" : "Cumulative";
+    document.getElementById("th-tiebreak").innerText = tbLabel;
+
+    const tbody = document.getElementById("final-tbody");
+    tbody.innerHTML = "";
+
+    players.forEach((p, idx) => {
+      const tr = document.createElement("tr");
+      const tbValue = tieBreakSystem === "buchholz" ? p.buchholz : p.cumulativeScore;
+      tr.innerHTML = `
+        <td style="font-weight: bold; color: #64748b;">${idx + 1}</td>
+        <td><strong>${p.name}</strong></td>
+        <td><span class="score-badge">${formatPoints(p.score)}</span></td>
+        <td style="font-weight: 600;">${formatPoints(tbValue)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById("final-matches-history").innerHTML = generateMatchesHistoryHtml();
   }
 
   function generateMatchesHistoryHtml() {
@@ -733,27 +832,11 @@ Anish Giri`;
       }
     }
 
-    sortFinalStandings();
-
     document.getElementById("section-round").classList.add("hidden");
     document.getElementById("section-standings").classList.add("hidden");
     document.getElementById("section-final").classList.remove("hidden");
 
-    const tbody = document.getElementById("final-tbody");
-    tbody.innerHTML = "";
-
-    players.forEach((p, idx) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td style="font-weight: bold; color: #64748b;">${idx + 1}</td>
-        <td><strong>${p.name}</strong></td>
-        <td><span class="score-badge">${formatPoints(p.score)}</span></td>
-        <td style="font-weight: 600;">${formatPoints(p.cumulativeScore)}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    document.getElementById("final-matches-history").innerHTML = generateMatchesHistoryHtml();
+    renderFinalStandings();
   }
 
   function resetTournament() {
@@ -951,6 +1034,8 @@ Anish Giri`;
   }
 
   function printFinalStandings() {
+    const tbLabel = tieBreakSystem === "buchholz" ? "Buchholz" : "Cumulative";
+
     let finalHtml = `
       <h1>Monrad Tournament — Final Standings</h1>
       <p>Date: ${new Date().toLocaleDateString('en-GB')}</p>
@@ -960,19 +1045,20 @@ Anish Giri`;
             <th style="width: 55px; text-align: center;">Rank</th>
             <th>Player</th>
             <th style="width: 85px;">Points</th>
-            <th style="width: 120px;">Cumulative</th>
+            <th style="width: 120px;">${tbLabel}</th>
           </tr>
         </thead>
         <tbody>
     `;
 
     players.forEach((p, idx) => {
+      const tbValue = tieBreakSystem === "buchholz" ? p.buchholz : p.cumulativeScore;
       finalHtml += `
         <tr>
           <td style="text-align: center; font-weight: bold;">${idx + 1}</td>
           <td><strong>${p.name}</strong></td>
           <td style="font-weight: bold;">${formatPoints(p.score)}</td>
-          <td>${formatPoints(p.cumulativeScore)}</td>
+          <td>${formatPoints(tbValue)}</td>
         </tr>
       `;
     });
