@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="A simple Monrad pairing system for chess that can be run online.">
+  <meta name="description" content="A simple Monrad pairing system for chess that runs directly in the browser.">
   <meta name="author" content="Mats Winther">
   <link rel="canonical" href="https://mats-winther.github.io/monrad-eng.htm">
-  <title>Monrad Pairing System in Chess</title>
+  <title>Monrad Chess Pairing System</title>
   <style>
     :root {
       --primary: #1e3a8a;
@@ -73,6 +73,13 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+
+    h3 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+      font-size: 1.05rem;
+      color: var(--primary);
     }
 
     textarea {
@@ -194,7 +201,7 @@
       border: 1px solid #cbd5e1;
     }
 
-    .frirond-box {
+    .bye-box {
       background-color: #fef3c7;
       color: #92400e;
       padding: 10px 14px;
@@ -213,24 +220,24 @@
 
 <div class="container">
   <header>
-    <h1>Monrad Pairings</h1>
-    <p>Chess tournament pairing system</p>
+    <h1>Monrad Pairing System</h1>
+    <p>Chess Tournament Management</p>
   </header>
 
-  <!-- 1. SETUP -->
+  <!-- 1. SETUP / PLAYERS LIST -->
   <section id="section-setup" class="card">
     <h2>1. Enter Players</h2>
     <p style="color: #64748b; font-size: 0.9rem; margin-top: 0;">
-      Enter one name per line or upload a text file. A minimum of 2 players is required.
+      Enter one name per line or load a text file. At least 2 players are required.
     </p>
     <textarea id="input-players" placeholder="Magnus Carlsen&#10;Hikaru Nakamura&#10;Alireza Firouzja&#10;Ding Liren&#10;Fabiano Caruana&#10;Gukesh D&#10;Anish Giri"></textarea>
     
     <input type="file" id="file-input" accept=".txt" class="hidden" onchange="handleFileSelect(event)">
 
     <div class="btn-group">
-      <button onclick="startTournament()">🎲 Shuffle & Start Round 1</button>
+      <button onclick="startTournament()">🎲 Randomize & Start Round 1</button>
       <button class="secondary" onclick="loadPlayersFile()">📁 Load players.txt</button>
-      <button class="secondary" onclick="loadSamplePlayers()">Fill Sample (7 players)</button>
+      <button class="secondary" onclick="loadSamplePlayers()">Sample (7 players)</button>
     </div>
   </section>
 
@@ -256,7 +263,7 @@
       <div class="btn-group" style="margin-top: 18px;">
         <button type="submit">✅ Confirm Results & Pair Next Round</button>
         <button type="button" class="secondary" onclick="printRound()">🖨️ Print Round</button>
-        <button type="button" class="secondary" onclick="finishTournamentEarly()">Finish Tournament & Show Final Standings</button>
+        <button type="button" class="secondary" onclick="finishTournamentEarly()">End tournament & show final standings</button>
       </div>
     </form>
   </section>
@@ -293,9 +300,12 @@
       <tbody id="final-tbody"></tbody>
     </table>
 
+    <h2 style="margin-top: 32px;">Matches Played Round by Round</h2>
+    <div id="final-matches-history"></div>
+
     <div class="btn-group" style="margin-top: 20px;">
       <button onclick="resetTournament()" class="danger">🔄 New Tournament</button>
-      <button onclick="printFinalStandings()" class="secondary">🖨️ Print Final Standings</button>
+      <button onclick="printFinalStandings()" class="secondary">🖨️ Print Final Standings & Games</button>
     </div>
   </section>
 </div>
@@ -305,11 +315,12 @@
   let currentRound = 1;
   let currentPairings = [];
   let currentByePlayer = null;
+  let roundHistory = [];
 
   function loadPlayersFile() {
     fetch('players.txt')
       .then(response => {
-        if (!response.ok) throw new Error("Could not fetch players.txt");
+        if (!response.ok) throw new Error("Could not load players.txt");
         return response.text();
       })
       .then(text => {
@@ -363,7 +374,7 @@ Anish Giri`;
       return;
     }
 
-    // Randomize initial seed order for round 1
+    // Shuffle initial order for round 1
     for (let i = names.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [names[i], names[j]] = [names[j], names[i]];
@@ -383,6 +394,7 @@ Anish Giri`;
     }));
 
     currentRound = 1;
+    roundHistory = [];
     document.getElementById("section-setup").classList.add("hidden");
     document.getElementById("section-round").classList.remove("hidden");
     document.getElementById("section-standings").classList.remove("hidden");
@@ -410,7 +422,7 @@ Anish Giri`;
     currentPairings = generateMonradPairings(pool);
 
     if (!currentPairings) {
-      alert("No more valid pairings can be made without repeating matchups. Tournament will finish.");
+      alert("Unable to generate more valid pairings without rematches. Ending tournament.");
       finishTournamentEarly();
       return;
     }
@@ -517,7 +529,7 @@ Anish Giri`;
     const byeContainer = document.getElementById("bye-container");
     if (currentByePlayer) {
       byeContainer.innerHTML = `
-        <div class="frirond-box">
+        <div class="bye-box">
           ℹ️ <strong>Bye:</strong> ${currentByePlayer.name} (${formatPoints(currentByePlayer.score)}) receives 1 point.
         </div>
       `;
@@ -546,6 +558,8 @@ Anish Giri`;
       return { status: "incomplete" };
     }
 
+    const roundMatches = [];
+
     for (let i = 0; i < currentPairings.length; i++) {
       const boardNum = i + 1;
       const selectedRadio = document.querySelector(`input[name="board_${boardNum}"]:checked`);
@@ -566,15 +580,29 @@ Anish Giri`;
       } else if (val === "0-1") {
         match.black.score += 1;
       }
+
+      roundMatches.push({
+        board: boardNum,
+        whiteName: match.white.name,
+        blackName: match.black.name,
+        result: val === "0.5-0.5" ? "½ - ½" : (val === "1-0" ? "1 - 0" : "0 - 1")
+      });
     }
 
+    let byeName = null;
     if (currentByePlayer) {
       currentByePlayer.score += 1;
       currentByePlayer.hasHadBye = true;
+      byeName = currentByePlayer.name;
       currentByePlayer = null;
     }
 
-    // Accumulate total after each round for tiebreak
+    roundHistory.push({
+      round: currentRound,
+      matches: roundMatches,
+      byePlayerName: byeName
+    });
+
     players.forEach(p => {
       p.cumulativeScore += p.score;
     });
@@ -594,7 +622,6 @@ Anish Giri`;
     lotRound();
   }
 
-  // Standard Monrad sorting during active rounds
   function sortPlayers() {
     players.sort((a, b) => {
       if (b.score !== a.score) {
@@ -608,7 +635,6 @@ Anish Giri`;
     });
   }
 
-  // Final sorting: Points -> Cumulative Score -> Initial Seed
   function sortFinalStandings() {
     players.sort((a, b) => {
       if (b.score !== a.score) {
@@ -638,6 +664,52 @@ Anish Giri`;
     });
   }
 
+  function generateMatchesHistoryHtml() {
+    if (roundHistory.length === 0) {
+      return "<p><em>No rounds have been completed yet.</em></p>";
+    }
+
+    let html = "";
+    roundHistory.forEach(r => {
+      html += `
+        <h3>Round ${r.round}</h3>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 55px;">Board</th>
+              <th>White</th>
+              <th style="width: 140px; text-align: center;">Result</th>
+              <th>Black</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      r.matches.forEach(m => {
+        html += `
+          <tr>
+            <td style="font-weight: bold; color: #64748b;">${m.board}</td>
+            <td>${m.whiteName}</td>
+            <td style="text-align: center; font-weight: bold;">${m.result}</td>
+            <td>${m.blackName}</td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table>`;
+
+      if (r.byePlayerName) {
+        html += `
+          <div class="bye-box" style="margin-top: 8px;">
+            ℹ️ <strong>Bye (1 pt):</strong> ${r.byePlayerName}
+          </div>
+        `;
+      }
+    });
+
+    return html;
+  }
+
   function finishTournamentEarly() {
     if (currentPairings && currentPairings.length > 0) {
       let filledCount = 0;
@@ -648,14 +720,14 @@ Anish Giri`;
       }
 
       if (filledCount > 0 && filledCount < currentPairings.length) {
-        alert("Not all boards in the current round are entered. Please enter all results to include this round, or clear all results to finish without it.");
+        alert("Not all boards in the current round are filled in. Enter all results to include the round, or clear results to end without it.");
         return;
       }
 
       if (filledCount === currentPairings.length) {
         recordCurrentRoundResults();
       } else if (filledCount === 0) {
-        if (!confirm(`Round ${currentRound} has no entered results. Do you want to finish and show final standings anyway?`)) {
+        if (!confirm(`Round ${currentRound} has no recorded results. Do you still want to finish and show the final standings?`)) {
           return;
         }
       }
@@ -680,6 +752,8 @@ Anish Giri`;
       `;
       tbody.appendChild(tr);
     });
+
+    document.getElementById("final-matches-history").innerHTML = generateMatchesHistoryHtml();
   }
 
   function resetTournament() {
@@ -688,12 +762,12 @@ Anish Giri`;
     }
   }
 
-  /* --- PRINT FUNCTIONS (OPEN SEPARATE CLEAN PAGES) --- */
+  /* --- PRINT FUNCTIONS --- */
 
   function openPrintPage(pageTitle, contentHtml) {
     const printWindow = window.open("", "_blank");
     if (!printWindow) {
-      alert("Please allow pop-ups for this site to open the printable sheet.");
+      alert("Please allow popups for this site to open the print view.");
       return;
     }
 
@@ -723,6 +797,12 @@ Anish Giri`;
       padding-bottom: 4px;
       color: #1e293b;
     }
+    h3 {
+      margin-top: 18px;
+      margin-bottom: 6px;
+      font-size: 1rem;
+      color: #1e3a8a;
+    }
     p {
       margin: 0 0 16px;
       color: #475569;
@@ -731,7 +811,8 @@ Anish Giri`;
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
+      margin-top: 8px;
+      margin-bottom: 12px;
       font-size: 0.95rem;
     }
     th, td {
@@ -744,12 +825,13 @@ Anish Giri`;
       color: #334155;
       font-weight: 600;
     }
-    .bye-note {
-      margin-top: 12px;
-      padding: 8px 12px;
+    .bye-box {
+      margin-top: 6px;
+      margin-bottom: 14px;
+      padding: 6px 10px;
       border: 1px solid #cbd5e1;
       background: #f8fafc;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       border-radius: 4px;
     }
     .toolbar {
@@ -795,10 +877,10 @@ Anish Giri`;
 
   function printRound() {
     let pairingsHtml = `
-      <h1>Monrad Pairings — Round ${currentRound}</h1>
-      <p>Date: ${new Date().toLocaleDateString()}</p>
+      <h1>Monrad Pairing System — Round ${currentRound}</h1>
+      <p>Date: ${new Date().toLocaleDateString('en-GB')}</p>
       
-      <h2>Round ${currentRound} Pairings</h2>
+      <h2>Pairings Round ${currentRound}</h2>
       <table>
         <thead>
           <tr>
@@ -830,7 +912,7 @@ Anish Giri`;
 
     if (currentByePlayer) {
       pairingsHtml += `
-        <div class="bye-note">
+        <div class="bye-box">
           <strong>Bye:</strong> ${currentByePlayer.name} (${formatPoints(currentByePlayer.score)}) receives 1 point.
         </div>
       `;
@@ -844,7 +926,7 @@ Anish Giri`;
             <th style="width: 50px;">Rank</th>
             <th>Player</th>
             <th style="width: 70px;">Points</th>
-            <th style="width: 110px;">W / B</th>
+            <th style="width: 110px;">White / Black</th>
             <th style="width: 70px;">Bye</th>
           </tr>
         </thead>
@@ -865,13 +947,13 @@ Anish Giri`;
 
     pairingsHtml += `</tbody></table>`;
 
-    openPrintPage(`Round ${currentRound} - Monrad Pairings`, pairingsHtml);
+    openPrintPage(`Round ${currentRound} - Monrad Pairing System`, pairingsHtml);
   }
 
   function printFinalStandings() {
     let finalHtml = `
       <h1>Monrad Tournament — Final Standings</h1>
-      <p>Date: ${new Date().toLocaleDateString()}</p>
+      <p>Date: ${new Date().toLocaleDateString('en-GB')}</p>
       <table>
         <thead>
           <tr>
@@ -897,7 +979,10 @@ Anish Giri`;
 
     finalHtml += `</tbody></table>`;
 
-    openPrintPage("Final Standings - Monrad Tournament", finalHtml);
+    finalHtml += `<h2>All Played Games</h2>`;
+    finalHtml += generateMatchesHistoryHtml();
+
+    openPrintPage("Final Standings and Games - Monrad Tournament", finalHtml);
   }
 </script>
 
