@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Ett enkelt Monrad-lottningssystem för schack som kan köras direkt i webbläsaren.">
+  <meta name="description" content="Ett enkelt Monrad-lottningssystem för schack som körs direkt i webbläsaren.">
   <meta name="author" content="Mats Winther">
   <link rel="canonical" href="https://mats-winther.github.io/monrad.htm">
-  <title>Monrads lottningssystem i schack</title>
+  <title>Monrads lottningssystem för schack</title>
   <style>
     :root {
       --primary: #1e3a8a;
@@ -201,7 +201,27 @@
       border: 1px solid #cbd5e1;
     }
 
-    .frirond-box {
+    .tiebreak-selector {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background-color: #f8fafc;
+      padding: 10px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 0.95rem;
+      margin-top: 14px;
+    }
+
+    .tiebreak-selector label {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+    }
+
+    .bye-box {
       background-color: #fef3c7;
       color: #92400e;
       padding: 10px 14px;
@@ -220,28 +240,40 @@
 
 <div class="container">
   <header>
-    <h1>Monradlottning</h1>
-    <p>Lottningssystem för schackturneringar</p>
+    <h1>Monrads lottningssystem</h1>
+    <p>Turneringshantering för schack</p>
   </header>
 
-  <!-- 1. START / SPELARLISTA -->
+  <!-- 1. SPELARLISTA / INSTÄLLNINGAR -->
   <section id="section-setup" class="card">
     <h2>1. Ange spelare</h2>
     <p style="color: #64748b; font-size: 0.9rem; margin-top: 0;">
-      Ange ett namn per rad eller ladda upp en textfil. Minst 2 spelare krävs.
+      Ange ett namn per rad eller läs in en textfil. Minst 2 spelare krävs.
     </p>
     <textarea id="input-players" placeholder="Magnus Carlsen&#10;Hikaru Nakamura&#10;Alireza Firouzja&#10;Ding Liren&#10;Fabiano Caruana&#10;Gukesh D&#10;Anish Giri"></textarea>
     
     <input type="file" id="file-input" accept=".txt" class="hidden" onchange="handleFileSelect(event)">
 
+    <div class="tiebreak-selector">
+      <span style="font-weight: 600; color: #334155;">Särskiljning:</span>
+      <label>
+        <input type="radio" class="tb-radio" name="tb-choice-setup" value="cumulative" checked onchange="setTieBreak(this.value)">
+        Kumulativ
+      </label>
+      <label>
+        <input type="radio" class="tb-radio" name="tb-choice-setup" value="buchholz" onchange="setTieBreak(this.value)">
+        Buchholz
+      </label>
+    </div>
+
     <div class="btn-group">
-      <button onclick="startTournament()">🎲 Lottning & Starta Rond 1</button>
-      <button class="secondary" onclick="loadPlayersFile()">📁 Ladda spelare.txt</button>
+      <button onclick="startTournament()">🎲 Slumpa ordningen och starta rond 1</button>
+      <button class="secondary" onclick="loadPlayersFile()">📁 Läs in spelare.txt</button>
       <button class="secondary" onclick="loadSamplePlayers()">Exempel (7 spelare)</button>
     </div>
   </section>
 
-  <!-- 2. RONDVY -->
+  <!-- 2. RONDOVERSIKT -->
   <section id="section-round" class="card hidden">
     <h2><span id="round-title">Rond 1</span></h2>
 
@@ -263,7 +295,7 @@
       <div class="btn-group" style="margin-top: 18px;">
         <button type="submit">✅ Bekräfta resultat & lotta nästa rond</button>
         <button type="button" class="secondary" onclick="printRound()">🖨️ Skriv ut rond</button>
-        <button type="button" class="secondary" onclick="finishTournamentEarly()">Avsluta turneringen & visa slutställning</button>
+        <button type="button" class="secondary" onclick="finishTournamentEarly()">Avsluta turneringen och visa slutställning</button>
       </div>
     </form>
   </section>
@@ -274,7 +306,7 @@
     <table>
       <thead>
         <tr>
-          <th style="width: 60px;">Plac.</th>
+          <th style="width: 60px;">Plac</th>
           <th>Spelare</th>
           <th style="width: 80px;">Poäng</th>
           <th style="white-space: nowrap; width: 130px;">Vit / Svart</th>
@@ -288,13 +320,26 @@
   <!-- 4. SLUTSTÄLLNING -->
   <section id="section-final" class="card hidden">
     <h2>🏆 Slutställning</h2>
+
+    <div class="tiebreak-selector" style="margin-top: 0; margin-bottom: 14px;">
+      <span style="font-weight: 600; color: #334155;">Särskiljning:</span>
+      <label>
+        <input type="radio" class="tb-radio" name="tb-choice-final" value="cumulative" checked onchange="setTieBreak(this.value)">
+        Kumulativ
+      </label>
+      <label>
+        <input type="radio" class="tb-radio" name="tb-choice-final" value="buchholz" onchange="setTieBreak(this.value)">
+        Buchholz
+      </label>
+    </div>
+
     <table>
       <thead>
         <tr>
-          <th style="width: 60px;">Plac.</th>
+          <th style="width: 60px;">Plac</th>
           <th>Spelare</th>
           <th style="width: 90px;">Poäng</th>
-          <th style="width: 110px;">Kumulativ</th>
+          <th id="th-tiebreak" style="width: 110px;">Kumulativ</th>
         </tr>
       </thead>
       <tbody id="final-tbody"></tbody>
@@ -315,12 +360,25 @@
   let currentRound = 1;
   let currentPairings = [];
   let currentByePlayer = null;
-  let roundHistory = []; // Sparar alla spelade ronder, partier och resultat
+  let roundHistory = [];
+  let tieBreakSystem = "cumulative"; // "cumulative" eller "buchholz"
+
+  function setTieBreak(val) {
+    tieBreakSystem = val;
+    // Håll radioknapparna i start- och slutvyn synkroniserade
+    document.querySelectorAll('.tb-radio').forEach(r => {
+      r.checked = (r.value === val);
+    });
+
+    if (!document.getElementById("section-final").classList.contains("hidden")) {
+      renderFinalStandings();
+    }
+  }
 
   function loadPlayersFile() {
     fetch('spelare.txt')
       .then(response => {
-        if (!response.ok) throw new Error("Kunde inte hämta spelare.txt");
+        if (!response.ok) throw new Error("Kunde inte läsa in spelare.txt");
         return response.text();
       })
       .then(text => {
@@ -364,7 +422,7 @@ Anish Giri`;
   function startTournament() {
     const text = document.getElementById("input-players").value.trim();
     if (!text) {
-      alert("Ange minst två spelare.");
+      alert("Vänligen ange minst två spelare.");
       return;
     }
 
@@ -374,7 +432,7 @@ Anish Giri`;
       return;
     }
 
-    // Slumpa startordning inför rond 1
+    // Slumpa startordning för rond 1
     for (let i = names.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [names[i], names[j]] = [names[j], names[i]];
@@ -387,6 +445,7 @@ Anish Giri`;
       currentPos: index + 1,
       score: 0,
       cumulativeScore: 0,
+      buchholz: 0,
       whites: 0,
       blacks: 0,
       hasHadBye: false,
@@ -422,7 +481,7 @@ Anish Giri`;
     currentPairings = generateMonradPairings(pool);
 
     if (!currentPairings) {
-      alert("Det går inte att skapa fler giltiga lottningar utan att spelare möts igen. Turneringen avslutas.");
+      alert("Kunde inte generera fler giltiga lottningar utan återmatchen. Turneringen avslutas.");
       finishTournamentEarly();
       return;
     }
@@ -529,8 +588,8 @@ Anish Giri`;
     const byeContainer = document.getElementById("bye-container");
     if (currentByePlayer) {
       byeContainer.innerHTML = `
-        <div class="frirond-box">
-          ℹ️ <strong>Frirond:</strong> ${currentByePlayer.name} (${formatPoints(currentByePlayer.score)}) erhåller 1 poäng.
+        <div class="bye-box">
+          ℹ️ <strong>Frirond:</strong> ${currentByePlayer.name} (${formatPoints(currentByePlayer.score)}) får 1 poäng.
         </div>
       `;
     } else {
@@ -597,14 +656,12 @@ Anish Giri`;
       currentByePlayer = null;
     }
 
-    // Spara i historiken
     roundHistory.push({
       round: currentRound,
       matches: roundMatches,
       byePlayerName: byeName
     });
 
-    // Beräkna kumulativ särskiljning efter ronden
     players.forEach(p => {
       p.cumulativeScore += p.score;
     });
@@ -616,7 +673,7 @@ Anish Giri`;
   function submitRoundResults() {
     const res = recordCurrentRoundResults();
     if (res.status === "empty" || res.status === "incomplete") {
-      alert("Fyll i resultat för samtliga bord innan du går vidare till nästa rond!");
+      alert("Vänligen fyll i resultat för alla bord innan du går vidare till nästa rond!");
       return;
     }
 
@@ -637,13 +694,29 @@ Anish Giri`;
     });
   }
 
+  function calculateBuchholz() {
+    const map = new Map(players.map(p => [p.id, p]));
+    players.forEach(p => {
+      p.buchholz = p.opponents.reduce((sum, oppId) => {
+        const opp = map.get(oppId);
+        return sum + (opp ? opp.score : 0);
+      }, 0);
+    });
+  }
+
   function sortFinalStandings() {
+    calculateBuchholz();
+
     players.sort((a, b) => {
       if (b.score !== a.score) {
         return b.score - a.score;
       }
-      if (b.cumulativeScore !== a.cumulativeScore) {
-        return b.cumulativeScore - a.cumulativeScore;
+
+      const tbA = tieBreakSystem === "buchholz" ? a.buchholz : a.cumulativeScore;
+      const tbB = tieBreakSystem === "buchholz" ? b.buchholz : b.cumulativeScore;
+
+      if (tbB !== tbA) {
+        return tbB - tbA;
       }
       return a.originalPos - b.originalPos;
     });
@@ -664,6 +737,30 @@ Anish Giri`;
       `;
       tbody.appendChild(tr);
     });
+  }
+
+  function renderFinalStandings() {
+    sortFinalStandings();
+
+    const tbLabel = tieBreakSystem === "buchholz" ? "Buchholz" : "Kumulativ";
+    document.getElementById("th-tiebreak").innerText = tbLabel;
+
+    const tbody = document.getElementById("final-tbody");
+    tbody.innerHTML = "";
+
+    players.forEach((p, idx) => {
+      const tr = document.createElement("tr");
+      const tbValue = tieBreakSystem === "buchholz" ? p.buchholz : p.cumulativeScore;
+      tr.innerHTML = `
+        <td style="font-weight: bold; color: #64748b;">${idx + 1}</td>
+        <td><strong>${p.name}</strong></td>
+        <td><span class="score-badge">${formatPoints(p.score)}</span></td>
+        <td style="font-weight: 600;">${formatPoints(tbValue)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById("final-matches-history").innerHTML = generateMatchesHistoryHtml();
   }
 
   function generateMatchesHistoryHtml() {
@@ -702,7 +799,7 @@ Anish Giri`;
 
       if (r.byePlayerName) {
         html += `
-          <div class="frirond-box" style="margin-top: 8px;">
+          <div class="bye-box" style="margin-top: 8px;">
             ℹ️ <strong>Frirond (1 p):</strong> ${r.byePlayerName}
           </div>
         `;
@@ -722,45 +819,28 @@ Anish Giri`;
       }
 
       if (filledCount > 0 && filledCount < currentPairings.length) {
-        alert("Alla bord i den pågående ronden är inte ifyllda. Fyll i alla resultat för att ta med ronden, eller rensa resultaten för att avsluta utan den.");
+        alert("Alla bord i den aktuella ronden är inte ifyllda. Fyll i alla resultat för att inkludera ronden, eller rensa resultaten för att avsluta utan den.");
         return;
       }
 
       if (filledCount === currentPairings.length) {
         recordCurrentRoundResults();
       } else if (filledCount === 0) {
-        if (!confirm(`Rond ${currentRound} saknar ifyllda resultat. Vill du ändå avsluta och visa slutställningen?`)) {
+        if (!confirm(`Rond ${currentRound} har inga registrerade resultat. Vill du ändå avsluta och visa slutställningen?`)) {
           return;
         }
       }
     }
 
-    sortFinalStandings();
-
     document.getElementById("section-round").classList.add("hidden");
     document.getElementById("section-standings").classList.add("hidden");
     document.getElementById("section-final").classList.remove("hidden");
 
-    const tbody = document.getElementById("final-tbody");
-    tbody.innerHTML = "";
-
-    players.forEach((p, idx) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td style="font-weight: bold; color: #64748b;">${idx + 1}</td>
-        <td><strong>${p.name}</strong></td>
-        <td><span class="score-badge">${formatPoints(p.score)}</span></td>
-        <td style="font-weight: 600;">${formatPoints(p.cumulativeScore)}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    // Rendera partihistoriken under slutställningen
-    document.getElementById("final-matches-history").innerHTML = generateMatchesHistoryHtml();
+    renderFinalStandings();
   }
 
   function resetTournament() {
-    if (confirm("Vill du påbörja en ny turnering?")) {
+    if (confirm("Vill du starta en ny turnering?")) {
       location.reload();
     }
   }
@@ -770,7 +850,7 @@ Anish Giri`;
   function openPrintPage(pageTitle, contentHtml) {
     const printWindow = window.open("", "_blank");
     if (!printWindow) {
-      alert("Tillåt popup-fönster för den här sidan för att öppna utskriftsvyn.");
+      alert("Tillåt popup-fönster för att öppna utskriftsvyn.");
       return;
     }
 
@@ -828,7 +908,7 @@ Anish Giri`;
       color: #334155;
       font-weight: 600;
     }
-    .bye-note, .frirond-box {
+    .bye-box {
       margin-top: 6px;
       margin-bottom: 14px;
       padding: 6px 10px;
@@ -880,7 +960,7 @@ Anish Giri`;
 
   function printRound() {
     let pairingsHtml = `
-      <h1>Monradlottning — Rond ${currentRound}</h1>
+      <h1>Monrads lottningssystem — Rond ${currentRound}</h1>
       <p>Datum: ${new Date().toLocaleDateString('sv-SE')}</p>
       
       <h2>Lottning Rond ${currentRound}</h2>
@@ -915,18 +995,18 @@ Anish Giri`;
 
     if (currentByePlayer) {
       pairingsHtml += `
-        <div class="bye-note">
-          <strong>Frirond:</strong> ${currentByePlayer.name} (${formatPoints(currentByePlayer.score)}) erhåller 1 poäng.
+        <div class="bye-box">
+          <strong>Frirond:</strong> ${currentByePlayer.name} (${formatPoints(currentByePlayer.score)}) får 1 poäng.
         </div>
       `;
     }
 
     pairingsHtml += `
-      <h2>Ställning inför Rond ${currentRound}</h2>
+      <h2>Ställning före Rond ${currentRound}</h2>
       <table>
         <thead>
           <tr>
-            <th style="width: 50px;">Plac.</th>
+            <th style="width: 50px;">Plac</th>
             <th>Spelare</th>
             <th style="width: 70px;">Poäng</th>
             <th style="width: 110px;">Vit / Svart</th>
@@ -950,43 +1030,45 @@ Anish Giri`;
 
     pairingsHtml += `</tbody></table>`;
 
-    openPrintPage(`Rond ${currentRound} - Monradlottning`, pairingsHtml);
+    openPrintPage(`Rond ${currentRound} - Monrads lottningssystem`, pairingsHtml);
   }
 
   function printFinalStandings() {
+    const tbLabel = tieBreakSystem === "buchholz" ? "Buchholz" : "Kumulativ";
+
     let finalHtml = `
-      <h1>Monradturnering — Slutställning</h1>
+      <h1>Monrad-turnering — Slutställning</h1>
       <p>Datum: ${new Date().toLocaleDateString('sv-SE')}</p>
       <table>
         <thead>
           <tr>
-            <th style="width: 55px; text-align: center;">Plac.</th>
+            <th style="width: 55px; text-align: center;">Plac</th>
             <th>Spelare</th>
             <th style="width: 85px;">Poäng</th>
-            <th style="width: 120px;">Kumulativ</th>
+            <th style="width: 120px;">${tbLabel}</th>
           </tr>
         </thead>
         <tbody>
     `;
 
     players.forEach((p, idx) => {
+      const tbValue = tieBreakSystem === "buchholz" ? p.buchholz : p.cumulativeScore;
       finalHtml += `
         <tr>
           <td style="text-align: center; font-weight: bold;">${idx + 1}</td>
           <td><strong>${p.name}</strong></td>
           <td style="font-weight: bold;">${formatPoints(p.score)}</td>
-          <td>${formatPoints(p.cumulativeScore)}</td>
+          <td>${formatPoints(tbValue)}</td>
         </tr>
       `;
     });
 
     finalHtml += `</tbody></table>`;
 
-    // Lägg till samtliga partier rond för rond efter tabellen
-    finalHtml += `<h2>Samtliga spelade partier</h2>`;
+    finalHtml += `<h2>Alla spelade partier</h2>`;
     finalHtml += generateMatchesHistoryHtml();
 
-    openPrintPage("Slutställning och partier - Monradturnering", finalHtml);
+    openPrintPage("Slutställning och partier - Monrad-turnering", finalHtml);
   }
 </script>
 
