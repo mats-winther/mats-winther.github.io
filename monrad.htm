@@ -75,6 +75,13 @@
       align-items: center;
     }
 
+    h3 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+      font-size: 1.05rem;
+      color: var(--primary);
+    }
+
     textarea {
       width: 100%;
       height: 120px;
@@ -293,9 +300,12 @@
       <tbody id="final-tbody"></tbody>
     </table>
 
+    <h2 style="margin-top: 32px;">Spelade partier rond för rond</h2>
+    <div id="final-matches-history"></div>
+
     <div class="btn-group" style="margin-top: 20px;">
       <button onclick="resetTournament()" class="danger">🔄 Ny turnering</button>
-      <button onclick="printFinalStandings()" class="secondary">🖨️ Skriv ut slutställning</button>
+      <button onclick="printFinalStandings()" class="secondary">🖨️ Skriv ut slutställning & partier</button>
     </div>
   </section>
 </div>
@@ -305,6 +315,7 @@
   let currentRound = 1;
   let currentPairings = [];
   let currentByePlayer = null;
+  let roundHistory = []; // Sparar alla spelade ronder, partier och resultat
 
   function loadPlayersFile() {
     fetch('spelare.txt')
@@ -383,6 +394,7 @@ Anish Giri`;
     }));
 
     currentRound = 1;
+    roundHistory = [];
     document.getElementById("section-setup").classList.add("hidden");
     document.getElementById("section-round").classList.remove("hidden");
     document.getElementById("section-standings").classList.remove("hidden");
@@ -546,6 +558,8 @@ Anish Giri`;
       return { status: "incomplete" };
     }
 
+    const roundMatches = [];
+
     for (let i = 0; i < currentPairings.length; i++) {
       const boardNum = i + 1;
       const selectedRadio = document.querySelector(`input[name="board_${boardNum}"]:checked`);
@@ -566,13 +580,29 @@ Anish Giri`;
       } else if (val === "0-1") {
         match.black.score += 1;
       }
+
+      roundMatches.push({
+        board: boardNum,
+        whiteName: match.white.name,
+        blackName: match.black.name,
+        result: val === "0.5-0.5" ? "½ - ½" : (val === "1-0" ? "1 - 0" : "0 - 1")
+      });
     }
 
+    let byeName = null;
     if (currentByePlayer) {
       currentByePlayer.score += 1;
       currentByePlayer.hasHadBye = true;
+      byeName = currentByePlayer.name;
       currentByePlayer = null;
     }
+
+    // Spara i historiken
+    roundHistory.push({
+      round: currentRound,
+      matches: roundMatches,
+      byePlayerName: byeName
+    });
 
     // Beräkna kumulativ särskiljning efter ronden
     players.forEach(p => {
@@ -594,7 +624,6 @@ Anish Giri`;
     lotRound();
   }
 
-  // Standard Monrad-sortering under pågående turnering
   function sortPlayers() {
     players.sort((a, b) => {
       if (b.score !== a.score) {
@@ -608,7 +637,6 @@ Anish Giri`;
     });
   }
 
-  // Slutlig sortering: Poäng -> Kumulativ poäng -> Startnummer
   function sortFinalStandings() {
     players.sort((a, b) => {
       if (b.score !== a.score) {
@@ -636,6 +664,52 @@ Anish Giri`;
       `;
       tbody.appendChild(tr);
     });
+  }
+
+  function generateMatchesHistoryHtml() {
+    if (roundHistory.length === 0) {
+      return "<p><em>Inga ronder har slutförts ännu.</em></p>";
+    }
+
+    let html = "";
+    roundHistory.forEach(r => {
+      html += `
+        <h3>Rond ${r.round}</h3>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 55px;">Bord</th>
+              <th>Vit</th>
+              <th style="width: 140px; text-align: center;">Resultat</th>
+              <th>Svart</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      r.matches.forEach(m => {
+        html += `
+          <tr>
+            <td style="font-weight: bold; color: #64748b;">${m.board}</td>
+            <td>${m.whiteName}</td>
+            <td style="text-align: center; font-weight: bold;">${m.result}</td>
+            <td>${m.blackName}</td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table>`;
+
+      if (r.byePlayerName) {
+        html += `
+          <div class="frirond-box" style="margin-top: 8px;">
+            ℹ️ <strong>Frirond (1 p):</strong> ${r.byePlayerName}
+          </div>
+        `;
+      }
+    });
+
+    return html;
   }
 
   function finishTournamentEarly() {
@@ -680,6 +754,9 @@ Anish Giri`;
       `;
       tbody.appendChild(tr);
     });
+
+    // Rendera partihistoriken under slutställningen
+    document.getElementById("final-matches-history").innerHTML = generateMatchesHistoryHtml();
   }
 
   function resetTournament() {
@@ -688,7 +765,7 @@ Anish Giri`;
     }
   }
 
-  /* --- UTSKRIFTSFUNKTIONER (ÖPPNAR SEPARAT SIDA) --- */
+  /* --- UTSKRIFTSFUNKTIONER --- */
 
   function openPrintPage(pageTitle, contentHtml) {
     const printWindow = window.open("", "_blank");
@@ -723,6 +800,12 @@ Anish Giri`;
       padding-bottom: 4px;
       color: #1e293b;
     }
+    h3 {
+      margin-top: 18px;
+      margin-bottom: 6px;
+      font-size: 1rem;
+      color: #1e3a8a;
+    }
     p {
       margin: 0 0 16px;
       color: #475569;
@@ -731,7 +814,8 @@ Anish Giri`;
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
+      margin-top: 8px;
+      margin-bottom: 12px;
       font-size: 0.95rem;
     }
     th, td {
@@ -744,12 +828,13 @@ Anish Giri`;
       color: #334155;
       font-weight: 600;
     }
-    .bye-note {
-      margin-top: 12px;
-      padding: 8px 12px;
+    .bye-note, .frirond-box {
+      margin-top: 6px;
+      margin-bottom: 14px;
+      padding: 6px 10px;
       border: 1px solid #cbd5e1;
       background: #f8fafc;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       border-radius: 4px;
     }
     .toolbar {
@@ -897,7 +982,11 @@ Anish Giri`;
 
     finalHtml += `</tbody></table>`;
 
-    openPrintPage("Slutställning - Monradturnering", finalHtml);
+    // Lägg till samtliga partier rond för rond efter tabellen
+    finalHtml += `<h2>Samtliga spelade partier</h2>`;
+    finalHtml += generateMatchesHistoryHtml();
+
+    openPrintPage("Slutställning och partier - Monradturnering", finalHtml);
   }
 </script>
 
