@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A simple Monrad pairing system for chess that can be run online.">
+  <meta name="author" content="Mats Winther">
+  <link rel="canonical" href="https://mats-winther.github.io/monrad-eng.htm">
+  <title>Monrad Pairing System in Chess</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-hover: #172554;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --border: #cbd5e1;
+      --accent: #2563eb;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 24px 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 850px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    header h1 {
+      margin: 0 0 6px;
+      font-size: 1.8rem;
+      color: var(--primary);
+    }
+
+    header p {
+      margin: 0;
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
+    }
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      font-size: 1.3rem;
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 8px;
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    textarea {
+      width: 100%;
+      height: 120px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      resize: vertical;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 9px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: background-color 0.15s ease;
+    }
+
+    button:hover {
+      background-color: var(--primary-hover);
+    }
+
+    button.secondary {
+      background-color: #64748b;
+    }
+
+    button.secondary:hover {
+      background-color: #475569;
+    }
+
+    button.danger {
+      background-color: #dc2626;
+    }
+
+    button.danger:hover {
+      background-color: #b91c1c;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    th {
+      background-color: #f8fafc;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    .player-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .piece-icon {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid #94a3b8;
+      vertical-align: middle;
+    }
+
+    .piece-white {
+      background-color: #ffffff;
+      box-shadow: inset 0 0 2px rgba(0,0,0,0.3);
+    }
+
+    .piece-black {
+      background-color: #1e293b;
+    }
+
+    .score-badge {
+      background-color: #e2e8f0;
+      color: #1e293b;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .result-selector {
+      display: flex;
+      gap: 6px;
+    }
+
+    .result-selector label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #f1f5f9;
+      padding: 5px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid #cbd5e1;
+    }
+
+    .frirond-box {
+      background-color: #fef3c7;
+      color: #92400e;
+      padding: 10px 14px;
+      border-radius: 6px;
+      margin-top: 14px;
+      font-size: 0.95rem;
+      border: 1px solid #fde68a;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Monrad Pairings</h1>
+    <p>Chess tournament pairing system</p>
+  </header>
+
+  <!-- 1. SETUP -->
+  <section id="section-setup" class="card">
+    <h2>1. Enter Players</h2>
+    <p style="color: #64748b; font-size: 0.9rem; margin-top: 0;">
+      Enter one name per line or upload a text file. A minimum of 2 players is required.
+    </p>
+    <textarea id="input-players" placeholder="Magnus Carlsen&#10;Hikaru Nakamura&#10;Alireza Firouzja&#10;Ding Liren&#10;Fabiano Caruana&#10;Gukesh D&#10;Anish Giri"></textarea>
+    
+    <input type="file" id="file-input" accept=".txt" class="hidden" onchange="handleFileSelect(event)">
+
+    <div class="btn-group">
+      <button onclick="startTournament()">🎲 Shuffle & Start Round 1</button>
+      <button class="secondary" onclick="loadPlayersFile()">📁 Load players.txt</button>
+      <button class="secondary" onclick="loadSamplePlayers()">Fill Sample (7 players)</button>
+    </div>
+  </section>
+
+  <!-- 2. ROUND VIEW -->
+  <section id="section-round" class="card hidden">
+    <h2><span id="round-title">Round 1</span></h2>
+
+    <form id="form-round" onsubmit="event.preventDefault(); submitRoundResults();">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 55px;">Board</th>
+            <th>White</th>
+            <th style="width: 200px;">Result</th>
+            <th>Black</th>
+          </tr>
+        </thead>
+        <tbody id="pairings-tbody"></tbody>
+      </table>
+
+      <div id="bye-container"></div>
+
+      <div class="btn-group" style="margin-top: 18px;">
+        <button type="submit">✅ Confirm Results & Pair Next Round</button>
+        <button type="button" class="secondary" onclick="finishTournamentEarly()">Finish Tournament & Show Final Standings</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- 3. CURRENT STANDINGS -->
+  <section id="section-standings" class="card hidden">
+    <h2>Current Standings</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 60px;">Rank</th>
+          <th>Player</th>
+          <th style="width: 80px;">Points</th>
+          <th style="white-space: nowrap; width: 130px;">White / Black</th>
+          <th style="width: 80px;">Bye</th>
+        </tr>
+      </thead>
+      <tbody id="standings-tbody"></tbody>
+    </table>
+  </section>
+
+  <!-- 4. FINAL STANDINGS -->
+  <section id="section-final" class="card hidden">
+    <h2>🏆 Final Standings</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 60px;">Rank</th>
+          <th>Player</th>
+          <th style="width: 90px;">Points</th>
+          <th style="width: 110px;">Cumulative</th>
+        </tr>
+      </thead>
+      <tbody id="final-tbody"></tbody>
+    </table>
+
+    <div class="btn-group" style="margin-top: 20px;">
+      <button onclick="resetTournament()" class="danger">🔄 New Tournament</button>
+      <button onclick="window.print()" class="secondary">🖨️ Print</button>
+    </div>
+  </section>
+</div>
+
+<script>
+  let players = [];
+  let currentRound = 1;
+  let currentPairings = [];
+  let currentByePlayer = null;
+
+  function loadPlayersFile() {
+    fetch('players.txt')
+      .then(response => {
+        if (!response.ok) throw new Error("Could not fetch players.txt");
+        return response.text();
+      })
+      .then(text => {
+        document.getElementById("input-players").value = text.trim();
+      })
+      .catch(() => {
+        document.getElementById('file-input').click();
+      });
+  }
+
+  function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById("input-players").value = e.target.result.trim();
+    };
+    reader.readAsText(file, "UTF-8");
+  }
+
+  function formatPoints(pts) {
+    if (pts % 1 === 0.5) {
+      const whole = Math.floor(pts);
+      return whole === 0 ? "½" : whole + "½";
+    }
+    return pts.toString();
+  }
+
+  function loadSamplePlayers() {
+    document.getElementById("input-players").value = 
+`Magnus Carlsen
+Hikaru Nakamura
+Alireza Firouzja
+Ding Liren
+Fabiano Caruana
+Gukesh D
+Anish Giri`;
+  }
+
+  function startTournament() {
+    const text = document.getElementById("input-players").value.trim();
+    if (!text) {
+      alert("Please enter at least two players.");
+      return;
+    }
+
+    let names = text.split("\n").map(n => n.trim()).filter(n => n.length > 0);
+    if (names.length < 2) {
+      alert("You must enter at least 2 players.");
+      return;
+    }
+
+    // Randomize initial seed order for round 1
+    for (let i = names.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [names[i], names[j]] = [names[j], names[i]];
+    }
+
+    players = names.map((name, index) => ({
+      id: index + 1,
+      name: name,
+      originalPos: index + 1,
+      currentPos: index + 1,
+      score: 0,
+      cumulativeScore: 0,
+      whites: 0,
+      blacks: 0,
+      hasHadBye: false,
+      opponents: []
+    }));
+
+    currentRound = 1;
+    document.getElementById("section-setup").classList.add("hidden");
+    document.getElementById("section-round").classList.remove("hidden");
+    document.getElementById("section-standings").classList.remove("hidden");
+
+    lotRound();
+  }
+
+  function lotRound() {
+    document.getElementById("round-title").innerText = `Round ${currentRound}`;
+    sortPlayers();
+
+    let pool = [...players];
+    currentByePlayer = null;
+
+    if (pool.length % 2 !== 0) {
+      for (let i = pool.length - 1; i >= 0; i--) {
+        if (!pool[i].hasHadBye) {
+          currentByePlayer = pool[i];
+          pool.splice(i, 1);
+          break;
+        }
+      }
+    }
+
+    currentPairings = generateMonradPairings(pool);
+
+    if (!currentPairings) {
+      alert("No more valid pairings can be made without repeating matchups. Tournament will finish.");
+      finishTournamentEarly();
+      return;
+    }
+
+    renderRoundView();
+    renderStandings();
+  }
+
+  function generateMonradPairings(pool) {
+    function solve(remaining) {
+      if (remaining.length === 0) return [];
+
+      const p1 = remaining[0];
+      for (let i = 1; i < remaining.length; i++) {
+        const p2 = remaining[i];
+        if (!p1.opponents.includes(p2.id)) {
+          const nextRemaining = remaining.filter((p, idx) => idx !== 0 && idx !== i);
+          const subResult = solve(nextRemaining);
+          if (subResult !== null) {
+            const match = determineColors(p1, p2);
+            return [match, ...subResult];
+          }
+        }
+      }
+      return null;
+    }
+    return solve(pool);
+  }
+
+  function determineColors(pA, pB) {
+    const pLow = pA.currentPos < pB.currentPos ? pA : pB;
+    const pHigh = pA.currentPos < pB.currentPos ? pB : pA;
+
+    let whitePlayer, blackPlayer;
+
+    if (currentRound === 1) {
+      whitePlayer = pHigh;
+      blackPlayer = pLow;
+    } else {
+      if (pLow.whites < pHigh.whites) {
+        whitePlayer = pLow;
+        blackPlayer = pHigh;
+      } else if (pHigh.whites < pLow.whites) {
+        whitePlayer = pHigh;
+        blackPlayer = pLow;
+      } else {
+        if (pLow.blacks > pHigh.blacks) {
+          whitePlayer = pLow;
+          blackPlayer = pHigh;
+        } else {
+          whitePlayer = pHigh;
+          blackPlayer = pLow;
+        }
+      }
+    }
+
+    return { white: whitePlayer, black: blackPlayer };
+  }
+
+  function renderRoundView() {
+    const tbody = document.getElementById("pairings-tbody");
+    tbody.innerHTML = "";
+
+    currentPairings.forEach((match, idx) => {
+      const boardNum = idx + 1;
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td style="font-weight: bold; color: #64748b;">${boardNum}</td>
+        <td>
+          <div class="player-box">
+            <span class="piece-icon piece-white" title="White"></span>
+            <strong>${match.white.name}</strong>
+            <span class="score-badge">${formatPoints(match.white.score)}</span>
+          </div>
+        </td>
+        <td>
+          <div class="result-selector">
+            <label>
+              <input type="radio" name="board_${boardNum}" value="1-0" required>
+              <span>1 - 0</span>
+            </label>
+            <label>
+              <input type="radio" name="board_${boardNum}" value="0.5-0.5">
+              <span>½ - ½</span>
+            </label>
+            <label>
+              <input type="radio" name="board_${boardNum}" value="0-1">
+              <span>0 - 1</span>
+            </label>
+          </div>
+        </td>
+        <td>
+          <div class="player-box">
+            <span class="piece-icon piece-black" title="Black"></span>
+            <strong>${match.black.name}</strong>
+            <span class="score-badge">${formatPoints(match.black.score)}</span>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const byeContainer = document.getElementById("bye-container");
+    if (currentByePlayer) {
+      byeContainer.innerHTML = `
+        <div class="frirond-box">
+          ℹ️ <strong>Bye:</strong> ${currentByePlayer.name} (${formatPoints(currentByePlayer.score)}) receives 1 point.
+        </div>
+      `;
+    } else {
+      byeContainer.innerHTML = "";
+    }
+  }
+
+  function recordCurrentRoundResults() {
+    if (!currentPairings || currentPairings.length === 0) {
+      return { status: "empty" };
+    }
+
+    let filledCount = 0;
+    for (let i = 0; i < currentPairings.length; i++) {
+      if (document.querySelector(`input[name="board_${i + 1}"]:checked`)) {
+        filledCount++;
+      }
+    }
+
+    if (filledCount === 0) {
+      return { status: "empty" };
+    }
+
+    if (filledCount < currentPairings.length) {
+      return { status: "incomplete" };
+    }
+
+    for (let i = 0; i < currentPairings.length; i++) {
+      const boardNum = i + 1;
+      const selectedRadio = document.querySelector(`input[name="board_${boardNum}"]:checked`);
+      const match = currentPairings[i];
+      const val = selectedRadio.value;
+
+      match.white.opponents.push(match.black.id);
+      match.black.opponents.push(match.white.id);
+
+      match.white.whites++;
+      match.black.blacks++;
+
+      if (val === "1-0") {
+        match.white.score += 1;
+      } else if (val === "0.5-0.5") {
+        match.white.score += 0.5;
+        match.black.score += 0.5;
+      } else if (val === "0-1") {
+        match.black.score += 1;
+      }
+    }
+
+    if (currentByePlayer) {
+      currentByePlayer.score += 1;
+      currentByePlayer.hasHadBye = true;
+      currentByePlayer = null;
+    }
+
+    // Accumulate total after each round for tiebreak
+    players.forEach(p => {
+      p.cumulativeScore += p.score;
+    });
+
+    currentPairings = [];
+    return { status: "success" };
+  }
+
+  function submitRoundResults() {
+    const res = recordCurrentRoundResults();
+    if (res.status === "empty" || res.status === "incomplete") {
+      alert("Please enter results for all boards before proceeding to the next round!");
+      return;
+    }
+
+    currentRound++;
+    lotRound();
+  }
+
+  // Standard Monrad sorting during active rounds
+  function sortPlayers() {
+    players.sort((a, b) => {
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      return a.originalPos - b.originalPos;
+    });
+
+    players.forEach((p, idx) => {
+      p.currentPos = idx + 1;
+    });
+  }
+
+  // Final sorting: Points -> Cumulative Score -> Initial Seed
+  function sortFinalStandings() {
+    players.sort((a, b) => {
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      if (b.cumulativeScore !== a.cumulativeScore) {
+        return b.cumulativeScore - a.cumulativeScore;
+      }
+      return a.originalPos - b.originalPos;
+    });
+  }
+
+  function renderStandings() {
+    const tbody = document.getElementById("standings-tbody");
+    tbody.innerHTML = "";
+
+    players.forEach((p, idx) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="font-weight: 600; color: #64748b;">${idx + 1}</td>
+        <td><strong>${p.name}</strong></td>
+        <td><span class="score-badge">${formatPoints(p.score)}</span></td>
+        <td style="white-space: nowrap;">⚪ ${p.whites} / ⚫ ${p.blacks}</td>
+        <td>${p.hasHadBye ? "Yes" : "—"}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function finishTournamentEarly() {
+    if (currentPairings && currentPairings.length > 0) {
+      let filledCount = 0;
+      for (let i = 0; i < currentPairings.length; i++) {
+        if (document.querySelector(`input[name="board_${i + 1}"]:checked`)) {
+          filledCount++;
+        }
+      }
+
+      if (filledCount > 0 && filledCount < currentPairings.length) {
+        alert("Not all boards in the current round are entered. Please enter all results to include this round, or clear all results to finish without it.");
+        return;
+      }
+
+      if (filledCount === currentPairings.length) {
+        recordCurrentRoundResults();
+      } else if (filledCount === 0) {
+        if (!confirm(`Round ${currentRound} has no entered results. Do you want to finish and show final standings anyway?`)) {
+          return;
+        }
+      }
+    }
+
+    sortFinalStandings();
+
+    document.getElementById("section-round").classList.add("hidden");
+    document.getElementById("section-standings").classList.add("hidden");
+    document.getElementById("section-final").classList.remove("hidden");
+
+    const tbody = document.getElementById("final-tbody");
+    tbody.innerHTML = "";
+
+    players.forEach((p, idx) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="font-weight: bold; color: #64748b;">${idx + 1}</td>
+        <td><strong>${p.name}</strong></td>
+        <td><span class="score-badge">${formatPoints(p.score)}</span></td>
+        <td style="font-weight: 600;">${formatPoints(p.cumulativeScore)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function resetTournament() {
+    if (confirm("Do you want to start a new tournament?")) {
+      location.reload();
+    }
+  }
+</script>
+
+</body>
+</html>
