@@ -6,7 +6,7 @@
   <meta name="description" content="A simple Monrad pairing system for chess that runs directly in the browser.">
   <meta name="author" content="Mats Winther">
   <link rel="canonical" href="https://mats-winther.github.io/monrad-eng.htm">
-  <title>Monrad Chess Pairing System</title>
+  <title>Monrad Pairing System for Chess</title>
   <style>
     :root {
       --primary: #1e3a8a;
@@ -241,21 +241,22 @@
 <div class="container">
   <header>
     <h1>Monrad Pairing System</h1>
-    <p>Chess Tournament Management</p>
+    <p>Chess tournament management</p>
   </header>
 
-  <!-- 1. SETUP / PLAYERS LIST -->
+  <!-- 1. PLAYER SETUP -->
   <section id="section-setup" class="card">
     <h2>1. Enter Players</h2>
     <p style="color: #64748b; font-size: 0.9rem; margin-top: 0;">
-      Enter one name per line or load a text file. At least 2 players are required.
+      Enter one name per line (at least 2 players). Alternatively, load a text file or load an ongoing tournament.
     </p>
     <textarea id="input-players" placeholder="Magnus Carlsen&#10;Hikaru Nakamura&#10;Alireza Firouzja&#10;Ding Liren&#10;Fabiano Caruana&#10;Gukesh D&#10;Anish Giri"></textarea>
     
     <input type="file" id="file-input" accept=".txt" class="hidden" onchange="handleFileSelect(event)">
+    <input type="file" id="load-tournament-input" accept=".json" class="hidden" onchange="handleTournamentFileSelect(event)">
 
     <div class="tiebreak-selector">
-      <span style="font-weight: 600; color: #334155;">Tie-break system:</span>
+      <span style="font-weight: 600; color: #334155;">Tie-break:</span>
       <label>
         <input type="radio" class="tb-radio" name="tb-choice-setup" value="cumulative" checked onchange="setTieBreak(this.value)">
         Cumulative
@@ -267,13 +268,14 @@
     </div>
 
     <div class="btn-group">
-      <button onclick="startTournament()">🎲 Randomize & Start Round 1</button>
+      <button onclick="startTournament()">🎲 Shuffle order and start round 1</button>
       <button class="secondary" onclick="loadPlayersFile()">📁 Load players.txt</button>
       <button class="secondary" onclick="loadSamplePlayers()">Sample (7 players)</button>
+      <button class="secondary" onclick="triggerLoadTournament()">📂 Load tournament</button>
     </div>
   </section>
 
-  <!-- 2. ROUND VIEW -->
+  <!-- 2. ROUND OVERVIEW -->
   <section id="section-round" class="card hidden">
     <h2><span id="round-title">Round 1</span></h2>
 
@@ -293,9 +295,10 @@
       <div id="bye-container"></div>
 
       <div class="btn-group" style="margin-top: 18px;">
-        <button type="submit">✅ Confirm Results & Pair Next Round</button>
-        <button type="button" class="secondary" onclick="printRound()">🖨️ Print Round</button>
-        <button type="button" class="secondary" onclick="finishTournamentEarly()">End tournament & show final standings</button>
+        <button type="submit">✅ Confirm results & pair next round</button>
+        <button type="button" class="secondary" onclick="saveTournament()">💾 Save tournament</button>
+        <button type="button" class="secondary" onclick="printRound()">🖨️ Print round</button>
+        <button type="button" class="secondary" onclick="finishTournamentEarly()">Finish tournament & view final standings</button>
       </div>
     </form>
   </section>
@@ -322,7 +325,7 @@
     <h2>🏆 Final Standings</h2>
 
     <div class="tiebreak-selector" style="margin-top: 0; margin-bottom: 14px;">
-      <span style="font-weight: 600; color: #334155;">Tie-break system:</span>
+      <span style="font-weight: 600; color: #334155;">Tie-break:</span>
       <label>
         <input type="radio" class="tb-radio" name="tb-choice-final" value="cumulative" checked onchange="setTieBreak(this.value)">
         Cumulative
@@ -345,12 +348,12 @@
       <tbody id="final-tbody"></tbody>
     </table>
 
-    <h2 style="margin-top: 32px;">Matches Played Round by Round</h2>
+    <h2 style="margin-top: 32px;">Played matches round by round</h2>
     <div id="final-matches-history"></div>
 
     <div class="btn-group" style="margin-top: 20px;">
-      <button onclick="resetTournament()" class="danger">🔄 New Tournament</button>
-      <button onclick="printFinalStandings()" class="secondary">🖨️ Print Final Standings & Games</button>
+      <button onclick="resetTournament()" class="danger">🔄 New tournament</button>
+      <button onclick="printFinalStandings()" class="secondary">🖨️ Print final standings & matches</button>
     </div>
   </section>
 </div>
@@ -365,7 +368,6 @@
 
   function setTieBreak(val) {
     tieBreakSystem = val;
-    // Keep both setup and final view radio buttons in sync
     document.querySelectorAll('.tb-radio').forEach(r => {
       r.checked = (r.value === val);
     });
@@ -398,6 +400,108 @@
       document.getElementById("input-players").value = e.target.result.trim();
     };
     reader.readAsText(file, "UTF-8");
+  }
+
+  function triggerLoadTournament() {
+    document.getElementById("load-tournament-input").click();
+  }
+
+  function handleTournamentFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!data.players || !data.currentRound) {
+          throw new Error("Invalid tournament file format.");
+        }
+
+        players = data.players;
+        currentRound = data.currentRound;
+        roundHistory = data.roundHistory || [];
+        
+        if (data.tieBreakSystem) {
+          setTieBreak(data.tieBreakSystem);
+        }
+
+        currentByePlayer = data.currentByePlayerId
+          ? players.find(p => p.id === data.currentByePlayerId) || null
+          : null;
+
+        currentPairings = [];
+        const savedPairings = data.currentPairings || [];
+        for (let pair of savedPairings) {
+          const white = players.find(p => p.id === pair.whiteId);
+          const black = players.find(p => p.id === pair.blackId);
+          if (white && black) {
+            currentPairings.push({ white, black });
+          }
+        }
+
+        document.getElementById("section-setup").classList.add("hidden");
+        document.getElementById("section-final").classList.add("hidden");
+        document.getElementById("section-round").classList.remove("hidden");
+        document.getElementById("section-standings").classList.remove("hidden");
+
+        document.getElementById("round-title").innerText = `Round ${currentRound}`;
+        renderRoundView();
+
+        savedPairings.forEach((pair, idx) => {
+          if (pair.result) {
+            const radio = document.querySelector(`input[name="board_${idx + 1}"][value="${pair.result}"]`);
+            if (radio) radio.checked = true;
+          }
+        });
+
+        renderStandings();
+        alert(`Tournament loaded successfully at Round ${currentRound}!`);
+      } catch (err) {
+        alert("Failed to load tournament file: " + err.message);
+      } finally {
+        event.target.value = "";
+      }
+    };
+    reader.readAsText(file, "UTF-8");
+  }
+
+  function saveTournament() {
+    if (!players || players.length === 0) {
+      alert("There is no ongoing tournament to save.");
+      return;
+    }
+
+    const pairingsData = currentPairings.map((match, idx) => {
+      const checked = document.querySelector(`input[name="board_${idx + 1}"]:checked`);
+      return {
+        whiteId: match.white ? match.white.id : null,
+        blackId: match.black ? match.black.id : null,
+        result: checked ? checked.value : null
+      };
+    });
+
+    const tournamentState = {
+      fileSignature: "MONRAD_CHESS_SAVE",
+      savedAt: new Date().toISOString(),
+      tieBreakSystem: tieBreakSystem,
+      currentRound: currentRound,
+      players: players,
+      currentPairings: pairingsData,
+      currentByePlayerId: currentByePlayer ? currentByePlayer.id : null,
+      roundHistory: roundHistory
+    };
+
+    const jsonStr = JSON.stringify(tournamentState, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tournament_round_${currentRound}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   function formatPoints(pts) {
@@ -481,7 +585,7 @@ Anish Giri`;
     currentPairings = generateMonradPairings(pool);
 
     if (!currentPairings) {
-      alert("Unable to generate more valid pairings without rematches. Ending tournament.");
+      alert("Could not generate valid pairings without rematches. Finishing the tournament.");
       finishTournamentEarly();
       return;
     }
@@ -819,14 +923,14 @@ Anish Giri`;
       }
 
       if (filledCount > 0 && filledCount < currentPairings.length) {
-        alert("Not all boards in the current round are filled in. Enter all results to include the round, or clear results to end without it.");
+        alert("Not all boards in the current round have results entered. Please fill in all results to include this round, or clear them to finish without it.");
         return;
       }
 
       if (filledCount === currentPairings.length) {
         recordCurrentRoundResults();
       } else if (filledCount === 0) {
-        if (!confirm(`Round ${currentRound} has no recorded results. Do you still want to finish and show the final standings?`)) {
+        if (!confirm(`Round ${currentRound} has no entered results. Do you still want to finish and view final standings?`)) {
           return;
         }
       }
@@ -850,7 +954,7 @@ Anish Giri`;
   function openPrintPage(pageTitle, contentHtml) {
     const printWindow = window.open("", "_blank");
     if (!printWindow) {
-      alert("Please allow popups for this site to open the print view.");
+      alert("Please allow popups to open the print view.");
       return;
     }
 
@@ -1065,10 +1169,10 @@ Anish Giri`;
 
     finalHtml += `</tbody></table>`;
 
-    finalHtml += `<h2>All Played Games</h2>`;
+    finalHtml += `<h2>All played matches</h2>`;
     finalHtml += generateMatchesHistoryHtml();
 
-    openPrintPage("Final Standings and Games - Monrad Tournament", finalHtml);
+    openPrintPage("Final Standings and Matches - Monrad Tournament", finalHtml);
   }
 </script>
 
