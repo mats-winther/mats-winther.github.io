@@ -248,11 +248,12 @@
   <section id="section-setup" class="card">
     <h2>1. Ange spelare</h2>
     <p style="color: #64748b; font-size: 0.9rem; margin-top: 0;">
-      Ange ett namn per rad eller läs in en textfil. Minst 2 spelare krävs.
+      Ange ett namn per rad (minst 2 spelare). Alternativt, läs in en textfil eller ladda en pågående turnering.
     </p>
     <textarea id="input-players" placeholder="Magnus Carlsen&#10;Hikaru Nakamura&#10;Alireza Firouzja&#10;Ding Liren&#10;Fabiano Caruana&#10;Gukesh D&#10;Anish Giri"></textarea>
     
     <input type="file" id="file-input" accept=".txt" class="hidden" onchange="handleFileSelect(event)">
+    <input type="file" id="load-tournament-input" accept=".json" class="hidden" onchange="handleTournamentFileSelect(event)">
 
     <div class="tiebreak-selector">
       <span style="font-weight: 600; color: #334155;">Särskiljning:</span>
@@ -270,6 +271,7 @@
       <button onclick="startTournament()">🎲 Slumpa ordningen och starta rond 1</button>
       <button class="secondary" onclick="loadPlayersFile()">📁 Läs in spelare.txt</button>
       <button class="secondary" onclick="loadSamplePlayers()">Exempel (7 spelare)</button>
+      <button class="secondary" onclick="triggerLoadTournament()">📂 Ladda turnering</button>
     </div>
   </section>
 
@@ -294,6 +296,7 @@
 
       <div class="btn-group" style="margin-top: 18px;">
         <button type="submit">✅ Bekräfta resultat & lotta nästa rond</button>
+        <button type="button" class="secondary" onclick="saveTournament()">💾 Spara turnering</button>
         <button type="button" class="secondary" onclick="printRound()">🖨️ Skriv ut rond</button>
         <button type="button" class="secondary" onclick="finishTournamentEarly()">Avsluta turneringen och visa slutställning</button>
       </div>
@@ -398,6 +401,112 @@
       document.getElementById("input-players").value = e.target.result.trim();
     };
     reader.readAsText(file, "UTF-8");
+  }
+
+  function triggerLoadTournament() {
+    document.getElementById("load-tournament-input").click();
+  }
+
+  function handleTournamentFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!data.players || !data.currentRound) {
+          throw new Error("Ogiltigt format på turneringsfilen.");
+        }
+
+        players = data.players;
+        currentRound = data.currentRound;
+        roundHistory = data.roundHistory || [];
+        
+        if (data.tieBreakSystem) {
+          setTieBreak(data.tieBreakSystem);
+        }
+
+        // Återställ eventuell frirondspelare
+        currentByePlayer = data.currentByePlayerId
+          ? players.find(p => p.id === data.currentByePlayerId) || null
+          : null;
+
+        // Återställ aktuella parningar och koppla till player-objekten
+        currentPairings = [];
+        const savedPairings = data.currentPairings || [];
+        for (let pair of savedPairings) {
+          const white = players.find(p => p.id === pair.whiteId);
+          const black = players.find(p => p.id === pair.blackId);
+          if (white && black) {
+            currentPairings.push({ white, black });
+          }
+        }
+
+        // Byt till rondvy
+        document.getElementById("section-setup").classList.add("hidden");
+        document.getElementById("section-final").classList.add("hidden");
+        document.getElementById("section-round").classList.remove("hidden");
+        document.getElementById("section-standings").classList.remove("hidden");
+
+        document.getElementById("round-title").innerText = `Rond ${currentRound}`;
+        renderRoundView();
+
+        // Återställ eventuella redan markerade resultat
+        savedPairings.forEach((pair, idx) => {
+          if (pair.result) {
+            const radio = document.querySelector(`input[name="board_${idx + 1}"][value="${pair.result}"]`);
+            if (radio) radio.checked = true;
+          }
+        });
+
+        renderStandings();
+        alert(`Turneringen har laddats in vid Rond ${currentRound}!`);
+      } catch (err) {
+        alert("Kunde inte läsa in filen: " + err.message);
+      } finally {
+        event.target.value = "";
+      }
+    };
+    reader.readAsText(file, "UTF-8");
+  }
+
+  function saveTournament() {
+    if (!players || players.length === 0) {
+      alert("Det finns ingen pågående turnering att spara.");
+      return;
+    }
+
+    const pairingsData = currentPairings.map((match, idx) => {
+      const checked = document.querySelector(`input[name="board_${idx + 1}"]:checked`);
+      return {
+        whiteId: match.white ? match.white.id : null,
+        blackId: match.black ? match.black.id : null,
+        result: checked ? checked.value : null
+      };
+    });
+
+    const tournamentState = {
+      fileSignature: "MONRAD_CHESS_SAVE",
+      savedAt: new Date().toISOString(),
+      tieBreakSystem: tieBreakSystem,
+      currentRound: currentRound,
+      players: players,
+      currentPairings: pairingsData,
+      currentByePlayerId: currentByePlayer ? currentByePlayer.id : null,
+      roundHistory: roundHistory
+    };
+
+    const jsonStr = JSON.stringify(tournamentState, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `turnering_rond_${currentRound}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   function formatPoints(pts) {
