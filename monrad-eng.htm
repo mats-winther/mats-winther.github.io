@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="A simple Monrad pairing system for chess that runs directly in the browser.">
+  <meta name="description" content="A simple Monrad pairing system for chess running directly in the browser.">
   <meta name="author" content="Mats Winther">
   <link rel="canonical" href="https://mats-winther.github.io/monrad-eng.htm">
-  <title>Monrad Pairing System for Chess</title>
+  <title>Monrad Chess Pairing System</title>
   <style>
     :root {
       --primary: #1e3a8a;
@@ -231,6 +231,28 @@
       border: 1px solid #fde68a;
     }
 
+    /* Modal for player withdrawal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+
+    .modal-box {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 22px;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border);
+    }
+
     .hidden {
       display: none !important;
     }
@@ -241,14 +263,14 @@
 <div class="container">
   <header>
     <h1>Monrad Pairing System</h1>
-    <p>Chess tournament management</p>
+    <p>Chess Tournament Management</p>
   </header>
 
-  <!-- 1. PLAYER SETUP -->
+  <!-- 1. PLAYER REGISTRATION -->
   <section id="section-setup" class="card">
-    <h2>1. Enter Players</h2>
+    <h2>1. Player Registration</h2>
     <p style="color: #64748b; font-size: 0.9rem; margin-top: 0;">
-      Enter one name per line (at least 2 players). Alternatively, load a text file or load an ongoing tournament.
+      Enter one name per line (minimum 2 players). You can also load a text file or open a previously saved tournament.
     </p>
     <textarea id="input-players" placeholder="Magnus Carlsen&#10;Hikaru Nakamura&#10;Alireza Firouzja&#10;Ding Liren&#10;Fabiano Caruana&#10;Gukesh D&#10;Anish Giri"></textarea>
     
@@ -268,10 +290,10 @@
     </div>
 
     <div class="btn-group">
-      <button onclick="startTournament()">🎲 Shuffle order and start round 1</button>
-      <button class="secondary" onclick="loadPlayersFile()">📁 Load players.txt</button>
-      <button class="secondary" onclick="loadSamplePlayers()">Sample (7 players)</button>
-      <button class="secondary" onclick="triggerLoadTournament()">📂 Load tournament</button>
+      <button onclick="startTournament()">🎲 Shuffle & start round 1</button>
+      <button class="secondary" onclick="loadPlayersFile()">📁 Load players file (.txt)</button>
+      <button class="secondary" onclick="triggerLoadTournament()">📂 Open saved tournament</button>
+<button class="secondary" onclick="loadSamplePlayers()">Sample (7 pl.)</button>
     </div>
   </section>
 
@@ -295,10 +317,11 @@
       <div id="bye-container"></div>
 
       <div class="btn-group" style="margin-top: 18px;">
-        <button type="submit">✅ Confirm results & pair next round</button>
+        <button type="submit">✅ Submit results & pair next round</button>
+        <button type="button" class="danger" onclick="openWithdrawModal()">🚪 Withdraw player</button>
         <button type="button" class="secondary" onclick="saveTournament()">💾 Save tournament</button>
         <button type="button" class="secondary" onclick="printRound()">🖨️ Print round</button>
-        <button type="button" class="secondary" onclick="finishTournamentEarly()">Finish tournament & view final standings</button>
+        <button type="button" class="secondary" onclick="finishTournamentEarly()">Finish & show final standings</button>
       </div>
     </form>
   </section>
@@ -348,14 +371,32 @@
       <tbody id="final-tbody"></tbody>
     </table>
 
-    <h2 style="margin-top: 32px;">Played matches round by round</h2>
+    <h2 style="margin-top: 32px;">Games Played Round by Round</h2>
     <div id="final-matches-history"></div>
 
     <div class="btn-group" style="margin-top: 20px;">
-      <button onclick="resetTournament()" class="danger">🔄 New tournament</button>
-      <button onclick="printFinalStandings()" class="secondary">🖨️ Print final standings & matches</button>
+      <button onclick="resetTournament()" class="danger">🔄 New Tournament</button>
+      <button onclick="printFinalStandings()" class="secondary">🖨️ Print Standings & Games</button>
     </div>
   </section>
+</div>
+
+<!-- MODAL: WITHDRAW PLAYER -->
+<div id="withdraw-modal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h3 style="margin-top: 0; color: #dc2626; font-size: 1.2rem;">Withdraw Player</h3>
+    <p style="font-size: 0.95rem; color: #475569; margin-bottom: 14px;">
+      Select the player who is withdrawing (e.g. due to illness). The current round will be completed as scheduled, and the player will be excluded from pairings starting in the next round.
+    </p>
+    <div style="margin-bottom: 16px;">
+      <label for="withdraw-select" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.9rem;">Player:</label>
+      <select id="withdraw-select" style="width: 100%; padding: 8px 10px; font-size: 0.95rem; border: 1px solid var(--border); border-radius: 6px;"></select>
+    </div>
+    <div class="btn-group" style="justify-content: flex-end; margin-top: 0;">
+      <button type="button" class="secondary" onclick="closeWithdrawModal()">Cancel</button>
+      <button type="button" class="danger" onclick="confirmWithdrawPlayer()">Confirm Withdrawal</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -377,10 +418,18 @@
     }
   }
 
+  function getPlayerDisplayName(p) {
+    return p.name + (p.withdrawn ? " (withdrawn)" : "");
+  }
+
   function loadPlayersFile() {
     fetch('players.txt')
       .then(response => {
-        if (!response.ok) throw new Error("Could not load players.txt");
+        if (!response.ok) return fetch('spelare.txt');
+        return response;
+      })
+      .then(response => {
+        if (!response.ok) throw new Error("Could not automatically load the file.");
         return response.text();
       })
       .then(text => {
@@ -418,7 +467,10 @@
           throw new Error("Invalid tournament file format.");
         }
 
-        players = data.players;
+        players = data.players.map(p => ({
+          ...p,
+          withdrawn: !!p.withdrawn
+        }));
         currentRound = data.currentRound;
         roundHistory = data.roundHistory || [];
         
@@ -458,7 +510,7 @@
         renderStandings();
         alert(`Tournament loaded successfully at Round ${currentRound}!`);
       } catch (err) {
-        alert("Failed to load tournament file: " + err.message);
+        alert("Could not load tournament file: " + err.message);
       } finally {
         event.target.value = "";
       }
@@ -536,7 +588,7 @@ Anish Giri`;
       return;
     }
 
-    // Shuffle initial order for round 1
+    // Randomize initial seeding for round 1
     for (let i = names.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [names[i], names[j]] = [names[j], names[i]];
@@ -553,6 +605,7 @@ Anish Giri`;
       whites: 0,
       blacks: 0,
       hasHadBye: false,
+      withdrawn: false,
       opponents: []
     }));
 
@@ -565,11 +618,99 @@ Anish Giri`;
     lotRound();
   }
 
+  /* --- PLAYER WITHDRAWAL --- */
+
+  function openWithdrawModal() {
+    const activePlayers = players.filter(p => !p.withdrawn);
+    if (activePlayers.length === 0) {
+      alert("There are no active players left to withdraw.");
+      return;
+    }
+
+    const select = document.getElementById("withdraw-select");
+    select.innerHTML = "";
+    activePlayers.forEach(p => {
+      const opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = `${p.name} (${formatPoints(p.score)} pts)`;
+      select.appendChild(opt);
+    });
+
+    document.getElementById("withdraw-modal").classList.remove("hidden");
+  }
+
+  function closeWithdrawModal() {
+    document.getElementById("withdraw-modal").classList.add("hidden");
+  }
+
+  function confirmWithdrawPlayer() {
+    const select = document.getElementById("withdraw-select");
+    const playerId = parseInt(select.value, 10);
+    const player = players.find(p => p.id === playerId);
+    if (!player) return;
+
+    if (!confirm(`Are you sure you want to withdraw ${player.name}? The player will remain in Round ${currentRound}, but will be excluded from pairings starting in the next round.`)) {
+      return;
+    }
+
+    player.withdrawn = true;
+    closeWithdrawModal();
+
+    // Preserve already selected results so nothing is lost
+    const savedResults = [];
+    currentPairings.forEach((_, idx) => {
+      const checked = document.querySelector(`input[name="board_${idx + 1}"]:checked`);
+      savedResults.push(checked ? checked.value : null);
+    });
+
+    // Re-render round and standings to display "(withdrawn)" label
+    renderRoundView();
+
+    // Restore any selected radio inputs
+    savedResults.forEach((val, idx) => {
+      if (val) {
+        const radio = document.querySelector(`input[name="board_${idx + 1}"][value="${val}"]`);
+        if (radio) radio.checked = true;
+      }
+    });
+
+    renderStandings();
+
+    const remainingActive = players.filter(p => !p.withdrawn);
+    if (remainingActive.length < 2) {
+      alert(`${player.name} has been marked as withdrawn. Note: fewer than 2 active players remain for upcoming rounds.`);
+    } else {
+      alert(`${player.name} has been marked as withdrawn. The current round will be completed, and the player will be excluded from pairings starting in the next round.`);
+    }
+  }
+
+  /* --- MONRAD PAIRINGS & ROUND GENERATION --- */
+
   function lotRound() {
     document.getElementById("round-title").innerText = `Round ${currentRound}`;
-    sortPlayers();
 
-    let pool = [...players];
+    // Filter only active players (automatically excludes withdrawn players)
+    let pool = players.filter(p => !p.withdrawn);
+
+    if (pool.length < 2) {
+      alert("Fewer than 2 active players remain. The tournament is ending.");
+      finishTournamentEarly();
+      return;
+    }
+
+    // Sort pool by score, then original seeding position
+    pool.sort((a, b) => {
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      return a.originalPos - b.originalPos;
+    });
+
+    // Assign current table position for Monrad color determination
+    pool.forEach((p, idx) => {
+      p.currentPos = idx + 1;
+    });
+
     currentByePlayer = null;
 
     if (pool.length % 2 !== 0) {
@@ -580,12 +721,15 @@ Anish Giri`;
           break;
         }
       }
+      if (!currentByePlayer && pool.length > 0) {
+        currentByePlayer = pool.pop();
+      }
     }
 
     currentPairings = generateMonradPairings(pool);
 
     if (!currentPairings) {
-      alert("Could not generate valid pairings without rematches. Finishing the tournament.");
+      alert("Could not generate valid pairings without repeat matchups. The tournament is ending.");
       finishTournamentEarly();
       return;
     }
@@ -658,7 +802,7 @@ Anish Giri`;
         <td>
           <div class="player-box">
             <span class="piece-icon piece-white" title="White"></span>
-            <strong>${match.white.name}</strong>
+            <strong>${getPlayerDisplayName(match.white)}</strong>
             <span class="score-badge">${formatPoints(match.white.score)}</span>
           </div>
         </td>
@@ -681,7 +825,7 @@ Anish Giri`;
         <td>
           <div class="player-box">
             <span class="piece-icon piece-black" title="Black"></span>
-            <strong>${match.black.name}</strong>
+            <strong>${getPlayerDisplayName(match.black)}</strong>
             <span class="score-badge">${formatPoints(match.black.score)}</span>
           </div>
         </td>
@@ -693,7 +837,7 @@ Anish Giri`;
     if (currentByePlayer) {
       byeContainer.innerHTML = `
         <div class="bye-box">
-          ℹ️ <strong>Bye:</strong> ${currentByePlayer.name} (${formatPoints(currentByePlayer.score)}) receives 1 point.
+          ℹ️ <strong>Bye:</strong> ${getPlayerDisplayName(currentByePlayer)} (${formatPoints(currentByePlayer.score)} pts) receives 1 point.
         </div>
       `;
     } else {
@@ -767,7 +911,9 @@ Anish Giri`;
     });
 
     players.forEach(p => {
-      p.cumulativeScore += p.score;
+      if (!p.withdrawn) {
+        p.cumulativeScore += p.score;
+      }
     });
 
     currentPairings = [];
@@ -777,25 +923,12 @@ Anish Giri`;
   function submitRoundResults() {
     const res = recordCurrentRoundResults();
     if (res.status === "empty" || res.status === "incomplete") {
-      alert("Please enter results for all boards before proceeding to the next round!");
+      alert("Please enter results for all boards before advancing to the next round!");
       return;
     }
 
     currentRound++;
     lotRound();
-  }
-
-  function sortPlayers() {
-    players.sort((a, b) => {
-      if (b.score !== a.score) {
-        return b.score - a.score;
-      }
-      return a.originalPos - b.originalPos;
-    });
-
-    players.forEach((p, idx) => {
-      p.currentPos = idx + 1;
-    });
   }
 
   function calculateBuchholz() {
@@ -815,7 +948,9 @@ Anish Giri`;
       if (b.score !== a.score) {
         return b.score - a.score;
       }
-
+      if (a.withdrawn !== b.withdrawn) {
+        return a.withdrawn ? 1 : -1;
+      }
       const tbA = tieBreakSystem === "buchholz" ? a.buchholz : a.cumulativeScore;
       const tbB = tieBreakSystem === "buchholz" ? b.buchholz : b.cumulativeScore;
 
@@ -830,11 +965,24 @@ Anish Giri`;
     const tbody = document.getElementById("standings-tbody");
     tbody.innerHTML = "";
 
-    players.forEach((p, idx) => {
+    const displayList = [...players].sort((a, b) => {
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      if (a.withdrawn !== b.withdrawn) {
+        return a.withdrawn ? 1 : -1;
+      }
+      return a.originalPos - b.originalPos;
+    });
+
+    displayList.forEach((p, idx) => {
       const tr = document.createElement("tr");
+      if (p.withdrawn) {
+        tr.style.color = "#64748b";
+      }
       tr.innerHTML = `
         <td style="font-weight: 600; color: #64748b;">${idx + 1}</td>
-        <td><strong>${p.name}</strong></td>
+        <td><strong>${getPlayerDisplayName(p)}</strong></td>
         <td><span class="score-badge">${formatPoints(p.score)}</span></td>
         <td style="white-space: nowrap;">⚪ ${p.whites} / ⚫ ${p.blacks}</td>
         <td>${p.hasHadBye ? "Yes" : "—"}</td>
@@ -854,10 +1002,13 @@ Anish Giri`;
 
     players.forEach((p, idx) => {
       const tr = document.createElement("tr");
+      if (p.withdrawn) {
+        tr.style.color = "#64748b";
+      }
       const tbValue = tieBreakSystem === "buchholz" ? p.buchholz : p.cumulativeScore;
       tr.innerHTML = `
         <td style="font-weight: bold; color: #64748b;">${idx + 1}</td>
-        <td><strong>${p.name}</strong></td>
+        <td><strong>${getPlayerDisplayName(p)}</strong></td>
         <td><span class="score-badge">${formatPoints(p.score)}</span></td>
         <td style="font-weight: 600;">${formatPoints(tbValue)}</td>
       `;
@@ -923,14 +1074,14 @@ Anish Giri`;
       }
 
       if (filledCount > 0 && filledCount < currentPairings.length) {
-        alert("Not all boards in the current round have results entered. Please fill in all results to include this round, or clear them to finish without it.");
+        alert("Not all boards in the current round are filled in. Complete all results to include this round, or clear them to finish without it.");
         return;
       }
 
       if (filledCount === currentPairings.length) {
         recordCurrentRoundResults();
       } else if (filledCount === 0) {
-        if (!confirm(`Round ${currentRound} has no entered results. Do you still want to finish and view final standings?`)) {
+        if (!confirm(`Round ${currentRound} has no entered results. Do you still want to finish and show final standings?`)) {
           return;
         }
       }
@@ -944,7 +1095,7 @@ Anish Giri`;
   }
 
   function resetTournament() {
-    if (confirm("Do you want to start a new tournament?")) {
+    if (confirm("Are you sure you want to start a new tournament?")) {
       location.reload();
     }
   }
@@ -954,7 +1105,7 @@ Anish Giri`;
   function openPrintPage(pageTitle, contentHtml) {
     const printWindow = window.open("", "_blank");
     if (!printWindow) {
-      alert("Please allow popups to open the print view.");
+      alert("Please allow popups in your browser to view the print layout.");
       return;
     }
 
@@ -1065,7 +1216,7 @@ Anish Giri`;
   function printRound() {
     let pairingsHtml = `
       <h1>Monrad Pairing System — Round ${currentRound}</h1>
-      <p>Date: ${new Date().toLocaleDateString('en-GB')}</p>
+      <p>Date: ${new Date().toLocaleDateString('en-US')}</p>
       
       <h2>Pairings Round ${currentRound}</h2>
       <table>
@@ -1088,9 +1239,9 @@ Anish Giri`;
       pairingsHtml += `
         <tr>
           <td style="font-weight: bold; text-align: center;">${boardNum}</td>
-          <td>${match.white.name} (${formatPoints(match.white.score)})</td>
+          <td>${getPlayerDisplayName(match.white)} (${formatPoints(match.white.score)})</td>
           <td style="text-align: center; font-weight: bold;">${resultText}</td>
-          <td>${match.black.name} (${formatPoints(match.black.score)})</td>
+          <td>${getPlayerDisplayName(match.black)} (${formatPoints(match.black.score)})</td>
         </tr>
       `;
     });
@@ -1100,7 +1251,7 @@ Anish Giri`;
     if (currentByePlayer) {
       pairingsHtml += `
         <div class="bye-box">
-          <strong>Bye:</strong> ${currentByePlayer.name} (${formatPoints(currentByePlayer.score)}) receives 1 point.
+          <strong>Bye:</strong> ${getPlayerDisplayName(currentByePlayer)} (${formatPoints(currentByePlayer.score)} pts) receives 1 point.
         </div>
       `;
     }
@@ -1120,11 +1271,17 @@ Anish Giri`;
         <tbody>
     `;
 
-    players.forEach((p, idx) => {
+    const displayList = [...players].sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      if (a.withdrawn !== b.withdrawn) return a.withdrawn ? 1 : -1;
+      return a.originalPos - b.originalPos;
+    });
+
+    displayList.forEach((p, idx) => {
       pairingsHtml += `
         <tr>
           <td style="text-align: center; font-weight: bold;">${idx + 1}</td>
-          <td>${p.name}</td>
+          <td>${getPlayerDisplayName(p)}</td>
           <td style="font-weight: 600;">${formatPoints(p.score)}</td>
           <td>${p.whites} / ${p.blacks}</td>
           <td>${p.hasHadBye ? "Yes" : "—"}</td>
@@ -1142,7 +1299,7 @@ Anish Giri`;
 
     let finalHtml = `
       <h1>Monrad Tournament — Final Standings</h1>
-      <p>Date: ${new Date().toLocaleDateString('en-GB')}</p>
+      <p>Date: ${new Date().toLocaleDateString('en-US')}</p>
       <table>
         <thead>
           <tr>
@@ -1160,7 +1317,7 @@ Anish Giri`;
       finalHtml += `
         <tr>
           <td style="text-align: center; font-weight: bold;">${idx + 1}</td>
-          <td><strong>${p.name}</strong></td>
+          <td><strong>${getPlayerDisplayName(p)}</strong></td>
           <td style="font-weight: bold;">${formatPoints(p.score)}</td>
           <td>${formatPoints(tbValue)}</td>
         </tr>
@@ -1168,11 +1325,10 @@ Anish Giri`;
     });
 
     finalHtml += `</tbody></table>`;
-
-    finalHtml += `<h2>All played matches</h2>`;
+    finalHtml += `<h2>All Played Games</h2>`;
     finalHtml += generateMatchesHistoryHtml();
 
-    openPrintPage("Final Standings and Matches - Monrad Tournament", finalHtml);
+    openPrintPage("Final Standings and Games - Monrad Tournament", finalHtml);
   }
 </script>
 
