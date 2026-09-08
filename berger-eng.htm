@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A pairing system for chess based on the Berger tables (round-robin), running directly in the browser.">
+  <meta name="author" content="Mats Winther">
+  <link rel="canonical" href="https://mats-winther.github.io/berger-eng.htm">
+  <title>FIDE Berger Tournament System (Round-Robin)</title>
+  <style>
+    :root {
+      --primary: #005293;
+      --primary-hover: #003e70;
+      --secondary: #f0f4f8;
+      --border: #ccd6e0;
+      --text: #222;
+      --accent: #2e7d32;
+      --danger: #c62828;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: #f8fafc;
+      margin: 0;
+      padding: 1.5rem;
+    }
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      border: 1px solid var(--border);
+    }
+    h1 { margin-top: 0; font-size: 1.6rem; color: var(--primary); text-align: center; }
+    .subtitle { text-align: center; color: #555; margin-bottom: 1.5rem; font-size: 0.95rem; }
+    .page-section { display: none; }
+    .page-section.active { display: block; }
+
+    /* Forms */
+    label { display: block; margin: 0.8rem 0 0.3rem; font-weight: 600; }
+    input[type="text"], textarea, select {
+      width: 100%;
+      padding: 0.55rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.95rem;
+    }
+    textarea { font-family: inherit; resize: vertical; }
+    .button-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; align-items: center; }
+    button {
+      padding: 0.55rem 1.1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 4px;
+      background: var(--primary);
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    button:hover { background: var(--primary-hover); }
+    button.btn-secondary { background: #5c6b73; }
+    button.btn-secondary:hover { background: #475359; }
+    button.btn-accent { background: var(--accent); }
+    button.btn-accent:hover { background: #236327; }
+    button.btn-danger { background: var(--danger); }
+    button.btn-danger:hover { background: #9b1e1e; }
+    
+    .btn-file-label {
+      display: inline-block;
+      padding: 0.55rem 0.9rem;
+      font-size: 0.85rem;
+      background: #e2e8f0;
+      color: #333;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 0;
+      font-weight: normal;
+    }
+    .btn-file-label input[type="file"] { display: none; }
+
+    fieldset {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.8rem 1.2rem;
+      margin: 1rem 0;
+    }
+    fieldset label { display: inline-flex; align-items: center; margin-right: 1.5rem; font-weight: normal; }
+    fieldset label input { margin-right: 0.4rem; }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.7rem;
+      text-align: center;
+    }
+    th { background: var(--secondary); color: #333; }
+    td.text-left { text-align: left; }
+    tr:nth-child(even) { background-color: #fafbfc; }
+
+    /* Round Navigation */
+    .round-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 1.2rem 0;
+      background: var(--secondary);
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+    }
+    .round-title { font-size: 1.2rem; font-weight: bold; color: var(--primary); }
+
+    .cross-table th, .cross-table td { min-width: 32px; font-size: 0.85rem; }
+    .cross-table .diagonal { background: #e0e0e0; font-weight: bold; }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .container { box-shadow: none; border: none; padding: 0; }
+      button, .button-row, input, select, .no-print { display: none !important; }
+      .page-section { display: none !important; }
+      #finalSection { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>FIDE Berger Tournament System (Round-Robin)</h1>
+  <div class="subtitle">Official pairing tables for 3 to 16 players according to the FIDE Handbook (Annex 1)</div>
+
+  <!-- 1. SETUP / CONFIGURATION -->
+  <section id="setupSection" class="page-section active">
+    <h3>Create Tournament</h3>
+    
+    <div class="button-row">
+      <label class="btn-file-label">
+        Open Saved Tournament (JSON)
+        <input type="file" id="jsonFileInput" accept=".json" onchange="loadTournamentJSON(event)">
+      </label>
+      <button type="button" class="btn-secondary" onclick="restoreLastSession()">Restore Last Session</button>
+    </div>
+
+    <label for="tournamentName">Tournament Name</label>
+    <input type="text" id="tournamentName" placeholder="e.g. Club Championship 2026">
+
+    <label for="rosterInput">Player Roster (one player per line, 3 to 16 players)</label>
+    <div class="button-row" style="margin: 0.4rem 0;">
+      <button type="button" id="btnSample16" class="btn-secondary" onclick="loadSample16Players()">
+        Load Sample (16 World Champions)
+      </button>
+      <label class="btn-file-label">
+        Import players from text file (.txt)
+        <input type="file" id="txtFileInput" accept=".txt" onchange="loadPlayersFromTxt(event)">
+      </label>
+    </div>
+    <textarea id="rosterInput" rows="10" placeholder="Enter player names here (one name per line)..."></textarea>
+
+    <div style="margin-top: 1rem;">
+      <label style="display:inline-flex; align-items:center; font-weight:normal;">
+        <input type="checkbox" id="doubleRound" style="margin-right:8px;">
+        <strong>Double round-robin tournament (two cycles)</strong>
+      </label>
+      <div style="font-size:0.82rem; color:#666; margin-left: 24px;">
+        (Inverts the order of the last two rounds in the first cycle to prevent three consecutive games with the same colour according to FIDE rules)
+      </div>
+    </div>
+
+    <fieldset>
+      <legend><strong>Default Tie-Break System</strong></legend>
+      <label>
+        <input type="radio" name="defaultTieBreak" value="cumulative" checked>
+        Cumulative Score (Progressive Score)
+      </label>
+      <label>
+        <input type="radio" name="defaultTieBreak" value="buchholz">
+        Buchholz System
+      </label>
+    </fieldset>
+
+    <div style="margin-top: 1.5rem;">
+      <button type="button" class="btn-accent" style="font-size: 1rem; width: 100%; padding: 0.75rem;" onclick="startTournament()">
+        Start Tournament
+      </button>
+    </div>
+  </section>
+
+  <!-- 2. ACTIVE TOURNAMENT / ROUNDS -->
+  <section id="roundSection" class="page-section">
+    <div class="button-row" style="justify-content: space-between;">
+      <div>
+        <button type="button" class="btn-secondary" onclick="saveTournamentFile()">Save Tournament (.json)</button>
+        <button type="button" class="btn-danger" onclick="withdrawPlayerPrompt()">Withdraw Player / Forfeit</button>
+      </div>
+      <button type="button" class="btn-accent" onclick="finishTournament()">Finish Tournament</button>
+    </div>
+
+    <div class="round-nav">
+      <button type="button" id="btnPrevRound" onclick="navigateRound(-1)">← Previous Round</button>
+      <div class="round-title" id="currentRoundDisplay">Round 1</div>
+      <button type="button" id="btnNextRound" onclick="navigateRound(1)">Next Round →</button>
+    </div>
+
+    <!-- Pairings Table -->
+    <table>
+      <thead>
+        <tr>
+          <th>Board</th>
+          <th style="width: 36%;">White</th>
+          <th style="width: 20%;">Result</th>
+          <th style="width: 36%;">Black</th>
+        </tr>
+      </thead>
+      <tbody id="pairingsBody"></tbody>
+    </table>
+
+    <!-- Live Standings -->
+    <div style="margin-top: 2rem;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <h3 id="standingsTitle">Standings after Round 1</h3>
+        <div style="font-size: 0.9rem;">
+          <strong>Tie-Break:</strong>
+          <label style="display:inline; margin-left: 8px;">
+            <input type="radio" name="liveTieBreak" value="cumulative" checked onchange="renderStandingsTable()"> Progressive
+          </label>
+          <label style="display:inline; margin-left: 8px;">
+            <input type="radio" name="liveTieBreak" value="buchholz" onchange="renderStandingsTable()"> Buchholz
+          </label>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>No.</th>
+            <th class="text-left">Name</th>
+            <th>Pld</th>
+            <th>W</th>
+            <th>D</th>
+            <th>L</th>
+            <th>Pts</th>
+            <th id="liveTieBreakHeader">Tie-Break</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="standingsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 3. FINAL RESULTS AND CROSSTABLE -->
+  <section id="finalSection" class="page-section">
+    <div class="button-row no-print" style="justify-content: space-between;">
+      <div>
+        <button type="button" class="btn-secondary" onclick="window.print()">🖨️ Print Results</button>
+        <button type="button" class="btn-secondary" onclick="saveTournamentFile()">Export (.json)</button>
+      </div>
+      <div>
+        <button type="button" class="btn-secondary" onclick="backToRounds()">← Back to Rounds</button>
+        <button type="button" class="btn-accent" onclick="resetNewTournament()">New Tournament</button>
+      </div>
+    </div>
+
+    <h2 id="finalTournamentName" style="text-align: center; color: var(--primary);">Final Standings and Results</h2>
+
+    <div class="no-print" style="margin: 1rem 0; font-size: 0.95rem;">
+      <strong>Displayed Tie-Break:</strong>
+      <label style="display:inline; margin-left: 10px;">
+        <input type="radio" name="finalTieBreak" value="cumulative" checked onchange="renderFinalViews()"> Cumulative Score (Progressive)
+      </label>
+      <label style="display:inline; margin-left: 10px;">
+        <input type="radio" name="finalTieBreak" value="buchholz" onchange="renderFinalViews()"> Buchholz System
+      </label>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>No.</th>
+          <th class="text-left">Player</th>
+          <th>Points</th>
+          <th id="finalTieBreakHeader">Progressive</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="finalStandingsBody"></tbody>
+    </table>
+
+    <h3 style="margin-top: 2rem;">Crosstable</h3>
+    <div style="overflow-x: auto;">
+      <table class="cross-table" id="crossTable"></table>
+    </div>
+  </section>
+</div>
+
+<script>
+  const SAMPLE_16_PLAYERS = [
+    "GM Magnus Carlsen",
+    "GM Garry Kasparov",
+    "GM Bobby Fischer",
+    "GM Anatoly Karpov",
+    "GM Viswanathan Anand",
+    "GM Vladimir Kramnik",
+    "GM Ding Liren",
+    "GM Mikhail Tal",
+    "GM Alexander Alekhine",
+    "GM José Raúl Capablanca",
+    "GM Emanuel Lasker",
+    "GM Tigran Petrosian",
+    "GM Boris Spassky",
+    "GM Vasily Smyslov",
+    "GM Max Euwe",
+    "GM Wilhelm Steinitz"
+  ];
+
+  let tournament = {
+    name: "",
+    isDouble: false,
+    defaultTieBreak: "cumulative",
+    players: [],
+    rounds: [],
+    currentRoundIndex: 0
+  };
+
+  const STORAGE_KEY = "fide_berger_tournament_session_en";
+
+  function formatPoints(pts) {
+    if (pts === undefined || pts === null) return "0";
+    return pts.toString();
+  }
+
+  function loadSample16Players() {
+    document.getElementById("rosterInput").value = SAMPLE_16_PLAYERS.join("\n");
+    const cumRadio = document.querySelector('input[name="defaultTieBreak"][value="cumulative"]');
+    if (cumRadio) cumRadio.checked = true;
+  }
+
+  function loadPlayersFromTxt(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      document.getElementById("rosterInput").value = event.target.result;
+    };
+    reader.readAsText(file);
+  }
+
+  // Berger pairing tables according to FIDE Handbook Annex 1
+  function generateBergerRounds(numPlayers) {
+    let n = numPlayers;
+    const isOdd = n % 2 !== 0;
+    if (isOdd) n += 1;
+
+    const rounds = [];
+    const totalRounds = n - 1;
+    const half = n / 2;
+
+    for (let r = 1; r <= totalRounds; r++) {
+      const pairings = [];
+      let pivotOpponent;
+      let pivotWhite = false;
+
+      if (r % 2 === 1) {
+        pivotOpponent = (r + 1) / 2;
+        pivotWhite = false;
+      } else {
+        pivotOpponent = (r / 2) + half;
+        pivotWhite = true;
+      }
+
+      // Board 1: Fixed player n vs pivotOpponent
+      if (pivotWhite) {
+        pairings.push({ white: n, black: pivotOpponent, result: "" });
+      } else {
+        pairings.push({ white: pivotOpponent, black: n, result: "" });
+      }
+
+      // Remaining boards
+      for (let b = 1; b < half; b++) {
+        let w = (pivotOpponent - b);
+        let bl = (pivotOpponent + b);
+
+        while (w < 1) w += (n - 1);
+        while (w > (n - 1)) w -= (n - 1);
+        while (bl < 1) bl += (n - 1);
+        while (bl > (n - 1)) bl -= (n - 1);
+
+        if (b % 2 === 1) {
+          pairings.push({ white: bl, black: w, result: "" });
+        } else {
+          pairings.push({ white: w, black: bl, result: "" });
+        }
+      }
+      rounds.push({ round: r, pairings });
+    }
+    return { rounds, n, hasBye: isOdd };
+  }
+
+  function startTournament() {
+    const name = document.getElementById("tournamentName").value.trim() || "Round-Robin Tournament";
+    const text = document.getElementById("rosterInput").value.trim();
+    const rawNames = text.split("\n").map(s => s.trim()).filter(s => s.length > 0);
+
+    if (rawNames.length < 3 || rawNames.length > 16) {
+      alert("Please enter between 3 and 16 players.");
+      return;
+    }
+
+    const isDouble = document.getElementById("doubleRound").checked;
+    const selectedTB = document.querySelector('input[name="defaultTieBreak"]:checked').value;
+
+    const players = rawNames.map((n, idx) => ({
+      id: idx + 1,
+      name: n,
+      status: "Active"
+    }));
+
+    const { rounds, n, hasBye } = generateBergerRounds(players.length);
+    if (hasBye) {
+      players.push({ id: n, name: "BYE", status: "Bye" });
+    }
+
+    let finalRounds = rounds;
+
+    if (isDouble) {
+      const cycle1 = JSON.parse(JSON.stringify(rounds));
+      if (cycle1.length >= 2) {
+        const last = cycle1.pop();
+        const secondLast = cycle1.pop();
+        cycle1.push(last);
+        cycle1.push(secondLast);
+      }
+      cycle1.forEach((r, idx) => r.round = idx + 1);
+
+      const cycle2 = cycle1.map((r, idx) => ({
+        round: cycle1.length + idx + 1,
+        pairings: r.pairings.map(p => ({
+          white: p.black,
+          black: p.white,
+          result: ""
+        }))
+      }));
+      finalRounds = cycle1.concat(cycle2);
+    }
+
+    tournament = {
+      name,
+      isDouble,
+      defaultTieBreak: selectedTB,
+      players,
+      rounds: finalRounds,
+      currentRoundIndex: 0
+    };
+
+    saveSession();
+    showRoundPage();
+  }
+
+  function showRoundPage() {
+    document.querySelectorAll(".page-section").forEach(s => s.classList.remove("active"));
+    document.getElementById("roundSection").classList.add("active");
+
+    const tbVal = tournament.defaultTieBreak || "cumulative";
+    const radio = document.querySelector(`input[name="liveTieBreak"][value="${tbVal}"]`);
+    if (radio) radio.checked = true;
+
+    renderRoundPairings();
+    renderStandingsTable();
+  }
+
+  function navigateRound(delta) {
+    const newIdx = tournament.currentRoundIndex + delta;
+    if (newIdx >= 0 && newIdx < tournament.rounds.length) {
+      tournament.currentRoundIndex = newIdx;
+      renderRoundPairings();
+      renderStandingsTable();
+      saveSession();
+    }
+  }
+
+  function renderRoundPairings() {
+    const rIdx = tournament.currentRoundIndex;
+    const roundData = tournament.rounds[rIdx];
+    document.getElementById("currentRoundDisplay").textContent = `Round ${roundData.round}`;
+    document.getElementById("standingsTitle").textContent = `Standings after Round ${roundData.round}`;
+
+    document.getElementById("btnPrevRound").disabled = (rIdx === 0);
+    document.getElementById("btnNextRound").disabled = (rIdx === tournament.rounds.length - 1);
+
+    const tbody = document.getElementById("pairingsBody");
+    tbody.innerHTML = "";
+
+    roundData.pairings.forEach((p, bIdx) => {
+      const wPlayer = tournament.players.find(x => x.id === p.white);
+      const bPlayer = tournament.players.find(x => x.id === p.black);
+      const isByeGame = (wPlayer.status === "Bye" || bPlayer.status === "Bye");
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${bIdx + 1}</td>
+        <td class="text-left">${wPlayer.id}. ${wPlayer.name}</td>
+        <td>
+          ${isByeGame ? '<strong>BYE</strong>' : `
+            <select onchange="updateResult(${rIdx}, ${bIdx}, this.value)">
+              <option value="" ${p.result === '' ? 'selected' : ''}>- Select -</option>
+              <option value="1-0" ${p.result === '1-0' ? 'selected' : ''}>1 - 0</option>
+              <option value="0.5-0.5" ${p.result === '0.5-0.5' ? 'selected' : ''}>½ - ½</option>
+              <option value="0-1" ${p.result === '0-1' ? 'selected' : ''}>0 - 1</option>
+              <option value="1-0 WO" ${p.result === '1-0 WO' ? 'selected' : ''}>1 - 0 (forfeit)</option>
+              <option value="0-1 WO" ${p.result === '0-1 WO' ? 'selected' : ''}>0 - 1 (forfeit)</option>
+            </select>
+          `}
+        </td>
+        <td class="text-left">${bPlayer.id}. ${bPlayer.name}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function updateResult(roundIdx, boardIdx, val) {
+    tournament.rounds[roundIdx].pairings[boardIdx].result = val;
+    renderStandingsTable();
+    saveSession();
+  }
+
+  // Identifies the last round that actually has recorded results
+  function getLastPlayedRoundIndex() {
+    for (let r = tournament.rounds.length - 1; r >= 0; r--) {
+      const hasResult = tournament.rounds[r].pairings.some(p => p.result && p.result.trim() !== "");
+      if (hasResult) return r;
+    }
+    return 0;
+  }
+
+  // Counts unplayed games in the tournament
+  function countUnplayedGames() {
+    let count = 0;
+    tournament.rounds.forEach(r => {
+      r.pairings.forEach(p => {
+        const wPlayer = tournament.players.find(x => x.id === p.white);
+        const bPlayer = tournament.players.find(x => x.id === p.black);
+        const isBye = (wPlayer && wPlayer.status === "Bye") || (bPlayer && bPlayer.status === "Bye");
+        if (!isBye && (!p.result || p.result === "")) {
+          count++;
+        }
+      });
+    });
+    return count;
+  }
+
+  // Computes points and tie-breaks up to the specified round
+  function calculateScores(upToRoundIndex) {
+    const activePlayers = tournament.players.filter(p => p.status !== "Bye");
+    const stats = {};
+
+    activePlayers.forEach(p => {
+      stats[p.id] = {
+        player: p,
+        played: 0,
+        w: 0,
+        d: 0,
+        l: 0,
+        points: 0,
+        roundScores: [],
+        opponents: []
+      };
+    });
+
+    const maxR = Math.min(upToRoundIndex, tournament.rounds.length - 1);
+
+    for (let r = 0; r <= maxR; r++) {
+      const rd = tournament.rounds[r];
+      const roundHasResults = rd.pairings.some(p => p.result && p.result.trim() !== "");
+
+      rd.pairings.forEach(p => {
+        const wStat = stats[p.white];
+        const bStat = stats[p.black];
+
+        if (p.result && p.result !== "") {
+          let wPts = 0, bPts = 0, decisive = false;
+          if (p.result.startsWith("1-0")) { wPts = 1; bPts = 0; decisive = true; }
+          else if (p.result.startsWith("0-1")) { wPts = 0; bPts = 1; decisive = true; }
+          else if (p.result.startsWith("0.5")) { wPts = 0.5; bPts = 0.5; decisive = true; }
+
+          if (decisive) {
+            if (wStat && bStat) {
+              wStat.played++; bStat.played++;
+              wStat.points += wPts; bStat.points += bPts;
+              wStat.opponents.push(p.black);
+              bStat.opponents.push(p.white);
+              if (wPts === 1) { wStat.w++; bStat.l++; }
+              else if (wPts === 0.5) { wStat.d++; bStat.d++; }
+              else { wStat.l++; bStat.w++; }
+            }
+          }
+        }
+      });
+
+      // ONLY accumulate progressive score if the round was actually played
+      if (roundHasResults) {
+        activePlayers.forEach(p => {
+          if (stats[p.id]) {
+            stats[p.id].roundScores.push(stats[p.id].points);
+          }
+        });
+      }
+    }
+
+    activePlayers.forEach(p => {
+      const st = stats[p.id];
+      st.cumulative = st.roundScores.reduce((sum, val) => sum + val, 0);
+      st.buchholz = st.opponents.reduce((sum, oppId) => {
+        return sum + (stats[oppId] ? stats[oppId].points : 0);
+      }, 0);
+    });
+
+    return stats;
+  }
+
+  function renderStandingsTable() {
+    const tbType = document.querySelector('input[name="liveTieBreak"]:checked')?.value || "cumulative";
+    document.getElementById("liveTieBreakHeader").textContent = (tbType === "cumulative") ? "Progressive" : "Buchholz";
+
+    const stats = calculateScores(tournament.currentRoundIndex);
+    const sorted = Object.values(stats).sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      const tbA = (tbType === "cumulative") ? a.cumulative : a.buchholz;
+      const tbB = (tbType === "cumulative") ? b.cumulative : b.buchholz;
+      return tbB - tbA;
+    });
+
+    const tbody = document.getElementById("standingsBody");
+    tbody.innerHTML = "";
+
+    sorted.forEach((item, idx) => {
+      const tbVal = (tbType === "cumulative") ? item.cumulative : item.buchholz;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${idx + 1}</td>
+        <td>${item.player.id}</td>
+        <td class="text-left">${item.player.name}</td>
+        <td>${item.played}</td>
+        <td>${item.w}</td>
+        <td>${item.d}</td>
+        <td>${item.l}</td>
+        <td><strong>${formatPoints(item.points)}</strong></td>
+        <td>${formatPoints(tbVal % 1 === 0 ? tbVal : tbVal.toFixed(1))}</td>
+        <td>${item.player.status}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function finishTournament() {
+    const unplayed = countUnplayedGames();
+    if (unplayed > 0) {
+      const msg = `There are still ${unplayed} unplayed games scheduled.\nDo you want to end the tournament now and calculate final standings based on completed rounds?`;
+      if (!confirm(msg)) {
+        return;
+      }
+    }
+
+    document.querySelectorAll(".page-section").forEach(s => s.classList.remove("active"));
+    document.getElementById("finalSection").classList.add("active");
+
+    const lastIdx = getLastPlayedRoundIndex();
+    const roundsCount = (countUnplayedGames() === 0) ? tournament.rounds.length : (lastIdx + 1);
+    document.getElementById("finalTournamentName").textContent = `${tournament.name} - Final Standings (${roundsCount} rounds)`;
+
+    const tbVal = tournament.defaultTieBreak || "cumulative";
+    const radio = document.querySelector(`input[name="finalTieBreak"][value="${tbVal}"]`);
+    if (radio) radio.checked = true;
+
+    renderFinalViews();
+  }
+
+  function backToRounds() {
+    document.querySelectorAll(".page-section").forEach(s => s.classList.remove("active"));
+    document.getElementById("roundSection").classList.add("active");
+  }
+
+  function renderFinalViews() {
+    const tbType = document.querySelector('input[name="finalTieBreak"]:checked')?.value || "cumulative";
+    document.getElementById("finalTieBreakHeader").textContent = (tbType === "cumulative") ? "Progressive" : "Buchholz";
+
+    // Only compute up to the last played round
+    const lastRoundIdx = getLastPlayedRoundIndex();
+    const stats = calculateScores(lastRoundIdx);
+
+    const sorted = Object.values(stats).sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      const tbA = (tbType === "cumulative") ? a.cumulative : a.buchholz;
+      const tbB = (tbType === "cumulative") ? b.cumulative : b.buchholz;
+      return tbB - tbA;
+    });
+
+    const tbody = document.getElementById("finalStandingsBody");
+    tbody.innerHTML = "";
+    sorted.forEach((item, idx) => {
+      const tbVal = (tbType === "cumulative") ? item.cumulative : item.buchholz;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><strong>${idx + 1}</strong></td>
+        <td>${item.player.id}</td>
+        <td class="text-left">${item.player.name}</td>
+        <td><strong>${formatPoints(item.points)}</strong></td>
+        <td>${formatPoints(tbVal % 1 === 0 ? tbVal : tbVal.toFixed(1))}</td>
+        <td>${item.player.status}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    renderCrossTable(sorted);
+  }
+
+  function renderCrossTable(sortedPlayers) {
+    const crossTable = document.getElementById("crossTable");
+    const activePlayers = tournament.players.filter(p => p.status !== "Bye");
+    const n = activePlayers.length;
+
+    let html = `<thead><tr><th>No.</th><th class="text-left">Player</th>`;
+    for (let i = 1; i <= n; i++) html += `<th>${i}</th>`;
+    html += `<th>Pts</th><th>Rank</th></tr></thead><tbody>`;
+
+    const matchResults = {};
+    tournament.rounds.forEach(r => {
+      r.pairings.forEach(p => {
+        if (!p.result) return;
+        if (!matchResults[p.white]) matchResults[p.white] = {};
+        if (!matchResults[p.black]) matchResults[p.black] = {};
+
+        let wPts = "", bPts = "";
+        if (p.result.startsWith("1-0")) { wPts = "1"; bPts = "0"; }
+        else if (p.result.startsWith("0-1")) { wPts = "0"; bPts = "1"; }
+        else if (p.result.startsWith("0.5")) { wPts = "½"; bPts = "½"; }
+
+        matchResults[p.white][p.black] = (matchResults[p.white][p.black] ? matchResults[p.white][p.black] + "," : "") + wPts;
+        matchResults[p.black][p.white] = (matchResults[p.black][p.white] ? matchResults[p.black][p.white] + "," : "") + bPts;
+      });
+    });
+
+    activePlayers.forEach(p => {
+      const rankIdx = sortedPlayers.findIndex(sp => sp.player.id === p.id) + 1;
+      const pStats = sortedPlayers.find(sp => sp.player.id === p.id);
+
+      html += `<tr><td>${p.id}</td><td class="text-left">${p.name}</td>`;
+      for (let j = 1; j <= n; j++) {
+        if (p.id === j) {
+          html += `<td class="diagonal">x</td>`;
+        } else {
+          const res = (matchResults[p.id] && matchResults[p.id][j]) ? matchResults[p.id][j] : "-";
+          html += `<td>${res}</td>`;
+        }
+      }
+      html += `<td><strong>${pStats ? formatPoints(pStats.points) : 0}</strong></td><td>${rankIdx}</td></tr>`;
+    });
+
+    html += `</tbody>`;
+    crossTable.innerHTML = html;
+  }
+
+  function withdrawPlayerPrompt() {
+    const active = tournament.players.filter(p => p.status === "Active");
+    let msg = "Enter player number to withdraw / forfeit remaining games:\n";
+    active.forEach(p => { msg += `${p.id}. ${p.name}\n`; });
+    const input = prompt(msg);
+    if (!input) return;
+
+    const id = parseInt(input.trim(), 10);
+    const player = tournament.players.find(p => p.id === id);
+    if (player) {
+      player.status = "Withdrawn";
+      tournament.rounds.forEach((r, idx) => {
+        if (idx >= tournament.currentRoundIndex) {
+          r.pairings.forEach(p => {
+            if (p.white === id && p.result === "") p.result = "0-1 WO";
+            if (p.black === id && p.result === "") p.result = "1-0 WO";
+          });
+        }
+      });
+      renderRoundPairings();
+      renderStandingsTable();
+      saveSession();
+    }
+  }
+
+  function saveSession() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tournament));
+    } catch (e) {
+      console.warn("Could not save session to localStorage.", e);
+    }
+  }
+
+  function restoreLastSession() {
+    const data = localStorage.getItem(STORAGE_KEY);
+    if (!data) {
+      alert("No saved session found.");
+      return;
+    }
+    tournament = JSON.parse(data);
+    showRoundPage();
+  }
+
+  function saveTournamentFile() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tournament, null, 2));
+    const dlAnchor = document.createElement("a");
+    dlAnchor.setAttribute("href", dataStr);
+    dlAnchor.setAttribute("download", `${(tournament.name || "tournament").replace(/\s+/g, '_')}.json`);
+    dlAnchor.click();
+  }
+
+  function loadTournamentJSON(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        tournament = JSON.parse(event.target.result);
+        saveSession();
+        showRoundPage();
+      } catch (err) {
+        alert("Invalid tournament file (.json).");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function resetNewTournament() {
+    if (confirm("Do you want to start a new tournament? Current tournament data is saved in browser storage.")) {
+      document.querySelectorAll(".page-section").forEach(s => s.classList.remove("active"));
+      document.getElementById("setupSection").classList.add("active");
+    }
+  }
+</script>
+</body>
+</html>
