@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="En variant av schweizerlottning för schack direkt i webbläsaren, som även kan laddas ned och köras lokalt.">
+  <meta name="author" content="Mats Winther">
+  <link rel="canonical" href="https://mats-winther.github.io/swiss.htm">
+  <title id="docTitle">Schweiziskt turneringssystem</title>
+  <style>
+    :root {
+      --primary: #2c3e50;
+      --accent: #3498db;
+      --success: #27ae60;
+      --danger: #e74c3c;
+      --bg: #f8f9fa;
+      --card-bg: #ffffff;
+      --border: #dee2e6;
+      --text: #212529;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    h1, h2, h3 {
+      color: var(--primary);
+      margin-top: 0;
+    }
+
+    h1 {
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 12px;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    textarea {
+      resize: vertical;
+      font-family: monospace;
+    }
+
+    .radio-group label {
+      display: inline-block;
+      margin-right: 20px;
+      font-weight: normal;
+      cursor: pointer;
+    }
+
+    .info-box {
+      background: #eef7fc;
+      border-left: 4px solid var(--accent);
+      padding: 14px;
+      margin-bottom: 20px;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+
+    .info-box h4 {
+      margin: 0 0 6px 0;
+      color: var(--primary);
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background: #2980b9;
+    }
+
+    button.btn-success {
+      background: var(--success);
+    }
+    button.btn-success:hover {
+      background: #219150;
+    }
+
+    button.btn-danger {
+      background: var(--danger);
+    }
+    button.btn-danger:hover {
+      background: #c0392b;
+    }
+
+    button.btn-secondary {
+      background: #6c757d;
+    }
+    button.btn-secondary:hover {
+      background: #5a6268;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      margin-bottom: 20px;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f1f4f6;
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) {
+      background-color: #fafbfc;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .print-only {
+      display: none !important;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background-color: var(--card-bg);
+      margin: 5% auto;
+      padding: 25px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    @media print {
+      @page {
+        size: auto;
+        margin: 15mm;
+      }
+      body {
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        color: #000 !important;
+      }
+      .container {
+        box-shadow: none !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+      .btn-group,
+      button,
+      .modal,
+      #tournamentSetup,
+      .no-print,
+      select {
+        display: none !important;
+      }
+      .print-only {
+        display: inline-block !important;
+      }
+      th, td {
+        border-color: #000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1 id="headerTitle">Schweiziskt turneringssystem</h1>
+
+  <!-- SETUP SECTION -->
+  <div id="tournamentSetup">
+    <h2>Turneringsinställningar</h2>
+
+    <div class="form-group">
+      <label for="tournamentName">Turneringens namn</label>
+      <input type="text" id="tournamentName" value="Schweiziskt klubbmästerskap">
+    </div>
+
+    <div class="form-group">
+      <label for="numRounds">Antal ronder</label>
+      <input type="number" id="numRounds" min="1" max="15" value="5">
+    </div>
+
+    <div class="form-group">
+      <label>Färgfördelning rond 1</label>
+      <div class="radio-group">
+        <label><input type="radio" name="colorPolicy" value="higher_seed_white" checked> Högst rankad har alltid vit (Rank #1 vit)</label>
+        <label><input type="radio" name="colorPolicy" value="alternating"> Växlande färger (Bord 1 vit, bord 2 svart...)</label>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <h4>Lottningssystem:</h4>
+      <strong>Rond 1:</strong> Spelarna delas in i fyra ratinggrupper. Högst rankad i grupp 1 har vit mot högst rankad i grupp 2. Samma gäller för grupp 3 och 4.<br>
+      <strong>Rond 2:</strong> Högst rankad vinnare har svart mot högst rankad vinnare i den andra halvan. Näst högst har svart mot nästa i andra halvan, osv.<br>
+      <strong>Rond 3+:</strong> Schweizerlottning påbörjas. Spelare sorteras efter poäng, därefter Buchholz-poäng, därefter ursprunglig ranking. Lottningen sker uppifrån och ner mot nästa tillgängliga motståndare (inga ommatcher).<br>
+      <strong>Färgfördelning:</strong> Spelaren som har haft färre vita partier får vit. Om båda har haft lika många vita partier får spelaren med högre startnummer (seed) vit.
+    </div>
+
+    <div class="form-group">
+      <label for="playersList">Spelarlista (Namn Rating, en per rad – sorteras automatiskt efter rating vid start)</label>
+      <textarea id="playersList" rows="10" placeholder="Magnus Carlsen 2830&#10;Hikaru Nakamura 2802&#10;Alireza Firouzja 2795..."></textarea>
+    </div>
+
+    <div class="btn-group no-print">
+      <input type="file" id="fileInput" accept=".txt" style="display:none" onchange="handleFileLoad(event)">
+      <input type="file" id="jsonFileInput" accept=".json" style="display:none" onchange="handleJsonLoad(event)">
+      <button type="button" class="btn-secondary" onclick="document.getElementById('fileInput').click()">Läs in .txt-fil</button>
+      <button type="button" class="btn-secondary" onclick="document.getElementById('jsonFileInput').click()">Läs in turnering (JSON)</button>
+      <button type="button" class="btn-secondary" onclick="loadSamplePlayers()">32 klubbspelare</button>
+      <button type="button" class="btn-danger" onclick="document.getElementById('playersList').value=''">Rensa</button>
+      <button type="button" class="btn-success" onclick="startTournament()">Starta turnering</button>
+    </div>
+  </div>
+
+  <!-- ROUND PAIRINGS SECTION -->
+  <div id="roundSection" style="display: none;">
+    <h2 id="roundTitle">Rondlottning</h2>
+    <p class="no-print">Registrera resultat och gå vidare till nästa rond.</p>
+
+    <div class="btn-group no-print">
+      <button type="button" onclick="printPairings()">Skriv ut lottning</button>
+      <button type="button" class="btn-secondary" onclick="saveTournament()">Spara turnering</button>
+      <button type="button" class="btn-secondary" onclick="openStandingsModal()">Aktuell ställning</button>
+      <button type="button" class="btn-danger" onclick="openWithdrawModal()">Avanmäl spelare</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 8%;" class="text-center">Bord</th>
+          <th style="width: 36%;">Vit (Rank / Rating)</th>
+          <th style="width: 20%;" class="text-center">Resultat</th>
+          <th style="width: 36%;">Svart (Rank / Rating)</th>
+        </tr>
+      </thead>
+      <tbody id="pairingsTableBody"></tbody>
+    </table>
+
+    <div class="btn-group no-print">
+      <button type="button" id="nextRoundBtn" class="btn-success" onclick="proceedNextRound()">Nästa rond</button>
+    </div>
+  </div>
+
+  <!-- FINAL STANDINGS SECTION -->
+  <div id="finalStandingsSection" style="display: none;">
+    <h2>Slutställning</h2>
+    <table id="finalStandingsTable">
+      <thead>
+        <tr>
+          <th class="text-center">#</th>
+          <th class="text-center">Rank</th>
+          <th>Spelare</th>
+          <th class="text-center">Rating</th>
+          <th class="text-center">Poäng</th>
+          <th class="text-center">Buchholz</th>
+          <th class="text-center">S-B</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="btn-group no-print">
+      <button type="button" onclick="printFinalResults()">Skriv ut slutresultat</button>
+      <button type="button" class="btn-success" onclick="location.reload()">Starta ny turnering</button>
+    </div>
+  </div>
+</div>
+
+<!-- CURRENT STANDINGS MODAL -->
+<div id="standingsModal" class="modal">
+  <div class="modal-content">
+    <h3>Aktuell ställning</h3>
+    <table>
+      <thead>
+        <tr>
+          <th class="text-center">#</th>
+          <th class="text-center">Rank</th>
+          <th>Spelare</th>
+          <th class="text-center">Rating</th>
+          <th class="text-center">Poäng</th>
+          <th class="text-center">Buchholz</th>
+          <th class="text-center">S-B</th>
+        </tr>
+      </thead>
+      <tbody id="currentStandingsBody"></tbody>
+    </table>
+    <div class="btn-group no-print">
+      <button type="button" onclick="printCurrentStandings()">Skriv ut ställning</button>
+      <button type="button" class="btn-secondary" onclick="closeStandingsModal()">Stäng</button>
+    </div>
+  </div>
+</div>
+
+<!-- WITHDRAW PLAYER MODAL -->
+<div id="withdrawModal" class="modal">
+  <div class="modal-content">
+    <h3>Avanmäl spelare</h3>
+    <p>Välj en spelare att avanmäla. Om spelarens parti pågår i den aktuella ronden tilldelas motståndaren en vinst på walkover.</p>
+    <div class="form-group">
+      <label for="withdrawSelect">Välj spelare</label>
+      <select id="withdrawSelect"></select>
+    </div>
+    <div class="btn-group no-print">
+      <button type="button" class="btn-danger" onclick="confirmWithdrawal()">Bekräfta avanmälan</button>
+      <button type="button" class="btn-secondary" onclick="closeWithdrawModal()">Avbryt</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let tournament = {
+    name: "",
+    totalRounds: 5,
+    currentRound: 1,
+    colorPolicy: "higher_seed_white",
+    players: [],
+    currentPairings: []
+  };
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function loadSamplePlayers() {
+    const samples = [
+      "David Andersson 2180", "Robert Nilsson 2150", "Mikael Larsson 2135", "William Johansson 2110",
+      "Richard Eriksson 2085", "Johan Olsson 2060", "Thomas Martinsson 2040", "Karl Persson 2015",
+      "Christoffer Svensson 1990", "Daniel Lindberg 1975", "Mattias Holm 1950", "Anton Lundqvist 1930",
+      "Dan Gustafsson 1910", "Marcus Berggren 1890", "Per Sandström 1870", "Stefan Nyström 1850",
+      "Andreas Wallin 1830", "Kenneth Bergman 1815", "Jonas Lindqvist 1795", "Kevin Sjögren 1780",
+      "Björn Forsberg 1760", "Göran Ekström 1740", "Edvin Dahlberg 1720", "Ronny Blomqvist 1700",
+      "Tim Karlsson 1680", "Jakob Hedlund 1660", "Fredrik Falk 1640", "Rikard Björk 1620",
+      "Joakim Blom 1600", "Gunnar Eklund 1580", "Niklas Sundberg 1560", "Erik Löfgren 1540"
+    ];
+    document.getElementById('playersList').value = samples.join('\n');
+  }
+
+  function handleFileLoad(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('playersList').value = e.target.result;
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
+
+  function saveTournament() {
+    const selects = document.querySelectorAll('#pairingsTableBody select');
+    selects.forEach((sel, idx) => {
+      if (tournament.currentPairings[idx] && !tournament.currentPairings[idx].bye) {
+        tournament.currentPairings[idx].result = sel.value;
+      }
+    });
+
+    const dataBlob = new Blob([JSON.stringify(tournament, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    const safeName = (tournament.name || "turnering").replace(/[^a-z0-9_-]/gi, '_');
+    link.href = url;
+    link.download = `${safeName}_rond_${tournament.currentRound}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleJsonLoad(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const loaded = JSON.parse(e.target.result);
+        if (!loaded.players || !loaded.currentRound) {
+          alert("Ogiltigt filformat för turnering.");
+          return;
+        }
+
+        tournament = loaded;
+
+        if (tournament.currentPairings && tournament.players) {
+          tournament.currentPairings.forEach(p => {
+            if (p.white) {
+              p.white = tournament.players.find(pl => pl.id === p.white.id) || p.white;
+            }
+            if (p.black) {
+              p.black = tournament.players.find(pl => pl.id === p.black.id) || p.black;
+            }
+          });
+        }
+
+        document.getElementById('headerTitle').textContent = tournament.name;
+        document.getElementById('docTitle').textContent = tournament.name;
+        document.getElementById('tournamentSetup').style.display = 'none';
+        document.getElementById('roundSection').style.display = 'block';
+
+        document.getElementById('roundTitle').textContent = `Rond ${tournament.currentRound} - Lottning`;
+        const nextBtn = document.getElementById('nextRoundBtn');
+        if (nextBtn) {
+          if (tournament.currentRound >= tournament.totalRounds) {
+            nextBtn.textContent = "Avsluta turnering";
+          } else {
+            nextBtn.textContent = "Nästa rond";
+          }
+        }
+
+        renderPairingsTable();
+      } catch (err) {
+        alert("Fel vid inläsning av turnering: " + err.message);
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
+
+  function startTournament() {
+    tournament.name = document.getElementById('tournamentName').value.trim() || "Schweizisk turnering";
+    tournament.totalRounds = parseInt(document.getElementById('numRounds').value) || 5;
+    tournament.colorPolicy = document.querySelector('input[name="colorPolicy"]:checked').value;
+
+    const raw = document.getElementById('playersList').value.trim().split('\n');
+    let parsed = [];
+
+    for (let i = 0; i < raw.length; i++) {
+      const line = raw[i].trim();
+      if (!line) continue;
+      const match = line.match(/^(.*?)\s+(\d+)$/);
+      if (match && match[1].trim().length > 0) {
+        parsed.push({ name: match[1].trim(), rating: parseInt(match[2], 10) });
+      } else {
+        alert(`Fel: Rating saknas för "${line}". Varje spelare måste ha både namn och rating angivet (t.ex. "Magnus Carlsen 2830").`);
+        return;
+      }
+    }
+
+    if (parsed.length < 2) {
+      alert("Ange minst 2 spelare.");
+      return;
+    }
+
+    parsed.sort((a, b) => b.rating - a.rating);
+
+    tournament.players = parsed.map((p, idx) => ({
+      id: idx + 1,
+      orderNumber: idx + 1,
+      name: p.name,
+      rating: p.rating,
+      points: 0,
+      withdrawn: false,
+      history: []
+    }));
+
+    document.getElementById('headerTitle').textContent = tournament.name;
+    document.getElementById('docTitle').textContent = tournament.name;
+    document.getElementById('tournamentSetup').style.display = 'none';
+    document.getElementById('roundSection').style.display = 'block';
+
+    generatePairingsForRound(1);
+  }
+
+  function calculateBuchholz(player) {
+    return player.history.reduce((sum, h) => {
+      if (!h.oppId) return sum;
+      const opp = tournament.players.find(p => p.id === h.oppId);
+      return sum + (opp ? opp.points : 0);
+    }, 0);
+  }
+
+  function calculateSonnebornBerger(player) {
+    return player.history.reduce((sum, h) => {
+      if (!h.oppId) return sum;
+      const opp = tournament.players.find(p => p.id === h.oppId);
+      return sum + (opp ? opp.points * h.score : 0);
+    }, 0);
+  }
+
+  function assignSwissColors(p1, p2) {
+    const p1Whites = p1.history.filter(h => h.color === 'W').length;
+    const p2Whites = p2.history.filter(h => h.color === 'W').length;
+
+    if (p1Whites < p2Whites) {
+      return { white: p1, black: p2 };
+    } else if (p2Whites < p1Whites) {
+      return { white: p2, black: p1 };
+    } else {
+      return (p1.orderNumber > p2.orderNumber) ? { white: p1, black: p2 } : { white: p2, black: p1 };
+    }
+  }
+
+  function generatePairingsForRound(roundNum) {
+    tournament.currentRound = roundNum;
+    document.getElementById('roundTitle').textContent = `Rond ${roundNum} - Lottning`;
+
+    const nextBtn = document.getElementById('nextRoundBtn');
+    if (nextBtn) {
+      if (roundNum >= tournament.totalRounds) {
+        nextBtn.textContent = "Avsluta turnering";
+      } else {
+        nextBtn.textContent = "Nästa rond";
+      }
+    }
+
+    let activePlayers = tournament.players.filter(p => !p.withdrawn);
+    let pairings = [];
+    let byePlayer = null;
+
+    if (activePlayers.length % 2 !== 0) {
+      const sortedForBye = [...activePlayers].sort((a, b) => {
+        if (a.points !== b.points) return a.points - b.points;
+        return b.orderNumber - a.orderNumber;
+      });
+
+      for (let p of sortedForBye) {
+        const hadBye = p.history.some(h => h.oppId === null);
+        if (!hadBye) {
+          byePlayer = p;
+          break;
+        }
+      }
+      if (!byePlayer) byePlayer = sortedForBye[0];
+      activePlayers = activePlayers.filter(p => p.id !== byePlayer.id);
+    }
+
+    if (roundNum === 1) {
+      pairings = pairRound1(activePlayers);
+    } else if (roundNum === 2) {
+      pairings = pairRound2(activePlayers);
+    } else {
+      pairings = pairRound3Plus(activePlayers);
+    }
+
+    if (byePlayer) {
+      pairings.push({
+        board: pairings.length + 1,
+        white: byePlayer,
+        black: null,
+        result: "-",
+        bye: true
+      });
+    }
+
+    tournament.currentPairings = pairings;
+    renderPairingsTable();
+  }
+
+  function pairRound1(players) {
+    const N = players.length;
+    const half = Math.floor(N / 2);
+    const topHalf = players.slice(0, half);
+    const botHalf = players.slice(half);
+
+    const q1Size = Math.floor(topHalf.length / 2);
+    const q1 = topHalf.slice(0, q1Size);
+    const q2 = topHalf.slice(q1Size);
+
+    const q3Size = Math.floor(botHalf.length / 2);
+    const q3 = botHalf.slice(0, q3Size);
+    const q4 = botHalf.slice(q3Size);
+
+    let pairs = [];
+    let board = 1;
+
+    for (let i = 0; i < q1.length; i++) {
+      const p1 = q1[i];
+      const p2 = q2[i];
+      let white = p1;
+      let black = p2;
+
+      if (tournament.colorPolicy === "alternating" && board % 2 === 0) {
+        white = p2;
+        black = p1;
+      }
+      pairs.push({ board: board++, white, black, result: "", bye: false });
+    }
+
+    for (let i = 0; i < q3.length; i++) {
+      const p1 = q3[i];
+      const p2 = q4[i];
+      let white = p1;
+      let black = p2;
+
+      if (tournament.colorPolicy === "alternating" && board % 2 === 0) {
+        white = p2;
+        black = p1;
+      }
+      pairs.push({ board: board++, white, black, result: "", bye: false });
+    }
+
+    return pairs;
+  }
+
+  function pairRound2(players) {
+    let scoreGroups = {};
+    players.forEach(p => {
+      const pts = p.points;
+      if (!scoreGroups[pts]) scoreGroups[pts] = [];
+      scoreGroups[pts].push(p);
+    });
+
+    const scores = Object.keys(scoreGroups).map(Number).sort((a, b) => b - a);
+    let pairs = [];
+    let board = 1;
+    let carryOver = [];
+
+    scores.forEach(s => {
+      let group = carryOver.concat(scoreGroups[s]);
+      carryOver = [];
+
+      group.sort((a, b) => a.orderNumber - b.orderNumber);
+
+      if (group.length % 2 !== 0) {
+        carryOver.push(group.pop());
+      }
+
+      const half = group.length / 2;
+      const firstHalf = group.slice(0, half);
+      const secondHalf = group.slice(half);
+
+      for (let i = 0; i < half; i++) {
+        const p1 = firstHalf[i];
+        const p2 = secondHalf[i];
+        pairs.push({
+          board: board++,
+          white: p2,
+          black: p1,
+          result: "",
+          bye: false
+        });
+      }
+    });
+
+    if (carryOver.length > 0) {
+      const rem = pairRound3Plus(carryOver, board);
+      pairs = pairs.concat(rem);
+    }
+
+    return pairs;
+  }
+
+  function pairRound3Plus(players, startBoard = 1) {
+    const sorted = [...players].sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      const buchDiff = calculateBuchholz(b) - calculateBuchholz(a);
+      if (buchDiff !== 0) return buchDiff;
+      return a.orderNumber - b.orderNumber;
+    });
+
+    let pairs = [];
+    let board = startBoard;
+    let used = new Set();
+
+    for (let i = 0; i < sorted.length; i++) {
+      if (used.has(sorted[i].id)) continue;
+      const p1 = sorted[i];
+
+      let oppIdx = -1;
+      for (let j = i + 1; j < sorted.length; j++) {
+        if (!used.has(sorted[j].id)) {
+          const alreadyPlayed = p1.history.some(h => h.oppId === sorted[j].id);
+          if (!alreadyPlayed) {
+            oppIdx = j;
+            break;
+          }
+        }
+      }
+
+      if (oppIdx === -1) {
+        for (let j = i + 1; j < sorted.length; j++) {
+          if (!used.has(sorted[j].id)) {
+            oppIdx = j;
+            break;
+          }
+        }
+      }
+
+      if (oppIdx !== -1) {
+        const p2 = sorted[oppIdx];
+        used.add(p1.id);
+        used.add(p2.id);
+
+        const colors = assignSwissColors(p1, p2);
+        pairs.push({
+          board: board++,
+          white: colors.white,
+          black: colors.black,
+          result: "",
+          bye: false
+        });
+      }
+    }
+
+    return pairs;
+  }
+
+  function renderPairingsTable() {
+    const tbody = document.getElementById('pairingsTableBody');
+    tbody.innerHTML = "";
+
+    tournament.currentPairings.forEach((p) => {
+      const tr = document.createElement('tr');
+
+      const bCell = document.createElement('td');
+      bCell.className = "text-center";
+      bCell.textContent = p.board;
+      tr.appendChild(bCell);
+
+      const wCell = document.createElement('td');
+      wCell.textContent = `${p.white.name} (#${p.white.orderNumber} / ${p.white.rating})`;
+      tr.appendChild(wCell);
+
+      const rCell = document.createElement('td');
+      rCell.className = "text-center";
+      if (p.bye) {
+        rCell.textContent = "-";
+      } else {
+        const select = document.createElement('select');
+        select.className = "no-print";
+        select.innerHTML = `
+          <option value="">Välj resultat</option>
+          <option value="1 - 0">1 - 0</option>
+          <option value="0.5 - 0.5">0.5 - 0.5</option>
+          <option value="0 - 1">0 - 1</option>
+        `;
+        select.value = p.result;
+
+        const printBox = document.createElement('span');
+        printBox.className = "print-only";
+        printBox.textContent = "-";
+
+        select.onchange = (e) => {
+          p.result = e.target.value;
+          printBox.textContent = "-";
+        };
+
+        rCell.appendChild(select);
+        rCell.appendChild(printBox);
+      }
+      tr.appendChild(rCell);
+
+      const blkCell = document.createElement('td');
+      blkCell.textContent = p.black ? `${p.black.name} (#${p.black.orderNumber} / ${p.black.rating})` : "Frirond";
+      tr.appendChild(blkCell);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function proceedNextRound() {
+    for (let i = 0; i < tournament.currentPairings.length; i++) {
+      const p = tournament.currentPairings[i];
+      if (!p.bye && !p.result) {
+        alert(`Vänligen välj ett resultat för bord ${p.board}`);
+        return;
+      }
+    }
+
+    tournament.currentPairings.forEach(p => {
+      if (p.bye) {
+        p.white.points += 1;
+        p.white.history.push({ round: tournament.currentRound, oppId: null, color: 'W', score: 1 });
+      } else {
+        let whiteScore = 0;
+        let blackScore = 0;
+
+        if (p.result === "1 - 0") { whiteScore = 1; blackScore = 0; }
+        else if (p.result === "0.5 - 0.5") { whiteScore = 0.5; blackScore = 0.5; }
+        else if (p.result === "0 - 1") { whiteScore = 0; blackScore = 1; }
+
+        p.white.points += whiteScore;
+        p.black.points += blackScore;
+
+        p.white.history.push({ round: tournament.currentRound, oppId: p.black.id, color: 'W', score: whiteScore });
+        p.black.history.push({ round: tournament.currentRound, oppId: p.white.id, color: 'B', score: blackScore });
+      }
+    });
+
+    if (tournament.currentRound >= tournament.totalRounds) {
+      showFinalStandings();
+    } else {
+      generatePairingsForRound(tournament.currentRound + 1);
+    }
+  }
+
+  function getSortedStandings() {
+    return [...tournament.players].sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      const buchA = calculateBuchholz(a);
+      const buchB = calculateBuchholz(b);
+      if (buchB !== buchA) return buchB - buchA;
+      const sbA = calculateSonnebornBerger(a);
+      const sbB = calculateSonnebornBerger(b);
+      if (sbB !== sbA) return sbB - sbA;
+      return a.orderNumber - b.orderNumber;
+    });
+  }
+
+  function showFinalStandings() {
+    document.getElementById('roundSection').style.display = 'none';
+    document.getElementById('finalStandingsSection').style.display = 'block';
+
+    const sorted = getSortedStandings();
+    const tbody = document.querySelector('#finalStandingsTable tbody');
+    tbody.innerHTML = "";
+
+    sorted.forEach((p, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="text-center">${idx + 1}</td>
+        <td class="text-center">${p.orderNumber}</td>
+        <td>${escapeHtml(p.name)} ${p.withdrawn ? '<span style="color:red">(Utgått)</span>' : ''}</td>
+        <td class="text-center">${p.rating}</td>
+        <td class="text-center"><strong>${p.points}</strong></td>
+        <td class="text-center">${calculateBuchholz(p).toFixed(1)}</td>
+        <td class="text-center">${calculateSonnebornBerger(p).toFixed(2)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function openStandingsModal() {
+    const sorted = getSortedStandings();
+    const tbody = document.getElementById('currentStandingsBody');
+    tbody.innerHTML = "";
+
+    sorted.forEach((p, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="text-center">${idx + 1}</td>
+        <td class="text-center">${p.orderNumber}</td>
+        <td>${escapeHtml(p.name)} ${p.withdrawn ? '<span style="color:red">(Utgått)</span>' : ''}</td>
+        <td class="text-center">${p.rating}</td>
+        <td class="text-center"><strong>${p.points}</strong></td>
+        <td class="text-center">${calculateBuchholz(p).toFixed(1)}</td>
+        <td class="text-center">${calculateSonnebornBerger(p).toFixed(2)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('standingsModal').style.display = 'block';
+  }
+
+  function closeStandingsModal() {
+    document.getElementById('standingsModal').style.display = 'none';
+  }
+
+  function openWithdrawModal() {
+    const select = document.getElementById('withdrawSelect');
+    select.innerHTML = "";
+
+    const active = tournament.players.filter(p => !p.withdrawn);
+    active.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = `${p.name} (#${p.orderNumber} - ${p.points} p)`;
+      select.appendChild(opt);
+    });
+
+    document.getElementById('withdrawModal').style.display = 'block';
+  }
+
+  function closeWithdrawModal() {
+    document.getElementById('withdrawModal').style.display = 'none';
+  }
+
+  function confirmWithdrawal() {
+    const select = document.getElementById('withdrawSelect');
+    const pId = parseInt(select.value);
+    if (!pId) return;
+
+    const p = tournament.players.find(x => x.id === pId);
+    if (!p) return;
+
+    p.withdrawn = true;
+
+    tournament.currentPairings.forEach(pair => {
+      if (pair.white && pair.white.id === pId) {
+        pair.result = "0 - 1";
+      } else if (pair.black && pair.black.id === pId) {
+        pair.result = "1 - 0";
+      }
+    });
+
+    renderPairingsTable();
+    closeWithdrawModal();
+    alert(`${p.name} har utgått ur turneringen.`);
+  }
+
+  function executePrint(htmlContent) {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert("Popup-fönster blockerades! Vänligen tillåt popup-fönster för att skriva ut.");
+      return;
+    }
+
+    const docContent = `<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>${escapeHtml(tournament.name || "Utskrift")}</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background: #f8f9fa;
+      color: #212529;
+      margin: 0;
+      padding: 20px;
+    }
+    .toolbar {
+      max-width: 800px;
+      margin: 0 auto 15px auto;
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+    button.btn-close {
+      background: #6c757d;
+    }
+    button.btn-close:hover {
+      background: #5a6268;
+    }
+    .print-sheet {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 30px;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .print-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .print-header h1 {
+      margin: 0 0 5px 0;
+      font-size: 22px;
+      color: #000;
+    }
+    .print-header h2 {
+      margin: 0;
+      font-size: 16px;
+      color: #333;
+    }
+    .print-meta {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+    }
+    .print-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 13.5px;
+    }
+    .print-table th, .print-table td {
+      border: 1px solid #222;
+      padding: 8px 10px;
+      text-align: left;
+      color: #000;
+    }
+    .print-table th {
+      background-color: #f2f2f2 !important;
+      font-weight: 600;
+    }
+    .print-table tr {
+      page-break-inside: avoid;
+    }
+    @media print {
+      body {
+        background: #fff !important;
+        padding: 0 !important;
+      }
+      .toolbar {
+        display: none !important;
+      }
+      .print-sheet {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button type="button" onclick="window.print()">Skriv ut</button>
+    <button type="button" class="btn-close" onclick="window.close()">Stäng</button>
+  </div>
+  <div class="print-sheet">
+    ${htmlContent}
+  </div>
+</body>
+</html>`;
+
+    printWindow.document.open();
+    printWindow.document.write(docContent);
+    printWindow.document.close();
+    printWindow.focus();
+  }
+
+  function printPairings() {
+    if (!tournament.currentPairings || tournament.currentPairings.length === 0) {
+      alert("Det finns ingen lottning att skriva ut.");
+      return;
+    }
+
+    const rows = tournament.currentPairings.map(p => {
+      const whiteText = `${escapeHtml(p.white.name)} (#${p.white.orderNumber} / ${p.white.rating})`;
+      const blackText = p.black ? `${escapeHtml(p.black.name)} (#${p.black.orderNumber} / ${p.black.rating})` : "Frirond";
+      const resultText = p.bye ? "1 - 0 (Frirond)" : "-";
+      return `
+        <tr>
+          <td style="text-align: center; font-weight: bold;">${p.board}</td>
+          <td>${whiteText}</td>
+          <td style="text-align: center;">${resultText}</td>
+          <td>${blackText}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const html = `
+      <div class="print-header">
+        <h1>${escapeHtml(tournament.name)}</h1>
+        <h2>Rond ${tournament.currentRound} - Lottning</h2>
+        <div class="print-meta">Utskriven ${new Date().toLocaleString('sv-SE')}</div>
+      </div>
+      <table class="print-table">
+        <thead>
+          <tr>
+            <th style="width: 8%; text-align: center;">Bord</th>
+            <th style="width: 40%;">Vit (Rank / Rating)</th>
+            <th style="width: 16%; text-align: center;">Resultat</th>
+            <th style="width: 40%;">Svart (Rank / Rating)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    `;
+
+    executePrint(html);
+  }
+
+  function printStandingsSheet(titleSubtitle) {
+    const sorted = getSortedStandings();
+    const rows = sorted.map((p, idx) => `
+      <tr>
+        <td style="text-align: center; font-weight: bold;">${idx + 1}</td>
+        <td style="text-align: center;">${p.orderNumber}</td>
+        <td>${escapeHtml(p.name)} ${p.withdrawn ? '(Utgått)' : ''}</td>
+        <td style="text-align: center;">${p.rating}</td>
+        <td style="text-align: center; font-weight: bold;">${p.points}</td>
+        <td style="text-align: center;">${calculateBuchholz(p).toFixed(1)}</td>
+        <td style="text-align: center;">${calculateSonnebornBerger(p).toFixed(2)}</td>
+      </tr>
+    `).join('');
+
+    const html = `
+      <div class="print-header">
+        <h1>${escapeHtml(tournament.name)}</h1>
+        <h2>${escapeHtml(titleSubtitle)}</h2>
+        <div class="print-meta">Utskriven ${new Date().toLocaleString('sv-SE')}</div>
+      </div>
+      <table class="print-table">
+        <thead>
+          <tr>
+            <th style="width: 8%; text-align: center;">#</th>
+            <th style="width: 8%; text-align: center;">Rank</th>
+            <th style="width: 36%;">Spelare</th>
+            <th style="width: 12%; text-align: center;">Rating</th>
+            <th style="width: 12%; text-align: center;">Poäng</th>
+            <th style="width: 12%; text-align: center;">Buchholz</th>
+            <th style="width: 12%; text-align: center;">S-B</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    `;
+
+    executePrint(html);
+  }
+
+  function printCurrentStandings() {
+    printStandingsSheet(`Aktuell ställning (Rond ${tournament.currentRound})`);
+  }
+
+  function printFinalResults() {
+    printStandingsSheet(`Slutställning (Efter ${tournament.totalRounds} ronder)`);
+  }
+
+  window.onclick = function(event) {
+    if (event.target === document.getElementById('standingsModal')) closeStandingsModal();
+    if (event.target === document.getElementById('withdrawModal')) closeWithdrawModal();
+  };
+</script>
+</body>
+</html>
