@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Ett enkelt lottningssystem för schack enligt Monrad, som körs direkt i webbläsaren.">
+  <meta name="description" content="Monrads lottningssystem för schack direkt i webbläsaren.">
   <meta name="author" content="Mats Winther">
   <link rel="canonical" href="https://mats-winther.github.io/monrad.htm">
   <title>Monrads lottningssystem för schack</title>
@@ -73,6 +73,14 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tournament-tagline {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--accent);
     }
 
     h3 {
@@ -80,6 +88,20 @@
       margin-bottom: 10px;
       font-size: 1.05rem;
       color: var(--primary);
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+
+    input[type="text"]:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
     }
 
     textarea {
@@ -231,7 +253,7 @@
       border: 1px solid #fde68a;
     }
 
-    /* Modal för avanmälan/strykning av spelare */
+    /* Modaldialog för strykning av spelare */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -266,13 +288,21 @@
     <p>Turneringshantering för schack</p>
   </header>
 
-  <!-- 1. SPELARREGISTRERING -->
+  <!-- 1. ANGE SPELARE -->
   <section id="section-setup" class="card">
     <h2>1. Ange spelare</h2>
-    <p style="color: #64748b; font-size: 0.9rem; margin-top: 0;">
+    
+    <div style="margin-bottom: 16px;">
+      <label for="input-tournament-name" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.95rem; color: #334155;">
+        Turneringens namn:
+      </label>
+      <input type="text" id="input-tournament-name" placeholder="t.ex. Klubbturnering 2026">
+    </div>
+
+    <p style="color: #64748b; font-size: 0.9rem; margin-top: 0; margin-bottom: 6px;">
       Skriv ett namn per rad (minst 2 spelare). Du kan även öppna en textfil eller läsa in en sparad turnering.
     </p>
-    <textarea id="input-players" placeholder="Magnus Carlsen&#10;Hikaru Nakamura&#10;Alireza Firouzja&#10;Ding Liren&#10;Fabiano Caruana&#10;Gukesh D&#10;Anish Giri"></textarea>
+    <textarea id="input-players" placeholder="Magnus Carlsen&#10;Hikaru Nakamura&#10;Alireza Firouzja...&#10;"></textarea>
     
     <input type="file" id="file-input" accept=".txt" class="hidden" onchange="handleFileSelect(event)">
     <input type="file" id="load-tournament-input" accept=".json" class="hidden" onchange="handleTournamentFileSelect(event)">
@@ -292,14 +322,17 @@
     <div class="btn-group">
       <button onclick="startTournament()">🎲 Slumpa & starta rond 1</button>
       <button class="secondary" onclick="loadPlayersFile()">📁 Ladda spelarfil (.txt)</button>
+      <button class="secondary" onclick="loadSamplePlayers()">Exempel (7 spelare)</button>
       <button class="secondary" onclick="triggerLoadTournament()">📂 Öppna sparad turnering</button>
-<button class="secondary" onclick="loadSamplePlayers()">Exempel (7 sp.)</button>
     </div>
   </section>
 
   <!-- 2. RONDÖVERSIKT -->
   <section id="section-round" class="card hidden">
-    <h2><span id="round-title">Rond 1</span></h2>
+    <h2>
+      <span id="round-title">Rond 1</span>
+      <span id="round-tournament-name" class="tournament-tagline"></span>
+    </h2>
 
     <form id="form-round" onsubmit="event.preventDefault(); submitRoundResults();">
       <table>
@@ -328,7 +361,10 @@
 
   <!-- 3. AKTUELL STÄLLNING -->
   <section id="section-standings" class="card hidden">
-    <h2>Aktuell ställning</h2>
+    <h2>
+      <span>Aktuell ställning</span>
+      <span id="standings-tournament-name" class="tournament-tagline"></span>
+    </h2>
     <table>
       <thead>
         <tr>
@@ -345,7 +381,10 @@
 
   <!-- 4. SLUTSTÄLLNING -->
   <section id="section-final" class="card hidden">
-    <h2>🏆 Slutställning</h2>
+    <h2>
+      <span>🏆 Slutställning</span>
+      <span id="final-tournament-name" class="tournament-tagline"></span>
+    </h2>
 
     <div class="tiebreak-selector" style="margin-top: 0; margin-bottom: 14px;">
       <span style="font-weight: 600; color: #334155;">Särskiljning:</span>
@@ -381,7 +420,7 @@
   </section>
 </div>
 
-<!-- MODAL FÖR ATT STRYKA SPELARE -->
+<!-- MODAL: STRYK SPELARE -->
 <div id="withdraw-modal" class="modal-overlay hidden">
   <div class="modal-box">
     <h3 style="margin-top: 0; color: #dc2626; font-size: 1.2rem;">Stryk spelare</h3>
@@ -400,12 +439,26 @@
 </div>
 
 <script>
+  let tournamentName = "";
   let players = [];
   let currentRound = 1;
   let currentPairings = [];
   let currentByePlayer = null;
   let roundHistory = [];
   let tieBreakSystem = "cumulative"; // "cumulative" eller "buchholz"
+
+  function updateTournamentTitles() {
+    const displayName = tournamentName.trim();
+    const formatted = displayName ? `— ${displayName}` : "";
+    
+    const roundTag = document.getElementById("round-tournament-name");
+    const standingsTag = document.getElementById("standings-tournament-name");
+    const finalTag = document.getElementById("final-tournament-name");
+
+    if (roundTag) roundTag.innerText = formatted;
+    if (standingsTag) standingsTag.innerText = formatted;
+    if (finalTag) finalTag.innerText = formatted;
+  }
 
   function setTieBreak(val) {
     tieBreakSystem = val;
@@ -429,7 +482,7 @@
         return response;
       })
       .then(response => {
-        if (!response.ok) throw new Error("Kunde inte läsa fil automatiskt.");
+        if (!response.ok) throw new Error("Kunde inte hämta filen automatiskt.");
         return response.text();
       })
       .then(text => {
@@ -464,8 +517,12 @@
       try {
         const data = JSON.parse(e.target.result);
         if (!data.players || !data.currentRound) {
-          throw new Error("Ogiltigt format på turneringsfilen.");
+          throw new Error("Ogiltigt format på sparfilen.");
         }
+
+        tournamentName = data.tournamentName || "";
+        document.getElementById("input-tournament-name").value = tournamentName;
+        updateTournamentTitles();
 
         players = data.players.map(p => ({
           ...p,
@@ -510,7 +567,7 @@
         renderStandings();
         alert(`Turneringen har lästs in vid Rond ${currentRound}!`);
       } catch (err) {
-        alert("Kunde inte läsa in turneringsfilen: " + err.message);
+        alert("Kunde inte läsa in sparfilen: " + err.message);
       } finally {
         event.target.value = "";
       }
@@ -536,6 +593,7 @@
     const tournamentState = {
       fileSignature: "MONRAD_CHESS_SAVE",
       savedAt: new Date().toISOString(),
+      tournamentName: tournamentName,
       tieBreakSystem: tieBreakSystem,
       currentRound: currentRound,
       players: players,
@@ -549,7 +607,8 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `turnering_rond_${currentRound}.json`;
+    const safeFileName = (tournamentName.trim() || "turnering").replace(/[^a-z0-9_-]/gi, '_');
+    a.download = `${safeFileName}_rond_${currentRound}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -576,6 +635,9 @@ Anish Giri`;
   }
 
   function startTournament() {
+    tournamentName = document.getElementById("input-tournament-name").value.trim();
+    updateTournamentTitles();
+
     const text = document.getElementById("input-players").value.trim();
     if (!text) {
       alert("Ange minst två spelare.");
@@ -588,7 +650,7 @@ Anish Giri`;
       return;
     }
 
-    // Slumpa startordning för rond 1
+    // Slumpa startordning inför rond 1
     for (let i = names.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [names[i], names[j]] = [names[j], names[i]];
@@ -618,7 +680,7 @@ Anish Giri`;
     lotRound();
   }
 
-  /* --- AVANMÄLAN / STRYKNING AV SPELARE --- */
+  /* --- STRYK SPELARE --- */
 
   function openWithdrawModal() {
     const activePlayers = players.filter(p => !p.withdrawn);
@@ -649,24 +711,23 @@ Anish Giri`;
     const player = players.find(p => p.id === playerId);
     if (!player) return;
 
-    if (!confirm(`Är du säker på att du vill stryka ${player.name}? Spelaren finns kvar i rond ${currentRound} men tas inte med i lottningen från och med nästa rond.`)) {
+    if (!confirm(`Är du säker på att du vill stryka ${player.name}? Spelaren spelar klart Rond ${currentRound}, men tas inte med i lottningen från och med nästa rond.`)) {
       return;
     }
 
     player.withdrawn = true;
     closeWithdrawModal();
 
-    // Spara de resultat som redan är iklickade så att inget försvinner
+    // Spara redan valda resultat så att de inte nollställs vid omritning
     const savedResults = [];
     currentPairings.forEach((_, idx) => {
       const checked = document.querySelector(`input[name="board_${idx + 1}"]:checked`);
       savedResults.push(checked ? checked.value : null);
     });
 
-    // Rita om ronden och tabellen så att "(utgått)" visas intill namnet
     renderRoundView();
 
-    // Återställ eventuellt iklickade radioknappar
+    // Återställ valda resultat
     savedResults.forEach((val, idx) => {
       if (val) {
         const radio = document.querySelector(`input[name="board_${idx + 1}"][value="${val}"]`);
@@ -678,18 +739,18 @@ Anish Giri`;
 
     const remainingActive = players.filter(p => !p.withdrawn);
     if (remainingActive.length < 2) {
-      alert(`${player.name} har markerats som utgången. Observera att färre än 2 aktiva spelare återstår för kommande ronder.`);
+      alert(`${player.name} har strukits. Observera att färre än 2 aktiva spelare återstår för kommande ronder.`);
     } else {
-      alert(`${player.name} har markerats som utgången. Pågående rond spelas färdigt och spelaren utesluts från lottningen i nästa rond.`);
+      alert(`${player.name} har strukits. Pågående rond spelas klart och spelaren tas inte med i lottningen från och med nästa rond.`);
     }
   }
 
-  /* --- LOTTNING OCH RONDGENERERING --- */
+  /* --- MONRADS LOTTMETOD OCH RONDSKAPANDE --- */
 
   function lotRound() {
     document.getElementById("round-title").innerText = `Rond ${currentRound}`;
 
-    // Filtrera endast aktiva spelare (utesluter automatiskt de som utgått)
+    // Filtrera endast aktiva spelare
     let pool = players.filter(p => !p.withdrawn);
 
     if (pool.length < 2) {
@@ -698,7 +759,7 @@ Anish Giri`;
       return;
     }
 
-    // Sortera poolen efter poäng och sedan ursprunglig plats
+    // Sortera efter poäng och därefter ursprunglig startposition
     pool.sort((a, b) => {
       if (b.score !== a.score) {
         return b.score - a.score;
@@ -706,7 +767,7 @@ Anish Giri`;
       return a.originalPos - b.originalPos;
     });
 
-    // Tilldela aktuell plats i tabellen för färgval enligt Monrad
+    // Tilldela tabellplacering för Monrads färgval
     pool.forEach((p, idx) => {
       p.currentPos = idx + 1;
     });
@@ -729,7 +790,7 @@ Anish Giri`;
     currentPairings = generateMonradPairings(pool);
 
     if (!currentPairings) {
-      alert("Kunde inte generera en giltig lottning utan att spelare möts igen. Turneringen avslutas.");
+      alert("Kunde inte lotta fler ronder utan att spelare möts igen. Turneringen avslutas.");
       finishTournamentEarly();
       return;
     }
@@ -837,7 +898,7 @@ Anish Giri`;
     if (currentByePlayer) {
       byeContainer.innerHTML = `
         <div class="bye-box">
-          ℹ️ <strong>Frirond:</strong> ${getPlayerDisplayName(currentByePlayer)} (${formatPoints(currentByePlayer.score)} p) tilldelas 1 poäng.
+          ℹ️ <strong>Frirond (1 p):</strong> ${getPlayerDisplayName(currentByePlayer)} (${formatPoints(currentByePlayer.score)} p) tilldelas 1 poäng.
         </div>
       `;
     } else {
@@ -923,7 +984,7 @@ Anish Giri`;
   function submitRoundResults() {
     const res = recordCurrentRoundResults();
     if (res.status === "empty" || res.status === "incomplete") {
-      alert("Fyll i resultat för alla bord innan du går vidare till nästa rond!");
+      alert("Fyll i resultat för samtliga bord innan du går vidare till nästa rond!");
       return;
     }
 
@@ -1074,14 +1135,14 @@ Anish Giri`;
       }
 
       if (filledCount > 0 && filledCount < currentPairings.length) {
-        alert("Alla bord i den aktuella ronden är inte ifyllda. Fyll i samtliga resultat för att ta med ronden, eller rensa dem för att avsluta utan den.");
+        alert("Alla bord i aktuell rond har inte fyllts i. Fyll i alla resultat för att räkna med ronden, eller rensa dem för att avsluta utan ronden.");
         return;
       }
 
       if (filledCount === currentPairings.length) {
         recordCurrentRoundResults();
       } else if (filledCount === 0) {
-        if (!confirm(`Rond ${currentRound} saknar ifyllda resultat. Vill du ändå avsluta och visa slutställningen?`)) {
+        if (!confirm(`Rond ${currentRound} har inga ifyllda resultat. Vill du ändå avsluta och visa slutställningen?`)) {
           return;
         }
       }
@@ -1095,7 +1156,7 @@ Anish Giri`;
   }
 
   function resetTournament() {
-    if (confirm("Vill du starta en ny turnering?")) {
+    if (confirm("Är du säker på att du vill starta en ny turnering?")) {
       location.reload();
     }
   }
@@ -1105,7 +1166,7 @@ Anish Giri`;
   function openPrintPage(pageTitle, contentHtml) {
     const printWindow = window.open("", "_blank");
     if (!printWindow) {
-      alert("Tillåt popup-fönster i webbläsaren för att visa utskriftsvyn.");
+      alert("Tillåt popup-fönster i din webbläsare för att kunna skriva ut.");
       return;
     }
 
@@ -1214,8 +1275,10 @@ Anish Giri`;
   }
 
   function printRound() {
+    const tournamentTitle = tournamentName.trim() ? tournamentName.trim() : "Monrad schackturnering";
+
     let pairingsHtml = `
-      <h1>Monrads lottningssystem — Rond ${currentRound}</h1>
+      <h1>${tournamentTitle} — Rond ${currentRound}</h1>
       <p>Datum: ${new Date().toLocaleDateString('sv-SE')}</p>
       
       <h2>Lottning Rond ${currentRound}</h2>
@@ -1251,7 +1314,7 @@ Anish Giri`;
     if (currentByePlayer) {
       pairingsHtml += `
         <div class="bye-box">
-          <strong>Frirond:</strong> ${getPlayerDisplayName(currentByePlayer)} (${formatPoints(currentByePlayer.score)} p) tilldelas 1 poäng.
+          <strong>Frirond (1 p):</strong> ${getPlayerDisplayName(currentByePlayer)} (${formatPoints(currentByePlayer.score)} p) tilldelas 1 poäng.
         </div>
       `;
     }
@@ -1291,14 +1354,15 @@ Anish Giri`;
 
     pairingsHtml += `</tbody></table>`;
 
-    openPrintPage(`Rond ${currentRound} - Monrads lottningssystem`, pairingsHtml);
+    openPrintPage(`${tournamentTitle} - Rond ${currentRound}`, pairingsHtml);
   }
 
   function printFinalStandings() {
+    const tournamentTitle = tournamentName.trim() ? tournamentName.trim() : "Monrad schackturnering";
     const tbLabel = tieBreakSystem === "buchholz" ? "Buchholz" : "Kumulativ";
 
     let finalHtml = `
-      <h1>Monradturnering — Slutställning</h1>
+      <h1>${tournamentTitle} — Slutställning</h1>
       <p>Datum: ${new Date().toLocaleDateString('sv-SE')}</p>
       <table>
         <thead>
@@ -1328,7 +1392,7 @@ Anish Giri`;
     finalHtml += `<h2>Alla spelade partier</h2>`;
     finalHtml += generateMatchesHistoryHtml();
 
-    openPrintPage("Slutställning och partier - Monradturnering", finalHtml);
+    openPrintPage(`${tournamentTitle} - Slutställning`, finalHtml);
   }
 </script>
 
