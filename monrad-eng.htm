@@ -73,6 +73,14 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tournament-tagline {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--accent);
     }
 
     h3 {
@@ -80,6 +88,20 @@
       margin-bottom: 10px;
       font-size: 1.05rem;
       color: var(--primary);
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+
+    input[type="text"]:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
     }
 
     textarea {
@@ -266,13 +288,21 @@
     <p>Chess Tournament Management</p>
   </header>
 
-  <!-- 1. PLAYER REGISTRATION -->
+  <!-- 1. TOURNAMENT SETUP & PLAYER REGISTRATION -->
   <section id="section-setup" class="card">
-    <h2>1. Player Registration</h2>
-    <p style="color: #64748b; font-size: 0.9rem; margin-top: 0;">
+    <h2>1. Tournament Setup & Registration</h2>
+    
+    <div style="margin-bottom: 16px;">
+      <label for="input-tournament-name" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.95rem; color: #334155;">
+        Tournament Name:
+      </label>
+      <input type="text" id="input-tournament-name" placeholder="e.g. Club Championship 2026">
+    </div>
+
+    <p style="color: #64748b; font-size: 0.9rem; margin-top: 0; margin-bottom: 6px;">
       Enter one name per line (minimum 2 players). You can also load a text file or open a previously saved tournament.
     </p>
-    <textarea id="input-players" placeholder="Magnus Carlsen&#10;Hikaru Nakamura&#10;Alireza Firouzja&#10;Ding Liren&#10;Fabiano Caruana&#10;Gukesh D&#10;Anish Giri"></textarea>
+    <textarea id="input-players" placeholder="Magnus Carlsen&#10;Hikaru Nakamura&#10;Alireza Firouzja...&#10;"></textarea>
     
     <input type="file" id="file-input" accept=".txt" class="hidden" onchange="handleFileSelect(event)">
     <input type="file" id="load-tournament-input" accept=".json" class="hidden" onchange="handleTournamentFileSelect(event)">
@@ -281,7 +311,7 @@
       <span style="font-weight: 600; color: #334155;">Tie-break:</span>
       <label>
         <input type="radio" class="tb-radio" name="tb-choice-setup" value="cumulative" checked onchange="setTieBreak(this.value)">
-        Cumulative
+        Cumulative (Progressive)
       </label>
       <label>
         <input type="radio" class="tb-radio" name="tb-choice-setup" value="buchholz" onchange="setTieBreak(this.value)">
@@ -290,16 +320,19 @@
     </div>
 
     <div class="btn-group">
-      <button onclick="startTournament()">🎲 Shuffle & start round 1</button>
-      <button class="secondary" onclick="loadPlayersFile()">📁 Load players file (.txt)</button>
-      <button class="secondary" onclick="triggerLoadTournament()">📂 Open saved tournament</button>
-<button class="secondary" onclick="loadSamplePlayers()">Sample (7 pl.)</button>
+      <button onclick="startTournament()">🎲 Shuffle & Start Round 1</button>
+      <button class="secondary" onclick="loadPlayersFile()">📁 Load Players File (.txt)</button>
+      <button class="secondary" onclick="loadSamplePlayers()">Sample (7 players)</button>
+      <button class="secondary" onclick="triggerLoadTournament()">📂 Open Saved Tournament</button>
     </div>
   </section>
 
   <!-- 2. ROUND OVERVIEW -->
   <section id="section-round" class="card hidden">
-    <h2><span id="round-title">Round 1</span></h2>
+    <h2>
+      <span id="round-title">Round 1</span>
+      <span id="round-tournament-name" class="tournament-tagline"></span>
+    </h2>
 
     <form id="form-round" onsubmit="event.preventDefault(); submitRoundResults();">
       <table>
@@ -317,18 +350,21 @@
       <div id="bye-container"></div>
 
       <div class="btn-group" style="margin-top: 18px;">
-        <button type="submit">✅ Submit results & pair next round</button>
-        <button type="button" class="danger" onclick="openWithdrawModal()">🚪 Withdraw player</button>
-        <button type="button" class="secondary" onclick="saveTournament()">💾 Save tournament</button>
-        <button type="button" class="secondary" onclick="printRound()">🖨️ Print round</button>
-        <button type="button" class="secondary" onclick="finishTournamentEarly()">Finish & show final standings</button>
+        <button type="submit">✅ Submit Results & Pair Next Round</button>
+        <button type="button" class="danger" onclick="openWithdrawModal()">🚪 Withdraw Player</button>
+        <button type="button" class="secondary" onclick="saveTournament()">💾 Save Tournament</button>
+        <button type="button" class="secondary" onclick="printRound()">🖨️ Print Round</button>
+        <button type="button" class="secondary" onclick="finishTournamentEarly()">Finish & Show Final Standings</button>
       </div>
     </form>
   </section>
 
   <!-- 3. CURRENT STANDINGS -->
   <section id="section-standings" class="card hidden">
-    <h2>Current Standings</h2>
+    <h2>
+      <span>Current Standings</span>
+      <span id="standings-tournament-name" class="tournament-tagline"></span>
+    </h2>
     <table>
       <thead>
         <tr>
@@ -345,13 +381,16 @@
 
   <!-- 4. FINAL STANDINGS -->
   <section id="section-final" class="card hidden">
-    <h2>🏆 Final Standings</h2>
+    <h2>
+      <span>🏆 Final Standings</span>
+      <span id="final-tournament-name" class="tournament-tagline"></span>
+    </h2>
 
     <div class="tiebreak-selector" style="margin-top: 0; margin-bottom: 14px;">
       <span style="font-weight: 600; color: #334155;">Tie-break:</span>
       <label>
         <input type="radio" class="tb-radio" name="tb-choice-final" value="cumulative" checked onchange="setTieBreak(this.value)">
-        Cumulative
+        Cumulative (Progressive)
       </label>
       <label>
         <input type="radio" class="tb-radio" name="tb-choice-final" value="buchholz" onchange="setTieBreak(this.value)">
@@ -400,12 +439,26 @@
 </div>
 
 <script>
+  let tournamentName = "";
   let players = [];
   let currentRound = 1;
   let currentPairings = [];
   let currentByePlayer = null;
   let roundHistory = [];
   let tieBreakSystem = "cumulative"; // "cumulative" or "buchholz"
+
+  function updateTournamentTitles() {
+    const displayName = tournamentName.trim();
+    const formatted = displayName ? `— ${displayName}` : "";
+    
+    const roundTag = document.getElementById("round-tournament-name");
+    const standingsTag = document.getElementById("standings-tournament-name");
+    const finalTag = document.getElementById("final-tournament-name");
+
+    if (roundTag) roundTag.innerText = formatted;
+    if (standingsTag) standingsTag.innerText = formatted;
+    if (finalTag) finalTag.innerText = formatted;
+  }
 
   function setTieBreak(val) {
     tieBreakSystem = val;
@@ -466,6 +519,10 @@
         if (!data.players || !data.currentRound) {
           throw new Error("Invalid tournament file format.");
         }
+
+        tournamentName = data.tournamentName || "";
+        document.getElementById("input-tournament-name").value = tournamentName;
+        updateTournamentTitles();
 
         players = data.players.map(p => ({
           ...p,
@@ -536,6 +593,7 @@
     const tournamentState = {
       fileSignature: "MONRAD_CHESS_SAVE",
       savedAt: new Date().toISOString(),
+      tournamentName: tournamentName,
       tieBreakSystem: tieBreakSystem,
       currentRound: currentRound,
       players: players,
@@ -549,7 +607,8 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `tournament_round_${currentRound}.json`;
+    const safeFileName = (tournamentName.trim() || "tournament").replace(/[^a-z0-9_-]/gi, '_');
+    a.download = `${safeFileName}_round_${currentRound}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -576,6 +635,9 @@ Anish Giri`;
   }
 
   function startTournament() {
+    tournamentName = document.getElementById("input-tournament-name").value.trim();
+    updateTournamentTitles();
+
     const text = document.getElementById("input-players").value.trim();
     if (!text) {
       alert("Please enter at least two players.");
@@ -1214,8 +1276,10 @@ Anish Giri`;
   }
 
   function printRound() {
+    const tournamentTitle = tournamentName.trim() ? tournamentName.trim() : "Monrad Chess Tournament";
+
     let pairingsHtml = `
-      <h1>Monrad Pairing System — Round ${currentRound}</h1>
+      <h1>${tournamentTitle} — Round ${currentRound}</h1>
       <p>Date: ${new Date().toLocaleDateString('en-US')}</p>
       
       <h2>Pairings Round ${currentRound}</h2>
@@ -1291,14 +1355,15 @@ Anish Giri`;
 
     pairingsHtml += `</tbody></table>`;
 
-    openPrintPage(`Round ${currentRound} - Monrad Pairing System`, pairingsHtml);
+    openPrintPage(`${tournamentTitle} - Round ${currentRound}`, pairingsHtml);
   }
 
   function printFinalStandings() {
+    const tournamentTitle = tournamentName.trim() ? tournamentName.trim() : "Monrad Chess Tournament";
     const tbLabel = tieBreakSystem === "buchholz" ? "Buchholz" : "Cumulative";
 
     let finalHtml = `
-      <h1>Monrad Tournament — Final Standings</h1>
+      <h1>${tournamentTitle} — Final Standings</h1>
       <p>Date: ${new Date().toLocaleDateString('en-US')}</p>
       <table>
         <thead>
@@ -1328,7 +1393,7 @@ Anish Giri`;
     finalHtml += `<h2>All Played Games</h2>`;
     finalHtml += generateMatchesHistoryHtml();
 
-    openPrintPage("Final Standings and Games - Monrad Tournament", finalHtml);
+    openPrintPage(`${tournamentTitle} - Final Standings`, finalHtml);
   }
 </script>
 
