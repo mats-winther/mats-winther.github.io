@@ -84,18 +84,18 @@
     <div>
       <label>Round 1 Color Allocation</label>
       <div class="radio-group">
-        <label><input type="radio" name="r1-color" value="higherWhite" checked> Higher seed always has White (Seed #1 White)</label>
-        <label><input type="radio" name="r1-color" value="alternate"> Alternate colors (Board 1 White, Board 2 Black...)</label>
+        <label><input type="radio" name="r1-color" value="higherWhite" checked> Higher-seeded always gets White (Seed #1 White)</label>
+        <label><input type="radio" name="r1-color" value="alternate"> Alternating colors (Board 1 White, Board 2 Black...)</label>
       </div>
     </div>
 
     <div class="rules-box">
       <h3>Pairing System:</h3>
       <ul>
-        <li><strong>Round 1:</strong> Players are divided into quarters. The highest rated in Q1 plays white against the highest rated in Q2, and the same for Q3 and Q4.</li>
-        <li><strong>Round 2:</strong> Highest-seeded winner has Black against highest-seeded winner in the other half. Second highest has Black against the next in the other half, etc.</li>
-        <li><strong>Round 3+:</strong> Swiss pairings begin. Players are sorted by score, then Buchholz score, then initial seed. Pairing proceeds from top to bottom against the next available opponent.</li>
-        <li><strong>Color allocation:</strong> The player with fewer White games gets White. If equal, the lower-seeded player gets White. Guaranteed 0% chance of 3 consecutive colors.</li>
+        <li><strong>Round 1:</strong> Players are divided into four groups (quadrants). The highest-ranked player in Q1 plays White against the highest-ranked in Q2, and similarly for Q3 and Q4.</li>
+        <li><strong>Round 2:</strong> The highest-seeded winner plays Black against the highest-seeded winner from the other half. The next highest-seeded plays Black against the next in the other half, and so on.</li>
+        <li><strong>Round 3+:</strong> Swiss pairings begin. Players are sorted by score, Buchholz, and initial seeding. Pairings are generated top-down.</li>
+        <li><strong>Color Allocation:</strong> The player with fewer White games receives White. If equal, the lower-seeded player receives White. Guaranteed 0% chance of three consecutive games with the same color.</li>
       </ul>
     </div>
 
@@ -160,7 +160,7 @@
       <tbody id="final-table-body"></tbody>
     </table>
     <div class="btn-bar no-print" style="margin-top:16px;">
-      <button type="button" onclick="printFinalStandings()">Print Final Standings</button>
+      <button type="button" onclick="printFinalStandings()">Print Final Results</button>
       <button type="button" class="secondary" onclick="restartTournament()">Start New Tournament</button>
     </div>
   </div>
@@ -197,7 +197,7 @@
   <div class="modal-box">
     <button class="close-btn" onclick="closeWithdrawModal()">&times;</button>
     <h2>Withdraw Player</h2>
-    <p>Select a player to withdraw. If the player's game is ongoing in the current round, the opponent is awarded a win by walkover (w.o.).</p>
+    <p>Select a player to withdraw. If the player's game is currently in progress for the active round, the opponent will be awarded a win by walkover (w.o.).</p>
     <div style="margin-bottom:14px;">
       <select id="withdraw-select"></select>
     </div>
@@ -529,6 +529,11 @@ function renderPairings() {
   document.getElementById('pairings-section').style.display = 'block';
   document.getElementById('round-title').textContent = `${state.name} – Round ${state.currentRound} Pairings`;
 
+  const nextBtn = document.getElementById('next-round-btn');
+  if (nextBtn) {
+    nextBtn.textContent = (state.currentRound >= state.totalRounds) ? 'Finish Tournament' : 'Next Round';
+  }
+
   const curRound = state.rounds[state.currentRound - 1];
   const tbody = document.getElementById('pairings-table-body');
   tbody.innerHTML = '';
@@ -582,7 +587,7 @@ function submitRound() {
   const curRound = state.rounds[state.currentRound - 1];
   for (let p of curRound.pairings) {
     if (p.black && !p.result) {
-      alert(`Please enter a result for board ${p.board}.`);
+      alert(`Enter a result for board ${p.board}.`);
       return;
     }
   }
@@ -603,8 +608,8 @@ function submitRound() {
 
     if (res === '1-0') {
       w.score += 1;
-      w.history.push({ round: state.currentRound, opponent: b.id, color: 'W', result: '1-0' });
       b.history.push({ round: state.currentRound, opponent: w.id, color: 'B', result: '0-1' });
+      w.history.push({ round: state.currentRound, opponent: b.id, color: 'W', result: '1-0' });
     } else if (res === '0.5-0.5') {
       w.score += 0.5;
       b.score += 0.5;
