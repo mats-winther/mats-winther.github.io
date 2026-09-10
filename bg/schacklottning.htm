@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="style1c.css" rel="stylesheet" type="text/css">
+  <meta name="description" content="En teknisk genomgång av lottning i schackturneringar med fokus på Monrad och schweizer. Artikeln kritiserar Nordisk Schweizer och presenterar ett alternativt schweizer-system som ett mer stabilt och rättvist alternativ för öppna turneringar.">
+  <meta name="keywords" content=
+  "Monrad, Schweizer, Berger, lottning, schack, program">
+  <meta name="author" content="Mats Winther">
+  <link rel="canonical" href="https://mats-winther.github.io/bg/schacklottning.htm">
+  <title>Schacklottning: en genomgång av Monrad, Schweizer och Berger</title>
+</head>
+<body>
+  <div class="middle">
+    <p></p>
+    <h2>Schacklottning: en genomgång av Monrad, Schweizer och Berger</h2>
+  
+    <p><br>Monrad-lottningen är uppkallad efter den danske schackorganisatören Poul&nbsp;Monrad, som under mitten av
+    1900-talet utvecklade och populariserade denna förenklade variant av schweizerlottning. <i>Monrad-systemet</i> blev
+    mycket utbrett i Danmark, Norge och Sverige, särskilt i skoltävlingar, weekendturneringar och större
+    amatörevenemang, eftersom det är enklare än det fullständiga schweiziska systemet: spelarna lottas strikt efter
+    aktuell poäng, utan de mer komplicerade FIDE-restriktionerna.<br>
+    <br>
+    I Monrad (förenklad schweizer) kan det i början uppstå viss orättvisa, då en toppspelare kan få möta en stark
+    motståndare medan en annan får en betydligt svagare. Därför använder man i elitturneringar hellre någon form av
+    schweizerlottning. En annan nackdel är att en spelare kan få samma färg tre gånger i rad. Sannolikheten för detta
+    är dock endast omkring 1-3% i en vanlig turnering över 5-7 ronder. För turneringen som helhet är sannolikheten att
+    <i>minst en</i> spelare råkar ut för detta cirka 5-15% i ett medelstort till stort startfält (20-40 spelare).
+    Detta gäller för dansk-svensk Monrad. I det norska systemet, liksom i det nederländska (FIDE), förhindrar
+    algoritmen detta&nbsp;&ndash; utom i extremfall. Men eftersom Monrad knappast används i elitturneringar är det kanske en
+    onödig restriktion.<br>
+    <br>
+    Jag har skapat ett Monrad-program här: <a href="../monrad.htm" title="Monrad lottningsprogram">Monrads lottningssystem</a>. Det kan användas online, men
+    sidan går också att ladda ned och köra lokalt. Programmet använder antingen kumulativ (progressiv) poäng eller
+    Buchholz (motståndarnas sammanlagda poäng) för att särskilja spelare med samma slutresultat. Kumulativ poäng
+    fungerar så att tidiga vinster ger ett högre kumulativt tiebreak, vilket gynnar en aggressiv spelstil. (Att börja
+    med en vinst och sedan en förlust ger 2 kumulativa poäng efter två ronder, medan två remier ger 1,5. Det är på sätt
+    och vis rättvist.)<br>
+    <br>
+    <i>Berger-systemet</i> innebär att alla möter alla, antingen en eller två gånger. Jag har skapat ett online-program
+    för Berger-lottning för 3-16 spelare enligt FIDE:s specifikationer. Det kan användas direkt i webbläsaren, men går
+    även att ladda ned och köra lokalt: <a href="../berger.htm" title="Berger lottningsprogram">FIDE Berger Turneringssystem (alla-mot-alla)</a>.<br>
+    <br>
+    <i>Schweizer-systemen</i> är konstruerade på olika sätt. Det finns bland annat dubbelaccelererad schweizer,
+    Haldane-accelerering och FIDE-accelerering (numera sällsynt). Vissa varianter fungerar dock riktigt dåligt,
+    däribland Nordisk Schweizer. Ett typiskt problem för mellanstarka spelare är att de pendlar mellan alltför starkt
+    och alltför svagt motstånd: i en rond möter de en betydligt starkare spelare, i nästa en klart svagare, och
+    därefter åter en alltför stark. Denna pendling förtar spelglädjen och ger en ojämn turneringsupplevelse. Man kan
+    dessutom få samma färg tre eller fler gånger i rad. I Blixt-SM 2023 fick Amin svart tre gånger i rad och därefter
+    vit fem gånger i rad (se <a href="https://member.schack.se/ShowTournamentParticipantResultServlet?id=10838&partid=510894" title="Resultat i Blixt-SM 2023 för Bassem Amin">här</a>). Nordisk Schweizer borde därför upphöra att användas.<br>
+    <br>
+    I mitt accelererade schweizer-system inträffar inte detta: <a href="../swiss.htm" title="Program för accelererad schweizer-lottning">Schweiziskt turneringssystem</a>. Programmet
+    har en spärr som gör att samma färg tre gånger i rad i praktiken inte kan uppstå. Det är tydligt bättre än Nordisk Schweizer, förutsatt att programmet visar sig pålitligt efter noggrann testning. <i>Accelererad schweizerlottning enligt Winther</i>:</p>
+    <blockquote>
+      <b>Rond 1:</b>
+      Spelarna delas in i fyra ratinggrupper. Den högst rankade i grupp 1 har vit mot den högst rankade i grupp 2.
+      Samma gäller för grupperna 3 och 4.<br>
+      <br>
+      <b>Rond 2:</b>
+      Den högst rankade vinnaren får svart mot den högst rankade vinnaren i den andra halvan. Den näst högst rankade
+      får svart mot den näst högsta i den andra halvan, och så vidare.<br>
+      <br>
+      <b>Rond 3+:</b>
+      Schweizerlottning påbörjas. Spelarna sorteras efter poäng, därefter Buchholz-poäng och därefter ursprunglig
+      ranking. Lottningen sker uppifrån och ned mot nästa tillgängliga motståndare.<br>
+      <br>
+      <b>Färgfördelning:</b>
+      Spelaren med färre vitpartier får vit. Vid lika antal vitpartier får den lägre seedade spelaren vit. Systemet
+      garanterar 0% risk för tre partier i rad med samma färg.
+    </blockquote>
+    <p>Detta system lämpar sig väl för öppna turneringar. Elitspelarna har ingen anledning att klaga, eftersom de får
+    möta lägre rankade spelare i de två första ronderna. Samtidigt undviker man den pendling som mellanstarka spelare
+    ofta drabbas av i andra schweizerlottningar. Programmet använder Buchholz som sekundärt sorteringskriterium vid
+    parning av spelare, efter poäng. Buchholz är stabilt och välkänt och harmonierar med målet att spelare med liknande
+    motstånd ska mötas. Buchholz är standard i internationella schweizerturneringar, vilket gör systemet förenligt med
+    etablerad praxis.<br>
+    <br>
+    Att vinnarna i den andra halvan får vit mot vinnarna i den första halvan i rond två, anser jag är en bra idé&nbsp;&ndash; alla
+    spelare blir nöjda. Från och med rond tre möter spelare med liknande rating allt oftare varandra. Generellt
+    föredrar toppspelare svart mot svagare motstånd och vit mot starkare. Programmet tillgodoser detta genom att den
+    lägre rankade spelaren får vit när poäng och Buchholz är lika. Hur ratingfördelningen i stort påverkar lottningen
+    vet jag inte, men det går att undersöka med hjälp av programmet.<br>
+    <br>
+    Schweizerlottningens grundproblem är att den försöker åstadkomma en rättvis turnering inom ett begränsat antal
+    ronder, utan att kunna använda det idealiska alla-mot-alla-formatet. Därför måste systemet både skapa parningar av
+    hög kvalitet och samtidigt upplevas som rättvist av spelarna. Många schweizervarianter misslyckas med detta,
+    särskilt när mellanskiktet pendlar mellan alltför starkt och alltför svagt motstånd, eller när färgfördelningen
+    blir orimlig. FIDE:s nuvarande regler är dessutom komplexa och svåröverskådliga, vilket gör dem mindre transparenta
+    för deltagarna. Winther-systemet är ett försök att förena enkelhet med stabilitet: de två första ronderna ger en
+    kontrollerad accelerering där elitspelarna möter lägre rankade motståndare, samtidigt som mellanskiktet undviker
+    den pendling som annars förtar spelglädjen. Från rond tre möter spelare med liknande rating allt oftare varandra,
+    vilket ger turneringen en naturlig utveckling. Att Buchholz används som sekundärt kriterium harmonierar med målet
+    att spelare med liknande motstånd ska mötas, och färgregeln (som garanterar att ingen får samma färg tre gånger i
+    rad) eliminerar ett av de mest störande inslagen i vissa andra system. Ett bra schweizerformat måste vara enkelt
+    att förstå, svårt att manipulera och ge spelarna en känsla av att turneringen fortskrider logiskt. Systemet
+    är konstruerat med just dessa principer i åtanke.</p>
+    <p class="centered"><br>
+    <img src="owl.gif" alt=""></p>
+    <p><br>
+    &copy; Mats Winther, 2026.</p>
+    <p><br>
+    <br>
+    <br>
+    <br>
+    <br></p>
+    <p class="cn"><a href="index.htm"><img src="home.gif" alt="HOME"></a></p>
+    <p><br>
+    <br>
+    <br></p>
+    <p><br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br></p>
+  </div>
+  <p class="c5"></p>
+  <div>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  </div>
+</body>
+</html>
