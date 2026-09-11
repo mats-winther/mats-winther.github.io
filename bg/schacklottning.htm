@@ -22,8 +22,8 @@
     efter rating. Algoritmen innehåller alltså ingen inbyggd slumpfaktor. Det är spelarna själva som skapar variationen
     genom sina mer eller mindre oförutsägbara resultat.<br>
     <br>
-    Monrad-lottningen är uppkallad efter den danske schackorganisatören Poul&nbsp;Monrad, som under mitten av
-    1900-talet utvecklade och populariserade denna förenklade variant av schweizerlottning. <i>Monrad-systemet</i> blev
+    <b>Monrad-systemet</b> är uppkallat efter den danske schackorganisatören Poul&nbsp;Monrad, som under mitten av
+    1900-talet utvecklade och populariserade denna förenklade variant av schweizerlottning. Det blev
     mycket utbrett i Danmark, Norge och Sverige, särskilt i skoltävlingar, weekendturneringar och större
     amatörevenemang, eftersom det är enklare än det fullständiga schweiziska systemet: spelarna lottas strikt efter
     aktuell poäng, utan de mer komplicerade FIDE-restriktionerna.<br>
@@ -44,12 +44,12 @@
     vilket gynnar en aggressiv spelstil. (Att börja med en vinst och sedan en förlust ger 2 kumulativa poäng efter två
     ronder, medan två remier ger 1,5. Det är på sätt och vis rättvist.)<br>
     <br>
-    <i>Berger-systemet</i> innebär att alla möter alla, antingen en eller två gånger. Jag har skapat ett online-program
+    <b>Berger-systemet</b> innebär att alla möter alla, antingen en eller två gånger. Jag har skapat ett online-program
     för berger-lottning för 3-16 spelare enligt FIDE:s specifikationer. Det kan användas direkt i webbläsaren, men går
     även att ladda ned och köra lokalt: <a href="../berger.htm" title="Berger lottningsprogram">FIDE Berger
     Turneringssystem (alla-mot-alla)</a>.<br>
     <br>
-    <i>Schweizer-systemen</i> är konstruerade på olika sätt. Det finns bland annat dubbelaccelererad schweizer,
+    <b>Schweizer-systemen</b> är konstruerade på olika sätt. Det finns bland annat dubbelaccelererad schweizer,
     haldane-accelerering och FIDE-accelerering (numera sällsynt). Vissa varianter fungerar dock riktigt dåligt,
     däribland nordisk schweizer (se <a href="https://www.kristallen.org/ongoingtournaments/nordch.html" title=
     "Nordisk schweizer">här</a>). Ett typiskt problem för mellanstarka spelare är att de pendlar mellan alltför starkt
@@ -63,26 +63,26 @@
     I mitt accelererade schweizer-system inträffar inte detta: <a href="../swiss.htm" title=
     "Program för accelererad schweizer-lottning">Schweiziskt turneringssystem</a>. Programmet har en spärr som gör att
     samma färg tre gånger i rad i praktiken inte kan uppstå. Det är tydligt bättre än nordisk schweizer, förutsatt att
-    programmet visar sig pålitligt efter noggrann testning.</p>
-    <blockquote>
-      <i>Accelererad schweizerlottning enligt Winther</i>&thinsp;:<br>
-      <br>
-      <b>Rond 1:</b> Spelarna delas in i fyra ratinggrupper. Den högst rankade i grupp 1 har vit mot den högst rankade
-      i grupp 2. Samma gäller för grupperna 3 och 4.<br>
-      <br>
-      <b>Rond 2:</b> Den högst rankade vinnaren får svart mot den högst rankade vinnaren i den andra halvan. Den näst
-      högst rankade får svart mot den näst högsta i den andra halvan, och så vidare.<br>
-      <br>
-      <b>Rond 3+:</b> Schweizerlottning påbörjas. Spelarna sorteras efter poäng, därefter buchholz-poäng och därefter
-      ursprunglig ranking. Lottningen sker uppifrån och ned mot nästa tillgängliga motståndare.<br>
-      <br>
-      <b>Färgfördelning:</b> Spelaren med färre vitpartier får vit. Vid lika antal vitpartier får den lägre seedade
-      spelaren vit. Systemet garanterar 0% risk för tre partier i rad med samma färg.
-    </blockquote>
-    <p>Detta system lämpar sig väl för öppna turneringar. Elitspelarna har ingen anledning att klaga, eftersom de får
-    möta lägre rankade spelare i de två första ronderna. Samtidigt undviker man den pendling som mellanstarka spelare
-    ofta drabbas av i andra schweizerlottningar. Programmet använder buchholz som sekundärt sorteringskriterium vid
-    parning av spelare, efter poäng. Buchholz är stabilt och välkänt och harmonierar med målet att spelare med liknande
+    programmet visar sig pålitligt efter noggrann testning.<br>
+    <br>
+    <b>Accelererad schweizerlottning enligt Winther</b>&thinsp;:<br>
+    <br>
+    <b>Rond 1:</b> Spelarna delas in i fyra ratinggrupper. Den högst rankade i grupp 1 har vit mot den högst rankade i
+    grupp 2. Samma gäller för grupperna 3 och 4.<br>
+    <br>
+    <b>Rond 2:</b> Den högst rankade vinnaren får svart mot den högst rankade vinnaren i den andra halvan. Den näst
+    högst rankade får svart mot den näst högsta i den andra halvan, och så vidare.<br>
+    <br>
+    <b>Rond 3+:</b> Schweizerlottning påbörjas. Spelarna sorteras efter poäng, därefter buchholz-poäng och därefter
+    ursprunglig ranking. Lottningen sker uppifrån och ned mot nästa tillgängliga motståndare.<br>
+    <br>
+    <b>Färgfördelning:</b> Spelaren med färre vitpartier får vit. Vid lika antal vitpartier får den lägre seedade
+    spelaren vit. Systemet garanterar 0% risk för tre partier i rad med samma färg.<br>
+    <br>
+    Detta system lämpar sig väl för öppna turneringar. Elitspelarna har ingen anledning att klaga, eftersom de får möta
+    lägre rankade spelare i de två första ronderna. Samtidigt undviker man den pendling som mellanstarka spelare ofta
+    drabbas av i andra schweizerlottningar. Programmet använder buchholz som sekundärt sorteringskriterium vid parning
+    av spelare, efter poäng. Buchholz är stabilt och välkänt och harmonierar med målet att spelare med liknande
     motstånd ska mötas. Buchholz är standard i internationella schweizerturneringar, vilket gör systemet förenligt med
     etablerad praxis.<br>
     <br>
@@ -105,7 +105,6 @@
     gånger i rad) eliminerar ett av de mest störande inslagen i vissa andra system. Ett bra schweizerformat måste vara
     enkelt att förstå, svårt att manipulera och ge spelarna en känsla av att turneringen fortskrider logiskt. Systemet
     är konstruerat med just dessa principer i åtanke.<br>
-    <br>
     <br>
     &copy; Mats Winther, 2026.</p>
     <p><br>
