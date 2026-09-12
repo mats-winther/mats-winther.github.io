@@ -30,23 +30,28 @@
     <br>
     I monrad (förenklad schweizer) kan det i början uppstå viss orättvisa, då en toppspelare kan få möta en stark
     motståndare medan en annan får en betydligt svagare. Därför använder man i elitturneringar hellre någon form av
-    schweizerlottning. En annan nackdel är att en spelare kan få samma färg tre gånger i rad (i extrema fall ännu fler). I en turnering över sju
-    ronder får sannolikt omkring 34% av spelarna detta åtminstone en gång, och vid nio ronder stiger andelen till
-    cirka 45%. Detta är en tydlig svaghet i monrad om systemet används i elitturneringar. I amatörturneringar
-    spelar det däremot kanske mindre roll, eftersom resultatet där oftare avgörs av vem som först gör ett misstag än av
-    vilken färg man får.<br>
-    <br>Ovanstående gäller för dansk-svensk monrad. Enligt FIDE:s officiella regler får en spelare inte ha samma färg tre gånger i rad, och inte heller ha en färgbalans som avviker med mer än ±2. Den nederländska monrad-versionen (FIDE),
-    följer denna regel, utom i extremfall. Det norska systemet är mindre strikt: en spelare får aldrig ha mer än <i>tre</i> partier i rad med samma färg, och om möjligt bör ingen spelare ha mer än 50%&nbsp;+ 1 partier med samma färg (se <a href="https://2000.sjakk.no/kunnskap/systemer/norges-sjakkforbunds-monradsystem/" title="Norges Schackförbunds Monradsystem">här</a>). 
-Men eftersom monrad knappast används i elitturneringar är det
-    kanske en onödig restriktion.  <br>
+    schweizerlottning. En annan nackdel är att en spelare kan få samma färg tre gånger i rad (i extrema fall ännu
+    fler). I en turnering över sju ronder får sannolikt omkring 34% av spelarna detta åtminstone en gång, och vid nio
+    ronder stiger andelen till cirka 45%. Detta är en tydlig svaghet i monrad om systemet används i elitturneringar. I
+    amatörturneringar spelar det däremot kanske mindre roll, eftersom resultatet där oftare avgörs av vem som först gör
+    ett misstag än av vilken färg man får.<br>
     <br>
-    Jag har skapat ett program för dansk-svensk monrad här: <a href="../monrad.htm" title="Monrad lottningsprogram">Monrads
-    lottningssystem</a>. Min online-version av det norska systemet finns här: 
- <a href="../norsk-monrad.htm" title="Monrad – turneringshanterare (norsk modell)">Monrad&nbsp;&ndash; turneringshanterare</a>. Båda kan användas online, men själva sidan går också att ladda ned och köra lokalt. Den dansk-svenska versionen
-    använder antingen kumulativ (progressiv) poäng eller buchholz (motståndarnas sammanlagda poäng) för att särskilja
-    spelare med samma slutresultat. Kumulativ poäng fungerar så att tidiga vinster ger ett högre kumulativt tiebreak,
-    vilket gynnar en aggressiv spelstil. (Att börja med en vinst och sedan en förlust ger 2 kumulativa poäng efter två
-    ronder, medan två remier ger 1,5. Det är på sätt och vis rättvist.)<br>
+    Ovanstående gäller för dansk-svensk monrad. Enligt FIDE:s officiella regler får en spelare inte ha samma färg tre
+    gånger i rad, och inte heller ha en färgbalans som avviker med mer än ±2. Den nederländska monrad-versionen (FIDE),
+    följer denna regel, utom i extremfall. Det norska systemet är mindre strikt: en spelare får aldrig ha mer än
+    <i>tre</i> partier i rad med samma färg, och om möjligt bör ingen spelare ha mer än 50%&nbsp;+&nbsp;1 partier med
+    samma färg (se <a href="https://2000.sjakk.no/kunnskap/systemer/norges-sjakkforbunds-monradsystem/" title=
+    "Norges Schackförbunds Monradsystem">här</a>). (Dessa regler är inte absoluta och kan i undantagsfall åsidosättas.)
+    Men eftersom monrad knappast används i elitturneringar är det kanske en onödig restriktion.<br>
+    <br>
+    Jag har skapat ett program för dansk-svensk monrad här: <a href="../monrad.htm" title=
+    "Monrad lottningsprogram">Monrads lottningssystem</a>. Min online-version av det norska systemet finns här:
+    <a href="../norsk-monrad.htm" title="Monrad – turneringshanterare (norsk modell)">Monrad&nbsp;&ndash;
+    turneringshanterare</a>. Båda kan användas online, men själva sidan går också att ladda ned och köra lokalt. Den
+    dansk-svenska versionen använder antingen kumulativ (progressiv) poäng eller buchholz (motståndarnas sammanlagda
+    poäng) för att särskilja spelare med samma slutresultat. Kumulativ poäng fungerar så att tidiga vinster ger ett
+    högre kumulativt tiebreak, vilket gynnar en aggressiv spelstil. (Att börja med en vinst och sedan en förlust ger 2
+    kumulativa poäng efter två ronder, medan två remier ger 1,5. Det är på sätt och vis rättvist.)<br>
     <br>
     <b>Berger-systemet</b> innebär att alla möter alla, antingen en eller två gånger. Jag har skapat ett online-program
     för berger-lottning för 3-16 spelare enligt FIDE:s specifikationer. Det kan användas direkt i webbläsaren, men går
@@ -58,7 +63,8 @@ Men eftersom monrad knappast används i elitturneringar är det
     däribland nordisk schweizer (se <a href="https://www.kristallen.org/ongoingtournaments/nordch.html" title=
     "Nordisk schweizer">här</a>). Ett typiskt problem för mellanstarka spelare är att de pendlar mellan alltför starkt
     och alltför svagt motstånd: i en rond möter de en betydligt starkare spelare, i nästa en klart svagare, och
-    därefter åter en alltför stark. Denna pendling förtar spelglädjen och ger en ojämn turneringsupplevelse. I mitt accelererade schweizer-system inträffar inte detta: <a href="../swiss.htm" title=
+    därefter åter en alltför stark. Denna pendling förtar spelglädjen och ger en ojämn turneringsupplevelse. I mitt
+    accelererade schweizer-system inträffar inte detta: <a href="../swiss.htm" title=
     "Program för schweizer-lottning med winther-accelerering">Schweiziskt turneringssystem</a>. Programmet har en spärr
     som gör att samma färg tre gånger i rad i praktiken inte kan uppstå. Det är tydligt bättre än nordisk schweizer,
     förutsatt att programmet visar sig pålitligt efter noggrann testning.<br>
