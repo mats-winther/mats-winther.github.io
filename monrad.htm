@@ -98,7 +98,7 @@
       font-size: 0.95rem;
     }
 
-    input[type="text"]:focus, textarea:focus {
+    input[type="text"]:focus, textarea:focus, select:focus {
       outline: none;
       border-color: var(--accent);
       box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
@@ -368,11 +368,12 @@
     <table>
       <thead>
         <tr>
-          <th style="width: 60px;">Plac.</th>
+          <th style="width: 55px;">Plac.</th>
           <th>Spelare</th>
-          <th style="width: 80px;">Poäng</th>
-          <th style="white-space: nowrap; width: 130px;">Vit / Svart</th>
-          <th style="width: 80px;">Frirond</th>
+          <th style="width: 75px;">Poäng</th>
+          <th id="standings-th-tiebreak" style="width: 95px;">Kumulativ</th>
+          <th style="white-space: nowrap; width: 120px;">Vit / Svart</th>
+          <th style="width: 75px;">Frirond</th>
         </tr>
       </thead>
       <tbody id="standings-tbody"></tbody>
@@ -414,8 +415,9 @@
     <div id="final-matches-history"></div>
 
     <div class="btn-group" style="margin-top: 20px;">
-      <button onclick="resetTournament()" class="danger">🔄 Ny turnering</button>
+      <button onclick="saveTournament()" class="secondary">💾 Spara turnering</button>
       <button onclick="printFinalStandings()" class="secondary">🖨️ Skriv ut slutställning & partier</button>
+      <button onclick="resetTournament()" class="danger">🔄 Ny turnering</button>
     </div>
   </section>
 </div>
@@ -446,6 +448,19 @@
   let currentByePlayer = null;
   let roundHistory = [];
   let tieBreakSystem = "cumulative"; // "cumulative" eller "buchholz"
+  let isTournamentFinished = false;
+
+  /* --- HJÄLPFUNKTIONER --- */
+
+  function escapeHtml(text) {
+    if (text == null) return "";
+    return String(text)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
 
   function updateTournamentTitles() {
     const displayName = tournamentName.trim();
@@ -466,14 +481,67 @@
       r.checked = (r.value === val);
     });
 
+    const tbLabel = tieBreakSystem === "buchholz" ? "Buchholz" : "Kumulativ";
+    const thStandings = document.getElementById("standings-th-tiebreak");
+    const thFinal = document.getElementById("th-tiebreak");
+    if (thStandings) thStandings.innerText = tbLabel;
+    if (thFinal) thFinal.innerText = tbLabel;
+
+    if (!document.getElementById("section-standings").classList.contains("hidden")) {
+      renderStandings();
+    }
     if (!document.getElementById("section-final").classList.contains("hidden")) {
       renderFinalStandings();
     }
   }
 
   function getPlayerDisplayName(p) {
-    return p.name + (p.withdrawn ? " (utgått)" : "");
+    if (p.withdrawn) return p.name + " (utgått)";
+    if (p.pendingWithdrawal) return p.name + " (utgår efter ronden)";
+    return p.name;
   }
+
+  function formatPoints(pts) {
+    if (pts % 1 === 0.5) {
+      const whole = Math.floor(pts);
+      return whole === 0 ? "½" : whole + "½";
+    }
+    return pts.toString();
+  }
+
+  function calculateBuchholz() {
+    const map = new Map(players.map(p => [p.id, p]));
+    players.forEach(p => {
+      p.buchholz = p.opponents.reduce((sum, oppId) => {
+        const opp = map.get(oppId);
+        return sum + (opp ? opp.score : 0);
+      }, 0);
+    });
+  }
+
+  function getTieBreakValue(p) {
+    return tieBreakSystem === "buchholz" ? p.buchholz : p.cumulativeScore;
+  }
+
+  function sortPlayers(list) {
+    calculateBuchholz();
+    return list.sort((a, b) => {
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      if (a.withdrawn !== b.withdrawn) {
+        return a.withdrawn ? 1 : -1;
+      }
+      const tbA = getTieBreakValue(a);
+      const tbB = getTieBreakValue(b);
+      if (tbB !== tbA) {
+        return tbB - tbA;
+      }
+      return a.originalPos - b.originalPos;
+    });
+  }
+
+  /* --- FILHANTERING --- */
 
   function loadPlayersFile() {
     fetch('spelare.txt')
@@ -526,10 +594,14 @@
 
         players = data.players.map(p => ({
           ...p,
-          withdrawn: !!p.withdrawn
+          colorHistory: p.colorHistory || [],
+          withdrawn: !!p.withdrawn,
+          pendingWithdrawal: !!p.pendingWithdrawal
         }));
+        
         currentRound = data.currentRound;
         roundHistory = data.roundHistory || [];
+        isTournamentFinished = !!data.isTournamentFinished;
         
         if (data.tieBreakSystem) {
           setTieBreak(data.tieBreakSystem);
@@ -550,22 +622,31 @@
         }
 
         document.getElementById("section-setup").classList.add("hidden");
-        document.getElementById("section-final").classList.add("hidden");
-        document.getElementById("section-round").classList.remove("hidden");
-        document.getElementById("section-standings").classList.remove("hidden");
 
-        document.getElementById("round-title").innerText = `Rond ${currentRound}`;
-        renderRoundView();
+        if (isTournamentFinished) {
+          document.getElementById("section-round").classList.add("hidden");
+          document.getElementById("section-standings").classList.add("hidden");
+          document.getElementById("section-final").classList.remove("hidden");
+          renderFinalStandings();
+          alert(`Sparad turnering (slutförd) har lästs in!`);
+        } else {
+          document.getElementById("section-final").classList.add("hidden");
+          document.getElementById("section-round").classList.remove("hidden");
+          document.getElementById("section-standings").classList.remove("hidden");
 
-        savedPairings.forEach((pair, idx) => {
-          if (pair.result) {
-            const radio = document.querySelector(`input[name="board_${idx + 1}"][value="${pair.result}"]`);
-            if (radio) radio.checked = true;
-          }
-        });
+          document.getElementById("round-title").innerText = `Rond ${currentRound}`;
+          renderRoundView();
 
-        renderStandings();
-        alert(`Turneringen har lästs in vid Rond ${currentRound}!`);
+          savedPairings.forEach((pair, idx) => {
+            if (pair.result) {
+              const radio = document.querySelector(`input[name="board_${idx + 1}"][value="${pair.result}"]`);
+              if (radio) radio.checked = true;
+            }
+          });
+
+          renderStandings();
+          alert(`Turneringen har lästs in vid Rond ${currentRound}!`);
+        }
       } catch (err) {
         alert("Kunde inte läsa in sparfilen: " + err.message);
       } finally {
@@ -596,6 +677,7 @@
       tournamentName: tournamentName,
       tieBreakSystem: tieBreakSystem,
       currentRound: currentRound,
+      isTournamentFinished: isTournamentFinished,
       players: players,
       currentPairings: pairingsData,
       currentByePlayerId: currentByePlayer ? currentByePlayer.id : null,
@@ -608,19 +690,12 @@
     const a = document.createElement("a");
     a.href = url;
     const safeFileName = (tournamentName.trim() || "turnering").replace(/[^a-z0-9_-]/gi, '_');
-    a.download = `${safeFileName}_rond_${currentRound}.json`;
+    const suffix = isTournamentFinished ? "slutstallning" : `rond_${currentRound}`;
+    a.download = `${safeFileName}_${suffix}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }
-
-  function formatPoints(pts) {
-    if (pts % 1 === 0.5) {
-      const whole = Math.floor(pts);
-      return whole === 0 ? "½" : whole + "½";
-    }
-    return pts.toString();
   }
 
   function loadSamplePlayers() {
@@ -633,6 +708,8 @@ Fabiano Caruana
 Gukesh D
 Anish Giri`;
   }
+
+  /* --- START & LOTTMETOD --- */
 
   function startTournament() {
     tournamentName = document.getElementById("input-tournament-name").value.trim();
@@ -666,12 +743,15 @@ Anish Giri`;
       buchholz: 0,
       whites: 0,
       blacks: 0,
+      colorHistory: [],
       hasHadBye: false,
       withdrawn: false,
+      pendingWithdrawal: false,
       opponents: []
     }));
 
     currentRound = 1;
+    isTournamentFinished = false;
     roundHistory = [];
     document.getElementById("section-setup").classList.add("hidden");
     document.getElementById("section-round").classList.remove("hidden");
@@ -680,77 +760,10 @@ Anish Giri`;
     lotRound();
   }
 
-  /* --- STRYK SPELARE --- */
-
-  function openWithdrawModal() {
-    const activePlayers = players.filter(p => !p.withdrawn);
-    if (activePlayers.length === 0) {
-      alert("Det finns inga aktiva spelare kvar att stryka.");
-      return;
-    }
-
-    const select = document.getElementById("withdraw-select");
-    select.innerHTML = "";
-    activePlayers.forEach(p => {
-      const opt = document.createElement("option");
-      opt.value = p.id;
-      opt.textContent = `${p.name} (${formatPoints(p.score)} p)`;
-      select.appendChild(opt);
-    });
-
-    document.getElementById("withdraw-modal").classList.remove("hidden");
-  }
-
-  function closeWithdrawModal() {
-    document.getElementById("withdraw-modal").classList.add("hidden");
-  }
-
-  function confirmWithdrawPlayer() {
-    const select = document.getElementById("withdraw-select");
-    const playerId = parseInt(select.value, 10);
-    const player = players.find(p => p.id === playerId);
-    if (!player) return;
-
-    if (!confirm(`Är du säker på att du vill stryka ${player.name}? Spelaren spelar klart Rond ${currentRound}, men tas inte med i lottningen från och med nästa rond.`)) {
-      return;
-    }
-
-    player.withdrawn = true;
-    closeWithdrawModal();
-
-    // Spara redan valda resultat så att de inte nollställs vid omritning
-    const savedResults = [];
-    currentPairings.forEach((_, idx) => {
-      const checked = document.querySelector(`input[name="board_${idx + 1}"]:checked`);
-      savedResults.push(checked ? checked.value : null);
-    });
-
-    renderRoundView();
-
-    // Återställ valda resultat
-    savedResults.forEach((val, idx) => {
-      if (val) {
-        const radio = document.querySelector(`input[name="board_${idx + 1}"][value="${val}"]`);
-        if (radio) radio.checked = true;
-      }
-    });
-
-    renderStandings();
-
-    const remainingActive = players.filter(p => !p.withdrawn);
-    if (remainingActive.length < 2) {
-      alert(`${player.name} har strukits. Observera att färre än 2 aktiva spelare återstår för kommande ronder.`);
-    } else {
-      alert(`${player.name} har strukits. Pågående rond spelas klart och spelaren tas inte med i lottningen från och med nästa rond.`);
-    }
-  }
-
-  /* --- MONRADS LOTTMETOD OCH RONDSKAPANDE --- */
-
   function lotRound() {
     document.getElementById("round-title").innerText = `Rond ${currentRound}`;
 
-    // Filtrera endast aktiva spelare
+    // Endast aktiva spelare (ej strukna)
     let pool = players.filter(p => !p.withdrawn);
 
     if (pool.length < 2) {
@@ -759,15 +772,10 @@ Anish Giri`;
       return;
     }
 
-    // Sortera efter poäng och därefter ursprunglig startposition
-    pool.sort((a, b) => {
-      if (b.score !== a.score) {
-        return b.score - a.score;
-      }
-      return a.originalPos - b.originalPos;
-    });
+    // Sortera poolen med Monrad-kriterier: Poäng -> Särskiljning -> Startnummer
+    pool = sortPlayers(pool);
 
-    // Tilldela tabellplacering för Monrads färgval
+    // Uppdatera Monrads tabellplacering
     pool.forEach((p, idx) => {
       p.currentPos = idx + 1;
     });
@@ -775,80 +783,130 @@ Anish Giri`;
     currentByePlayer = null;
 
     if (pool.length % 2 !== 0) {
-      for (let i = pool.length - 1; i >= 0; i--) {
-        if (!pool[i].hasHadBye) {
-          currentByePlayer = pool[i];
-          pool.splice(i, 1);
+      // Kandidater till frirond (lägst poäng och särskiljning först)
+      let byeCandidates = pool.filter(p => !p.hasHadBye).sort((a, b) => {
+        if (a.score !== b.score) return a.score - b.score;
+        const tbA = getTieBreakValue(a);
+        const tbB = getTieBreakValue(b);
+        if (tbA !== tbB) return tbA - tbB;
+        return b.originalPos - a.originalPos;
+      });
+
+      // Om alla redan har haft en frirond, tillåt vem som helst från botten
+      if (byeCandidates.length === 0) {
+        byeCandidates = [...pool].sort((a, b) => {
+          if (a.score !== b.score) return a.score - b.score;
+          return b.originalPos - a.originalPos;
+        });
+      }
+
+      let matchSuccess = false;
+      for (let candidate of byeCandidates) {
+        const subPool = pool.filter(p => p.id !== candidate.id);
+        const rawPairs = solveMonrad(subPool);
+        if (rawPairs !== null) {
+          currentByePlayer = candidate;
+          currentPairings = rawPairs.map((pair, idx) => determineColors(pair.p1, pair.p2, idx));
+          matchSuccess = true;
           break;
         }
       }
-      if (!currentByePlayer && pool.length > 0) {
-        currentByePlayer = pool.pop();
+
+      if (!matchSuccess) {
+        alert("Kunde inte lotta fler ronder utan att spelare möts igen. Turneringen avslutas.");
+        finishTournamentEarly();
+        return;
       }
-    }
-
-    currentPairings = generateMonradPairings(pool);
-
-    if (!currentPairings) {
-      alert("Kunde inte lotta fler ronder utan att spelare möts igen. Turneringen avslutas.");
-      finishTournamentEarly();
-      return;
+    } else {
+      const rawPairs = solveMonrad(pool);
+      if (!rawPairs) {
+        alert("Kunde inte lotta fler ronder utan att spelare möts igen. Turneringen avslutas.");
+        finishTournamentEarly();
+        return;
+      }
+      currentPairings = rawPairs.map((pair, idx) => determineColors(pair.p1, pair.p2, idx));
     }
 
     renderRoundView();
     renderStandings();
   }
 
-  function generateMonradPairings(pool) {
-    function solve(remaining) {
-      if (remaining.length === 0) return [];
+  function solveMonrad(remaining) {
+    if (remaining.length === 0) return [];
 
-      const p1 = remaining[0];
-      for (let i = 1; i < remaining.length; i++) {
-        const p2 = remaining[i];
-        if (!p1.opponents.includes(p2.id)) {
-          const nextRemaining = remaining.filter((p, idx) => idx !== 0 && idx !== i);
-          const subResult = solve(nextRemaining);
-          if (subResult !== null) {
-            const match = determineColors(p1, p2);
-            return [match, ...subResult];
-          }
+    const p1 = remaining[0];
+    for (let i = 1; i < remaining.length; i++) {
+      const p2 = remaining[i];
+      if (!p1.opponents.includes(p2.id)) {
+        const nextRemaining = remaining.filter((p, idx) => idx !== 0 && idx !== i);
+        const subResult = solveMonrad(nextRemaining);
+        if (subResult !== null) {
+          return [{ p1, p2 }, ...subResult];
         }
       }
-      return null;
     }
-    return solve(pool);
+    return null;
   }
 
-  function determineColors(pA, pB) {
-    const pLow = pA.currentPos < pB.currentPos ? pA : pB;
-    const pHigh = pA.currentPos < pB.currentPos ? pB : pA;
+  function determineColors(pA, pB, boardIndex) {
+    const pLow = pA.currentPos < pB.currentPos ? pA : pB;   // Bättre tabellplacering
+    const pHigh = pA.currentPos < pB.currentPos ? pB : pA;  // Lägre tabellplacering
 
-    let whitePlayer, blackPlayer;
-
+    // Rond 1: Alternera färg mellan borden
     if (currentRound === 1) {
-      whitePlayer = pHigh;
-      blackPlayer = pLow;
-    } else {
-      if (pLow.whites < pHigh.whites) {
-        whitePlayer = pLow;
-        blackPlayer = pHigh;
-      } else if (pHigh.whites < pLow.whites) {
-        whitePlayer = pHigh;
-        blackPlayer = pLow;
+      if (boardIndex % 2 === 0) {
+        return { white: pLow, black: pHigh };
       } else {
-        if (pLow.blacks > pHigh.blacks) {
-          whitePlayer = pLow;
-          blackPlayer = pHigh;
-        } else {
-          whitePlayer = pHigh;
-          blackPlayer = pLow;
-        }
+        return { white: pHigh, black: pLow };
       }
     }
 
-    return { white: whitePlayer, black: blackPlayer };
+    // 1. Färgutjämning: den med färre vita får vit
+    const diffLow = pLow.whites - pLow.blacks;
+    const diffHigh = pHigh.whites - pHigh.blacks;
+
+    if (diffLow < diffHigh) {
+      return { white: pLow, black: pHigh };
+    }
+    if (diffHigh < diffLow) {
+      return { white: pHigh, black: pLow };
+    }
+
+    // 2. Alternering från förra ronden om antalet vita är lika
+    const lastLow = pLow.colorHistory.length > 0 ? pLow.colorHistory[pLow.colorHistory.length - 1] : null;
+    const lastHigh = pHigh.colorHistory.length > 0 ? pHigh.colorHistory[pHigh.colorHistory.length - 1] : null;
+
+    if (lastLow === 'B' && lastHigh === 'W') {
+      return { white: pLow, black: pHigh };
+    }
+    if (lastLow === 'W' && lastHigh === 'B') {
+      return { white: pHigh, black: pLow };
+    }
+
+    // 3. Kontrollera tidigare ronder bakåt
+    let i = 2;
+    while (pLow.colorHistory.length >= i && pHigh.colorHistory.length >= i) {
+      const prevLow = pLow.colorHistory[pLow.colorHistory.length - i];
+      const prevHigh = pHigh.colorHistory[pHigh.colorHistory.length - i];
+      if (prevLow !== prevHigh) {
+        if (prevLow === 'B' && prevHigh === 'W') return { white: pLow, black: pHigh };
+        if (prevLow === 'W' && prevHigh === 'B') return { white: pHigh, black: pLow };
+      }
+      i++;
+    }
+
+    // 4. Om fortfarande lika: låt den högre placerade spelaren alternera från sin senaste färg
+    if (lastLow === 'W') {
+      return { white: pHigh, black: pLow };
+    } else if (lastLow === 'B') {
+      return { white: pLow, black: pHigh };
+    }
+
+    // 5. Fallback baserat på bord
+    return (boardIndex % 2 === 0) ? { white: pLow, black: pHigh } : { white: pHigh, black: pLow };
   }
+
+  /* --- RENDERING AV ROND & RESULTAT --- */
 
   function renderRoundView() {
     const tbody = document.getElementById("pairings-tbody");
@@ -863,7 +921,7 @@ Anish Giri`;
         <td>
           <div class="player-box">
             <span class="piece-icon piece-white" title="Vit"></span>
-            <strong>${getPlayerDisplayName(match.white)}</strong>
+            <strong>${escapeHtml(getPlayerDisplayName(match.white))}</strong>
             <span class="score-badge">${formatPoints(match.white.score)}</span>
           </div>
         </td>
@@ -886,7 +944,7 @@ Anish Giri`;
         <td>
           <div class="player-box">
             <span class="piece-icon piece-black" title="Svart"></span>
-            <strong>${getPlayerDisplayName(match.black)}</strong>
+            <strong>${escapeHtml(getPlayerDisplayName(match.black))}</strong>
             <span class="score-badge">${formatPoints(match.black.score)}</span>
           </div>
         </td>
@@ -898,7 +956,7 @@ Anish Giri`;
     if (currentByePlayer) {
       byeContainer.innerHTML = `
         <div class="bye-box">
-          ℹ️ <strong>Frirond (1 p):</strong> ${getPlayerDisplayName(currentByePlayer)} (${formatPoints(currentByePlayer.score)} p) tilldelas 1 poäng.
+          ℹ️ <strong>Frirond (1 p):</strong> ${escapeHtml(getPlayerDisplayName(currentByePlayer))} (${formatPoints(currentByePlayer.score)} p) tilldelas 1 poäng.
         </div>
       `;
     } else {
@@ -940,6 +998,9 @@ Anish Giri`;
       match.white.whites++;
       match.black.blacks++;
 
+      match.white.colorHistory.push('W');
+      match.black.colorHistory.push('B');
+
       if (val === "1-0") {
         match.white.score += 1;
       } else if (val === "0.5-0.5") {
@@ -971,9 +1032,15 @@ Anish Giri`;
       byePlayerName: byeName
     });
 
+    // Uppdatera kumulativ poäng för alla som spelade ronden
     players.forEach(p => {
       if (!p.withdrawn) {
         p.cumulativeScore += p.score;
+      }
+      // Verkställ strykning efter att rondens poäng räknats in
+      if (p.pendingWithdrawal) {
+        p.withdrawn = true;
+        p.pendingWithdrawal = false;
       }
     });
 
@@ -992,59 +1059,83 @@ Anish Giri`;
     lotRound();
   }
 
-  function calculateBuchholz() {
-    const map = new Map(players.map(p => [p.id, p]));
-    players.forEach(p => {
-      p.buchholz = p.opponents.reduce((sum, oppId) => {
-        const opp = map.get(oppId);
-        return sum + (opp ? opp.score : 0);
-      }, 0);
+  /* --- STRYK SPELARE --- */
+
+  function openWithdrawModal() {
+    const activePlayers = players.filter(p => !p.withdrawn && !p.pendingWithdrawal);
+    if (activePlayers.length === 0) {
+      alert("Det finns inga aktiva spelare kvar att stryka.");
+      return;
+    }
+
+    const select = document.getElementById("withdraw-select");
+    select.innerHTML = "";
+    activePlayers.forEach(p => {
+      const opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = `${p.name} (${formatPoints(p.score)} p)`;
+      select.appendChild(opt);
     });
+
+    document.getElementById("withdraw-modal").classList.remove("hidden");
   }
 
-  function sortFinalStandings() {
-    calculateBuchholz();
-
-    players.sort((a, b) => {
-      if (b.score !== a.score) {
-        return b.score - a.score;
-      }
-      if (a.withdrawn !== b.withdrawn) {
-        return a.withdrawn ? 1 : -1;
-      }
-      const tbA = tieBreakSystem === "buchholz" ? a.buchholz : a.cumulativeScore;
-      const tbB = tieBreakSystem === "buchholz" ? b.buchholz : b.cumulativeScore;
-
-      if (tbB !== tbA) {
-        return tbB - tbA;
-      }
-      return a.originalPos - b.originalPos;
-    });
+  function closeWithdrawModal() {
+    document.getElementById("withdraw-modal").classList.add("hidden");
   }
+
+  function confirmWithdrawPlayer() {
+    const select = document.getElementById("withdraw-select");
+    const playerId = parseInt(select.value, 10);
+    const player = players.find(p => p.id === playerId);
+    if (!player) return;
+
+    if (!confirm(`Är du säker på att du vill stryka ${player.name}? Spelaren spelar klart Rond ${currentRound}, men tas inte med i lottningen från och med nästa rond.`)) {
+      return;
+    }
+
+    player.pendingWithdrawal = true;
+    closeWithdrawModal();
+
+    // Spara ifyllda resultat under omritning
+    const savedResults = [];
+    currentPairings.forEach((_, idx) => {
+      const checked = document.querySelector(`input[name="board_${idx + 1}"]:checked`);
+      savedResults.push(checked ? checked.value : null);
+    });
+
+    renderRoundView();
+
+    savedResults.forEach((val, idx) => {
+      if (val) {
+        const radio = document.querySelector(`input[name="board_${idx + 1}"][value="${val}"]`);
+        if (radio) radio.checked = true;
+      }
+    });
+
+    renderStandings();
+    alert(`${player.name} är markerad för strykning. Pågående rond spelas klart och spelaren tas inte med i lottningen från och med nästa rond.`);
+  }
+
+  /* --- TABELLER & SLUTSTÄLLNING --- */
 
   function renderStandings() {
     const tbody = document.getElementById("standings-tbody");
     tbody.innerHTML = "";
 
-    const displayList = [...players].sort((a, b) => {
-      if (b.score !== a.score) {
-        return b.score - a.score;
-      }
-      if (a.withdrawn !== b.withdrawn) {
-        return a.withdrawn ? 1 : -1;
-      }
-      return a.originalPos - b.originalPos;
-    });
+    const displayList = sortPlayers([...players]);
 
     displayList.forEach((p, idx) => {
       const tr = document.createElement("tr");
-      if (p.withdrawn) {
+      if (p.withdrawn || p.pendingWithdrawal) {
         tr.style.color = "#64748b";
       }
+      const tbValue = getTieBreakValue(p);
       tr.innerHTML = `
         <td style="font-weight: 600; color: #64748b;">${idx + 1}</td>
-        <td><strong>${getPlayerDisplayName(p)}</strong></td>
+        <td><strong>${escapeHtml(getPlayerDisplayName(p))}</strong></td>
         <td><span class="score-badge">${formatPoints(p.score)}</span></td>
+        <td style="font-weight: 600; color: #334155;">${formatPoints(tbValue)}</td>
         <td style="white-space: nowrap;">⚪ ${p.whites} / ⚫ ${p.blacks}</td>
         <td>${p.hasHadBye ? "Ja" : "—"}</td>
       `;
@@ -1053,7 +1144,7 @@ Anish Giri`;
   }
 
   function renderFinalStandings() {
-    sortFinalStandings();
+    const sorted = sortPlayers([...players]);
 
     const tbLabel = tieBreakSystem === "buchholz" ? "Buchholz" : "Kumulativ";
     document.getElementById("th-tiebreak").innerText = tbLabel;
@@ -1061,15 +1152,15 @@ Anish Giri`;
     const tbody = document.getElementById("final-tbody");
     tbody.innerHTML = "";
 
-    players.forEach((p, idx) => {
+    sorted.forEach((p, idx) => {
       const tr = document.createElement("tr");
       if (p.withdrawn) {
         tr.style.color = "#64748b";
       }
-      const tbValue = tieBreakSystem === "buchholz" ? p.buchholz : p.cumulativeScore;
+      const tbValue = getTieBreakValue(p);
       tr.innerHTML = `
         <td style="font-weight: bold; color: #64748b;">${idx + 1}</td>
-        <td><strong>${getPlayerDisplayName(p)}</strong></td>
+        <td><strong>${escapeHtml(getPlayerDisplayName(p))}</strong></td>
         <td><span class="score-badge">${formatPoints(p.score)}</span></td>
         <td style="font-weight: 600;">${formatPoints(tbValue)}</td>
       `;
@@ -1104,9 +1195,9 @@ Anish Giri`;
         html += `
           <tr>
             <td style="font-weight: bold; color: #64748b;">${m.board}</td>
-            <td>${m.whiteName}</td>
-            <td style="text-align: center; font-weight: bold;">${m.result}</td>
-            <td>${m.blackName}</td>
+            <td>${escapeHtml(m.whiteName)}</td>
+            <td style="text-align: center; font-weight: bold;">${escapeHtml(m.result)}</td>
+            <td>${escapeHtml(m.blackName)}</td>
           </tr>
         `;
       });
@@ -1116,7 +1207,7 @@ Anish Giri`;
       if (r.byePlayerName) {
         html += `
           <div class="bye-box" style="margin-top: 8px;">
-            ℹ️ <strong>Frirond (1 p):</strong> ${r.byePlayerName}
+            ℹ️ <strong>Frirond (1 p):</strong> ${escapeHtml(r.byePlayerName)}
           </div>
         `;
       }
@@ -1148,6 +1239,7 @@ Anish Giri`;
       }
     }
 
+    isTournamentFinished = true;
     document.getElementById("section-round").classList.add("hidden");
     document.getElementById("section-standings").classList.add("hidden");
     document.getElementById("section-final").classList.remove("hidden");
@@ -1156,12 +1248,12 @@ Anish Giri`;
   }
 
   function resetTournament() {
-    if (confirm("Är du säker på att du vill starta en ny turnering?")) {
+    if (confirm("Är du säker på att du vill starta en ny turnering? All osparad data raderas.")) {
       location.reload();
     }
   }
 
-  /* --- UTSKRIFTSFUNKTIONER --- */
+  /* --- UTSKRIFT --- */
 
   function openPrintPage(pageTitle, contentHtml) {
     const printWindow = window.open("", "_blank");
@@ -1175,7 +1267,7 @@ Anish Giri`;
 <html lang="sv">
 <head>
   <meta charset="UTF-8">
-  <title>${pageTitle}</title>
+  <title>${escapeHtml(pageTitle)}</title>
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -1278,7 +1370,7 @@ Anish Giri`;
     const tournamentTitle = tournamentName.trim() ? tournamentName.trim() : "Monrad schackturnering";
 
     let pairingsHtml = `
-      <h1>${tournamentTitle} — Rond ${currentRound}</h1>
+      <h1>${escapeHtml(tournamentTitle)} — Rond ${currentRound}</h1>
       <p>Datum: ${new Date().toLocaleDateString('sv-SE')}</p>
       
       <h2>Lottning Rond ${currentRound}</h2>
@@ -1302,9 +1394,9 @@ Anish Giri`;
       pairingsHtml += `
         <tr>
           <td style="font-weight: bold; text-align: center;">${boardNum}</td>
-          <td>${getPlayerDisplayName(match.white)} (${formatPoints(match.white.score)})</td>
+          <td>${escapeHtml(getPlayerDisplayName(match.white))} (${formatPoints(match.white.score)})</td>
           <td style="text-align: center; font-weight: bold;">${resultText}</td>
-          <td>${getPlayerDisplayName(match.black)} (${formatPoints(match.black.score)})</td>
+          <td>${escapeHtml(getPlayerDisplayName(match.black))} (${formatPoints(match.black.score)})</td>
         </tr>
       `;
     });
@@ -1314,10 +1406,12 @@ Anish Giri`;
     if (currentByePlayer) {
       pairingsHtml += `
         <div class="bye-box">
-          <strong>Frirond (1 p):</strong> ${getPlayerDisplayName(currentByePlayer)} (${formatPoints(currentByePlayer.score)} p) tilldelas 1 poäng.
+          <strong>Frirond (1 p):</strong> ${escapeHtml(getPlayerDisplayName(currentByePlayer))} (${formatPoints(currentByePlayer.score)} p) tilldelas 1 poäng.
         </div>
       `;
     }
+
+    const tbLabel = tieBreakSystem === "buchholz" ? "Buchholz" : "Kumulativ";
 
     pairingsHtml += `
       <h2>Ställning inför Rond ${currentRound}</h2>
@@ -1327,25 +1421,23 @@ Anish Giri`;
             <th style="width: 50px;">Plac.</th>
             <th>Spelare</th>
             <th style="width: 70px;">Poäng</th>
-            <th style="width: 110px;">Vit / Svart</th>
+            <th style="width: 85px;">${tbLabel}</th>
+            <th style="width: 100px;">Vit / Svart</th>
             <th style="width: 70px;">Frirond</th>
           </tr>
         </thead>
         <tbody>
     `;
 
-    const displayList = [...players].sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      if (a.withdrawn !== b.withdrawn) return a.withdrawn ? 1 : -1;
-      return a.originalPos - b.originalPos;
-    });
+    const displayList = sortPlayers([...players]);
 
     displayList.forEach((p, idx) => {
       pairingsHtml += `
         <tr>
           <td style="text-align: center; font-weight: bold;">${idx + 1}</td>
-          <td>${getPlayerDisplayName(p)}</td>
+          <td>${escapeHtml(getPlayerDisplayName(p))}</td>
           <td style="font-weight: 600;">${formatPoints(p.score)}</td>
+          <td>${formatPoints(getTieBreakValue(p))}</td>
           <td>${p.whites} / ${p.blacks}</td>
           <td>${p.hasHadBye ? "Ja" : "—"}</td>
         </tr>
@@ -1362,7 +1454,7 @@ Anish Giri`;
     const tbLabel = tieBreakSystem === "buchholz" ? "Buchholz" : "Kumulativ";
 
     let finalHtml = `
-      <h1>${tournamentTitle} — Slutställning</h1>
+      <h1>${escapeHtml(tournamentTitle)} — Slutställning</h1>
       <p>Datum: ${new Date().toLocaleDateString('sv-SE')}</p>
       <table>
         <thead>
@@ -1376,12 +1468,14 @@ Anish Giri`;
         <tbody>
     `;
 
-    players.forEach((p, idx) => {
-      const tbValue = tieBreakSystem === "buchholz" ? p.buchholz : p.cumulativeScore;
+    const sorted = sortPlayers([...players]);
+
+    sorted.forEach((p, idx) => {
+      const tbValue = getTieBreakValue(p);
       finalHtml += `
         <tr>
           <td style="text-align: center; font-weight: bold;">${idx + 1}</td>
-          <td><strong>${getPlayerDisplayName(p)}</strong></td>
+          <td><strong>${escapeHtml(getPlayerDisplayName(p))}</strong></td>
           <td style="font-weight: bold;">${formatPoints(p.score)}</td>
           <td>${formatPoints(tbValue)}</td>
         </tr>
