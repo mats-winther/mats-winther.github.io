@@ -6,7 +6,7 @@
   <link href="style4.css" rel="stylesheet" type="text/css">
   <meta name="description" content=
   "En teknisk genomgång av lottning i schackturneringar med fokus på monrad och schweizer. Artikeln kritiserar nordisk schweizer och presenterar ett alternativt schweizer-system som ett mer stabilt och rättvist alternativ för öppna turneringar.">
-  <meta name="keywords" content="Monrad, Schweizer, Berger, lottning, schack, program">
+  <meta name="keywords" content="Monrad, Schweizer, Berger, lottning, schack, program, winther-accelerering">
   <meta name="author" content="Mats Winther">
   <link rel="canonical" href="https://mats-winther.github.io/bg/schacklottning.htm">
   <title>Schacklottning: en genomgång av Monrad, Schweizer och Berger</title>
@@ -23,10 +23,10 @@
     genom sina mer eller mindre oförutsägbara resultat.<br>
     <br>
     <b>Monrad-systemet</b> är uppkallat efter den danske schackorganisatören Poul&nbsp;Monrad, som under mitten av
-    1900-talet utvecklade och populariserade denna förenklade variant av schweizerlottning. Det blev
-    mycket utbrett i Danmark, Norge och Sverige, särskilt i skoltävlingar, weekendturneringar och större
-    amatörevenemang, eftersom det är enklare än det fullständiga schweiziska systemet: spelarna lottas strikt efter
-    aktuell poäng, utan de mer komplicerade FIDE-restriktionerna.<br>
+    1900-talet utvecklade och populariserade denna förenklade variant av schweizerlottning. Det blev mycket utbrett i
+    Danmark, Norge och Sverige, särskilt i skoltävlingar, weekendturneringar och större amatörevenemang, eftersom det
+    är enklare än det fullständiga schweiziska systemet: spelarna lottas strikt efter aktuell poäng, utan de mer
+    komplicerade FIDE-restriktionerna.<br>
     <br>
     I monrad (förenklad schweizer) kan det i början uppstå viss orättvisa, då en toppspelare kan få möta en stark
     motståndare medan en annan får en betydligt svagare. Därför använder man i elitturneringar hellre någon form av
@@ -61,9 +61,9 @@
     "Resultat i Blixt-SM 2023 för Bassem Amin">här</a>). Nordisk schweizer borde därför upphöra att användas.<br>
     <br>
     I mitt accelererade schweizer-system inträffar inte detta: <a href="../swiss.htm" title=
-    "Program för accelererad schweizer-lottning">Schweiziskt turneringssystem</a>. Programmet har en spärr som gör att
-    samma färg tre gånger i rad i praktiken inte kan uppstå. Det är tydligt bättre än nordisk schweizer, förutsatt att
-    programmet visar sig pålitligt efter noggrann testning.<br>
+    "Program för schweizer-lottning med winther-accelerering">Schweiziskt turneringssystem</a>. Programmet har en spärr
+    som gör att samma färg tre gånger i rad i praktiken inte kan uppstå. Det är tydligt bättre än nordisk schweizer,
+    förutsatt att programmet visar sig pålitligt efter noggrann testning.<br>
     <br>
     <b>Accelererad schweizerlottning enligt Winther</b>&thinsp;:<br>
     <br>
@@ -89,8 +89,8 @@
     Att vinnarna i den andra halvan får vit mot vinnarna i den första halvan i rond två, anser jag är en bra
     idé&nbsp;&ndash; alla spelare blir nöjda. Från och med rond tre möter spelare med liknande rating allt oftare
     varandra. Generellt föredrar toppspelare svart mot svagare motstånd och vit mot starkare. Programmet tillgodoser
-    detta genom att den lägre rankade spelaren får vit när poäng och buchholz är lika. Hur ratingfördelningen i stort
-    påverkar lottningen vet jag inte, men det går att undersöka med hjälp av programmet.<br>
+    detta genom att ge vit till den lägre rankade spelaren när antalet spelade vitpartier är lika. Hur
+    ratingfördelningen i stort påverkar lottningen vet jag inte, men det går att undersöka med hjälp av programmet.<br>
     <br>
     Schweizerlottningens grundproblem är att den försöker åstadkomma en rättvis turnering inom ett begränsat antal
     ronder, utan att kunna använda det idealiska alla-mot-alla-formatet. Därför måste systemet både skapa parningar av

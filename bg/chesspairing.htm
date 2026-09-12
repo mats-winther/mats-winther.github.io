@@ -6,7 +6,7 @@
   <link href="style4.css" rel="stylesheet" type="text/css">
   <meta name="description" content=
   "A technical overview of pairing methods in chess tournaments, with a focus on Monrad and Swiss. The article critiques Nordic Swiss and presents an alternative Swiss system as a more stable and fair option for open tournaments.">
-  <meta name="keywords" content="Monrad, Swiss, Berger, pairing, chess, software, Solkoff">
+  <meta name="keywords" content="Monrad, Swiss, Berger, pairing, chess, software, Solkoff, Winther acceleration">
   <meta name="author" content="Mats Winther">
   <link rel="canonical" href="https://mats-winther.github.io/bg/chesspairing.htm">
   <title>Chess Pairings: A Review of Monrad, Swiss, and Berger</title>
@@ -52,7 +52,8 @@
   2023, Amin received Black three times in a row and then White five times in a row (see <a href=
   "https://member.schack.se/ShowTournamentParticipantResultServlet?id=10838&partid=510894">here</a>). Nordic Swiss
   should therefore no longer be used.</p>
-  <p>In my accelerated Swiss system, this does not occur: <a href="../swiss-eng.htm">Swiss Tournament System</a>. The
+  <p>In my accelerated Swiss system, this does not occur: <a href="../swiss-eng.htm" title=
+    "Program for Swiss pairing with Winther acceleration">Swiss Tournament System</a>. The
   program features a safeguard ensuring that the same colour three times in a row is effectively prevented. It is
   distinctly superior to Nordic Swiss, provided that the program proves reliable after thorough testing.</p>
   <p><b>Accelerated Swiss Pairing according to Winther:</b></p>
@@ -77,8 +78,8 @@
   <p>Having the winners in the second half receive White against the winners in the first half in round two is, in my
   view, a good idea&#8239;&mdash;&thinsp;all players will be pleased. From round three onward, players with similar
   ratings meet each other more consistently. Generally, top players prefer Black against weaker opposition and White
-  against stronger. The program accommodates this by granting White to the lower-ranked player when score and Buchholz
-  are tied. I do not yet know how the overall rating distribution affects the pairings, but that can be investigated
+  against stronger. The program accommodates this by granting White to the lower-ranked player when the number of White
+  games played is tied. I do not yet know how the overall rating distribution affects the pairings, but that can be investigated
   using the program.</p>
   <p>The fundamental problem of Swiss pairing is that it attempts to achieve a fair tournament within a limited number
   of rounds, without being able to employ the ideal round-robin format. Therefore, the system must both produce
