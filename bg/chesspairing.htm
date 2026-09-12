@@ -26,19 +26,27 @@
   more complicated FIDE restrictions.</p>
   <p>In Monrad (simplified Swiss), a certain unfairness can initially arise, as one top player may face a strong
   opponent while another receives a significantly weaker one. For this reason, elite tournaments prefer some form of
-  Swiss pairing. Another drawback is that a player may receive the same colour three rounds in a row. In a seven-round
-  tournament, roughly 34% of the players are likely to experience this at least once, and in a nine-round tournament
-  the proportion rises to about 45%. This is a significant weakness of the Monrad system if it is used in elite
-  tournaments. In amateur tournaments, however, it may not matter as much, since wins and losses there depend less on
-  which colour one gets and more on who makes the first mistake. This is the case in Danish-Swedish Monrad. In the
-  Norwegian system, as well as in the Dutch (FIDE) system, the algorithm prevents this, except in extreme cases. Since
-  Monrad is rarely used in elite tournaments, this restriction is arguably unnecessary.</p>
-  <p>I have created a Monrad program here: <a href="../monrad-eng.htm">Monrad Pairing System</a>. It can be used
-  online, but the page itself can also be downloaded and run locally. The program uses either cumulative (progressive)
-  score or Buchholz (the opponents&rsquo; combined score, also called Solkoff score) to break ties between players with
-  the same final score. Cumulative score is defined so that early wins yield a higher tiebreak, which favours an
-  aggressive playing style. (Starting with a win and then a loss gives 2 cumulative points after two rounds, whereas
-  two draws give 1.5. In a sense, this can be considered fair.)</p>
+  Swiss pairing. Another drawback is that a player may be assigned the same colour for three consecutive rounds, and in
+  rare cases even more. In a seven-round tournament, roughly 34% of the players are likely to experience this at least
+  once, and in a nine-round tournament the proportion rises to about 45%. This is a significant weakness of the Monrad
+  system if it is used in elite tournaments. In amateur tournaments, however, it may not matter as much, since wins and
+  losses there depend less on which colour one gets and more on who makes the first mistake. The above applies to
+  Danish-Swedish Monrad. According to FIDE’s official rules, a player may not have the same colour three times in a
+  row, nor may they have a colour balance that deviates by more than ±2. The Dutch Monrad version (FIDE) follows this
+  rule, except in extreme cases. The Norwegian system is less strict: a player may never have more than <i>three</i>
+  consecutive games with the same colour, and if possible no player should have more than 50%&nbsp;+&nbsp;1 games with
+  the same colour (see <a href="https://2000.sjakk.no/kunnskap/systemer/norges-sjakkforbunds-monradsystem/" title=
+  "The Norwegian Chess Federation&#39;s Monrad system">here</a>). But since Monrad is hardly used in elite tournaments,
+  this restriction may be unnecessary.<br>
+  <br>
+  I have created a program for Danish-Swedish Monrad here: <a href="../monrad.htm" title=
+  "Monrad lottningsprogram">Monrad tournament system</a>. My online version of the Norwegian system is available here:
+  <a href="../norsk-monrad.htm" title="Monrad – turneringshanterare (norsk modell)">Monrad&nbsp;&ndash; tournament
+  manager</a>. Both can be used online, but the page itself can also be downloaded and run locally. The Danish-Swedish
+  version uses either cumulative (progressive) score or Buchholz (the opponents&rsquo; total score) to differentiate
+  players with the same final result. Cumulative score is defined so that early wins yield a higher tiebreak, which
+  favours an aggressive playing style. (Starting with a win and then a loss gives 2 cumulative points after two rounds,
+  whereas two draws give 1.5. In a sense, this can be considered fair.)</p>
   <p><b>The Berger system</b> entails that everyone plays everyone, either once or twice. I have created an online
   program for Berger pairings for 3-16 players according to FIDE specifications. It can be used directly in the
   browser, but can also be downloaded and run locally: <a href="../berger-eng.htm">FIDE Berger Tournament System
@@ -48,12 +56,8 @@
   Swiss (see <a href="https://www.kristallen.org/ongoingtournaments/nordch.html">here</a>). A typical problem for
   intermediate players is that they oscillate between overly strong and overly weak opposition: in one round they face
   a significantly stronger player, in the next a clearly weaker one, and then once again an overly strong opponent.
-  This oscillation diminishes the enjoyment of the tournament and produces an uneven tournament experience.
-  Furthermore, a player can receive the same colour three or more times in a row. In the Swedish Blitz Championship
-  2023, Amin received Black three times in a row and then White five times in a row (see <a href=
-  "https://member.schack.se/ShowTournamentParticipantResultServlet?id=10838&partid=510894">here</a>). Nordic Swiss
-  should therefore no longer be used.</p>
-  <p>In my accelerated Swiss system, this does not occur: <a href="../swiss-eng.htm" title=
+  This oscillation diminishes the enjoyment of the tournament and produces an uneven tournament experience. In my
+  accelerated Swiss system, this does not occur: <a href="../swiss-eng.htm" title=
   "Program for Swiss pairing with Winther acceleration">Swiss Tournament System</a>. The program features a safeguard
   ensuring that the same colour three times in a row is effectively prevented. It is distinctly superior to Nordic
   Swiss, provided that the program proves reliable after thorough testing.</p>
