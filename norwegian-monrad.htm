@@ -1,0 +1,3362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Monrad Tournament Manager</title>
+
+  <style>
+    :root {
+      --primary: #24486b;
+      --primary-dark: #17334e;
+      --secondary: #e7edf3;
+      --success: #246b3d;
+      --danger: #a52a2a;
+      --warning: #8a5a00;
+      --border: #c6ced6;
+      --background: #f4f6f8;
+      --card: #ffffff;
+      --text: #1b252e;
+      --muted: #5e6b75;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.4;
+    }
+
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 18px 24px;
+    }
+
+    header h1 {
+      margin: 0 0 4px;
+      font-size: 1.65rem;
+    }
+
+    header p {
+      margin: 0;
+      opacity: 0.9;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--primary-dark);
+    }
+
+    main {
+      width: min(1200px, calc(100% - 30px));
+      margin: 20px auto 50px;
+    }
+
+    .card {
+      margin-bottom: 18px;
+      padding: 20px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+    }
+
+    .card h2,
+    .card h3 {
+      margin-top: 0;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 15px;
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 9px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: white;
+      color: var(--text);
+    }
+
+    textarea {
+      min-height: 290px;
+      resize: vertical;
+      font-family: Consolas, Monaco, monospace;
+      line-height: 1.45;
+    }
+
+    button {
+      padding: 9px 14px;
+      border: 0;
+      border-radius: 4px;
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--primary-dark);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    button.secondary {
+      background: #687785;
+    }
+
+    button.success {
+      background: var(--success);
+    }
+
+    button.danger {
+      background: var(--danger);
+    }
+
+    button.warning {
+      background: var(--warning);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 9px;
+      margin-top: 14px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .small {
+      font-size: 0.88rem;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .notice {
+      margin: 12px 0;
+      padding: 11px 13px;
+      border-left: 5px solid var(--primary);
+      background: #eef5fb;
+    }
+
+    .notice.warning {
+      border-color: var(--warning);
+      background: #fff6df;
+    }
+
+    .notice.success {
+      border-color: var(--success);
+      background: #eaf7ef;
+    }
+
+    .notice.danger {
+      border-color: var(--danger);
+      background: #fdecec;
+    }
+
+    .summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 24px;
+    }
+
+    .summary strong {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .summary span {
+      font-size: 1.08rem;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th,
+    td {
+      padding: 8px 9px;
+      border: 1px solid var(--border);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      background: var(--secondary);
+      white-space: nowrap;
+    }
+
+    td.number,
+    th.number {
+      text-align: right;
+    }
+
+    td.center,
+    th.center {
+      text-align: center;
+    }
+
+    tr.withdrawn {
+      color: var(--muted);
+      background: #f5f5f5;
+    }
+
+    .result-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 5px;
+      min-width: 235px;
+    }
+
+    button.result-choice {
+      width: auto;
+      padding: 5px 8px;
+      border: 1px solid #687785;
+      background: #ffffff;
+      color: var(--text);
+      font-size: 0.86rem;
+    }
+
+    button.result-choice:hover:not(:disabled) {
+      background: var(--secondary);
+      color: var(--text);
+    }
+
+    button.result-choice.selected {
+      border-color: var(--success);
+      background: var(--success);
+      color: #ffffff;
+      font-weight: bold;
+    }
+
+    button.result-choice.selected:hover:not(:disabled) {
+      background: var(--success);
+      color: #ffffff;
+    }
+
+    .selected-result {
+      width: 100%;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-align: center;
+    }
+
+    .player-number {
+      color: var(--muted);
+      font-size: 0.9em;
+    }
+
+    .score {
+      font-weight: bold;
+    }
+
+    @media (max-width: 650px) {
+      main {
+        width: min(100% - 16px, 1200px);
+        margin-top: 10px;
+      }
+
+      header,
+      .toolbar {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      .card {
+        padding: 14px;
+      }
+
+      button {
+        width: 100%;
+      }
+
+      .button-row select {
+        width: 100%;
+      }
+
+      .result-buttons button {
+        width: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <h1>Monrad Tournament Manager</h1>
+  <p>Pairing and administration of tournaments according to the Norwegian Chess Federation’s Monrad system</p>
+</header>
+
+<div class="toolbar">
+  <button id="saveTournamentButton">Save Tournament</button>
+
+  <button id="loadTournamentButton" class="secondary">
+    Load Tournament
+  </button>
+
+  <button id="withdrawPlayerButton" class="warning hidden">
+    Withdraw Player
+  </button>
+
+  <button id="newTournamentButton" class="danger">
+    New Tournament
+  </button>
+</div>
+
+<input
+  id="tournamentFileInput"
+  class="hidden"
+  type="file"
+  accept=".json,application/json"
+>
+
+<input
+  id="playerFileInput"
+  class="hidden"
+  type="file"
+  accept=".txt,.csv,text/plain,text/csv"
+>
+
+<main>
+  <section id="setupPanel">
+    <div class="card">
+      <h2>Tournament setup</h2>
+
+      <div class="form-grid">
+        <div>
+          <label for="tournamentName">Tournament name</label>
+          <input
+            id="tournamentName"
+            type="text"
+            value="Norwegian Monrad Tournament"
+          >
+        </div>
+
+        <div>
+          <label for="totalRounds">Number of rounds</label>
+          <input
+            id="totalRounds"
+            type="number"
+            min="1"
+            max="30"
+            value="7"
+          >
+        </div>
+
+        <div>
+          <label for="startNumberMethod">
+            Start-number assignment
+          </label>
+
+          <select id="startNumberMethod">
+            <option value="seeded">
+              Seeded draw using rating
+            </option>
+            <option value="random">
+              Completely random draw
+            </option>
+            <option value="listed">
+              Keep player-file order
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <h3>Players</h3>
+
+      <p class="muted small">
+        Enter one player per line using
+        <strong>Name;Club;Rating</strong>.
+        Tabs and commas are also accepted. Club and rating may be omitted.
+        Lines beginning with <strong>#</strong> are ignored.
+      </p>
+
+      <textarea
+        id="playersText"
+        spellcheck="false"
+        placeholder="Alice Smith;Central Chess Club;1820&#10;Bob Jones;Westside Chess Club;1740..."
+      ></textarea>
+
+      <div class="button-row">
+        <button id="loadPlayerFileButton" class="secondary">
+          Load TXT Player File
+        </button>
+
+        <button id="loadSampleButton" class="secondary">
+          Load Sample Players
+        </button>
+
+        <button id="clearPlayersButton" class="danger">
+          Clear Players
+        </button>
+
+        <button id="startTournamentButton" class="success">
+          Start Tournament
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Seeded draw</h3>
+
+      <p>
+        For a seeded draw, players are ranked by rating and divided into
+        four groups: A, B, C and D. Players are then drawn in the repeating
+        group order:
+      </p>
+
+      <p><strong>A, C, D, B, C, A, B, D</strong></p>
+
+      <p class="muted small">
+        If the player count is not divisible by four, the lowest-ranked
+        remainder is drawn randomly and assigned the final start numbers.
+      </p>
+    </div>
+  </section>
+
+  <section id="tournamentPanel" class="hidden">
+    <div class="card">
+      <h2 id="tournamentHeading"></h2>
+      <div id="tournamentSummary" class="summary"></div>
+      <div id="globalWarnings"></div>
+    </div>
+
+    <div id="currentRoundCard" class="card">
+      <div id="currentRoundContent"></div>
+    </div>
+
+    <div class="card">
+      <h2>Printable round lists</h2>
+
+      <p class="muted">
+        A frozen copy of the round list is stored before each round is
+        paired. It can be printed later even after the tournament has moved
+        to another round.
+      </p>
+
+      <div class="button-row">
+        <select id="historyRoundSelect"></select>
+
+        <button id="printHistoricalRoundListButton">
+          Print Selected Pre-Round List
+        </button>
+      </div>
+    </div>
+
+    <div id="finalResultsCard" class="card hidden">
+      <h2>Final standings</h2>
+      <div id="finalResultsContent"></div>
+
+      <div class="button-row">
+        <button id="printFinalResultsButton">
+          Print Final Standings
+        </button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+"use strict";
+
+/* ------------------------------------------------------------
+   Application state
+------------------------------------------------------------ */
+
+function emptyState() {
+  return {
+    app: "NorwegianMonradWeb",
+    version: 1,
+    status: "setup",
+    name: "",
+    totalRounds: 7,
+    startNumberMethod: "seeded",
+    players: [],
+    rounds: [],
+    warnings: []
+  };
+}
+
+let state = emptyState();
+
+/* ------------------------------------------------------------
+   General utilities
+------------------------------------------------------------ */
+
+function makeId() {
+  if (
+    window.crypto &&
+    typeof window.crypto.randomUUID === "function"
+  ) {
+    return window.crypto.randomUUID();
+  }
+
+  return (
+    Date.now().toString(36) +
+    "-" +
+    Math.random().toString(36).slice(2) +
+    "-" +
+    Math.random().toString(36).slice(2)
+  );
+}
+
+function escapeHTML(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function shuffle(array) {
+  const result = [...array];
+
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+
+  return result;
+}
+
+function approximatelyEqual(a, b) {
+  return Math.abs(a - b) < 0.000001;
+}
+
+function formatNumber(value) {
+  if (
+    value === null ||
+    value === undefined ||
+    Number.isNaN(value)
+  ) {
+    return "";
+  }
+
+  if (Number.isInteger(value)) {
+    return String(value);
+  }
+
+  return Number(value.toFixed(2)).toString();
+}
+
+function formatScore(value) {
+  return formatNumber(value);
+}
+
+function safeFilename(name) {
+  const result = String(name || "monrad-tournament")
+    .trim()
+    .replace(/[^a-z0-9_-]+/gi, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return result || "monrad-tournament";
+}
+
+function getPlayer(id) {
+  return (
+    state.players.find(
+      player => player.id === String(id)
+    ) || null
+  );
+}
+
+function playerDisplay(player) {
+  if (!player) {
+    return "Unknown player";
+  }
+
+  const club = player.club ? ` — ${player.club}` : "";
+
+  return (
+    `<span class="player-number">#${player.startNo}</span> ` +
+    `${escapeHTML(player.name)}${escapeHTML(club)}`
+  );
+}
+
+function resultLabel(result) {
+  const labels = {
+    "1-0": "1-0",
+    "0.5-0.5": "½-½",
+    "0-1": "0-1",
+    "W-F": "White wins by forfeit",
+    "F-W": "Black wins by forfeit",
+    "0-0": "0-0"
+  };
+
+  return labels[result] || "";
+}
+
+/* ------------------------------------------------------------
+   Player-file handling
+------------------------------------------------------------ */
+
+function splitPlayerLine(line) {
+  if (line.includes("\t")) {
+    return line.split("\t");
+  }
+
+  if (line.includes(";")) {
+    return line.split(";");
+  }
+
+  if (line.includes(",")) {
+    return line.split(",");
+  }
+
+  return [line];
+}
+
+function parsePlayers(text) {
+  const lines = String(text || "").split(/\r?\n/);
+  const players = [];
+
+  for (
+    let lineIndex = 0;
+    lineIndex < lines.length;
+    lineIndex++
+  ) {
+    const raw = lines[lineIndex].trim();
+
+    if (!raw || raw.startsWith("#")) {
+      continue;
+    }
+
+    const parts = splitPlayerLine(raw).map(
+      part => part.trim()
+    );
+
+    if (
+      lineIndex === 0 &&
+      /name|player/i.test(parts[0] || "") &&
+      /rating|elo|club/i.test(parts.join(" "))
+    ) {
+      continue;
+    }
+
+    const name = parts[0] || "";
+    const club = parts[1] || "";
+    const ratingText = parts[2] || "";
+    const rating =
+      ratingText === "" ? null : Number(ratingText);
+
+    if (!name) {
+      continue;
+    }
+
+    players.push({
+      name,
+      club,
+      rating: Number.isFinite(rating) ? rating : null
+    });
+  }
+
+  return players;
+}
+
+function assignStartNumbers(players, method) {
+  let ordered = [];
+
+  if (method === "random") {
+    ordered = shuffle(players);
+  } else if (method === "listed") {
+    ordered = [...players];
+  } else {
+    const ranked = players
+      .map((player, index) => ({
+        ...player,
+        originalIndex: index
+      }))
+      .sort((a, b) => {
+        const ratingA = Number.isFinite(a.rating)
+          ? a.rating
+          : -Infinity;
+
+        const ratingB = Number.isFinite(b.rating)
+          ? b.rating
+          : -Infinity;
+
+        if (ratingA !== ratingB) {
+          return ratingB - ratingA;
+        }
+
+        return a.originalIndex - b.originalIndex;
+      });
+
+    if (ranked.length < 4) {
+      ordered = shuffle(ranked);
+    } else {
+      const remainderCount = ranked.length % 4;
+      const coreLength = ranked.length - remainderCount;
+
+      const core = ranked.slice(0, coreLength);
+      const remainder = ranked.slice(coreLength);
+      const groupSize = coreLength / 4;
+
+      const groups = {
+        A: shuffle(core.slice(0, groupSize)),
+        B: shuffle(core.slice(groupSize, groupSize * 2)),
+        C: shuffle(core.slice(groupSize * 2, groupSize * 3)),
+        D: shuffle(core.slice(groupSize * 3, groupSize * 4))
+      };
+
+      const pattern = [
+        "A",
+        "C",
+        "D",
+        "B",
+        "C",
+        "A",
+        "B",
+        "D"
+      ];
+
+      ordered = [];
+
+      while (ordered.length < coreLength) {
+        for (const groupName of pattern) {
+          if (groups[groupName].length > 0) {
+            ordered.push(groups[groupName].shift());
+          }
+
+          if (ordered.length >= coreLength) {
+            break;
+          }
+        }
+      }
+
+      ordered.push(...shuffle(remainder));
+    }
+  }
+
+  return ordered.map((player, index) => ({
+    id: makeId(),
+    startNo: index + 1,
+    name: player.name,
+    club: player.club || "",
+    rating: Number.isFinite(player.rating)
+      ? player.rating
+      : null,
+    withdrawn: false,
+
+    // Saved random token used only if every prescribed tie-break is equal.
+    lot: Math.random()
+  }));
+}
+
+/* ------------------------------------------------------------
+   Results and statistics
+------------------------------------------------------------ */
+
+function pointsFromResult(result) {
+  switch (result) {
+    case "1-0":
+    case "W-F":
+      return [1, 0];
+
+    case "0.5-0.5":
+      return [0.5, 0.5];
+
+    case "0-1":
+    case "F-W":
+      return [0, 1];
+
+    case "0-0":
+      return [0, 0];
+
+    default:
+      return [0, 0];
+  }
+}
+
+function createEmptyPlayerStats(player) {
+  return {
+    playerId: player.id,
+    points: 0,
+    whites: 0,
+    blacks: 0,
+    games: 0,
+    colorHistory: [],
+    opponents: new Set(),
+    encounters: [],
+    hadWOPoint: false,
+    woCount: 0
+  };
+}
+
+function buildStats(beforeRound = Infinity) {
+  const stats = new Map();
+
+  for (const player of state.players) {
+    stats.set(
+      player.id,
+      createEmptyPlayerStats(player)
+    );
+  }
+
+  const completedRounds = state.rounds.filter(round => {
+    return (
+      round.completed &&
+      round.number < beforeRound
+    );
+  });
+
+  for (const round of completedRounds) {
+    for (const pairing of round.pairings) {
+      const whiteStats = stats.get(pairing.whiteId);
+
+      if (!whiteStats) {
+        continue;
+      }
+
+      if (pairing.type === "bye") {
+        whiteStats.points += 1;
+        whiteStats.whites += 1;
+        whiteStats.games += 1;
+        whiteStats.colorHistory.push("W");
+        whiteStats.hadWOPoint = true;
+        whiteStats.woCount += 1;
+
+        whiteStats.encounters.push({
+          opponentId: null,
+          scoreFor: 1,
+          qualityZero: true,
+          type: "bye"
+        });
+
+        continue;
+      }
+
+      const blackStats = stats.get(pairing.blackId);
+
+      if (!blackStats) {
+        continue;
+      }
+
+      const [whitePoints, blackPoints] =
+        pointsFromResult(pairing.result);
+
+      whiteStats.points += whitePoints;
+      blackStats.points += blackPoints;
+
+      whiteStats.whites += 1;
+      blackStats.blacks += 1;
+
+      whiteStats.games += 1;
+      blackStats.games += 1;
+
+      whiteStats.colorHistory.push("W");
+      blackStats.colorHistory.push("B");
+
+      whiteStats.opponents.add(pairing.blackId);
+      blackStats.opponents.add(pairing.whiteId);
+
+      whiteStats.encounters.push({
+        opponentId: pairing.blackId,
+        scoreFor: whitePoints,
+        qualityZero: false,
+        type: "game"
+      });
+
+      blackStats.encounters.push({
+        opponentId: pairing.whiteId,
+        scoreFor: blackPoints,
+        qualityZero: false,
+        type: "game"
+      });
+
+      if (pairing.result === "W-F") {
+        whiteStats.hadWOPoint = true;
+        whiteStats.woCount += 1;
+      }
+
+      if (pairing.result === "F-W") {
+        blackStats.hadWOPoint = true;
+        blackStats.woCount += 1;
+      }
+    }
+  }
+
+  return stats;
+}
+
+function calculateQuality(playerId, stats) {
+  const playerStats = stats.get(playerId);
+
+  if (!playerStats) {
+    return {
+      primary: 0,
+      dropped: [],
+      sonnebornBerger: 0,
+      vector: [0, 0]
+    };
+  }
+
+  const qualityValues = [];
+  let sonnebornBerger = 0;
+
+  for (const encounter of playerStats.encounters) {
+    if (
+      encounter.qualityZero ||
+      !encounter.opponentId
+    ) {
+      qualityValues.push(0);
+      continue;
+    }
+
+    const opponentStats = stats.get(
+      encounter.opponentId
+    );
+
+    const opponentPoints = opponentStats
+      ? opponentStats.points
+      : 0;
+
+    qualityValues.push(opponentPoints);
+    sonnebornBerger +=
+      opponentPoints * encounter.scoreFor;
+  }
+
+  qualityValues.sort((a, b) => a - b);
+
+  const prescribedDropCount =
+    state.totalRounds <= 6 ? 1 : 2;
+
+  const actualDropCount = Math.min(
+    prescribedDropCount,
+    qualityValues.length
+  );
+
+  const droppedAscending =
+    qualityValues.splice(0, actualDropCount);
+
+  const droppedDescending =
+    droppedAscending.sort((a, b) => b - a);
+
+  const primary = qualityValues.reduce(
+    (sum, value) => sum + value,
+    0
+  );
+
+  return {
+    primary,
+    dropped: droppedDescending,
+    sonnebornBerger,
+    vector: [
+      primary,
+      ...droppedDescending,
+      sonnebornBerger
+    ]
+  };
+}
+
+function compareQualityData(qualityA, qualityB) {
+  const length = Math.max(
+    qualityA.vector.length,
+    qualityB.vector.length
+  );
+
+  for (let i = 0; i < length; i++) {
+    const valueA = qualityA.vector[i] || 0;
+    const valueB = qualityB.vector[i] || 0;
+
+    if (!approximatelyEqual(valueA, valueB)) {
+      return valueB - valueA;
+    }
+  }
+
+  return 0;
+}
+
+/*
+  The round list is ordered as prescribed:
+  points first, then ascending start number.
+*/
+function buildRoundList(beforeRound = Infinity) {
+  const stats = buildStats(beforeRound);
+
+  const rows = state.players.map(player => ({
+    player,
+    stats: stats.get(player.id),
+    quality: calculateQuality(player.id, stats)
+  }));
+
+  rows.sort((a, b) => {
+    if (
+      !approximatelyEqual(
+        a.stats.points,
+        b.stats.points
+      )
+    ) {
+      return b.stats.points - a.stats.points;
+    }
+
+    return a.player.startNo - b.player.startNo;
+  });
+
+  return rows.map((row, index) => ({
+    rank: index + 1,
+    startNo: row.player.startNo,
+    playerId: row.player.id,
+    name: row.player.name,
+    club: row.player.club,
+    rating: row.player.rating,
+    withdrawn: row.player.withdrawn,
+    points: row.stats.points,
+    quality: row.quality.primary,
+    sonnebornBerger: row.quality.sonnebornBerger
+  }));
+}
+
+function buildFinalStandings() {
+  const stats = buildStats(Infinity);
+
+  const rows = state.players.map(player => ({
+    player,
+    stats: stats.get(player.id),
+    quality: calculateQuality(player.id, stats)
+  }));
+
+  rows.sort((a, b) => {
+    if (
+      !approximatelyEqual(
+        a.stats.points,
+        b.stats.points
+      )
+    ) {
+      return b.stats.points - a.stats.points;
+    }
+
+    const qualityComparison =
+      compareQualityData(a.quality, b.quality);
+
+    if (qualityComparison !== 0) {
+      return qualityComparison;
+    }
+
+    // Pre-drawn, saved lot resolves an otherwise complete tie.
+    return a.player.lot - b.player.lot;
+  });
+
+  return rows.map((row, index) => ({
+    rank: index + 1,
+    startNo: row.player.startNo,
+    name: row.player.name,
+    club: row.player.club,
+    rating: row.player.rating,
+    withdrawn: row.player.withdrawn,
+    points: row.stats.points,
+    quality: row.quality.primary,
+    dropped: row.quality.dropped,
+    sonnebornBerger: row.quality.sonnebornBerger
+  }));
+}
+
+/* ------------------------------------------------------------
+   Color rules
+------------------------------------------------------------ */
+
+function preferredColor(playerStats) {
+  if (playerStats.whites < playerStats.blacks) {
+    return "W";
+  }
+
+  if (playerStats.blacks < playerStats.whites) {
+    return "B";
+  }
+
+  const lastColor =
+    playerStats.colorHistory[
+      playerStats.colorHistory.length - 1
+    ];
+
+  if (lastColor === "W") {
+    return "B";
+  }
+
+  if (lastColor === "B") {
+    return "W";
+  }
+
+  return null;
+}
+
+function hardColorAllowed(
+  playerStats,
+  proposedColor
+) {
+  const history = playerStats.colorHistory;
+
+  if (
+    history.length >= 3 &&
+    history
+      .slice(-3)
+      .every(color => color === proposedColor)
+  ) {
+    return false;
+  }
+
+  const newWhiteCount =
+    playerStats.whites +
+    (proposedColor === "W" ? 1 : 0);
+
+  const newBlackCount =
+    playerStats.blacks +
+    (proposedColor === "B" ? 1 : 0);
+
+  const newTotal = newWhiteCount + newBlackCount;
+  const maximumSameColor = newTotal / 2 + 1;
+
+  if (
+    newWhiteCount >
+    maximumSameColor + 0.000001
+  ) {
+    return false;
+  }
+
+  if (
+    newBlackCount >
+    maximumSameColor + 0.000001
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function colorViolationCount(
+  playerStats,
+  proposedColor
+) {
+  return hardColorAllowed(
+    playerStats,
+    proposedColor
+  )
+    ? 0
+    : 1;
+}
+
+function playerColorPenalty(playerStats, color) {
+  let penalty = 0;
+  const history = playerStats.colorHistory;
+  const lastColor = history[history.length - 1];
+
+  if (
+    history.length >= 2 &&
+    history[history.length - 1] === color &&
+    history[history.length - 2] === color
+  ) {
+    penalty += 1000;
+  }
+
+  const newWhiteCount =
+    playerStats.whites +
+    (color === "W" ? 1 : 0);
+
+  const newBlackCount =
+    playerStats.blacks +
+    (color === "B" ? 1 : 0);
+
+  penalty +=
+    Math.abs(newWhiteCount - newBlackCount) * 20;
+
+  if (lastColor === color) {
+    penalty += 4;
+  }
+
+  const preferred = preferredColor(playerStats);
+
+  if (preferred && preferred !== color) {
+    penalty += 8;
+  }
+
+  return penalty;
+}
+
+function orientationOptions(
+  playerA,
+  playerB,
+  roundNumber,
+  stats,
+  rankMap,
+  strictColors
+) {
+  const statsA = stats.get(playerA.id);
+  const statsB = stats.get(playerB.id);
+
+  const orientations = [
+    {
+      whiteId: playerA.id,
+      blackId: playerB.id,
+      whitePlayer: playerA,
+      blackPlayer: playerB
+    },
+    {
+      whiteId: playerB.id,
+      blackId: playerA.id,
+      whitePlayer: playerB,
+      blackPlayer: playerA
+    }
+  ];
+
+  const preferenceA = preferredColor(statsA);
+  const preferenceB = preferredColor(statsB);
+
+  const higherRanked =
+    rankMap.get(playerA.id) <
+    rankMap.get(playerB.id)
+      ? playerA
+      : playerB;
+
+  const lowerRanked =
+    higherRanked.id === playerA.id
+      ? playerB
+      : playerA;
+
+  return orientations
+    .map(orientation => {
+      const whiteStats = stats.get(
+        orientation.whiteId
+      );
+
+      const blackStats = stats.get(
+        orientation.blackId
+      );
+
+      const violations =
+        colorViolationCount(whiteStats, "W") +
+        colorViolationCount(blackStats, "B");
+
+      if (strictColors && violations > 0) {
+        return null;
+      }
+
+      let penalty =
+        playerColorPenalty(whiteStats, "W") +
+        playerColorPenalty(blackStats, "B");
+
+      if (!strictColors) {
+        penalty += violations * 10000;
+      }
+
+      if (
+        preferenceA &&
+        preferenceB &&
+        preferenceA === preferenceB
+      ) {
+        const desiredWhite =
+          roundNumber % 2 === 0
+            ? higherRanked
+            : lowerRanked;
+
+        if (
+          orientation.whiteId !== desiredWhite.id
+        ) {
+          penalty += 2;
+        }
+      }
+
+      return {
+        whiteId: orientation.whiteId,
+        blackId: orientation.blackId,
+        penalty,
+        violations
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => {
+      if (a.penalty !== b.penalty) {
+        return a.penalty - b.penalty;
+      }
+
+      return a.whiteId.localeCompare(b.whiteId);
+    });
+}
+
+/* ------------------------------------------------------------
+   Pairing search
+------------------------------------------------------------ */
+
+function solvePairings(
+  orderedPlayers,
+  roundNumber,
+  stats,
+  strictColors
+) {
+  const rankMap = new Map(
+    orderedPlayers.map((player, index) => [
+      player.id,
+      index
+    ])
+  );
+
+  const failedStates = new Set();
+  let searchNodes = 0;
+  const maximumSearchNodes = 500000;
+
+  function search(remaining) {
+    searchNodes++;
+
+    if (searchNodes > maximumSearchNodes) {
+      throw new Error(
+        "The pairing search became too complex. " +
+        "Try changing player withdrawals or checking earlier results."
+      );
+    }
+
+    if (remaining.length === 0) {
+      return [];
+    }
+
+    const key = remaining
+      .map(player => player.id)
+      .join("|");
+
+    if (failedStates.has(key)) {
+      return null;
+    }
+
+    const first = remaining[0];
+    const firstStats = stats.get(first.id);
+    const candidates = [];
+
+    for (
+      let index = 1;
+      index < remaining.length;
+      index++
+    ) {
+      const opponent = remaining[index];
+
+      if (
+        firstStats.opponents.has(opponent.id)
+      ) {
+        continue;
+      }
+
+      const orientations = orientationOptions(
+        first,
+        opponent,
+        roundNumber,
+        stats,
+        rankMap,
+        strictColors
+      );
+
+      if (orientations.length === 0) {
+        continue;
+      }
+
+      candidates.push({
+        opponent,
+        remainingIndex: index,
+        scoreGap: Math.abs(
+          stats.get(first.id).points -
+          stats.get(opponent.id).points
+        ),
+        bestColorPenalty:
+          orientations[0].penalty,
+        orientations
+      });
+    }
+
+    candidates.sort((a, b) => {
+      if (
+        !approximatelyEqual(
+          a.scoreGap,
+          b.scoreGap
+        )
+      ) {
+        return a.scoreGap - b.scoreGap;
+      }
+
+      if (
+        a.bestColorPenalty !==
+        b.bestColorPenalty
+      ) {
+        return (
+          a.bestColorPenalty -
+          b.bestColorPenalty
+        );
+      }
+
+      return (
+        a.remainingIndex -
+        b.remainingIndex
+      );
+    });
+
+    for (const candidate of candidates) {
+      const nextRemaining = remaining.filter(
+        player => {
+          return (
+            player.id !== first.id &&
+            player.id !== candidate.opponent.id
+          );
+        }
+      );
+
+      const tail = search(nextRemaining);
+
+      if (!tail) {
+        continue;
+      }
+
+      const orientation =
+        candidate.orientations[0];
+
+      return [
+        {
+          type: "game",
+          whiteId: orientation.whiteId,
+          blackId: orientation.blackId,
+          result: null
+        },
+        ...tail
+      ];
+    }
+
+    failedStates.add(key);
+    return null;
+  }
+
+  return search(orderedPlayers);
+}
+
+function selectByeCandidates(
+  orderedPlayers,
+  stats
+) {
+  const eligible = orderedPlayers.filter(
+    player => {
+      return !stats.get(player.id).hadWOPoint;
+    }
+  );
+
+  if (eligible.length > 0) {
+    const minimumEligibleScore = Math.min(
+      ...eligible.map(
+        player => stats.get(player.id).points
+      )
+    );
+
+    return eligible
+      .filter(player => {
+        return approximatelyEqual(
+          stats.get(player.id).points,
+          minimumEligibleScore
+        );
+      })
+      .sort((a, b) => {
+        return b.startNo - a.startNo;
+      });
+  }
+
+  const minimumScore = Math.min(
+    ...orderedPlayers.map(
+      player => stats.get(player.id).points
+    )
+  );
+
+  return orderedPlayers
+    .filter(player => {
+      return approximatelyEqual(
+        stats.get(player.id).points,
+        minimumScore
+      );
+    })
+    .sort((a, b) => {
+      const woDifference =
+        stats.get(a.id).woCount -
+        stats.get(b.id).woCount;
+
+      if (woDifference !== 0) {
+        return woDifference;
+      }
+
+      return b.startNo - a.startNo;
+    });
+}
+
+function pairLaterRound(
+  roundNumber,
+  activePlayers,
+  stats
+) {
+  const orderedPlayers = [
+    ...activePlayers
+  ].sort((a, b) => {
+    const pointsA = stats.get(a.id).points;
+    const pointsB = stats.get(b.id).points;
+
+    if (
+      !approximatelyEqual(pointsA, pointsB)
+    ) {
+      return pointsB - pointsA;
+    }
+
+    return a.startNo - b.startNo;
+  });
+
+  const initiallyStrict =
+    roundNumber !== state.totalRounds;
+
+  function attempt(strictColors) {
+    if (orderedPlayers.length % 2 === 0) {
+      const result = solvePairings(
+        orderedPlayers,
+        roundNumber,
+        stats,
+        strictColors
+      );
+
+      return result
+        ? {
+            pairings: result,
+            byePlayer: null
+          }
+        : null;
+    }
+
+    const byeCandidates = selectByeCandidates(
+      orderedPlayers,
+      stats
+    );
+
+    for (const byePlayer of byeCandidates) {
+      const remaining =
+        orderedPlayers.filter(
+          player => player.id !== byePlayer.id
+        );
+
+      const result = solvePairings(
+        remaining,
+        roundNumber,
+        stats,
+        strictColors
+      );
+
+      if (result) {
+        return {
+          pairings: result,
+          byePlayer
+        };
+      }
+    }
+
+    return null;
+  }
+
+  let solution = attempt(initiallyStrict);
+  let warning = "";
+
+  if (!solution && initiallyStrict) {
+    solution = attempt(false);
+
+    if (solution) {
+      warning =
+        "A strict pairing satisfying every hard color restriction " +
+        "could not be found. The system used the smallest available " +
+        "color exception while preserving opponent and score-group rules.";
+    }
+  }
+
+  if (!solution) {
+    throw new Error(
+      "No legal pairing could be found without repeating opponents. " +
+      "Check withdrawals and earlier round data."
+    );
+  }
+
+  const pairings = [...solution.pairings];
+
+  if (solution.byePlayer) {
+    pairings.push({
+      type: "bye",
+      whiteId: solution.byePlayer.id,
+      blackId: null,
+      result: "1-0"
+    });
+  }
+
+  return {
+    pairings: pairings.map(
+      (pairing, index) => ({
+        ...pairing,
+        board: index + 1
+      })
+    ),
+    warning
+  };
+}
+
+/* ------------------------------------------------------------
+   Round creation and completion
+------------------------------------------------------------ */
+
+function createFirstRound(activePlayers) {
+  const ordered = [
+    ...activePlayers
+  ].sort((a, b) => a.startNo - b.startNo);
+
+  const pairings = [];
+  let byePlayer = null;
+
+  if (ordered.length % 2 === 1) {
+    byePlayer = ordered.pop();
+  }
+
+  for (
+    let index = 0;
+    index < ordered.length;
+    index += 2
+  ) {
+    pairings.push({
+      board: pairings.length + 1,
+      type: "game",
+      whiteId: ordered[index + 1].id,
+      blackId: ordered[index].id,
+      result: null
+    });
+  }
+
+  if (byePlayer) {
+    pairings.push({
+      board: pairings.length + 1,
+      type: "bye",
+      whiteId: byePlayer.id,
+      blackId: null,
+      result: "1-0"
+    });
+  }
+
+  return {
+    pairings,
+    warning: ""
+  };
+}
+
+function createNextRound() {
+  const roundNumber =
+    state.rounds.length + 1;
+
+  if (roundNumber > state.totalRounds) {
+    return;
+  }
+
+  const activePlayers =
+    state.players.filter(
+      player => !player.withdrawn
+    );
+
+  const standingsBefore =
+    buildRoundList(roundNumber);
+
+  let generated;
+
+  if (roundNumber === 1) {
+    generated =
+      createFirstRound(activePlayers);
+  } else {
+    const stats = buildStats(roundNumber);
+
+    generated = pairLaterRound(
+      roundNumber,
+      activePlayers,
+      stats
+    );
+  }
+
+  state.rounds.push({
+    number: roundNumber,
+    createdAt: new Date().toISOString(),
+    completedAt: null,
+    completed: false,
+    standingsBefore,
+    pairings: generated.pairings,
+    warning: generated.warning || ""
+  });
+
+  if (generated.warning) {
+    state.warnings.push(
+      `Round ${roundNumber}: ${generated.warning}`
+    );
+  }
+
+  state.status = "running";
+  render();
+}
+
+function getCurrentRound() {
+  return (
+    state.rounds.find(
+      round => !round.completed
+    ) || null
+  );
+}
+
+function completeCurrentRound() {
+  const round = getCurrentRound();
+
+  if (!round) {
+    return;
+  }
+
+  const incompletePairing =
+    round.pairings.find(pairing => {
+      return (
+        pairing.type === "game" &&
+        !pairing.result
+      );
+    });
+
+  if (incompletePairing) {
+    alert(
+      "Enter a result for every game before completing the round."
+    );
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Complete Round ${round.number}? ` +
+    "Results cannot be edited after completion unless the saved JSON " +
+    "file is manually changed."
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  round.completed = true;
+  round.completedAt =
+    new Date().toISOString();
+
+  if (
+    round.number >= state.totalRounds
+  ) {
+    state.status = "finished";
+  }
+
+  render();
+}
+
+function setPairingResult(board, result) {
+  const round = getCurrentRound();
+
+  if (!round) {
+    return;
+  }
+
+  const pairing = round.pairings.find(
+    item => item.board === Number(board)
+  );
+
+  if (
+    !pairing ||
+    pairing.type !== "game"
+  ) {
+    return;
+  }
+
+  pairing.result = result || null;
+}
+
+/* ------------------------------------------------------------
+   Rendering
+------------------------------------------------------------ */
+
+function roundListTableHTML(rows) {
+  return `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="number">Pos.</th>
+            <th class="number">Start</th>
+            <th>Player</th>
+            <th>Club</th>
+            <th class="number">Rating</th>
+            <th class="number">Points</th>
+            <th class="number">Buchholz</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${rows.map(row => `
+            <tr class="${row.withdrawn ? "withdrawn" : ""}">
+              <td class="number">${row.rank}</td>
+              <td class="number">${row.startNo}</td>
+
+              <td>
+                ${escapeHTML(row.name)}
+                ${row.withdrawn ? " (withdrawn)" : ""}
+              </td>
+
+              <td>${escapeHTML(row.club)}</td>
+
+              <td class="number">
+                ${row.rating ?? ""}
+              </td>
+
+              <td class="number score">
+                ${formatScore(row.points)}
+              </td>
+
+              <td class="number">
+                ${formatNumber(row.quality)}
+              </td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderCurrentRound() {
+  const container = document.getElementById(
+    "currentRoundContent"
+  );
+
+  const round = getCurrentRound();
+
+  if (!round) {
+    const completedCount =
+      state.rounds.filter(
+        item => item.completed
+      ).length;
+
+    if (state.status === "finished") {
+      container.innerHTML = `
+        <h2>Tournament complete</h2>
+
+        <div class="notice success">
+          All ${state.totalRounds} rounds have been completed.
+          The final standings are shown below.
+        </div>
+      `;
+
+      return;
+    }
+
+    const nextRoundNumber =
+      completedCount + 1;
+
+    const interimList =
+      buildRoundList(nextRoundNumber);
+
+    container.innerHTML = `
+      <h2>Round ${completedCount} complete</h2>
+
+      <div class="notice">
+        Review withdrawals, then create Round ${nextRoundNumber}.
+      </div>
+
+      <h3>Current round list</h3>
+      ${roundListTableHTML(interimList)}
+
+      <div class="button-row">
+        <button
+          id="createNextRoundButton"
+          class="success"
+        >
+          Create Round ${nextRoundNumber}
+        </button>
+      </div>
+    `;
+
+    document
+      .getElementById("createNextRoundButton")
+      .addEventListener("click", () => {
+        try {
+          createNextRound();
+        } catch (error) {
+          alert(error.message);
+        }
+      });
+
+    return;
+  }
+
+  const resultChoices = [
+    ["1-0", "1-0"],
+    ["0.5-0.5", "½-½"],
+    ["0-1", "0-1"],
+    ["W-F", "White WO"],
+    ["F-W", "Black WO"],
+    ["0-0", "0-0"]
+  ];
+
+  container.innerHTML = `
+    <h2>Round ${round.number}</h2>
+
+    ${
+      round.warning
+        ? `
+          <div class="notice warning">
+            ${escapeHTML(round.warning)}
+          </div>
+        `
+        : ""
+    }
+
+    <div class="button-row">
+      <button id="printCurrentPairingsButton">
+        Print Blank Pairing Sheet
+      </button>
+
+      <button
+        id="printCurrentRoundListButton"
+        class="secondary"
+      >
+        Print Pre-Round List
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="number">Board</th>
+            <th>White</th>
+            <th class="center">Result</th>
+            <th>Black</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${round.pairings.map(pairing => {
+            const white = getPlayer(
+              pairing.whiteId
+            );
+
+            const black = pairing.blackId
+              ? getPlayer(pairing.blackId)
+              : null;
+
+            if (pairing.type === "bye") {
+              return `
+                <tr>
+                  <td class="number">
+                    ${pairing.board}
+                  </td>
+
+                  <td>
+                    ${playerDisplay(white)}
+                  </td>
+
+                  <td class="center">
+                    1 point
+                  </td>
+
+                  <td>
+                    <strong>BYE</strong>
+                  </td>
+                </tr>
+              `;
+            }
+
+            const selectedText =
+              pairing.result
+                ? resultLabel(pairing.result)
+                : "No result selected";
+
+            return `
+              <tr>
+                <td class="number">
+                  ${pairing.board}
+                </td>
+
+                <td>
+                  ${playerDisplay(white)}
+                </td>
+
+                <td class="center">
+                  <div
+                    class="result-buttons"
+                    role="group"
+                    aria-label="Result for board ${pairing.board}"
+                  >
+                    ${resultChoices.map(
+                      ([value, label]) => `
+                        <button
+                          type="button"
+                          class="result-choice ${
+                            pairing.result === value
+                              ? "selected"
+                              : ""
+                          }"
+                          data-result-board="${pairing.board}"
+                          data-result-value="${value}"
+                          aria-pressed="${
+                            pairing.result === value
+                              ? "true"
+                              : "false"
+                          }"
+                        >
+                          ${label}
+                        </button>
+                      `
+                    ).join("")}
+
+                    <div
+                      class="selected-result"
+                      aria-live="polite"
+                    >
+                      ${escapeHTML(selectedText)}
+                    </div>
+                  </div>
+                </td>
+
+                <td>
+                  ${playerDisplay(black)}
+                </td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="button-row">
+      <button
+        id="completeRoundButton"
+        class="success"
+      >
+        Complete Round ${round.number}
+      </button>
+    </div>
+  `;
+
+  container
+    .querySelectorAll("[data-result-value]")
+    .forEach(button => {
+      button.addEventListener(
+        "click",
+        event => {
+          const board = Number(
+            event.currentTarget.dataset
+              .resultBoard
+          );
+
+          const result =
+            event.currentTarget.dataset
+              .resultValue;
+
+          setPairingResult(board, result);
+          renderCurrentRound();
+        }
+      );
+    });
+
+  document
+    .getElementById(
+      "printCurrentPairingsButton"
+    )
+    .addEventListener(
+      "click",
+      printCurrentPairings
+    );
+
+  document
+    .getElementById(
+      "printCurrentRoundListButton"
+    )
+    .addEventListener("click", () => {
+      printRoundList(round.number);
+    });
+
+  document
+    .getElementById("completeRoundButton")
+    .addEventListener(
+      "click",
+      completeCurrentRound
+    );
+}
+
+function withdrawPlayer() {
+  if (state.status === "setup") {
+    alert(
+      "Start or load a tournament first."
+    );
+    return;
+  }
+
+  if (state.status === "finished") {
+    alert(
+      "The tournament has already finished."
+    );
+    return;
+  }
+
+  const activePlayers = state.players
+    .filter(player => !player.withdrawn)
+    .sort(
+      (a, b) => a.startNo - b.startNo
+    );
+
+  if (activePlayers.length === 0) {
+    alert(
+      "There are no active players to withdraw."
+    );
+    return;
+  }
+
+  const playerList = activePlayers
+    .map(player => {
+      const club = player.club
+        ? ` — ${player.club}`
+        : "";
+
+      return (
+        `#${player.startNo} ` +
+        `${player.name}${club}`
+      );
+    })
+    .join("\n");
+
+  const enteredValue = window.prompt(
+    "Enter the start number of the player to withdraw:\n\n" +
+    playerList
+  );
+
+  if (enteredValue === null) {
+    return;
+  }
+
+  const normalizedValue = enteredValue
+    .trim()
+    .replace(/^#/, "");
+
+  const startNumber =
+    Number(normalizedValue);
+
+  if (!Number.isInteger(startNumber)) {
+    alert("Enter a valid start number.");
+    return;
+  }
+
+  const player = activePlayers.find(
+    item => item.startNo === startNumber
+  );
+
+  if (!player) {
+    alert(
+      `There is no active player with start number ${startNumber}.`
+    );
+    return;
+  }
+
+  const currentRound = getCurrentRound();
+
+  const currentPairing = currentRound
+    ? currentRound.pairings.find(
+        pairing => {
+          return (
+            pairing.whiteId === player.id ||
+            pairing.blackId === player.id
+          );
+        }
+      )
+    : null;
+
+  let message =
+    `Withdraw #${player.startNo} ` +
+    `${player.name}?`;
+
+  if (currentPairing) {
+    message +=
+      "\n\nThe player is already included in the current round. " +
+      "The withdrawal will apply only to future rounds.";
+
+    if (currentPairing.type === "game") {
+      message +=
+        "\n\nIf the player does not play the current game, record " +
+        "the appropriate White WO or Black WO result.";
+    } else {
+      message +=
+        "\n\nThe current-round bye and its point will remain unchanged.";
+    }
+  }
+
+  if (!window.confirm(message)) {
+    return;
+  }
+
+  player.withdrawn = true;
+  render();
+}
+
+function finalStandingsTableHTML(rows) {
+  return `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="number">Place</th>
+            <th class="number">Start</th>
+            <th>Player</th>
+            <th>Club</th>
+            <th class="number">Rating</th>
+            <th class="number">Points</th>
+            <th class="number">Buchholz</th>
+            <th class="number">
+              Sonneborn–Berger
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${rows.map(row => `
+            <tr class="${row.withdrawn ? "withdrawn" : ""}">
+              <td class="number">
+                ${row.rank}
+              </td>
+
+              <td class="number">
+                ${row.startNo}
+              </td>
+
+              <td>
+                ${escapeHTML(row.name)}
+                ${row.withdrawn ? " (withdrawn)" : ""}
+              </td>
+
+              <td>
+                ${escapeHTML(row.club)}
+              </td>
+
+              <td class="number">
+                ${row.rating ?? ""}
+              </td>
+
+              <td class="number score">
+                ${formatScore(row.points)}
+              </td>
+
+              <td class="number">
+                ${formatNumber(row.quality)}
+              </td>
+
+              <td class="number">
+                ${formatNumber(
+                  row.sonnebornBerger
+                )}
+              </td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderFinalStandings() {
+  const card = document.getElementById(
+    "finalResultsCard"
+  );
+
+  const content = document.getElementById(
+    "finalResultsContent"
+  );
+
+  if (state.status !== "finished") {
+    card.classList.add("hidden");
+    content.innerHTML = "";
+    return;
+  }
+
+  card.classList.remove("hidden");
+
+  const standings = buildFinalStandings();
+
+  content.innerHTML = `
+    <p class="muted small">
+      Players are ranked by points, Buchholz, restored dropped opponent
+      scores, Sonneborn–Berger and, only if still tied, a saved
+      drawing-of-lots value.
+    </p>
+
+    ${finalStandingsTableHTML(standings)}
+  `;
+}
+
+function renderHistoricalRoundSelector() {
+  const select = document.getElementById(
+    "historyRoundSelect"
+  );
+
+  if (state.rounds.length === 0) {
+    select.innerHTML = `
+      <option value="">
+        No rounds available
+      </option>
+    `;
+
+    return;
+  }
+
+  const previousValue = select.value;
+
+  select.innerHTML = state.rounds
+    .map(round => `
+      <option value="${round.number}">
+        Round ${round.number} — list before play
+      </option>
+    `)
+    .join("");
+
+  if (
+    previousValue &&
+    state.rounds.some(
+      round =>
+        String(round.number) ===
+        previousValue
+    )
+  ) {
+    select.value = previousValue;
+  } else {
+    select.value = String(
+      state.rounds[
+        state.rounds.length - 1
+      ].number
+    );
+  }
+}
+
+function renderWarnings() {
+  const container = document.getElementById(
+    "globalWarnings"
+  );
+
+  if (
+    !state.warnings ||
+    state.warnings.length === 0
+  ) {
+    container.innerHTML = "";
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="notice warning">
+      <strong>Pairing notices</strong>
+
+      <ul>
+        ${state.warnings.map(warning => `
+          <li>${escapeHTML(warning)}</li>
+        `).join("")}
+      </ul>
+    </div>
+  `;
+}
+
+function renderTournament() {
+  document.getElementById(
+    "tournamentHeading"
+  ).textContent = state.name;
+
+  const completedRounds =
+    state.rounds.filter(
+      round => round.completed
+    ).length;
+
+  const activePlayers =
+    state.players.filter(
+      player => !player.withdrawn
+    ).length;
+
+  document.getElementById(
+    "tournamentSummary"
+  ).innerHTML = `
+    <div>
+      <strong>Players</strong>
+      <span>${state.players.length}</span>
+    </div>
+
+    <div>
+      <strong>Active players</strong>
+      <span>${activePlayers}</span>
+    </div>
+
+    <div>
+      <strong>Rounds</strong>
+      <span>
+        ${completedRounds} / ${state.totalRounds}
+      </span>
+    </div>
+
+    <div>
+      <strong>Status</strong>
+
+      <span>
+        ${
+          state.status === "finished"
+            ? "Finished"
+            : getCurrentRound()
+              ? `Round ${
+                  getCurrentRound().number
+                } in progress`
+              : "Between rounds"
+        }
+      </span>
+    </div>
+  `;
+
+  renderWarnings();
+  renderCurrentRound();
+  renderHistoricalRoundSelector();
+  renderFinalStandings();
+}
+
+function render() {
+  const setupPanel = document.getElementById(
+    "setupPanel"
+  );
+
+  const tournamentPanel =
+    document.getElementById(
+      "tournamentPanel"
+    );
+
+  const withdrawButton =
+    document.getElementById(
+      "withdrawPlayerButton"
+    );
+
+  const tournamentIsActive =
+    state.status !== "setup" &&
+    state.status !== "finished";
+
+  withdrawButton.classList.toggle(
+    "hidden",
+    !tournamentIsActive
+  );
+
+  withdrawButton.disabled =
+    !tournamentIsActive ||
+    !state.players.some(
+      player => !player.withdrawn
+    );
+
+  if (state.status === "setup") {
+    setupPanel.classList.remove("hidden");
+    tournamentPanel.classList.add("hidden");
+  } else {
+    setupPanel.classList.add("hidden");
+    tournamentPanel.classList.remove("hidden");
+    renderTournament();
+  }
+}
+
+/* ------------------------------------------------------------
+   Printing
+------------------------------------------------------------ */
+
+function openPrintWindow(title, bodyHTML) {
+  const printWindow = window.open(
+    "",
+    "_blank"
+  );
+
+  if (!printWindow) {
+    alert(
+      "The print window was blocked. Allow pop-ups for this page."
+    );
+    return;
+  }
+
+  printWindow.document.open();
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <title>${escapeHTML(title)}</title>
+
+      <style>
+        @page {
+          size: auto;
+          margin: 14mm;
+        }
+
+        body {
+          font-family: Arial, Helvetica, sans-serif;
+          color: #000;
+          font-size: 12px;
+        }
+
+        h1 {
+          margin: 0 0 4px;
+          font-size: 22px;
+        }
+
+        h2 {
+          margin: 0 0 15px;
+          font-size: 17px;
+        }
+
+        .meta {
+          margin-bottom: 16px;
+          color: #444;
+        }
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+
+        th,
+        td {
+          padding: 7px;
+          border: 1px solid #000;
+          text-align: left;
+        }
+
+        th {
+          background: #eee;
+        }
+
+        .number {
+          text-align: right;
+        }
+
+        .center {
+          text-align: center;
+        }
+
+        .result {
+          width: 80px;
+          text-align: center;
+          font-size: 18px;
+          font-weight: bold;
+        }
+
+        .notes {
+          margin-top: 18px;
+          font-size: 10px;
+        }
+
+        tr {
+          break-inside: avoid;
+        }
+      </style>
+    </head>
+
+    <body>
+      <h1>${escapeHTML(state.name)}</h1>
+      ${bodyHTML}
+
+      <div class="notes">
+        Printed ${escapeHTML(
+          new Date().toLocaleString()
+        )}
+      </div>
+    </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+  printWindow.focus();
+
+  setTimeout(() => {
+    printWindow.print();
+  }, 250);
+}
+
+function printCurrentPairings() {
+  const round = getCurrentRound();
+
+  if (!round) {
+    alert(
+      "There is no current round to print."
+    );
+    return;
+  }
+
+  const rows = round.pairings
+    .map(pairing => {
+      const white = getPlayer(
+        pairing.whiteId
+      );
+
+      const black = pairing.blackId
+        ? getPlayer(pairing.blackId)
+        : null;
+
+      return `
+        <tr>
+          <td class="number">
+            ${pairing.board}
+          </td>
+
+          <td>
+            #${white.startNo}
+            ${escapeHTML(white.name)}
+
+            ${
+              white.club
+                ? `
+                  <br>
+                  <small>
+                    ${escapeHTML(white.club)}
+                  </small>
+                `
+                : ""
+            }
+          </td>
+
+          <td class="result">-</td>
+
+          <td>
+            ${
+              pairing.type === "bye"
+                ? "<strong>BYE</strong>"
+                : `
+                  #${black.startNo}
+                  ${escapeHTML(black.name)}
+
+                  ${
+                    black.club
+                      ? `
+                        <br>
+                        <small>
+                          ${escapeHTML(
+                            black.club
+                          )}
+                        </small>
+                      `
+                      : ""
+                  }
+                `
+            }
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  openPrintWindow(
+    `${state.name} — Round ${round.number} pairings`,
+    `
+      <h2>
+        Round ${round.number} — Pairing Sheet
+      </h2>
+
+      <div class="meta">
+        Results have intentionally been left blank.
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th class="number">Board</th>
+            <th>White</th>
+            <th class="center">Result</th>
+            <th>Black</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    `
+  );
+}
+
+function printRoundList(roundNumber) {
+  const round = state.rounds.find(
+    item =>
+      item.number === Number(roundNumber)
+  );
+
+  if (!round) {
+    alert(
+      "The selected round list could not be found."
+    );
+    return;
+  }
+
+  const rows = round.standingsBefore
+    .map(row => `
+      <tr>
+        <td class="number">${row.rank}</td>
+        <td class="number">${row.startNo}</td>
+
+        <td>
+          ${escapeHTML(row.name)}
+          ${row.withdrawn ? " (withdrawn)" : ""}
+        </td>
+
+        <td>${escapeHTML(row.club)}</td>
+
+        <td class="number">
+          ${row.rating ?? ""}
+        </td>
+
+        <td class="number">
+          ${formatScore(row.points)}
+        </td>
+
+        <td class="number">
+          ${formatNumber(row.quality)}
+        </td>
+      </tr>
+    `)
+    .join("");
+
+  openPrintWindow(
+    `${state.name} — List before Round ${round.number}`,
+    `
+      <h2>
+        Round List Before Round ${round.number}
+      </h2>
+
+      <div class="meta">
+        Ordered by points and then by ascending start number.
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th class="number">Pos.</th>
+            <th class="number">Start</th>
+            <th>Player</th>
+            <th>Club</th>
+            <th class="number">Rating</th>
+            <th class="number">Points</th>
+            <th class="number">Buchholz</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    `
+  );
+}
+
+function printFinalResults() {
+  if (state.status !== "finished") {
+    alert(
+      "The tournament has not finished."
+    );
+    return;
+  }
+
+  const standings = buildFinalStandings();
+
+  const rows = standings
+    .map(row => `
+      <tr>
+        <td class="number">${row.rank}</td>
+        <td class="number">${row.startNo}</td>
+
+        <td>
+          ${escapeHTML(row.name)}
+          ${row.withdrawn ? " (withdrawn)" : ""}
+        </td>
+
+        <td>${escapeHTML(row.club)}</td>
+
+        <td class="number">
+          ${row.rating ?? ""}
+        </td>
+
+        <td class="number">
+          ${formatScore(row.points)}
+        </td>
+
+        <td class="number">
+          ${formatNumber(row.quality)}
+        </td>
+
+        <td class="number">
+          ${formatNumber(
+            row.sonnebornBerger
+          )}
+        </td>
+      </tr>
+    `)
+    .join("");
+
+  openPrintWindow(
+    `${state.name} — Final standings`,
+    `
+      <h2>Final Standings</h2>
+
+      <div class="meta">
+        ${state.totalRounds} rounds
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th class="number">Place</th>
+            <th class="number">Start</th>
+            <th>Player</th>
+            <th>Club</th>
+            <th class="number">Rating</th>
+            <th class="number">Points</th>
+            <th class="number">Buchholz</th>
+            <th class="number">
+              Sonneborn–Berger
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    `
+  );
+}
+
+/* ------------------------------------------------------------
+   Save and load
+------------------------------------------------------------ */
+
+function collectSetupDraft() {
+  return {
+    tournamentName:
+      document.getElementById(
+        "tournamentName"
+      ).value,
+
+    totalRounds:
+      document.getElementById(
+        "totalRounds"
+      ).value,
+
+    startNumberMethod:
+      document.getElementById(
+        "startNumberMethod"
+      ).value,
+
+    playersText:
+      document.getElementById(
+        "playersText"
+      ).value
+  };
+}
+
+function restoreSetupDraft(draft) {
+  if (!draft) {
+    return;
+  }
+
+  document.getElementById(
+    "tournamentName"
+  ).value =
+    draft.tournamentName ||
+    "Norwegian Monrad Tournament";
+
+  document.getElementById(
+    "totalRounds"
+  ).value = draft.totalRounds || 7;
+
+  document.getElementById(
+    "startNumberMethod"
+  ).value =
+    draft.startNumberMethod || "seeded";
+
+  document.getElementById(
+    "playersText"
+  ).value = draft.playersText || "";
+}
+
+function saveTournament() {
+  const data = {
+    application:
+      "Norwegian Monrad Tournament Manager",
+    formatVersion: 1,
+    savedAt: new Date().toISOString(),
+    state,
+    setupDraft:
+      state.status === "setup"
+        ? collectSetupDraft()
+        : null
+  };
+
+  const blob = new Blob(
+    [JSON.stringify(data, null, 2)],
+    {
+      type: "application/json"
+    }
+  );
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  const name =
+    state.status === "setup"
+      ? document.getElementById(
+          "tournamentName"
+        ).value
+      : state.name;
+
+  link.href = url;
+  link.download =
+    `${safeFilename(name)}.json`;
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  URL.revokeObjectURL(url);
+}
+
+function normalizeLoadedState(loaded) {
+  const result =
+    loaded && loaded.state
+      ? loaded.state
+      : loaded;
+
+  if (
+    !result ||
+    !Array.isArray(result.players)
+  ) {
+    throw new Error(
+      "This is not a valid tournament file."
+    );
+  }
+
+  result.app = "NorwegianMonradWeb";
+  result.version = 1;
+  result.status =
+    result.status || "running";
+  result.name =
+    result.name || "Loaded Tournament";
+  result.totalRounds =
+    Number(result.totalRounds) || 1;
+
+  result.startNumberMethod =
+    result.startNumberMethod || "seeded";
+
+  result.rounds =
+    Array.isArray(result.rounds)
+      ? result.rounds
+      : [];
+
+  result.warnings =
+    Array.isArray(result.warnings)
+      ? result.warnings
+      : [];
+
+  result.players = result.players.map(
+    (player, index) => ({
+      ...player,
+      id: String(player.id || makeId()),
+      startNo:
+        Number(player.startNo) || index + 1,
+      club: player.club || "",
+      rating: Number.isFinite(
+        Number(player.rating)
+      )
+        ? Number(player.rating)
+        : null,
+      withdrawn: Boolean(player.withdrawn),
+      lot: Number.isFinite(
+        Number(player.lot)
+      )
+        ? Number(player.lot)
+        : Math.random()
+    })
+  );
+
+  result.rounds = result.rounds.map(
+    round => ({
+      ...round,
+      number: Number(round.number),
+      completed: Boolean(round.completed),
+
+      standingsBefore:
+        Array.isArray(
+          round.standingsBefore
+        )
+          ? round.standingsBefore
+          : [],
+
+      pairings:
+        Array.isArray(round.pairings)
+          ? round.pairings.map(
+              (pairing, index) => ({
+                ...pairing,
+                board:
+                  Number(pairing.board) ||
+                  index + 1,
+                whiteId: String(
+                  pairing.whiteId
+                ),
+                blackId:
+                  pairing.blackId === null ||
+                  pairing.blackId === undefined
+                    ? null
+                    : String(
+                        pairing.blackId
+                      ),
+                type:
+                  pairing.type || "game",
+                result:
+                  pairing.result || null
+              })
+            )
+          : [],
+
+      warning: round.warning || ""
+    })
+  );
+
+  const allScheduledRoundsCompleted =
+    result.rounds.length >=
+      result.totalRounds &&
+    result.rounds
+      .slice(0, result.totalRounds)
+      .every(round => round.completed);
+
+  if (allScheduledRoundsCompleted) {
+    result.status = "finished";
+  }
+
+  return result;
+}
+
+async function loadTournamentFile(file) {
+  const text = await file.text();
+  const parsed = JSON.parse(text);
+
+  state = normalizeLoadedState(parsed);
+
+  if (
+    state.status === "setup" &&
+    parsed.setupDraft
+  ) {
+    restoreSetupDraft(parsed.setupDraft);
+  }
+
+  render();
+}
+
+/* ------------------------------------------------------------
+   Setup actions
+------------------------------------------------------------ */
+
+function startTournament() {
+  const name = document
+    .getElementById("tournamentName")
+    .value.trim();
+
+  const totalRounds = Number(
+    document.getElementById(
+      "totalRounds"
+    ).value
+  );
+
+  const method =
+    document.getElementById(
+      "startNumberMethod"
+    ).value;
+
+  const parsedPlayers = parsePlayers(
+    document.getElementById(
+      "playersText"
+    ).value
+  );
+
+  if (!name) {
+    alert("Enter a tournament name.");
+    return;
+  }
+
+  if (
+    !Number.isInteger(totalRounds) ||
+    totalRounds < 1 ||
+    totalRounds > 30
+  ) {
+    alert(
+      "The number of rounds must be between 1 and 30."
+    );
+    return;
+  }
+
+  if (parsedPlayers.length < 2) {
+    alert("Enter at least two players.");
+    return;
+  }
+
+  const players = assignStartNumbers(
+    parsedPlayers,
+    method
+  );
+
+  state = {
+    app: "NorwegianMonradWeb",
+    version: 1,
+    status: "running",
+    name,
+    totalRounds,
+    startNumberMethod: method,
+    players,
+    rounds: [],
+    warnings: []
+  };
+
+  try {
+    createNextRound();
+  } catch (error) {
+    alert(error.message);
+    state = emptyState();
+    render();
+  }
+}
+
+function resetTournament() {
+  const hasData =
+    state.status !== "setup" ||
+    document
+      .getElementById("playersText")
+      .value.trim() !== "";
+
+  if (
+    hasData &&
+    !window.confirm(
+      "Start a new tournament? Unsaved data will be lost."
+    )
+  ) {
+    return;
+  }
+
+  state = emptyState();
+
+  document.getElementById(
+    "tournamentName"
+  ).value =
+    "Norwegian Monrad Tournament";
+
+  document.getElementById(
+    "totalRounds"
+  ).value = "7";
+
+  document.getElementById(
+    "startNumberMethod"
+  ).value = "seeded";
+
+  document.getElementById(
+    "playersText"
+  ).value = "";
+
+  render();
+}
+
+/* ------------------------------------------------------------
+   Event handlers
+------------------------------------------------------------ */
+
+document
+  .getElementById("saveTournamentButton")
+  .addEventListener(
+    "click",
+    saveTournament
+  );
+
+document
+  .getElementById("loadTournamentButton")
+  .addEventListener("click", () => {
+    document
+      .getElementById(
+        "tournamentFileInput"
+      )
+      .click();
+  });
+
+document
+  .getElementById("withdrawPlayerButton")
+  .addEventListener(
+    "click",
+    withdrawPlayer
+  );
+
+document
+  .getElementById("tournamentFileInput")
+  .addEventListener(
+    "change",
+    async event => {
+      const file = event.target.files[0];
+
+      if (!file) {
+        return;
+      }
+
+      try {
+        await loadTournamentFile(file);
+      } catch (error) {
+        alert(
+          `Could not load tournament: ${error.message}`
+        );
+      } finally {
+        event.target.value = "";
+      }
+    }
+  );
+
+document
+  .getElementById("newTournamentButton")
+  .addEventListener(
+    "click",
+    resetTournament
+  );
+
+document
+  .getElementById("loadPlayerFileButton")
+  .addEventListener("click", () => {
+    document
+      .getElementById("playerFileInput")
+      .click();
+  });
+
+document
+  .getElementById("playerFileInput")
+  .addEventListener(
+    "change",
+    async event => {
+      const file = event.target.files[0];
+
+      if (!file) {
+        return;
+      }
+
+      try {
+        document.getElementById(
+          "playersText"
+        ).value = await file.text();
+      } catch (error) {
+        alert(
+          `Could not read player file: ${error.message}`
+        );
+      } finally {
+        event.target.value = "";
+      }
+    }
+  );
+
+document
+  .getElementById("loadSampleButton")
+  .addEventListener("click", () => {
+    document.getElementById(
+      "playersText"
+    ).value =
+`Alice Anderson;Central Chess Club;2140
+Benjamin Brooks;Northside Chess Club;2075
+Charlotte Carter;West End Chess Club;2010
+Daniel Davis;Central Chess Club;1975
+Emma Edwards;Riverside Chess Club;1930
+Felix Foster;Northside Chess Club;1885
+Grace Green;University Chess Club;1840
+Henry Harris;West End Chess Club;1800
+Isabella Irving;Central Chess Club;1765
+Jack Johnson;Riverside Chess Club;1720
+Katherine King;University Chess Club;1680
+Liam Lewis;Northside Chess Club;1645
+Mia Miller;West End Chess Club;1600
+Noah Nelson;Central Chess Club;1550
+Olivia Owens;Riverside Chess Club;1490
+Peter Parker;University Chess Club;1420`;
+  });
+
+document
+  .getElementById("clearPlayersButton")
+  .addEventListener("click", () => {
+    document.getElementById(
+      "playersText"
+    ).value = "";
+  });
+
+document
+  .getElementById("startTournamentButton")
+  .addEventListener(
+    "click",
+    startTournament
+  );
+
+document
+  .getElementById(
+    "printHistoricalRoundListButton"
+  )
+  .addEventListener("click", () => {
+    const value =
+      document.getElementById(
+        "historyRoundSelect"
+      ).value;
+
+    if (!value) {
+      alert(
+        "No round list is available."
+      );
+      return;
+    }
+
+    printRoundList(Number(value));
+  });
+
+document
+  .getElementById(
+    "printFinalResultsButton"
+  )
+  .addEventListener(
+    "click",
+    printFinalResults
+  );
+
+/* Initial display */
+render();
+</script>
+</body>
+</html>
