@@ -7,7 +7,9 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0"
   >
-
+<meta name="description" content="Ett Monrad‑lottningssystem för schack enligt den norska definitionen som körs direkt i webbläsaren.">
+  <meta name="author" content="Mats Winther">
+  <link rel="canonical" href="https://mats-winther.github.io/norsk-monrad.htm">
   <title>Turneringshanterare för Monrad</title>
 
   <style>
@@ -3516,7 +3518,7 @@ function completeCurrentRound() {
 
   let confirmationText =
     `Avsluta rond ${round.number}? ` +
-    "Vanliga resultat kan inte redigeras efteråt.";
+    "Resultat kan inte redigeras efteråt.";
 
   if (hasAdjournedGame) {
     confirmationText +=
