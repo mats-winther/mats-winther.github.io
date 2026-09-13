@@ -47,11 +47,12 @@
     Jag har skapat ett program för dansk-svensk monrad här: <a href="../monrad.htm" title=
     "Monrad lottningsprogram">Monrads lottningssystem</a>. Min online-version av det norska systemet finns här:
     <a href="../norsk-monrad.htm" title="Monrad – turneringshanterare (norsk modell)">Turneringshanterare för
-    Monrad</a>. Båda kan användas online, men själva sidan går också att ladda ned och köra lokalt. Den dansk-svenska
-    versionen använder antingen kumulativ (progressiv) poäng eller buchholz (motståndarnas sammanlagda poäng) för att
-    särskilja spelare med samma slutresultat. Kumulativ poäng fungerar så att tidiga vinster ger ett högre kumulativt
-    tiebreak, vilket gynnar en aggressiv spelstil. (Att börja med en vinst och sedan en förlust ger 2 kumulativa poäng
-    efter två ronder, medan två remier ger 1,5. Det är på sätt och vis rättvist.)<br>
+    Monrad</a>. Kvalitetspoäng beräknas enligt Buchholz (Cut 1/2). Båda kan användas online, men själva sidan går också
+    att ladda ned och köra lokalt. Den dansk-svenska versionen använder antingen kumulativ (progressiv) poäng eller
+    buchholz (motståndarnas sammanlagda poäng) för att särskilja spelare med samma slutresultat. Kumulativ poäng
+    fungerar så att tidiga vinster ger ett högre kumulativt tiebreak, vilket gynnar en aggressiv spelstil. (Att börja
+    med en vinst och sedan en förlust ger 2 kumulativa poäng efter två ronder, medan två remier ger 1,5. Det är på sätt
+    och vis rättvist.)<br>
     <br>
     <b>Berger-systemet</b> innebär att alla möter alla, antingen en eller två gånger. Jag har skapat ett online-program
     för berger-lottning för 3-16 spelare enligt FIDE:s specifikationer. Det kan användas direkt i webbläsaren, men går
@@ -71,17 +72,19 @@
     <br>
     <b>Accelererad schweizerlottning enligt Winther</b>&thinsp;:<br>
     <br>
-    <b>Rond 1:</b> Spelarna delas in i fyra ratinggrupper. Den högst rankade i grupp 1 har vit mot den högst rankade i
-    grupp 2. Samma gäller för grupperna 3 och 4.<br>
+    <b>Rond 1:</b> Spelarna delas in i fyra grupper (kvadranter). Den högst rankade i K1 har vit mot den högst rankade
+    i K2, och motsvarande för K3 och K4. (Vid ojämna grupper anpassas storlekarna automatiskt och vid udda
+    deltagarantal ges lägst rankad frirond).<br>
     <br>
-    <b>Rond 2:</b> Den högst rankade vinnaren får svart mot den högst rankade vinnaren i den andra halvan. Den näst
-    högst rankade får svart mot den näst högsta i den andra halvan, och så vidare.<br>
+    <b>Rond 2:</b> Högst seedad vinnare har svart mot högst seedad vinnare i den andra halvan. Näst högst seedad har
+    svart mot nästa i den andra halvan, osv.<br>
     <br>
-    <b>Rond 3+:</b> Schweizerlottning påbörjas. Spelarna sorteras efter poäng, därefter buchholz-poäng och därefter
-    ursprunglig ranking. Lottningen sker uppifrån och ned mot nästa tillgängliga motståndare.<br>
+    <b>Rond 3+:</b> Schweizisk lottning börjar. Spelarna sorteras efter poäng, buchholz och ursprunglig seedning.
+    Lottning sker uppifrån och ned.<br>
     <br>
-    <b>Färgfördelning:</b> Spelaren med färre vitpartier får vit. Vid lika antal vitpartier får den lägre seedade
-    spelaren vit. Systemet garanterar 0% risk för tre partier i rad med samma färg.<br>
+    <b>Färgfördelning:</b> Spelaren med färre vita partier får vit. Vid lika får den lägre seedade spelaren vit.
+    Absolut färgbalans garanteras (färgskillnaden kan aldrig bli 3). Vid krock mellan färgbalans och 2-i-rad-regeln
+    tillåts tre partier med samma färg i rad.<br>
     <br>
     Detta system lämpar sig väl för öppna turneringar. Elitspelarna har ingen anledning att klaga, eftersom de får möta
     lägre rankade spelare i de två första ronderna. Samtidigt undviker man den pendling som mellanstarka spelare ofta
