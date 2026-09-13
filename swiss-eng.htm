@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Swiss tournament system for chess directly in the browser.">
-  <meta name="author" content="Mats Winther">
-  <link rel="canonical" href="https://mats-winther.github.io/swiss-eng.htm">
+<meta name="author" content="Mats Winther">
+<link rel="canonical" href="https://mats-winther.github.io/swiss-eng.htm">
 <title>Swiss Tournament System</title>
 <style>
   :root {
@@ -59,9 +59,17 @@
   @media print {
     body { background: #fff; padding: 0; }
     .container { box-shadow: none; padding: 0; width: 100%; max-width: 100%; }
-    .btn-bar, .settings-section, .no-print { display: none !important; }
+    .btn-bar, .settings-section, .no-print, .close-btn { display: none !important; }
     .print-only { display: block !important; text-align: center; }
     #pairings-table-body td:nth-child(3) { text-align: center; }
+
+    body.printing-modal .container { display: none !important; }
+    body.printing-modal .modal-overlay {
+      display: block !important; position: static !important; background: transparent !important;
+    }
+    body.printing-modal .modal-box {
+      box-shadow: none !important; padding: 0 !important; max-width: 100% !important; width: 100% !important;
+    }
   }
 </style>
 </head>
@@ -87,22 +95,22 @@
     <div>
       <label>Round 1 Color Allocation</label>
       <div class="radio-group">
-        <label><input type="radio" name="r1-color" value="higherWhite" checked> Higher-seeded always gets White (Seed #1 White)</label>
+        <label><input type="radio" name="r1-color" value="higherWhite" checked> Higher seeded always has White (Seed #1 White)</label>
         <label><input type="radio" name="r1-color" value="alternate"> Alternating colors (Board 1 White, Board 2 Black...)</label>
       </div>
     </div>
 
     <div class="rules-box">
-      <h3>Pairing System: Winther acceleration</h3>
+      <h3>Pairing System: Winther Acceleration</h3>
       <ul>
-        <li><strong>Round 1:</strong> Players are divided into four groups (quadrants). The highest-ranked player in Q1 plays White against the highest-ranked in Q2, and similarly for Q3 and Q4.</li>
-        <li><strong>Round 2:</strong> The highest-seeded winner plays Black against the highest-seeded winner from the other half. The next highest-seeded plays Black against the next in the other half, and so on.</li>
-        <li><strong>Round 3+:</strong> Swiss pairings begin. Players are sorted by score, Buchholz, and initial seeding. Pairings are generated top-down.</li>
-        <li><strong>Color Allocation:</strong> The player with fewer White games receives White. If equal, the lower-seeded player receives White. Guaranteed 0% chance of three consecutive games with the same color.</li>
+        <li><strong>Round 1:</strong> Players are divided into four groups (quadrants). The highest-ranked player in Q1 plays White against the highest-ranked player in Q2, and correspondingly for Q3 and Q4. (For uneven groups, sizes are adjusted automatically, and with an odd number of players, the lowest-ranked gets a bye).</li>
+        <li><strong>Round 2:</strong> Highest-seeded winner plays Black against the highest-seeded winner in the other half. Second highest-seeded plays Black against the next in the other half, and so on.</li>
+        <li><strong>Round 3+:</strong> Standard Swiss pairings begin. Players are sorted by score, Buchholz, and initial seeding. Pairings are generated top-down.</li>
+        <li><strong>Color Allocation:</strong> The player with fewer White games receives White. If equal, the lower-seeded player receives White. Absolute color balance is guaranteed (color difference can never reach 3). If color balance conflicts with the 2-in-a-row rule, up to three games in a row with the same color are permitted.</li>
       </ul>
     </div>
 
-    <label for="player-input">Player List (Name Rating, one per line – automatically sorted by rating at start)</label>
+    <label for="player-input">Player List (Name Rating, one per line – sorted automatically by rating at start)</label>
     <textarea id="player-input" placeholder="Magnus Carlsen 2830&#10;Hikaru Nakamura 2805..."></textarea>
 
     <div class="btn-bar">
@@ -125,7 +133,7 @@
       <button type="button" class="secondary" onclick="printPairings()">Print Pairings</button>
       <button type="button" class="secondary" onclick="saveTournament()">Save Tournament</button>
       <button type="button" class="secondary" onclick="openStandingsModal()">Current Standings</button>
-      <button type="danger" class="danger" onclick="openWithdrawModal()">Withdraw Player</button>
+      <button type="button" class="danger" onclick="openWithdrawModal()">Withdraw Player</button>
     </div>
 
     <table>
@@ -151,7 +159,7 @@
     <table>
       <thead>
         <tr>
-          <th>Rank</th>
+          <th>Pos.</th>
           <th>Seed</th>
           <th>Player</th>
           <th>Rating</th>
@@ -163,7 +171,7 @@
       <tbody id="final-table-body"></tbody>
     </table>
     <div class="btn-bar no-print" style="margin-top:16px;">
-      <button type="button" onclick="printFinalStandings()">Print Final Results</button>
+      <button type="button" onclick="printFinalStandings()">Print Final Standings</button>
       <button type="button" class="secondary" onclick="restartTournament()">Start New Tournament</button>
     </div>
   </div>
@@ -177,7 +185,7 @@
     <table>
       <thead>
         <tr>
-          <th>Rank</th>
+          <th>Pos.</th>
           <th>Seed</th>
           <th>Player</th>
           <th>Rating</th>
@@ -200,7 +208,7 @@
   <div class="modal-box">
     <button class="close-btn" onclick="closeWithdrawModal()">&times;</button>
     <h2>Withdraw Player</h2>
-    <p>Select a player to withdraw. If the player's game is currently in progress for the active round, the opponent will be awarded a win by walkover (w.o.).</p>
+    <p>Select a player to withdraw. If the player's game is currently in progress, their opponent is awarded a win by walkover (w.o.).</p>
     <div style="margin-bottom:14px;">
       <select id="withdraw-select"></select>
     </div>
@@ -222,51 +230,57 @@ let state = {
 };
 
 let defaultDocTitle = document.title;
+let customPrintTitle = '';
 
 window.addEventListener('beforeprint', () => {
-  const tName = (state.name || 'Tournament').trim();
-  if (document.getElementById('final-section').style.display === 'block') {
-    document.title = `${tName} - Final Standings`;
-  } else if (state.currentRound > 0) {
-    document.title = `${tName} - Round ${state.currentRound}`;
+  if (customPrintTitle) {
+    document.title = customPrintTitle;
+  } else {
+    const tName = (state.name || 'Tournament').trim();
+    if (document.getElementById('final-section').style.display === 'block') {
+      document.title = `${tName} - Final Standings`;
+    } else if (state.currentRound > 0) {
+      document.title = `${tName} - Round ${state.currentRound}`;
+    }
   }
 });
 
 window.addEventListener('afterprint', () => {
+  customPrintTitle = '';
   document.title = defaultDocTitle;
 });
 
 function printPairings() {
   const tName = (state.name || 'Tournament').trim();
-  document.title = `${tName} - Round ${state.currentRound}`;
+  customPrintTitle = `${tName} - Round ${state.currentRound}`;
   window.print();
-  setTimeout(() => { document.title = defaultDocTitle; }, 1000);
 }
 
 function printStandings() {
   const tName = (state.name || 'Tournament').trim();
-  document.title = `${tName} - Standings after Round ${state.currentRound - 1}`;
+  const rd = state.currentRound > 1 ? state.currentRound - 1 : 1;
+  customPrintTitle = `${tName} - Standings after Round ${rd}`;
+  document.body.classList.add('printing-modal');
   window.print();
-  setTimeout(() => { document.title = defaultDocTitle; }, 1000);
+  document.body.classList.remove('printing-modal');
 }
 
 function printFinalStandings() {
   const tName = (state.name || 'Tournament').trim();
-  document.title = `${tName} - Final Standings`;
+  customPrintTitle = `${tName} - Final Standings`;
   window.print();
-  setTimeout(() => { document.title = defaultDocTitle; }, 1000);
 }
 
 function load32ClubPlayers() {
   const sample = [
-    "Oliver Smith 2180", "Jack Williams 2150", "Harry Brown 2135", "George Taylor 2110",
-      "Charlie Davies 2085", "Thomas Evans 2060", "James Wilson 2040", "William Thomas 2015",
-      "Henry Roberts 1990", "Alexander Johnson 1975", "Edward Walker 1950", "Samuel Wright 1930",
-      "Daniel Robinson 1910", "Joseph Thompson 1890", "Arthur White 1870", "Matthew Edwards 1850",
-      "Lucas Green 1830", "Benjamin Hall 1815", "Michael Wood 1795", "David Harris 1780",
-      "Richard Martin 1760", "Christopher Jackson 1740", "Charles Clarke 1720", "Anthony Lewis 1700",
-      "Robert Lee 1680", "Paul Allen 1660", "Mark King 1640", "Andrew Scott 1620",
-      "Peter Baker 1600", "Jonathan Young 1580", "Nicholas Turner 1560", "Stephen Campbell 1540"
+    "Oliver Smith 2280", "Jack Taylor 2245", "Harry Brown 2210", "Jacob Wilson 2190",
+    "Charlie Evans 2165", "Thomas Walker 2140", "George Robinson 2115", "James Wright 2095",
+    "William Thompson 2070", "Daniel White 2050", "Matthew Hall 2030", "Samuel Green 2010",
+    "Alexander Harris 1990", "Joseph Martin 1970", "David Clark 1950", "Benjamin Lewis 1930",
+    "Edward Clarke 1910", "Henry Jackson 1890", "Lucas Wood 1870", "Arthur Turner 1850",
+    "Leo Scott 1830", "Michael Cooper 1810", "Charles Morris 1790", "Robert Ward 1770",
+    "Louis Watson 1750", "Frederick Davis 1730", "Archie Miller 1710", "Albert Baker 1690",
+    "Nathan Brooks 1670", "Peter Young 1650", "Emily Parker 1620", "Sophie Bennett 1590"
   ];
   document.getElementById('player-input').value = sample.join('\n');
 }
@@ -281,6 +295,7 @@ document.getElementById('txt-file-input').addEventListener('change', function(e)
   const reader = new FileReader();
   reader.onload = ev => { document.getElementById('player-input').value = ev.target.result; };
   reader.readAsText(file);
+  e.target.value = '';
 });
 
 document.getElementById('json-file-input').addEventListener('change', function(e) {
@@ -290,6 +305,16 @@ document.getElementById('json-file-input').addEventListener('change', function(e
   reader.onload = ev => {
     try {
       state = JSON.parse(ev.target.result);
+
+      // Re-link player object references to maintain integrity
+      const pMap = new Map(state.players.map(p => [p.id, p]));
+      (state.rounds || []).forEach(r => {
+        (r.pairings || []).forEach(pair => {
+          if (pair.white && pMap.has(pair.white.id)) pair.white = pMap.get(pair.white.id);
+          if (pair.black && pMap.has(pair.black.id)) pair.black = pMap.get(pair.black.id);
+        });
+      });
+
       document.getElementById('setup-section').style.display = 'none';
       if (state.currentRound > state.totalRounds) {
         showFinalStandings();
@@ -301,6 +326,7 @@ document.getElementById('json-file-input').addEventListener('change', function(e
     }
   };
   reader.readAsText(file);
+  e.target.value = '';
 });
 
 function parsePlayers() {
@@ -312,7 +338,7 @@ function parsePlayers() {
   lines.forEach((line) => {
     line = line.trim();
     if (!line) return;
-    const match = line.match(/^(.*?)\s+(\d+)$/);
+    const match = line.match(/^(.*?)\s+(\d{3,4})$/);
     if (match) {
       players.push({
         name: match[1].trim(),
@@ -345,11 +371,7 @@ function parsePlayers() {
 function startTournament() {
   const parsed = parsePlayers();
   if (parsed.length < 4) {
-    alert('Please enter at least 4 players.');
-    return;
-  }
-  if (parsed.length % 2 !== 0) {
-    alert('Please enter an even number of players for the tournament.');
+    alert('Please enter at least 4 players to start the tournament.');
     return;
   }
 
@@ -366,17 +388,29 @@ function startTournament() {
 }
 
 function generateRound1() {
-  const n = state.players.length;
-  const q = Math.floor(n / 4);
-  const q1 = state.players.slice(0, q);
-  const q2 = state.players.slice(q, 2 * q);
-  const q3 = state.players.slice(2 * q, 3 * q);
-  const q4 = state.players.slice(3 * q, 4 * q);
+  const activePlayers = state.players.filter(p => !p.withdrawn);
+  const n = activePlayers.length;
+  let byePlayer = null;
+  let playersToPair = [...activePlayers];
+
+  // If odd, lowest-ranked player receives a bye
+  if (n % 2 !== 0) {
+    byePlayer = playersToPair.pop();
+  }
+
+  const m = playersToPair.length / 2;
+  const s1 = Math.ceil(m / 2);
+  const s2 = Math.floor(m / 2);
+
+  const q1 = playersToPair.slice(0, s1);
+  const q2 = playersToPair.slice(s1, 2 * s1);
+  const q3 = playersToPair.slice(2 * s1, 2 * s1 + s2);
+  const q4 = playersToPair.slice(2 * s1 + s2, 2 * s1 + 2 * s2);
 
   const pairings = [];
   let board = 1;
 
-  for (let i = 0; i < q; i++) {
+  for (let i = 0; i < s1; i++) {
     let white, black;
     if (state.r1ColorOption === 'higherWhite') {
       white = q1[i]; black = q2[i];
@@ -387,7 +421,7 @@ function generateRound1() {
     pairings.push({ board: board++, white, black, result: '' });
   }
 
-  for (let i = 0; i < q; i++) {
+  for (let i = 0; i < s2; i++) {
     let white, black;
     if (state.r1ColorOption === 'higherWhite') {
       white = q3[i]; black = q4[i];
@@ -398,24 +432,29 @@ function generateRound1() {
     pairings.push({ board: board++, white, black, result: '' });
   }
 
-  state.rounds.push({ roundNum: 1, pairings });
+  if (byePlayer) {
+    pairings.push({ board: board++, white: byePlayer, black: null, result: '1-0 (Bye)' });
+  }
+
+  state.rounds.push({ roundNum: 1, pairings, s1, s2 });
 }
 
 function generateRound2() {
   const r1 = state.rounds[0].pairings;
-  const n = state.players.length;
-  const q = Math.floor(n / 4);
+  const s1 = state.rounds[0].s1 || Math.ceil(r1.filter(p => p.black).length / 2);
 
   const half1Ids = new Set();
   const half2Ids = new Set();
 
-  for (let i = 0; i < q; i++) {
-    half1Ids.add(r1[i].white.id);
-    half1Ids.add(r1[i].black.id);
+  for (let i = 0; i < s1; i++) {
+    if (r1[i].white) half1Ids.add(r1[i].white.id);
+    if (r1[i].black) half1Ids.add(r1[i].black.id);
   }
-  for (let i = q; i < 2 * q; i++) {
-    half2Ids.add(r1[i].white.id);
-    half2Ids.add(r1[i].black.id);
+  for (let i = s1; i < r1.length; i++) {
+    if (r1[i].black) {
+      if (r1[i].white) half2Ids.add(r1[i].white.id);
+      if (r1[i].black) half2Ids.add(r1[i].black.id);
+    }
   }
 
   const h1 = state.players.filter(p => half1Ids.has(p.id) && !p.withdrawn);
@@ -455,14 +494,123 @@ function generateRound2() {
   state.rounds.push({ roundNum: 2, pairings });
 }
 
-function assignSwissColors(p1, p2) {
-  const p1Whites = (p1.history || []).filter(h => h.color === 'W').length;
-  const p2Whites = (p2.history || []).filter(h => h.color === 'W').length;
+// ============================================================================
+// COLOR MANAGEMENT WITH ABSOLUTE BALANCE AND CONFLICT RESOLUTION
+// ============================================================================
 
-  if (p1Whites < p2Whites) return { white: p1, black: p2 };
-  if (p2Whites < p1Whites) return { white: p2, black: p1 };
+/**
+ * Calculates total color balance for a player.
+ * diff = whites - blacks (positive = surplus White, negative = surplus Black)
+ */
+function getColorStats(p) {
+  const history = p.history || [];
+  let whites = 0;
+  let blacks = 0;
+  for (const h of history) {
+    if (h.color === 'W') whites++;
+    else if (h.color === 'B') blacks++;
+  }
+  return { whites, blacks, diff: whites - blacks };
+}
+
+/**
+ * Returns ongoing consecutive streak of the same color backwards in time.
+ * Skips rounds without color (e.g. byes).
+ */
+function getStreak(p) {
+  const history = (p.history || []).filter(h => h.color === 'W' || h.color === 'B');
+  if (history.length === 0) return { color: null, length: 0 };
+  const lastColor = history[history.length - 1].color;
+  let length = 0;
+  for (let i = history.length - 1; i >= 0; i--) {
+    if (history[i].color === lastColor) {
+      length++;
+    } else {
+      break;
+    }
+  }
+  return { color: lastColor, length };
+}
+
+/**
+ * Checks if a specific color assignment is legal under a given max streak.
+ */
+function canAssignColors(whitePlayer, blackPlayer, maxStreak) {
+  const wStats = getColorStats(whitePlayer);
+  const bStats = getColorStats(blackPlayer);
+
+  // RULE 1: Absolute color balance (|White - Black| can NEVER reach 3)
+  // If White player already has diff >= 2, another White would make diff >= 3 (illegal)
+  if (wStats.diff >= 2) return false;
+
+  // If Black player already has diff <= -2, another Black would make diff <= -3 (illegal)
+  if (bStats.diff <= -2) return false;
+
+  // RULE 2: Streak constraint (maximum consecutive games with the same color)
+  const wStreak = getStreak(whitePlayer);
+  const bStreak = getStreak(blackPlayer);
+
+  if (wStreak.color === 'W' && wStreak.length >= maxStreak) return false;
+  if (bStreak.color === 'B' && bStreak.length >= maxStreak) return false;
+
+  return true;
+}
+
+/**
+ * Default color preference when both color orders are legal.
+ */
+function choosePreferredColor(p1, p2) {
+  const s1 = getColorStats(p1);
+  const s2 = getColorStats(p2);
+
+  if (s1.whites < s2.whites) return { white: p1, black: p2 };
+  if (s2.whites < s1.whites) return { white: p2, black: p1 };
 
   return p1.seed > p2.seed ? { white: p1, black: p2 } : { white: p2, black: p1 };
+}
+
+/**
+ * Assigns colors between p1 and p2.
+ * Attempts strict max 2 in a row first. Falls back to 3 in a row if balance conflicts.
+ */
+function getValidColorAssignment(p1, p2, maxStreakAllowed = 3) {
+  // Tier 1: Try strict 2 in a row
+  const p1W_p2B_2 = canAssignColors(p1, p2, 2);
+  const p2W_p1B_2 = canAssignColors(p2, p1, 2);
+
+  if (p1W_p2B_2 && p2W_p1B_2) {
+    return choosePreferredColor(p1, p2);
+  }
+  if (p1W_p2B_2) {
+    return { white: p1, black: p2 };
+  }
+  if (p2W_p1B_2) {
+    return { white: p2, black: p1 };
+  }
+
+  // Tier 2: Allow up to 3 in a row if needed to uphold absolute color balance
+  if (maxStreakAllowed >= 3) {
+    const p1W_p2B_3 = canAssignColors(p1, p2, 3);
+    const p2W_p1B_3 = canAssignColors(p2, p1, 3);
+
+    if (p1W_p2B_3 && p2W_p1B_3) {
+      return choosePreferredColor(p1, p2);
+    }
+    if (p1W_p2B_3) {
+      return { white: p1, black: p2 };
+    }
+    if (p2W_p1B_3) {
+      return { white: p2, black: p1 };
+    }
+  }
+
+  return null;
+}
+
+function assignSwissColors(p1, p2) {
+  const assignment = getValidColorAssignment(p1, p2, 3);
+  if (assignment) return assignment;
+  return choosePreferredColor(p1, p2);
 }
 
 function pairRound3Plus(players) {
@@ -474,57 +622,81 @@ function pairRound3Plus(players) {
       return a.seed - b.seed;
     });
 
-  function getStreak(p) {
-    return (p.history || []).slice(-2).map(h => h.color).join('');
+  let byePairing = null;
+  let toPair = [...available];
+
+  // Assign bye from the bottom if odd number of players
+  if (toPair.length % 2 !== 0) {
+    let byeIdx = -1;
+    for (let i = toPair.length - 1; i >= 0; i--) {
+      const hadBye = (toPair[i].history || []).some(h => h.opponent === null);
+      if (!hadBye) {
+        byeIdx = i;
+        break;
+      }
+    }
+    if (byeIdx === -1) byeIdx = toPair.length - 1;
+    const byePlayer = toPair.splice(byeIdx, 1)[0];
+    byePairing = { white: byePlayer, black: null, result: '1-0 (Bye)' };
   }
 
-  function solve(remaining) {
+  function solve(remaining, maxStreakAllowed) {
     if (remaining.length === 0) return [];
-    if (remaining.length === 1) {
-      return [{ white: remaining[0], black: null, result: '1-0 (Bye)' }];
-    }
 
     const p1 = remaining[0];
-    const p1Streak = getStreak(p1);
 
     for (let j = 1; j < remaining.length; j++) {
       const p2 = remaining[j];
       if ((p1.opponents || []).includes(p2.id)) continue;
 
-      const p2Streak = getStreak(p2);
-
-      const p1CanBeWhite = (p1Streak !== 'WW');
-      const p1CanBeBlack = (p1Streak !== 'BB');
-      const p2CanBeWhite = (p2Streak !== 'WW');
-      const p2CanBeBlack = (p2Streak !== 'BB');
-
-      const p1WhiteP2Black = p1CanBeWhite && p2CanBeBlack;
-      const p2WhiteP1Black = p2CanBeWhite && p1CanBeBlack;
-
-      if (!p1WhiteP2Black && !p2WhiteP1Black) continue;
-
-      let white, black;
-      if (p1WhiteP2Black && p2WhiteP1Black) {
-        const pref = assignSwissColors(p1, p2);
-        white = pref.white;
-        black = pref.black;
-      } else if (p1WhiteP2Black) {
-        white = p1; black = p2;
-      } else {
-        white = p2; black = p1;
-      }
+      const assignment = getValidColorAssignment(p1, p2, maxStreakAllowed);
+      if (!assignment) continue;
 
       const nextRemaining = remaining.filter(p => p.id !== p1.id && p.id !== p2.id);
-      const sub = solve(nextRemaining);
+      const sub = solve(nextRemaining, maxStreakAllowed);
       if (sub !== null) {
-        return [{ white, black, result: '' }, ...sub];
+        return [{ white: assignment.white, black: assignment.black, result: '' }, ...sub];
       }
     }
 
     return null;
   }
 
-  const solution = solve(available) || [];
+  // 1. Primary solver: strict max 2 in a row and |diff| < 3
+  let solution = solve(toPair, 2);
+
+  // 2. Secondary solver: allow up to 3 in a row if color balance forces it
+  if (solution === null) {
+    solution = solve(toPair, 3);
+  }
+
+  // 3. Fallback solver for extreme edge cases
+  if (solution === null) {
+    const pairs = [];
+    const rem = [...toPair];
+    while (rem.length >= 2) {
+      const p1 = rem.shift();
+      let bestIdx = 0;
+      for (let i = 0; i < rem.length; i++) {
+        if (!(p1.opponents || []).includes(rem[i].id)) {
+          bestIdx = i;
+          break;
+        }
+      }
+      const p2 = rem.splice(bestIdx, 1)[0];
+      let assignment = getValidColorAssignment(p1, p2, 3);
+      if (!assignment) {
+        assignment = choosePreferredColor(p1, p2);
+      }
+      pairs.push({ white: assignment.white, black: assignment.black, result: '' });
+    }
+    solution = pairs;
+  }
+
+  if (byePairing) {
+    solution.push(byePairing);
+  }
+
   return solution.map((p, idx) => ({ board: idx + 1, ...p }));
 }
 
@@ -590,7 +762,7 @@ function submitRound() {
   const curRound = state.rounds[state.currentRound - 1];
   for (let p of curRound.pairings) {
     if (p.black && !p.result) {
-      alert(`Enter a result for board ${p.board}.`);
+      alert(`Please enter a result for board ${p.board}.`);
       return;
     }
   }
@@ -675,6 +847,7 @@ function getSortedStandings() {
 }
 
 function showFinalStandings() {
+  recalculateTiebreaks();
   document.getElementById('final-section').style.display = 'block';
   const tbody = document.getElementById('final-table-body');
   tbody.innerHTML = '';

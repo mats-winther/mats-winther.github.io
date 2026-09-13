@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Schweiziskt turneringssystem för schack direkt i webbläsaren.">
-  <meta name="author" content="Mats Winther">
-  <link rel="canonical" href="https://mats-winther.github.io/swiss.htm">
+<meta name="author" content="Mats Winther">
+<link rel="canonical" href="https://mats-winther.github.io/swiss.htm">
 <title>Schweiziskt turneringssystem</title>
 <style>
   :root {
@@ -59,9 +59,17 @@
   @media print {
     body { background: #fff; padding: 0; }
     .container { box-shadow: none; padding: 0; width: 100%; max-width: 100%; }
-    .btn-bar, .settings-section, .no-print { display: none !important; }
+    .btn-bar, .settings-section, .no-print, .close-btn { display: none !important; }
     .print-only { display: block !important; text-align: center; }
     #pairings-table-body td:nth-child(3) { text-align: center; }
+
+    body.printing-modal .container { display: none !important; }
+    body.printing-modal .modal-overlay {
+      display: block !important; position: static !important; background: transparent !important;
+    }
+    body.printing-modal .modal-box {
+      box-shadow: none !important; padding: 0 !important; max-width: 100% !important; width: 100% !important;
+    }
   }
 </style>
 </head>
@@ -95,10 +103,10 @@
     <div class="rules-box">
       <h3>Lottningssystem: winther-accelerering</h3>
       <ul>
-        <li><strong>Rond 1:</strong> Spelarna delas in i fyra grupper (kvadranter). Den högst rankade i K1 har vit mot den högst rankade i K2, och motsvarande för K3 och K4.</li>
+        <li><strong>Rond 1:</strong> Spelarna delas in i fyra grupper (kvadranter). Den högst rankade i K1 har vit mot den högst rankade i K2, och motsvarande för K3 och K4. (Vid ojämna grupper anpassas storlekarna automatiskt och vid udda deltagarantal ges lägst rankad frirond).</li>
         <li><strong>Rond 2:</strong> Högst seedad vinnare har svart mot högst seedad vinnare i den andra halvan. Näst högst seedad har svart mot nästa i den andra halvan, osv.</li>
         <li><strong>Rond 3+:</strong> Schweizisk lottning börjar. Spelarna sorteras efter poäng, buchholz och ursprunglig seedning. Lottning sker uppifrån och ned.</li>
-        <li><strong>Färgfördelning:</strong> Spelaren med färre vita partier får vit. Vid lika får den lägre seedade spelaren vit. Garanterat 0% risk för tre partier i rad med samma färg.</li>
+        <li><strong>Färgfördelning:</strong> Spelaren med färre vita partier får vit. Vid lika får den lägre seedade spelaren vit. Absolut färgbalans garanteras (färgskillnaden kan aldrig bli 3). Vid krock mellan färgbalans och 2-i-rad-regeln tillåts tre partier med samma färg i rad.</li>
       </ul>
     </div>
 
@@ -125,7 +133,7 @@
       <button type="button" class="secondary" onclick="printPairings()">Skriv ut lottning</button>
       <button type="button" class="secondary" onclick="saveTournament()">Spara turnering</button>
       <button type="button" class="secondary" onclick="openStandingsModal()">Aktuell ställning</button>
-      <button type="danger" class="danger" onclick="openWithdrawModal()">Avanmäl spelare</button>
+      <button type="button" class="danger" onclick="openWithdrawModal()">Avanmäl spelare</button>
     </div>
 
     <table>
@@ -222,39 +230,45 @@ let state = {
 };
 
 let defaultDocTitle = document.title;
+let customPrintTitle = '';
 
 window.addEventListener('beforeprint', () => {
-  const tName = (state.name || 'Turnering').trim();
-  if (document.getElementById('final-section').style.display === 'block') {
-    document.title = `${tName} - Slutställning`;
-  } else if (state.currentRound > 0) {
-    document.title = `${tName} - Rond ${state.currentRound}`;
+  if (customPrintTitle) {
+    document.title = customPrintTitle;
+  } else {
+    const tName = (state.name || 'Turnering').trim();
+    if (document.getElementById('final-section').style.display === 'block') {
+      document.title = `${tName} - Slutställning`;
+    } else if (state.currentRound > 0) {
+      document.title = `${tName} - Rond ${state.currentRound}`;
+    }
   }
 });
 
 window.addEventListener('afterprint', () => {
+  customPrintTitle = '';
   document.title = defaultDocTitle;
 });
 
 function printPairings() {
   const tName = (state.name || 'Turnering').trim();
-  document.title = `${tName} - Rond ${state.currentRound}`;
+  customPrintTitle = `${tName} - Rond ${state.currentRound}`;
   window.print();
-  setTimeout(() => { document.title = defaultDocTitle; }, 1000);
 }
 
 function printStandings() {
   const tName = (state.name || 'Turnering').trim();
-  document.title = `${tName} - Ställning efter rond ${state.currentRound - 1}`;
+  const rd = state.currentRound > 1 ? state.currentRound - 1 : 1;
+  customPrintTitle = `${tName} - Ställning efter rond ${rd}`;
+  document.body.classList.add('printing-modal');
   window.print();
-  setTimeout(() => { document.title = defaultDocTitle; }, 1000);
+  document.body.classList.remove('printing-modal');
 }
 
 function printFinalStandings() {
   const tName = (state.name || 'Turnering').trim();
-  document.title = `${tName} - Slutställning`;
+  customPrintTitle = `${tName} - Slutställning`;
   window.print();
-  setTimeout(() => { document.title = defaultDocTitle; }, 1000);
 }
 
 function load32ClubPlayers() {
@@ -281,6 +295,7 @@ document.getElementById('txt-file-input').addEventListener('change', function(e)
   const reader = new FileReader();
   reader.onload = ev => { document.getElementById('player-input').value = ev.target.result; };
   reader.readAsText(file);
+  e.target.value = '';
 });
 
 document.getElementById('json-file-input').addEventListener('change', function(e) {
@@ -290,6 +305,16 @@ document.getElementById('json-file-input').addEventListener('change', function(e
   reader.onload = ev => {
     try {
       state = JSON.parse(ev.target.result);
+
+      // Re-link player object references to maintain integrity
+      const pMap = new Map(state.players.map(p => [p.id, p]));
+      (state.rounds || []).forEach(r => {
+        (r.pairings || []).forEach(pair => {
+          if (pair.white && pMap.has(pair.white.id)) pair.white = pMap.get(pair.white.id);
+          if (pair.black && pMap.has(pair.black.id)) pair.black = pMap.get(pair.black.id);
+        });
+      });
+
       document.getElementById('setup-section').style.display = 'none';
       if (state.currentRound > state.totalRounds) {
         showFinalStandings();
@@ -301,6 +326,7 @@ document.getElementById('json-file-input').addEventListener('change', function(e
     }
   };
   reader.readAsText(file);
+  e.target.value = '';
 });
 
 function parsePlayers() {
@@ -312,7 +338,7 @@ function parsePlayers() {
   lines.forEach((line) => {
     line = line.trim();
     if (!line) return;
-    const match = line.match(/^(.*?)\s+(\d+)$/);
+    const match = line.match(/^(.*?)\s+(\d{3,4})$/);
     if (match) {
       players.push({
         name: match[1].trim(),
@@ -345,11 +371,7 @@ function parsePlayers() {
 function startTournament() {
   const parsed = parsePlayers();
   if (parsed.length < 4) {
-    alert('Ange minst 4 spelare.');
-    return;
-  }
-  if (parsed.length % 2 !== 0) {
-    alert('Ange ett jämnt antal spelare för turneringen.');
+    alert('Ange minst 4 spelare för att starta turneringen.');
     return;
   }
 
@@ -366,17 +388,29 @@ function startTournament() {
 }
 
 function generateRound1() {
-  const n = state.players.length;
-  const q = Math.floor(n / 4);
-  const q1 = state.players.slice(0, q);
-  const q2 = state.players.slice(q, 2 * q);
-  const q3 = state.players.slice(2 * q, 3 * q);
-  const q4 = state.players.slice(3 * q, 4 * q);
+  const activePlayers = state.players.filter(p => !p.withdrawn);
+  const n = activePlayers.length;
+  let byePlayer = null;
+  let playersToPair = [...activePlayers];
+
+  // If odd, lowest-ranked player receives a bye
+  if (n % 2 !== 0) {
+    byePlayer = playersToPair.pop();
+  }
+
+  const m = playersToPair.length / 2;
+  const s1 = Math.ceil(m / 2);
+  const s2 = Math.floor(m / 2);
+
+  const q1 = playersToPair.slice(0, s1);
+  const q2 = playersToPair.slice(s1, 2 * s1);
+  const q3 = playersToPair.slice(2 * s1, 2 * s1 + s2);
+  const q4 = playersToPair.slice(2 * s1 + s2, 2 * s1 + 2 * s2);
 
   const pairings = [];
   let board = 1;
 
-  for (let i = 0; i < q; i++) {
+  for (let i = 0; i < s1; i++) {
     let white, black;
     if (state.r1ColorOption === 'higherWhite') {
       white = q1[i]; black = q2[i];
@@ -387,7 +421,7 @@ function generateRound1() {
     pairings.push({ board: board++, white, black, result: '' });
   }
 
-  for (let i = 0; i < q; i++) {
+  for (let i = 0; i < s2; i++) {
     let white, black;
     if (state.r1ColorOption === 'higherWhite') {
       white = q3[i]; black = q4[i];
@@ -398,24 +432,29 @@ function generateRound1() {
     pairings.push({ board: board++, white, black, result: '' });
   }
 
-  state.rounds.push({ roundNum: 1, pairings });
+  if (byePlayer) {
+    pairings.push({ board: board++, white: byePlayer, black: null, result: '1-0 (Frirond)' });
+  }
+
+  state.rounds.push({ roundNum: 1, pairings, s1, s2 });
 }
 
 function generateRound2() {
   const r1 = state.rounds[0].pairings;
-  const n = state.players.length;
-  const q = Math.floor(n / 4);
+  const s1 = state.rounds[0].s1 || Math.ceil(r1.filter(p => p.black).length / 2);
 
   const half1Ids = new Set();
   const half2Ids = new Set();
 
-  for (let i = 0; i < q; i++) {
-    half1Ids.add(r1[i].white.id);
-    half1Ids.add(r1[i].black.id);
+  for (let i = 0; i < s1; i++) {
+    if (r1[i].white) half1Ids.add(r1[i].white.id);
+    if (r1[i].black) half1Ids.add(r1[i].black.id);
   }
-  for (let i = q; i < 2 * q; i++) {
-    half2Ids.add(r1[i].white.id);
-    half2Ids.add(r1[i].black.id);
+  for (let i = s1; i < r1.length; i++) {
+    if (r1[i].black) {
+      if (r1[i].white) half2Ids.add(r1[i].white.id);
+      if (r1[i].black) half2Ids.add(r1[i].black.id);
+    }
   }
 
   const h1 = state.players.filter(p => half1Ids.has(p.id) && !p.withdrawn);
@@ -455,14 +494,123 @@ function generateRound2() {
   state.rounds.push({ roundNum: 2, pairings });
 }
 
-function assignSwissColors(p1, p2) {
-  const p1Whites = (p1.history || []).filter(h => h.color === 'W').length;
-  const p2Whites = (p2.history || []).filter(h => h.color === 'W').length;
+// ============================================================================
+// FÄRGHANTERING MED ABSOLUT BALANS OCH KONFLIKTLÖSNING
+// ============================================================================
 
-  if (p1Whites < p2Whites) return { white: p1, black: p2 };
-  if (p2Whites < p1Whites) return { white: p2, black: p1 };
+/**
+ * Beräknar total färgstatistik för en spelare.
+ * diff = vita - svarta (positiv = överskott på vit, negativ = överskott på svart)
+ */
+function getColorStats(p) {
+  const history = p.history || [];
+  let whites = 0;
+  let blacks = 0;
+  for (const h of history) {
+    if (h.color === 'W') whites++;
+    else if (h.color === 'B') blacks++;
+  }
+  return { whites, blacks, diff: whites - blacks };
+}
+
+/**
+ * Returnerar pågående svit av samma färg bakåt i tiden.
+ * Ignorerar ronder utan färg (exempelvis frirond/bye).
+ */
+function getStreak(p) {
+  const history = (p.history || []).filter(h => h.color === 'W' || h.color === 'B');
+  if (history.length === 0) return { color: null, length: 0 };
+  const lastColor = history[history.length - 1].color;
+  let length = 0;
+  for (let i = history.length - 1; i >= 0; i--) {
+    if (history[i].color === lastColor) {
+      length++;
+    } else {
+      break;
+    }
+  }
+  return { color: lastColor, length };
+}
+
+/**
+ * Kontrollerar om en specifik färgfördelning är tillåten givet max tillåten svit.
+ */
+function canAssignColors(whitePlayer, blackPlayer, maxStreak) {
+  const wStats = getColorStats(whitePlayer);
+  const bStats = getColorStats(blackPlayer);
+
+  // KRAV 1: Absolut färgbalans (|Vit - Svart| får ALDRIG nå 3)
+  // Om vit spelare redan har diff >= 2, skulle ytterligare en vit ge diff >= 3 (otillåtet)
+  if (wStats.diff >= 2) return false;
+
+  // Om svart spelare redan har diff <= -2, skulle ytterligare en svart ge diff <= -3 (otillåtet)
+  if (bStats.diff <= -2) return false;
+
+  // KRAV 2: Svitregel (max antal partier i rad med samma färg)
+  const wStreak = getStreak(whitePlayer);
+  const bStreak = getStreak(blackPlayer);
+
+  if (wStreak.color === 'W' && wStreak.length >= maxStreak) return false;
+  if (bStreak.color === 'B' && bStreak.length >= maxStreak) return false;
+
+  return true;
+}
+
+/**
+ * Standard färgprioritering när båda färgfördelningar är tillåtna.
+ */
+function choosePreferredColor(p1, p2) {
+  const s1 = getColorStats(p1);
+  const s2 = getColorStats(p2);
+
+  if (s1.whites < s2.whites) return { white: p1, black: p2 };
+  if (s2.whites < s1.whites) return { white: p2, black: p1 };
 
   return p1.seed > p2.seed ? { white: p1, black: p2 } : { white: p2, black: p1 };
+}
+
+/**
+ * Tilldelar färg mellan p1 och p2.
+ * Försöker först med max 2 i rad. Krockar det med färgbalansen tillåts 3 i rad.
+ */
+function getValidColorAssignment(p1, p2, maxStreakAllowed = 3) {
+  // Nivå 1: Försök först med standardregeln (max 2 i rad med samma färg)
+  const p1W_p2B_2 = canAssignColors(p1, p2, 2);
+  const p2W_p1B_2 = canAssignColors(p2, p1, 2);
+
+  if (p1W_p2B_2 && p2W_p1B_2) {
+    return choosePreferredColor(p1, p2);
+  }
+  if (p1W_p2B_2) {
+    return { white: p1, black: p2 };
+  }
+  if (p2W_p1B_2) {
+    return { white: p2, black: p1 };
+  }
+
+  // Nivå 2: Om det krockar p.g.a. absolut färgbalans, tillåt upp till 3 i rad
+  if (maxStreakAllowed >= 3) {
+    const p1W_p2B_3 = canAssignColors(p1, p2, 3);
+    const p2W_p1B_3 = canAssignColors(p2, p1, 3);
+
+    if (p1W_p2B_3 && p2W_p1B_3) {
+      return choosePreferredColor(p1, p2);
+    }
+    if (p1W_p2B_3) {
+      return { white: p1, black: p2 };
+    }
+    if (p2W_p1B_3) {
+      return { white: p2, black: p1 };
+    }
+  }
+
+  return null;
+}
+
+function assignSwissColors(p1, p2) {
+  const assignment = getValidColorAssignment(p1, p2, 3);
+  if (assignment) return assignment;
+  return choosePreferredColor(p1, p2);
 }
 
 function pairRound3Plus(players) {
@@ -474,57 +622,81 @@ function pairRound3Plus(players) {
       return a.seed - b.seed;
     });
 
-  function getStreak(p) {
-    return (p.history || []).slice(-2).map(h => h.color).join('');
+  let byePairing = null;
+  let toPair = [...available];
+
+  // Tilldela frirond vid udda deltagarantal från botten
+  if (toPair.length % 2 !== 0) {
+    let byeIdx = -1;
+    for (let i = toPair.length - 1; i >= 0; i--) {
+      const hadBye = (toPair[i].history || []).some(h => h.opponent === null);
+      if (!hadBye) {
+        byeIdx = i;
+        break;
+      }
+    }
+    if (byeIdx === -1) byeIdx = toPair.length - 1;
+    const byePlayer = toPair.splice(byeIdx, 1)[0];
+    byePairing = { white: byePlayer, black: null, result: '1-0 (Frirond)' };
   }
 
-  function solve(remaining) {
+  function solve(remaining, maxStreakAllowed) {
     if (remaining.length === 0) return [];
-    if (remaining.length === 1) {
-      return [{ white: remaining[0], black: null, result: '1-0 (Frirond)' }];
-    }
 
     const p1 = remaining[0];
-    const p1Streak = getStreak(p1);
 
     for (let j = 1; j < remaining.length; j++) {
       const p2 = remaining[j];
       if ((p1.opponents || []).includes(p2.id)) continue;
 
-      const p2Streak = getStreak(p2);
-
-      const p1CanBeWhite = (p1Streak !== 'WW');
-      const p1CanBeBlack = (p1Streak !== 'BB');
-      const p2CanBeWhite = (p2Streak !== 'WW');
-      const p2CanBeBlack = (p2Streak !== 'BB');
-
-      const p1WhiteP2Black = p1CanBeWhite && p2CanBeBlack;
-      const p2WhiteP1Black = p2CanBeWhite && p1CanBeBlack;
-
-      if (!p1WhiteP2Black && !p2WhiteP1Black) continue;
-
-      let white, black;
-      if (p1WhiteP2Black && p2WhiteP1Black) {
-        const pref = assignSwissColors(p1, p2);
-        white = pref.white;
-        black = pref.black;
-      } else if (p1WhiteP2Black) {
-        white = p1; black = p2;
-      } else {
-        white = p2; black = p1;
-      }
+      const assignment = getValidColorAssignment(p1, p2, maxStreakAllowed);
+      if (!assignment) continue;
 
       const nextRemaining = remaining.filter(p => p.id !== p1.id && p.id !== p2.id);
-      const sub = solve(nextRemaining);
+      const sub = solve(nextRemaining, maxStreakAllowed);
       if (sub !== null) {
-        return [{ white, black, result: '' }, ...sub];
+        return [{ white: assignment.white, black: assignment.black, result: '' }, ...sub];
       }
     }
 
     return null;
   }
 
-  const solution = solve(available) || [];
+  // 1. Primär lottning: strikt max 2 i rad med samma färg och |diff| < 3
+  let solution = solve(toPair, 2);
+
+  // 2. Sekundär lottning: om krock uppstår p.g.a. färgbalansen, tillåt 3 i rad
+  if (solution === null) {
+    solution = solve(toPair, 3);
+  }
+
+  // 3. Nödfallshantering i extrema fall
+  if (solution === null) {
+    const pairs = [];
+    const rem = [...toPair];
+    while (rem.length >= 2) {
+      const p1 = rem.shift();
+      let bestIdx = 0;
+      for (let i = 0; i < rem.length; i++) {
+        if (!(p1.opponents || []).includes(rem[i].id)) {
+          bestIdx = i;
+          break;
+        }
+      }
+      const p2 = rem.splice(bestIdx, 1)[0];
+      let assignment = getValidColorAssignment(p1, p2, 3);
+      if (!assignment) {
+        assignment = choosePreferredColor(p1, p2);
+      }
+      pairs.push({ white: assignment.white, black: assignment.black, result: '' });
+    }
+    solution = pairs;
+  }
+
+  if (byePairing) {
+    solution.push(byePairing);
+  }
+
   return solution.map((p, idx) => ({ board: idx + 1, ...p }));
 }
 
@@ -675,6 +847,7 @@ function getSortedStandings() {
 }
 
 function showFinalStandings() {
+  recalculateTiebreaks();
   document.getElementById('final-section').style.display = 'block';
   const tbody = document.getElementById('final-table-body');
   tbody.innerHTML = '';
