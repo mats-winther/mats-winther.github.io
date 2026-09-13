@@ -2,9 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Monrad Tournament Manager</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Norwegian Monrad Tournament Manager</title>
 
   <style>
     :root {
@@ -34,9 +38,9 @@
     }
 
     header {
+      padding: 18px 24px;
       background: var(--primary);
       color: white;
-      padding: 18px 24px;
     }
 
     header h1 {
@@ -78,15 +82,16 @@
 
     .form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      grid-template-columns:
+        repeat(auto-fit, minmax(210px, 1fr));
       gap: 15px;
       margin-bottom: 16px;
     }
 
     label {
       display: block;
-      font-weight: bold;
       margin-bottom: 5px;
+      font-weight: bold;
     }
 
     input,
@@ -213,8 +218,8 @@
 
     table {
       width: 100%;
-      border-collapse: collapse;
       margin-top: 10px;
+      border-collapse: collapse;
     }
 
     th,
@@ -241,8 +246,8 @@
     }
 
     tr.withdrawn {
-      color: var(--muted);
       background: #f5f5f5;
+      color: var(--muted);
     }
 
     .result-buttons {
@@ -250,7 +255,7 @@
       flex-wrap: wrap;
       justify-content: center;
       gap: 5px;
-      min-width: 235px;
+      min-width: 250px;
     }
 
     button.result-choice {
@@ -272,11 +277,6 @@
       background: var(--success);
       color: #ffffff;
       font-weight: bold;
-    }
-
-    button.result-choice.selected:hover:not(:disabled) {
-      background: var(--success);
-      color: #ffffff;
     }
 
     .selected-result {
@@ -304,8 +304,8 @@
 
       header,
       .toolbar {
-        padding-left: 12px;
         padding-right: 12px;
+        padding-left: 12px;
       }
 
       .card {
@@ -330,21 +330,36 @@
 <body>
 <header>
   <h1>Monrad Tournament Manager</h1>
-  <p>Pairing and administration of tournaments according to the Norwegian Chess Federation’s Monrad system</p>
+
+  <p>
+    Pairing and administration according to the Norwegian
+    Chess Federation's Monrad system
+  </p>
 </header>
 
 <div class="toolbar">
-  <button id="saveTournamentButton">Save Tournament</button>
+  <button id="saveTournamentButton">
+    Save Tournament
+  </button>
 
-  <button id="loadTournamentButton" class="secondary">
+  <button
+    id="loadTournamentButton"
+    class="secondary"
+  >
     Load Tournament
   </button>
 
-  <button id="withdrawPlayerButton" class="warning hidden">
+  <button
+    id="withdrawPlayerButton"
+    class="warning hidden"
+  >
     Withdraw Player
   </button>
 
-  <button id="newTournamentButton" class="danger">
+  <button
+    id="newTournamentButton"
+    class="danger"
+  >
     New Tournament
   </button>
 </div>
@@ -370,7 +385,10 @@
 
       <div class="form-grid">
         <div>
-          <label for="tournamentName">Tournament name</label>
+          <label for="tournamentName">
+            Tournament name
+          </label>
+
           <input
             id="tournamentName"
             type="text"
@@ -379,7 +397,10 @@
         </div>
 
         <div>
-          <label for="totalRounds">Number of rounds</label>
+          <label for="totalRounds">
+            Number of rounds
+          </label>
+
           <input
             id="totalRounds"
             type="number"
@@ -398,11 +419,9 @@
             <option value="seeded">
               Seeded draw using rating
             </option>
+
             <option value="random">
               Completely random draw
-            </option>
-            <option value="listed">
-              Keep player-file order
             </option>
           </select>
         </div>
@@ -413,30 +432,43 @@
       <p class="muted small">
         Enter one player per line using
         <strong>Name;Club;Rating</strong>.
-        Tabs and commas are also accepted. Club and rating may be omitted.
-        Lines beginning with <strong>#</strong> are ignored.
+        Tabs and commas are also accepted. Quoted CSV fields are
+        supported. Club and rating may be omitted. Lines beginning
+        with <strong>#</strong> are ignored.
       </p>
 
       <textarea
         id="playersText"
         spellcheck="false"
-        placeholder="Alice Smith;Central Chess Club;1820&#10;Bob Jones;Westside Chess Club;1740..."
+        placeholder="Alice Smith;Central Chess Club;1820&#10;Bob Jones;Westside Chess Club;1740"
       ></textarea>
 
       <div class="button-row">
-        <button id="loadPlayerFileButton" class="secondary">
-          Load TXT Player File
+        <button
+          id="loadPlayerFileButton"
+          class="secondary"
+        >
+          Load TXT or CSV Player File
         </button>
 
-        <button id="loadSampleButton" class="secondary">
+        <button
+          id="loadSampleButton"
+          class="secondary"
+        >
           Load Sample Players
         </button>
 
-        <button id="clearPlayersButton" class="danger">
+        <button
+          id="clearPlayersButton"
+          class="danger"
+        >
           Clear Players
         </button>
 
-        <button id="startTournamentButton" class="success">
+        <button
+          id="startTournamentButton"
+          class="success"
+        >
           Start Tournament
         </button>
       </div>
@@ -446,37 +478,60 @@
       <h3>Seeded draw</h3>
 
       <p>
-        For a seeded draw, players are ranked by rating and divided into
-        four groups: A, B, C and D. Players are then drawn in the repeating
+        Players are ranked by rating and divided into four equal
+        groups: A, B, C and D. Players are drawn using the repeating
         group order:
       </p>
 
-      <p><strong>A, C, D, B, C, A, B, D</strong></p>
+      <p>
+        <strong>A, C, D, B, C, A, B, D</strong>
+      </p>
 
       <p class="muted small">
-        If the player count is not divisible by four, the lowest-ranked
-        remainder is drawn randomly and assigned the final start numbers.
+        If the number of players is not divisible by four, the
+        lowest-ranked remainder is drawn randomly and receives the
+        final start numbers.
       </p>
     </div>
   </section>
 
-  <section id="tournamentPanel" class="hidden">
+  <section
+    id="tournamentPanel"
+    class="hidden"
+  >
     <div class="card">
       <h2 id="tournamentHeading"></h2>
-      <div id="tournamentSummary" class="summary"></div>
+
+      <div
+        id="tournamentSummary"
+        class="summary"
+      ></div>
+
       <div id="globalWarnings"></div>
     </div>
 
-    <div id="currentRoundCard" class="card">
+    <div
+      id="currentRoundCard"
+      class="card"
+    >
       <div id="currentRoundContent"></div>
+    </div>
+
+    <div
+      id="adjournedGamesCard"
+      class="card hidden"
+    >
+      <h2>Adjourned games</h2>
+
+      <div id="adjournedGamesContent"></div>
     </div>
 
     <div class="card">
       <h2>Printable round lists</h2>
 
       <p class="muted">
-        A frozen copy of the round list is stored before each round is
-        paired. It can be printed later even after the tournament has moved
+        A frozen copy of the round list is stored before each round
+        is paired. It can be printed after the tournament has moved
         to another round.
       </p>
 
@@ -489,8 +544,12 @@
       </div>
     </div>
 
-    <div id="finalResultsCard" class="card hidden">
+    <div
+      id="finalResultsCard"
+      class="card hidden"
+    >
       <h2>Final standings</h2>
+
       <div id="finalResultsContent"></div>
 
       <div class="button-row">
@@ -505,14 +564,14 @@
 <script>
 "use strict";
 
-/* ------------------------------------------------------------
+/* ============================================================
    Application state
------------------------------------------------------------- */
+============================================================ */
 
 function emptyState() {
   return {
     app: "NorwegianMonradWeb",
-    version: 1,
+    version: 2,
     status: "setup",
     name: "",
     totalRounds: 7,
@@ -525,9 +584,9 @@ function emptyState() {
 
 let state = emptyState();
 
-/* ------------------------------------------------------------
+/* ============================================================
    General utilities
------------------------------------------------------------- */
+============================================================ */
 
 function makeId() {
   if (
@@ -558,9 +617,15 @@ function escapeHTML(value) {
 function shuffle(array) {
   const result = [...array];
 
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
+  for (let index = result.length - 1; index > 0; index--) {
+    const randomIndex = Math.floor(
+      Math.random() * (index + 1)
+    );
+
+    [result[index], result[randomIndex]] = [
+      result[randomIndex],
+      result[index]
+    ];
   }
 
   return result;
@@ -590,8 +655,20 @@ function formatScore(value) {
   return formatNumber(value);
 }
 
+function formatDropped(values) {
+  if (!Array.isArray(values) || values.length === 0) {
+    return "";
+  }
+
+  return values
+    .map(formatNumber)
+    .join(" + ");
+}
+
 function safeFilename(name) {
-  const result = String(name || "monrad-tournament")
+  const result = String(
+    name || "monrad-tournament"
+  )
     .trim()
     .replace(/[^a-z0-9_-]+/gi, "-")
     .replace(/^-+|-+$/g, "");
@@ -612,11 +689,15 @@ function playerDisplay(player) {
     return "Unknown player";
   }
 
-  const club = player.club ? ` — ${player.club}` : "";
+  const club = player.club
+    ? ` — ${player.club}`
+    : "";
 
   return (
-    `<span class="player-number">#${player.startNo}</span> ` +
-    `${escapeHTML(player.name)}${escapeHTML(club)}`
+    `<span class="player-number">` +
+    `#${player.startNo}</span> ` +
+    `${escapeHTML(player.name)}` +
+    `${escapeHTML(club)}`
   );
 }
 
@@ -627,42 +708,195 @@ function resultLabel(result) {
     "0-1": "0-1",
     "W-F": "White wins by forfeit",
     "F-W": "Black wins by forfeit",
-    "0-0": "0-0"
+    "0-0": "0-0",
+    "ADJ": "Adjourned — provisional ½-½"
   };
 
   return labels[result] || "";
 }
 
-/* ------------------------------------------------------------
+function compareAscendingVectors(
+  vectorA,
+  vectorB
+) {
+  const length = Math.max(
+    vectorA.length,
+    vectorB.length
+  );
+
+  for (let index = 0; index < length; index++) {
+    const valueA = vectorA[index] ?? 0;
+    const valueB = vectorB[index] ?? 0;
+
+    if (!approximatelyEqual(valueA, valueB)) {
+      return valueA - valueB;
+    }
+  }
+
+  return 0;
+}
+
+function createSearchLimitError() {
+  const error = new Error(
+    "The automatic pairing search became too complex. " +
+    "An arbiter may enter the round manually."
+  );
+
+  error.code = "SEARCH_LIMIT";
+  return error;
+}
+
+/* ============================================================
    Player-file handling
------------------------------------------------------------- */
+============================================================ */
+
+function countDelimiterOutsideQuotes(
+  line,
+  delimiter
+) {
+  let count = 0;
+  let inQuotes = false;
+
+  for (let index = 0; index < line.length; index++) {
+    const character = line[index];
+
+    if (character === '"') {
+      if (
+        inQuotes &&
+        line[index + 1] === '"'
+      ) {
+        index++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+
+      continue;
+    }
+
+    if (
+      !inQuotes &&
+      character === delimiter
+    ) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
+function detectDelimiter(line) {
+  const candidates = ["\t", ";", ","];
+
+  const counts = candidates.map(delimiter => ({
+    delimiter,
+    count: countDelimiterOutsideQuotes(
+      line,
+      delimiter
+    )
+  }));
+
+  counts.sort((a, b) => b.count - a.count);
+
+  return counts[0].count > 0
+    ? counts[0].delimiter
+    : null;
+}
+
+function parseDelimitedLine(
+  line,
+  delimiter
+) {
+  if (!delimiter) {
+    const value = line.trim();
+
+    if (
+      value.startsWith('"') &&
+      value.endsWith('"')
+    ) {
+      return [
+        value
+          .slice(1, -1)
+          .replaceAll('""', '"')
+      ];
+    }
+
+    return [value];
+  }
+
+  const fields = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < line.length; index++) {
+    const character = line[index];
+
+    if (character === '"') {
+      if (
+        inQuotes &&
+        line[index + 1] === '"'
+      ) {
+        field += '"';
+        index++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+
+      continue;
+    }
+
+    if (
+      !inQuotes &&
+      character === delimiter
+    ) {
+      fields.push(field.trim());
+      field = "";
+      continue;
+    }
+
+    field += character;
+  }
+
+  fields.push(field.trim());
+  return fields;
+}
 
 function splitPlayerLine(line) {
-  if (line.includes("\t")) {
-    return line.split("\t");
-  }
+  return parseDelimitedLine(
+    line,
+    detectDelimiter(line)
+  );
+}
 
-  if (line.includes(";")) {
-    return line.split(";");
-  }
+function looksLikePlayerHeader(parts) {
+  const first = String(parts[0] || "")
+    .trim()
+    .toLowerCase();
 
-  if (line.includes(",")) {
-    return line.split(",");
-  }
+  const rest = parts
+    .slice(1)
+    .join(" ")
+    .toLowerCase();
 
-  return [line];
+  const firstIsHeader =
+    /^(name|player|player name|navn|spiller)$/.test(
+      first
+    );
+
+  const restIsHeader =
+    /(club|klubb|rating|elo|rating number)/.test(
+      rest
+    );
+
+  return firstIsHeader && restIsHeader;
 }
 
 function parsePlayers(text) {
   const lines = String(text || "").split(/\r?\n/);
   const players = [];
+  let firstMeaningfulLine = true;
 
-  for (
-    let lineIndex = 0;
-    lineIndex < lines.length;
-    lineIndex++
-  ) {
-    const raw = lines[lineIndex].trim();
+  for (const originalLine of lines) {
+    const raw = originalLine.trim();
 
     if (!raw || raw.startsWith("#")) {
       continue;
@@ -673,18 +907,23 @@ function parsePlayers(text) {
     );
 
     if (
-      lineIndex === 0 &&
-      /name|player/i.test(parts[0] || "") &&
-      /rating|elo|club/i.test(parts.join(" "))
+      firstMeaningfulLine &&
+      looksLikePlayerHeader(parts)
     ) {
+      firstMeaningfulLine = false;
       continue;
     }
+
+    firstMeaningfulLine = false;
 
     const name = parts[0] || "";
     const club = parts[1] || "";
     const ratingText = parts[2] || "";
+
     const rating =
-      ratingText === "" ? null : Number(ratingText);
+      ratingText === ""
+        ? null
+        : Number(ratingText);
 
     if (!name) {
       continue;
@@ -693,20 +932,23 @@ function parsePlayers(text) {
     players.push({
       name,
       club,
-      rating: Number.isFinite(rating) ? rating : null
+      rating: Number.isFinite(rating)
+        ? rating
+        : null
     });
   }
 
   return players;
 }
 
-function assignStartNumbers(players, method) {
+function assignStartNumbers(
+  players,
+  method
+) {
   let ordered = [];
 
   if (method === "random") {
     ordered = shuffle(players);
-  } else if (method === "listed") {
-    ordered = [...players];
   } else {
     const ranked = players
       .map((player, index) => ({
@@ -726,24 +968,54 @@ function assignStartNumbers(players, method) {
           return ratingB - ratingA;
         }
 
-        return a.originalIndex - b.originalIndex;
+        return (
+          a.originalIndex -
+          b.originalIndex
+        );
       });
 
-    if (ranked.length < 4) {
-      ordered = shuffle(ranked);
-    } else {
-      const remainderCount = ranked.length % 4;
-      const coreLength = ranked.length - remainderCount;
+    const remainderCount =
+      ranked.length % 4;
 
-      const core = ranked.slice(0, coreLength);
-      const remainder = ranked.slice(coreLength);
+    const coreLength =
+      ranked.length - remainderCount;
+
+    const core =
+      ranked.slice(0, coreLength);
+
+    const remainder =
+      ranked.slice(coreLength);
+
+    if (coreLength === 0) {
+      ordered = shuffle(remainder);
+    } else {
       const groupSize = coreLength / 4;
 
       const groups = {
-        A: shuffle(core.slice(0, groupSize)),
-        B: shuffle(core.slice(groupSize, groupSize * 2)),
-        C: shuffle(core.slice(groupSize * 2, groupSize * 3)),
-        D: shuffle(core.slice(groupSize * 3, groupSize * 4))
+        A: shuffle(
+          core.slice(0, groupSize)
+        ),
+
+        B: shuffle(
+          core.slice(
+            groupSize,
+            groupSize * 2
+          )
+        ),
+
+        C: shuffle(
+          core.slice(
+            groupSize * 2,
+            groupSize * 3
+          )
+        ),
+
+        D: shuffle(
+          core.slice(
+            groupSize * 3,
+            groupSize * 4
+          )
+        )
       };
 
       const pattern = [
@@ -762,37 +1034,66 @@ function assignStartNumbers(players, method) {
       while (ordered.length < coreLength) {
         for (const groupName of pattern) {
           if (groups[groupName].length > 0) {
-            ordered.push(groups[groupName].shift());
+            ordered.push(
+              groups[groupName].shift()
+            );
           }
 
-          if (ordered.length >= coreLength) {
+          if (
+            ordered.length >= coreLength
+          ) {
             break;
           }
         }
       }
 
-      ordered.push(...shuffle(remainder));
+      ordered.push(
+        ...shuffle(remainder)
+      );
     }
   }
 
-  return ordered.map((player, index) => ({
-    id: makeId(),
-    startNo: index + 1,
-    name: player.name,
-    club: player.club || "",
-    rating: Number.isFinite(player.rating)
-      ? player.rating
-      : null,
-    withdrawn: false,
+  const assigned = ordered.map(
+    (player, index) => ({
+      id: makeId(),
+      startNo: index + 1,
+      name: player.name,
+      club: player.club || "",
 
-    // Saved random token used only if every prescribed tie-break is equal.
-    lot: Math.random()
-  }));
+      rating: Number.isFinite(player.rating)
+        ? player.rating
+        : null,
+
+      withdrawn: false,
+      lot: null
+    })
+  );
+
+  /*
+    Assign a unique saved drawing-of-lots order
+    at the start of the tournament.
+  */
+  const lotOrder = shuffle(
+    assigned.map(player => player.id)
+  );
+
+  const lotMap = new Map(
+    lotOrder.map((id, index) => [
+      id,
+      index + 1
+    ])
+  );
+
+  for (const player of assigned) {
+    player.lot = lotMap.get(player.id);
+  }
+
+  return assigned;
 }
 
-/* ------------------------------------------------------------
+/* ============================================================
    Results and statistics
------------------------------------------------------------- */
+============================================================ */
 
 function pointsFromResult(result) {
   switch (result) {
@@ -801,6 +1102,7 @@ function pointsFromResult(result) {
       return [1, 0];
 
     case "0.5-0.5":
+    case "ADJ":
       return [0.5, 0.5];
 
     case "0-1":
@@ -840,16 +1142,18 @@ function buildStats(beforeRound = Infinity) {
     );
   }
 
-  const completedRounds = state.rounds.filter(round => {
-    return (
-      round.completed &&
-      round.number < beforeRound
-    );
-  });
+  const completedRounds =
+    state.rounds.filter(round => {
+      return (
+        round.completed &&
+        round.number < beforeRound
+      );
+    });
 
   for (const round of completedRounds) {
     for (const pairing of round.pairings) {
-      const whiteStats = stats.get(pairing.whiteId);
+      const whiteStats =
+        stats.get(pairing.whiteId);
 
       if (!whiteStats) {
         continue;
@@ -857,9 +1161,15 @@ function buildStats(beforeRound = Infinity) {
 
       if (pairing.type === "bye") {
         whiteStats.points += 1;
-        whiteStats.whites += 1;
         whiteStats.games += 1;
+
+        /*
+          Rule 12B: a bye counts as a game
+          played with White.
+        */
+        whiteStats.whites += 1;
         whiteStats.colorHistory.push("W");
+
         whiteStats.hadWOPoint = true;
         whiteStats.woCount += 1;
 
@@ -873,7 +1183,8 @@ function buildStats(beforeRound = Infinity) {
         continue;
       }
 
-      const blackStats = stats.get(pairing.blackId);
+      const blackStats =
+        stats.get(pairing.blackId);
 
       if (!blackStats) {
         continue;
@@ -894,8 +1205,13 @@ function buildStats(beforeRound = Infinity) {
       whiteStats.colorHistory.push("W");
       blackStats.colorHistory.push("B");
 
-      whiteStats.opponents.add(pairing.blackId);
-      blackStats.opponents.add(pairing.whiteId);
+      whiteStats.opponents.add(
+        pairing.blackId
+      );
+
+      blackStats.opponents.add(
+        pairing.whiteId
+      );
 
       whiteStats.encounters.push({
         opponentId: pairing.blackId,
@@ -950,23 +1266,27 @@ function calculateQuality(playerId, stats) {
       continue;
     }
 
-    const opponentStats = stats.get(
-      encounter.opponentId
-    );
+    const opponentStats =
+      stats.get(encounter.opponentId);
 
-    const opponentPoints = opponentStats
-      ? opponentStats.points
-      : 0;
+    const opponentPoints =
+      opponentStats
+        ? opponentStats.points
+        : 0;
 
     qualityValues.push(opponentPoints);
+
     sonnebornBerger +=
-      opponentPoints * encounter.scoreFor;
+      opponentPoints *
+      encounter.scoreFor;
   }
 
   qualityValues.sort((a, b) => a - b);
 
   const prescribedDropCount =
-    state.totalRounds <= 6 ? 1 : 2;
+    state.totalRounds <= 6
+      ? 1
+      : 2;
 
   const actualDropCount = Math.min(
     prescribedDropCount,
@@ -974,20 +1294,27 @@ function calculateQuality(playerId, stats) {
   );
 
   const droppedAscending =
-    qualityValues.splice(0, actualDropCount);
+    qualityValues.splice(
+      0,
+      actualDropCount
+    );
 
   const droppedDescending =
-    droppedAscending.sort((a, b) => b - a);
+    droppedAscending.sort(
+      (a, b) => b - a
+    );
 
-  const primary = qualityValues.reduce(
-    (sum, value) => sum + value,
-    0
-  );
+  const primary =
+    qualityValues.reduce(
+      (sum, value) => sum + value,
+      0
+    );
 
   return {
     primary,
     dropped: droppedDescending,
     sonnebornBerger,
+
     vector: [
       primary,
       ...droppedDescending,
@@ -996,17 +1323,28 @@ function calculateQuality(playerId, stats) {
   };
 }
 
-function compareQualityData(qualityA, qualityB) {
+function compareQualityData(
+  qualityA,
+  qualityB
+) {
   const length = Math.max(
     qualityA.vector.length,
     qualityB.vector.length
   );
 
-  for (let i = 0; i < length; i++) {
-    const valueA = qualityA.vector[i] || 0;
-    const valueB = qualityB.vector[i] || 0;
+  for (let index = 0; index < length; index++) {
+    const valueA =
+      qualityA.vector[index] || 0;
 
-    if (!approximatelyEqual(valueA, valueB)) {
+    const valueB =
+      qualityB.vector[index] || 0;
+
+    if (
+      !approximatelyEqual(
+        valueA,
+        valueB
+      )
+    ) {
       return valueB - valueA;
     }
   }
@@ -1015,17 +1353,25 @@ function compareQualityData(qualityA, qualityB) {
 }
 
 /*
-  The round list is ordered as prescribed:
-  points first, then ascending start number.
+  The round list contains active players only
+  and is ordered by points, then ascending start number.
 */
-function buildRoundList(beforeRound = Infinity) {
+function buildRoundList(
+  beforeRound = Infinity
+) {
   const stats = buildStats(beforeRound);
 
-  const rows = state.players.map(player => ({
-    player,
-    stats: stats.get(player.id),
-    quality: calculateQuality(player.id, stats)
-  }));
+  const rows = state.players
+    .filter(player => !player.withdrawn)
+    .map(player => ({
+      player,
+      stats: stats.get(player.id),
+
+      quality: calculateQuality(
+        player.id,
+        stats
+      )
+    }));
 
   rows.sort((a, b) => {
     if (
@@ -1034,10 +1380,16 @@ function buildRoundList(beforeRound = Infinity) {
         b.stats.points
       )
     ) {
-      return b.stats.points - a.stats.points;
+      return (
+        b.stats.points -
+        a.stats.points
+      );
     }
 
-    return a.player.startNo - b.player.startNo;
+    return (
+      a.player.startNo -
+      b.player.startNo
+    );
   });
 
   return rows.map((row, index) => ({
@@ -1047,20 +1399,29 @@ function buildRoundList(beforeRound = Infinity) {
     name: row.player.name,
     club: row.player.club,
     rating: row.player.rating,
-    withdrawn: row.player.withdrawn,
+    withdrawn: false,
     points: row.stats.points,
     quality: row.quality.primary,
-    sonnebornBerger: row.quality.sonnebornBerger
+    sonnebornBerger:
+      row.quality.sonnebornBerger
   }));
 }
 
 function buildFinalStandings() {
   const stats = buildStats(Infinity);
 
+  /*
+    Withdrawn players remain in the final
+    standings as required by the rules.
+  */
   const rows = state.players.map(player => ({
     player,
     stats: stats.get(player.id),
-    quality: calculateQuality(player.id, stats)
+
+    quality: calculateQuality(
+      player.id,
+      stats
+    )
   }));
 
   rows.sort((a, b) => {
@@ -1070,17 +1431,22 @@ function buildFinalStandings() {
         b.stats.points
       )
     ) {
-      return b.stats.points - a.stats.points;
+      return (
+        b.stats.points -
+        a.stats.points
+      );
     }
 
     const qualityComparison =
-      compareQualityData(a.quality, b.quality);
+      compareQualityData(
+        a.quality,
+        b.quality
+      );
 
     if (qualityComparison !== 0) {
       return qualityComparison;
     }
 
-    // Pre-drawn, saved lot resolves an otherwise complete tie.
     return a.player.lot - b.player.lot;
   });
 
@@ -1094,20 +1460,151 @@ function buildFinalStandings() {
     points: row.stats.points,
     quality: row.quality.primary,
     dropped: row.quality.dropped,
-    sonnebornBerger: row.quality.sonnebornBerger
+    sonnebornBerger:
+      row.quality.sonnebornBerger
   }));
 }
 
-/* ------------------------------------------------------------
-   Color rules
------------------------------------------------------------- */
+/* ============================================================
+   Adjourned games
+============================================================ */
+
+function getUnresolvedAdjournedGames(
+  tournamentState = state
+) {
+  const games = [];
+
+  for (const round of tournamentState.rounds) {
+    if (!round.completed) {
+      continue;
+    }
+
+    for (const pairing of round.pairings) {
+      if (
+        pairing.type === "game" &&
+        pairing.result === "ADJ"
+      ) {
+        games.push({
+          round,
+          pairing
+        });
+      }
+    }
+  }
+
+  return games;
+}
+
+function refreshTournamentStatus(
+  tournamentState = state
+) {
+  if (tournamentState.status === "setup") {
+    return;
+  }
+
+  const allScheduledRoundsCompleted =
+    tournamentState.rounds.length >=
+      tournamentState.totalRounds &&
+    tournamentState.rounds
+      .slice(0, tournamentState.totalRounds)
+      .every(round => round.completed);
+
+  const hasAdjournedGames =
+    getUnresolvedAdjournedGames(
+      tournamentState
+    ).length > 0;
+
+  tournamentState.status =
+    allScheduledRoundsCompleted &&
+    !hasAdjournedGames
+      ? "finished"
+      : "running";
+}
+
+function resolveAdjournedGame(
+  roundNumber,
+  board,
+  result
+) {
+  const allowedResults = new Set([
+    "1-0",
+    "0.5-0.5",
+    "0-1",
+    "W-F",
+    "F-W",
+    "0-0"
+  ]);
+
+  if (!allowedResults.has(result)) {
+    return;
+  }
+
+  const round = state.rounds.find(
+    item =>
+      item.number === Number(roundNumber)
+  );
+
+  if (!round || !round.completed) {
+    return;
+  }
+
+  const pairing = round.pairings.find(
+    item =>
+      item.board === Number(board)
+  );
+
+  if (
+    !pairing ||
+    pairing.type !== "game" ||
+    pairing.result !== "ADJ"
+  ) {
+    return;
+  }
+
+  let message =
+    `Resolve Round ${round.number}, Board ` +
+    `${pairing.board} as ${resultLabel(result)}?`;
+
+  const laterRoundExists =
+    state.rounds.some(
+      item => item.number > round.number
+    );
+
+  if (laterRoundExists) {
+    message +=
+      "\n\nLater rounds have already been paired. " +
+      "Their stored pairings and frozen pre-round lists " +
+      "will not be changed.";
+  }
+
+  if (!window.confirm(message)) {
+    return;
+  }
+
+  pairing.result = result;
+  pairing.resolvedAt =
+    new Date().toISOString();
+
+  refreshTournamentStatus();
+  render();
+}
+
+/* ============================================================
+   Colour rules
+============================================================ */
 
 function preferredColor(playerStats) {
-  if (playerStats.whites < playerStats.blacks) {
+  if (
+    playerStats.whites <
+    playerStats.blacks
+  ) {
     return "W";
   }
 
-  if (playerStats.blacks < playerStats.whites) {
+  if (
+    playerStats.blacks <
+    playerStats.whites
+  ) {
     return "B";
   }
 
@@ -1127,19 +1624,32 @@ function preferredColor(playerStats) {
   return null;
 }
 
-function hardColorAllowed(
+/*
+  Counts rules 7A and 7B separately.
+
+  A proposed colour can therefore cause zero, one
+  or two mandatory-rule violations.
+*/
+function hardColorViolationCount(
   playerStats,
   proposedColor
 ) {
+  let violations = 0;
   const history = playerStats.colorHistory;
 
+  /*
+    Rule 7A: no more than three consecutive
+    games with the same colour.
+  */
   if (
     history.length >= 3 &&
     history
       .slice(-3)
-      .every(color => color === proposedColor)
+      .every(
+        color => color === proposedColor
+      )
   ) {
-    return false;
+    violations++;
   }
 
   const newWhiteCount =
@@ -1150,73 +1660,115 @@ function hardColorAllowed(
     playerStats.blacks +
     (proposedColor === "B" ? 1 : 0);
 
-  const newTotal = newWhiteCount + newBlackCount;
-  const maximumSameColor = newTotal / 2 + 1;
+  const newTotal =
+    newWhiteCount + newBlackCount;
+
+  /*
+    Rule 7B: no more than 50% plus one
+    game with the same colour.
+  */
+  const maximumSameColor =
+    newTotal / 2 + 1;
 
   if (
     newWhiteCount >
-    maximumSameColor + 0.000001
-  ) {
-    return false;
-  }
-
-  if (
+      maximumSameColor + 0.000001 ||
     newBlackCount >
-    maximumSameColor + 0.000001
+      maximumSameColor + 0.000001
   ) {
-    return false;
+    violations++;
   }
 
-  return true;
+  return violations;
 }
 
-function colorViolationCount(
+function hardColorAllowed(
   playerStats,
   proposedColor
 ) {
-  return hardColorAllowed(
-    playerStats,
-    proposedColor
-  )
-    ? 0
-    : 1;
+  return (
+    hardColorViolationCount(
+      playerStats,
+      proposedColor
+    ) === 0
+  );
 }
 
-function playerColorPenalty(playerStats, color) {
-  let penalty = 0;
+function createsThirdConsecutiveColor(
+  playerStats,
+  proposedColor
+) {
   const history = playerStats.colorHistory;
-  const lastColor = history[history.length - 1];
+
+  return (
+    history.length >= 2 &&
+    history[history.length - 1] ===
+      proposedColor &&
+    history[history.length - 2] ===
+      proposedColor
+  );
+}
+
+function colorBalanceAfter(
+  playerStats,
+  proposedColor
+) {
+  const whites =
+    playerStats.whites +
+    (proposedColor === "W" ? 1 : 0);
+
+  const blacks =
+    playerStats.blacks +
+    (proposedColor === "B" ? 1 : 0);
+
+  return Math.abs(whites - blacks);
+}
+
+function desiredWhiteForRule8D(
+  playerA,
+  playerB,
+  roundNumber,
+  stats,
+  rankMap
+) {
+  const preferenceA =
+    preferredColor(stats.get(playerA.id));
+
+  const preferenceB =
+    preferredColor(stats.get(playerB.id));
 
   if (
-    history.length >= 2 &&
-    history[history.length - 1] === color &&
-    history[history.length - 2] === color
+    !preferenceA ||
+    !preferenceB ||
+    preferenceA !== preferenceB
   ) {
-    penalty += 1000;
+    return null;
   }
 
-  const newWhiteCount =
-    playerStats.whites +
-    (color === "W" ? 1 : 0);
+  const rankA =
+    rankMap.get(playerA.id);
 
-  const newBlackCount =
-    playerStats.blacks +
-    (color === "B" ? 1 : 0);
+  const rankB =
+    rankMap.get(playerB.id);
 
-  penalty +=
-    Math.abs(newWhiteCount - newBlackCount) * 20;
+  const higherRanked =
+    rankA < rankB
+      ? playerA
+      : playerB;
 
-  if (lastColor === color) {
-    penalty += 4;
-  }
+  const lowerRanked =
+    higherRanked.id === playerA.id
+      ? playerB
+      : playerA;
 
-  const preferred = preferredColor(playerStats);
-
-  if (preferred && preferred !== color) {
-    penalty += 8;
-  }
-
-  return penalty;
+  /*
+    Rule 8D:
+    - even rounds: higher ranked gets White;
+    - odd rounds: lower ranked gets White.
+  */
+  return roundNumber % 2 === 0
+    ? higherRanked
+    : lowerRanked;
 }
 
 function orientationOptions(
@@ -1230,99 +1782,222 @@ function orientationOptions(
   const statsA = stats.get(playerA.id);
   const statsB = stats.get(playerB.id);
 
+  const preferenceA =
+    preferredColor(statsA);
+
+  const preferenceB =
+    preferredColor(statsB);
+
+  const desiredWhite =
+    desiredWhiteForRule8D(
+      playerA,
+      playerB,
+      roundNumber,
+      stats,
+      rankMap
+    );
+
   const orientations = [
     {
       whiteId: playerA.id,
-      blackId: playerB.id,
-      whitePlayer: playerA,
-      blackPlayer: playerB
+      blackId: playerB.id
     },
+
     {
       whiteId: playerB.id,
-      blackId: playerA.id,
-      whitePlayer: playerB,
-      blackPlayer: playerA
+      blackId: playerA.id
     }
   ];
 
-  const preferenceA = preferredColor(statsA);
-  const preferenceB = preferredColor(statsB);
-
-  const higherRanked =
-    rankMap.get(playerA.id) <
-    rankMap.get(playerB.id)
-      ? playerA
-      : playerB;
-
-  const lowerRanked =
-    higherRanked.id === playerA.id
-      ? playerB
-      : playerA;
-
   return orientations
     .map(orientation => {
-      const whiteStats = stats.get(
-        orientation.whiteId
-      );
+      const whiteStats =
+        stats.get(orientation.whiteId);
 
-      const blackStats = stats.get(
-        orientation.blackId
-      );
+      const blackStats =
+        stats.get(orientation.blackId);
 
-      const violations =
-        colorViolationCount(whiteStats, "W") +
-        colorViolationCount(blackStats, "B");
+      const hardViolations =
+        hardColorViolationCount(
+          whiteStats,
+          "W"
+        ) +
+        hardColorViolationCount(
+          blackStats,
+          "B"
+        );
 
-      if (strictColors && violations > 0) {
+      if (
+        strictColors &&
+        hardViolations > 0
+      ) {
         return null;
       }
 
-      let penalty =
-        playerColorPenalty(whiteStats, "W") +
-        playerColorPenalty(blackStats, "B");
+      const thirdColorPenalty =
+        (
+          createsThirdConsecutiveColor(
+            whiteStats,
+            "W"
+          )
+            ? 1
+            : 0
+        ) +
+        (
+          createsThirdConsecutiveColor(
+            blackStats,
+            "B"
+          )
+            ? 1
+            : 0
+        );
 
-      if (!strictColors) {
-        penalty += violations * 10000;
-      }
+      const balancePenalty =
+        colorBalanceAfter(
+          whiteStats,
+          "W"
+        ) +
+        colorBalanceAfter(
+          blackStats,
+          "B"
+        );
 
-      if (
-        preferenceA &&
-        preferenceB &&
-        preferenceA === preferenceB
-      ) {
-        const desiredWhite =
-          roundNumber % 2 === 0
-            ? higherRanked
-            : lowerRanked;
+      const playerAColor =
+        orientation.whiteId === playerA.id
+          ? "W"
+          : "B";
 
-        if (
-          orientation.whiteId !== desiredWhite.id
-        ) {
-          penalty += 2;
-        }
-      }
+      const playerBColor =
+        orientation.whiteId === playerB.id
+          ? "W"
+          : "B";
+
+      const preferencePenalty =
+        (
+          preferenceA &&
+          preferenceA !== playerAColor
+            ? 1
+            : 0
+        ) +
+        (
+          preferenceB &&
+          preferenceB !== playerBColor
+            ? 1
+            : 0
+        );
+
+      const lastColorA =
+        statsA.colorHistory[
+          statsA.colorHistory.length - 1
+        ];
+
+      const lastColorB =
+        statsB.colorHistory[
+          statsB.colorHistory.length - 1
+        ];
+
+      const alternationPenalty =
+        (
+          lastColorA === playerAColor
+            ? 1
+            : 0
+        ) +
+        (
+          lastColorB === playerBColor
+            ? 1
+            : 0
+        );
+
+      const parityMismatch =
+        desiredWhite &&
+        orientation.whiteId !==
+          desiredWhite.id
+          ? 1
+          : 0;
+
+      const whiteRoundRank =
+        rankMap.get(
+          orientation.whiteId
+        ) ?? Number.MAX_SAFE_INTEGER;
+
+      /*
+        Rule 8D is placed before the softer
+        preferences in 8A–8C. Hard rules 7A
+        and 7B always remain first.
+      */
+      const softVector = [
+        parityMismatch,
+        thirdColorPenalty,
+        balancePenalty,
+        preferencePenalty,
+        alternationPenalty,
+        whiteRoundRank
+      ];
 
       return {
         whiteId: orientation.whiteId,
         blackId: orientation.blackId,
-        penalty,
-        violations
+        hardViolations,
+        softVector,
+
+        sortVector: [
+          hardViolations,
+          ...softVector
+        ]
       };
     })
     .filter(Boolean)
     .sort((a, b) => {
-      if (a.penalty !== b.penalty) {
-        return a.penalty - b.penalty;
-      }
-
-      return a.whiteId.localeCompare(b.whiteId);
+      return compareAscendingVectors(
+        a.sortVector,
+        b.sortVector
+      );
     });
 }
 
-/* ------------------------------------------------------------
-   Pairing search
------------------------------------------------------------- */
+function pairingCompatibilityPenalty(
+  playerA,
+  playerB,
+  stats
+) {
+  const preferenceA =
+    preferredColor(stats.get(playerA.id));
 
+  const preferenceB =
+    preferredColor(stats.get(playerB.id));
+
+  /*
+    Rule 8C prefers an opponent who is due
+    to receive the opposite colour.
+  */
+  if (
+    preferenceA &&
+    preferenceB &&
+    preferenceA === preferenceB
+  ) {
+    return 1;
+  }
+
+  return 0;
+}
+
+/* ============================================================
+   Pairing searches
+============================================================ */
+
+/*
+  Normal-round search.
+
+  Candidates are considered in:
+  1. nearest score group;
+  2. opposite colour preference;
+  3. colour orientation preferences;
+  4. round-list order.
+
+  Recursive backtracking corresponds to rule 9D:
+  previously constructed pairs are broken when the
+  remainder cannot be completed.
+*/
 function solvePairings(
   orderedPlayers,
   roundNumber,
@@ -1341,15 +2016,6 @@ function solvePairings(
   const maximumSearchNodes = 500000;
 
   function search(remaining) {
-    searchNodes++;
-
-    if (searchNodes > maximumSearchNodes) {
-      throw new Error(
-        "The pairing search became too complex. " +
-        "Try changing player withdrawals or checking earlier results."
-      );
-    }
-
     if (remaining.length === 0) {
       return [];
     }
@@ -1362,8 +2028,19 @@ function solvePairings(
       return null;
     }
 
+    searchNodes++;
+
+    if (
+      searchNodes >
+      maximumSearchNodes
+    ) {
+      throw createSearchLimitError();
+    }
+
     const first = remaining[0];
-    const firstStats = stats.get(first.id);
+    const firstStats =
+      stats.get(first.id);
+
     const candidates = [];
 
     for (
@@ -1374,19 +2051,22 @@ function solvePairings(
       const opponent = remaining[index];
 
       if (
-        firstStats.opponents.has(opponent.id)
+        firstStats.opponents.has(
+          opponent.id
+        )
       ) {
         continue;
       }
 
-      const orientations = orientationOptions(
-        first,
-        opponent,
-        roundNumber,
-        stats,
-        rankMap,
-        strictColors
-      );
+      const orientations =
+        orientationOptions(
+          first,
+          opponent,
+          roundNumber,
+          stats,
+          rankMap,
+          strictColors
+        );
 
       if (orientations.length === 0) {
         continue;
@@ -1395,12 +2075,19 @@ function solvePairings(
       candidates.push({
         opponent,
         remainingIndex: index,
+
         scoreGap: Math.abs(
           stats.get(first.id).points -
           stats.get(opponent.id).points
         ),
-        bestColorPenalty:
-          orientations[0].penalty,
+
+        compatibilityPenalty:
+          pairingCompatibilityPenalty(
+            first,
+            opponent,
+            stats
+          ),
+
         orientations
       });
     }
@@ -1415,14 +2102,41 @@ function solvePairings(
         return a.scoreGap - b.scoreGap;
       }
 
+      /*
+        When colours are not strict, such as
+        the final-round fallback, minimise hard
+        violations before applying soft rules.
+      */
+      if (!strictColors) {
+        const violationDifference =
+          a.orientations[0]
+            .hardViolations -
+          b.orientations[0]
+            .hardViolations;
+
+        if (violationDifference !== 0) {
+          return violationDifference;
+        }
+      }
+
       if (
-        a.bestColorPenalty !==
-        b.bestColorPenalty
+        a.compatibilityPenalty !==
+        b.compatibilityPenalty
       ) {
         return (
-          a.bestColorPenalty -
-          b.bestColorPenalty
+          a.compatibilityPenalty -
+          b.compatibilityPenalty
         );
+      }
+
+      const orientationComparison =
+        compareAscendingVectors(
+          a.orientations[0].sortVector,
+          b.orientations[0].sortVector
+        );
+
+      if (orientationComparison !== 0) {
+        return orientationComparison;
       }
 
       return (
@@ -1432,14 +2146,14 @@ function solvePairings(
     });
 
     for (const candidate of candidates) {
-      const nextRemaining = remaining.filter(
-        player => {
+      const nextRemaining =
+        remaining.filter(player => {
           return (
             player.id !== first.id &&
-            player.id !== candidate.opponent.id
+            player.id !==
+              candidate.opponent.id
           );
-        }
-      );
+        });
 
       const tail = search(nextRemaining);
 
@@ -1457,6 +2171,7 @@ function solvePairings(
           blackId: orientation.blackId,
           result: null
         },
+
         ...tail
       ];
     }
@@ -1468,60 +2183,376 @@ function solvePairings(
   return search(orderedPlayers);
 }
 
+function compareFinalSolutions(
+  solutionA,
+  solutionB
+) {
+  /*
+    The score-group structure is compared before
+    colour violations. This prevents colour rules
+    from sending a player outside the score group
+    in the final round.
+  */
+  const structureComparison =
+    compareAscendingVectors(
+      solutionA.structureVector,
+      solutionB.structureVector
+    );
+
+  if (structureComparison !== 0) {
+    return structureComparison;
+  }
+
+  if (
+    solutionA.hardViolations !==
+    solutionB.hardViolations
+  ) {
+    return (
+      solutionA.hardViolations -
+      solutionB.hardViolations
+    );
+  }
+
+  return compareAscendingVectors(
+    solutionA.decisionVector,
+    solutionB.decisionVector
+  );
+}
+
+/*
+  Special final-round search.
+
+  It first minimises score-group displacement.
+  Among equivalent structures it minimises the
+  separate violations of rules 7A and 7B, followed
+  by rules 8A–8D and round-list proximity.
+*/
+function solveFinalPairings(
+  orderedPlayers,
+  roundNumber,
+  stats
+) {
+  const rankMap = new Map(
+    orderedPlayers.map((player, index) => [
+      player.id,
+      index
+    ])
+  );
+
+  const memo = new Map();
+  let searchNodes = 0;
+  const maximumSearchNodes = 500000;
+
+  function search(remaining) {
+    if (remaining.length === 0) {
+      return {
+        pairings: [],
+        structureVector: [],
+        hardViolations: 0,
+        decisionVector: []
+      };
+    }
+
+    const key = remaining
+      .map(player => player.id)
+      .join("|");
+
+    if (memo.has(key)) {
+      return memo.get(key);
+    }
+
+    searchNodes++;
+
+    if (
+      searchNodes >
+      maximumSearchNodes
+    ) {
+      throw createSearchLimitError();
+    }
+
+    const first = remaining[0];
+    const firstStats =
+      stats.get(first.id);
+
+    const candidates = [];
+
+    for (
+      let index = 1;
+      index < remaining.length;
+      index++
+    ) {
+      const opponent = remaining[index];
+
+      if (
+        firstStats.opponents.has(
+          opponent.id
+        )
+      ) {
+        continue;
+      }
+
+      const orientations =
+        orientationOptions(
+          first,
+          opponent,
+          roundNumber,
+          stats,
+          rankMap,
+          false
+        );
+
+      if (orientations.length === 0) {
+        continue;
+      }
+
+      candidates.push({
+        opponent,
+        remainingIndex: index,
+
+        scoreGap: Math.abs(
+          stats.get(first.id).points -
+          stats.get(opponent.id).points
+        ),
+
+        compatibilityPenalty:
+          pairingCompatibilityPenalty(
+            first,
+            opponent,
+            stats
+          ),
+
+        orientations
+      });
+    }
+
+    candidates.sort((a, b) => {
+      if (
+        !approximatelyEqual(
+          a.scoreGap,
+          b.scoreGap
+        )
+      ) {
+        return a.scoreGap - b.scoreGap;
+      }
+
+      return (
+        a.remainingIndex -
+        b.remainingIndex
+      );
+    });
+
+    let best = null;
+    let acceptedScoreGap = null;
+
+    for (const candidate of candidates) {
+      if (
+        acceptedScoreGap !== null &&
+        candidate.scoreGap >
+          acceptedScoreGap + 0.000001
+      ) {
+        break;
+      }
+
+      const nextRemaining =
+        remaining.filter(player => {
+          return (
+            player.id !== first.id &&
+            player.id !==
+              candidate.opponent.id
+          );
+        });
+
+      const tail = search(nextRemaining);
+
+      if (!tail) {
+        continue;
+      }
+
+      if (acceptedScoreGap === null) {
+        acceptedScoreGap =
+          candidate.scoreGap;
+      }
+
+      const orientation =
+        candidate.orientations[0];
+
+      const solution = {
+        pairings: [
+          {
+            type: "game",
+            whiteId:
+              orientation.whiteId,
+            blackId:
+              orientation.blackId,
+            result: null
+          },
+
+          ...tail.pairings
+        ],
+
+        structureVector: [
+          candidate.scoreGap,
+          ...tail.structureVector
+        ],
+
+        hardViolations:
+          orientation.hardViolations +
+          tail.hardViolations,
+
+        decisionVector: [
+          candidate.compatibilityPenalty,
+          ...orientation.softVector,
+          candidate.remainingIndex,
+          ...tail.decisionVector
+        ]
+      };
+
+      if (
+        !best ||
+        compareFinalSolutions(
+          solution,
+          best
+        ) < 0
+      ) {
+        best = solution;
+      }
+    }
+
+    memo.set(key, best);
+    return best;
+  }
+
+  return search(orderedPlayers);
+}
+
+/* ============================================================
+   Bye selection
+============================================================ */
+
 function selectByeCandidates(
   orderedPlayers,
   stats
 ) {
-  const eligible = orderedPlayers.filter(
-    player => {
-      return !stats.get(player.id).hadWOPoint;
-    }
-  );
+  const eligible =
+    orderedPlayers.filter(player => {
+      return !stats.get(player.id)
+        .hadWOPoint;
+    });
 
-  if (eligible.length > 0) {
-    const minimumEligibleScore = Math.min(
-      ...eligible.map(
-        player => stats.get(player.id).points
-      )
+  if (eligible.length === 0) {
+    throw new Error(
+      "Every active player has already received or " +
+      "scored a point by WO. The supplied Monrad rules " +
+      "do not define another automatic bye priority. " +
+      "An arbiter must decide."
     );
-
-    return eligible
-      .filter(player => {
-        return approximatelyEqual(
-          stats.get(player.id).points,
-          minimumEligibleScore
-        );
-      })
-      .sort((a, b) => {
-        return b.startNo - a.startNo;
-      });
   }
 
-  const minimumScore = Math.min(
-    ...orderedPlayers.map(
+  const lowestEligibleScore = Math.min(
+    ...eligible.map(
       player => stats.get(player.id).points
     )
   );
 
-  return orderedPlayers
+  /*
+    Start with the last-ranked players in the
+    lowest eligible score group, corresponding
+    to the player normally left over last.
+  */
+  return eligible
     .filter(player => {
       return approximatelyEqual(
         stats.get(player.id).points,
-        minimumScore
+        lowestEligibleScore
       );
     })
-    .sort((a, b) => {
-      const woDifference =
-        stats.get(a.id).woCount -
-        stats.get(b.id).woCount;
-
-      if (woDifference !== 0) {
-        return woDifference;
-      }
-
-      return b.startNo - a.startNo;
-    });
+    .sort(
+      (a, b) =>
+        b.startNo - a.startNo
+    );
 }
+
+function compareFinalByeSolutions(
+  solutionA,
+  solutionB
+) {
+  const structureComparison =
+    compareAscendingVectors(
+      solutionA.structureVector,
+      solutionB.structureVector
+    );
+
+  if (structureComparison !== 0) {
+    return structureComparison;
+  }
+
+  if (
+    solutionA.hardViolations !==
+    solutionB.hardViolations
+  ) {
+    return (
+      solutionA.hardViolations -
+      solutionB.hardViolations
+    );
+  }
+
+  if (
+    solutionA.byeOrder !==
+    solutionB.byeOrder
+  ) {
+    return (
+      solutionA.byeOrder -
+      solutionB.byeOrder
+    );
+  }
+
+  return compareAscendingVectors(
+    solutionA.decisionVector,
+    solutionB.decisionVector
+  );
+}
+
+function countRoundColorViolations(
+  pairings,
+  stats
+) {
+  let violations = 0;
+
+  for (const pairing of pairings) {
+    const whiteStats =
+      stats.get(pairing.whiteId);
+
+    if (whiteStats) {
+      violations +=
+        hardColorViolationCount(
+          whiteStats,
+          "W"
+        );
+    }
+
+    if (
+      pairing.type === "game" &&
+      pairing.blackId
+    ) {
+      const blackStats =
+        stats.get(pairing.blackId);
+
+      if (blackStats) {
+        violations +=
+          hardColorViolationCount(
+            blackStats,
+            "B"
+          );
+      }
+    }
+  }
+
+  return violations;
+}
+
+/* ============================================================
+   Later-round pairing
+============================================================ */
 
 function pairLaterRound(
   roundNumber,
@@ -1531,11 +2562,17 @@ function pairLaterRound(
   const orderedPlayers = [
     ...activePlayers
   ].sort((a, b) => {
-    const pointsA = stats.get(a.id).points;
-    const pointsB = stats.get(b.id).points;
+    const pointsA =
+      stats.get(a.id).points;
+
+    const pointsB =
+      stats.get(b.id).points;
 
     if (
-      !approximatelyEqual(pointsA, pointsB)
+      !approximatelyEqual(
+        pointsA,
+        pointsB
+      )
     ) {
       return pointsB - pointsA;
     }
@@ -1543,77 +2580,233 @@ function pairLaterRound(
     return a.startNo - b.startNo;
   });
 
-  const initiallyStrict =
-    roundNumber !== state.totalRounds;
+  const isFinalRound =
+    roundNumber === state.totalRounds;
 
-  function attempt(strictColors) {
-    if (orderedPlayers.length % 2 === 0) {
+  let solution = null;
+  let optimizationFallback = false;
+
+  if (orderedPlayers.length % 2 === 0) {
+    if (isFinalRound) {
+      try {
+        const result =
+          solveFinalPairings(
+            orderedPlayers,
+            roundNumber,
+            stats
+          );
+
+        if (result) {
+          solution = {
+            pairings: result.pairings,
+            byePlayer: null
+          };
+        }
+      } catch (error) {
+        if (error.code !== "SEARCH_LIMIT") {
+          throw error;
+        }
+
+        optimizationFallback = true;
+
+        const fallback =
+          solvePairings(
+            orderedPlayers,
+            roundNumber,
+            stats,
+            false
+          );
+
+        if (fallback) {
+          solution = {
+            pairings: fallback,
+            byePlayer: null
+          };
+        }
+      }
+    } else {
       const result = solvePairings(
         orderedPlayers,
         roundNumber,
         stats,
-        strictColors
-      );
-
-      return result
-        ? {
-            pairings: result,
-            byePlayer: null
-          }
-        : null;
-    }
-
-    const byeCandidates = selectByeCandidates(
-      orderedPlayers,
-      stats
-    );
-
-    for (const byePlayer of byeCandidates) {
-      const remaining =
-        orderedPlayers.filter(
-          player => player.id !== byePlayer.id
-        );
-
-      const result = solvePairings(
-        remaining,
-        roundNumber,
-        stats,
-        strictColors
+        true
       );
 
       if (result) {
-        return {
+        solution = {
           pairings: result,
-          byePlayer
+          byePlayer: null
         };
       }
     }
+  } else {
+    const byeCandidates =
+      selectByeCandidates(
+        orderedPlayers,
+        stats
+      );
 
-    return null;
-  }
+    if (isFinalRound) {
+      const possibleSolutions = [];
 
-  let solution = attempt(initiallyStrict);
-  let warning = "";
+      try {
+        for (
+          let byeIndex = 0;
+          byeIndex < byeCandidates.length;
+          byeIndex++
+        ) {
+          const byePlayer =
+            byeCandidates[byeIndex];
 
-  if (!solution && initiallyStrict) {
-    solution = attempt(false);
+          const remaining =
+            orderedPlayers.filter(
+              player =>
+                player.id !== byePlayer.id
+            );
 
-    if (solution) {
-      warning =
-        "A strict pairing satisfying every hard color restriction " +
-        "could not be found. The system used the smallest available " +
-        "color exception while preserving opponent and score-group rules.";
+          const result =
+            solveFinalPairings(
+              remaining,
+              roundNumber,
+              stats
+            );
+
+          if (!result) {
+            continue;
+          }
+
+          const byeViolations =
+            hardColorViolationCount(
+              stats.get(byePlayer.id),
+              "W"
+            );
+
+          possibleSolutions.push({
+            pairings: result.pairings,
+            byePlayer,
+            structureVector:
+              result.structureVector,
+
+            hardViolations:
+              result.hardViolations +
+              byeViolations,
+
+            decisionVector:
+              result.decisionVector,
+
+            byeOrder: byeIndex
+          });
+        }
+      } catch (error) {
+        if (error.code !== "SEARCH_LIMIT") {
+          throw error;
+        }
+
+        optimizationFallback = true;
+      }
+
+      if (!optimizationFallback) {
+        possibleSolutions.sort(
+          compareFinalByeSolutions
+        );
+
+        solution =
+          possibleSolutions[0] || null;
+      } else {
+        /*
+          Search-limit fallback. Preserve the bye
+          candidate order and use the ordinary
+          non-strict search.
+        */
+        for (const byePlayer of byeCandidates) {
+          const remaining =
+            orderedPlayers.filter(
+              player =>
+                player.id !== byePlayer.id
+            );
+
+          const result =
+            solvePairings(
+              remaining,
+              roundNumber,
+              stats,
+              false
+            );
+
+          if (result) {
+            solution = {
+              pairings: result,
+              byePlayer
+            };
+
+            break;
+          }
+        }
+      }
+    } else {
+      /*
+        Before the final round, the bye also counts
+        as White and must satisfy rules 7A and 7B.
+      */
+      for (const byePlayer of byeCandidates) {
+        const byeStats =
+          stats.get(byePlayer.id);
+
+        if (
+          !hardColorAllowed(
+            byeStats,
+            "W"
+          )
+        ) {
+          continue;
+        }
+
+        const remaining =
+          orderedPlayers.filter(
+            player =>
+              player.id !== byePlayer.id
+          );
+
+        const result =
+          solvePairings(
+            remaining,
+            roundNumber,
+            stats,
+            true
+          );
+
+        if (result) {
+          solution = {
+            pairings: result,
+            byePlayer
+          };
+
+          break;
+        }
+      }
     }
   }
 
   if (!solution) {
+    if (isFinalRound) {
+      throw new Error(
+        "No final-round pairing could be found without " +
+        "repeating opponents. An arbiter must review the " +
+        "pairing or enter it manually."
+      );
+    }
+
     throw new Error(
-      "No legal pairing could be found without repeating opponents. " +
-      "Check withdrawals and earlier round data."
+      "No pairing satisfies the no-repeat rule and the " +
+      "mandatory colour rules 7A and 7B. The program will " +
+      "not silently create an illegal colour assignment. " +
+      "An arbiter may enter a legal round manually."
     );
   }
 
-  const pairings = [...solution.pairings];
+  const pairings = [
+    ...solution.pairings
+  ];
 
   if (solution.byePlayer) {
     pairings.push({
@@ -1624,6 +2817,37 @@ function pairLaterRound(
     });
   }
 
+  const colorViolations =
+    countRoundColorViolations(
+      pairings,
+      stats
+    );
+
+  const warningParts = [];
+
+  if (optimizationFallback) {
+    warningParts.push(
+      "The exhaustive final-round optimisation reached " +
+      "its search limit. A legal no-repeat pairing was " +
+      "created using the normal ordered search, but an " +
+      "arbiter should review final-round rules 11A and 11B."
+    );
+  }
+
+  if (
+    isFinalRound &&
+    colorViolations > 0
+  ) {
+    warningParts.push(
+      `The final-round pairing contains ` +
+      `${colorViolations} separate violation(s) of ` +
+      "rules 7A or 7B. This can occur because final-round " +
+      "rule 11A prevents colour preferences from forcing " +
+      "players outside their score group. Arbiter review " +
+      "is recommended."
+    );
+  }
+
   return {
     pairings: pairings.map(
       (pairing, index) => ({
@@ -1631,23 +2855,31 @@ function pairLaterRound(
         board: index + 1
       })
     ),
-    warning
+
+    warning: warningParts.join(" ")
   };
 }
 
-/* ------------------------------------------------------------
-   Round creation and completion
------------------------------------------------------------- */
+/* ============================================================
+   Round creation
+============================================================ */
 
 function createFirstRound(activePlayers) {
   const ordered = [
     ...activePlayers
-  ].sort((a, b) => a.startNo - b.startNo);
+  ].sort(
+    (a, b) =>
+      a.startNo - b.startNo
+  );
 
   const pairings = [];
   let byePlayer = null;
 
   if (ordered.length % 2 === 1) {
+    /*
+      Rule 12A: highest start number receives
+      the first-round bye.
+    */
     byePlayer = ordered.pop();
   }
 
@@ -1656,6 +2888,11 @@ function createFirstRound(activePlayers) {
     index < ordered.length;
     index += 2
   ) {
+    /*
+      Rule 4:
+      #1 has Black against #2,
+      #3 has Black against #4, etc.
+    */
     pairings.push({
       board: pairings.length + 1,
       type: "game",
@@ -1689,10 +2926,41 @@ function createNextRound() {
     return;
   }
 
+  if (
+    state.rounds.some(
+      round => !round.completed
+    )
+  ) {
+    throw new Error(
+      "The current round must be completed first."
+    );
+  }
+
+  /*
+    Rule 11C: every previous round must be
+    completely decided before the final round
+    is paired.
+  */
+  if (
+    roundNumber === state.totalRounds &&
+    getUnresolvedAdjournedGames().length > 0
+  ) {
+    throw new Error(
+      "The final round cannot be created while an earlier " +
+      "game is still adjourned. Resolve all adjourned games first."
+    );
+  }
+
   const activePlayers =
     state.players.filter(
       player => !player.withdrawn
     );
+
+  if (activePlayers.length === 0) {
+    throw new Error(
+      "There are no active players."
+    );
+  }
 
   const standingsBefore =
     buildRoundList(roundNumber);
@@ -1703,7 +2971,8 @@ function createNextRound() {
     generated =
       createFirstRound(activePlayers);
   } else {
-    const stats = buildStats(roundNumber);
+    const stats =
+      buildStats(roundNumber);
 
     generated = pairLaterRound(
       roundNumber,
@@ -1717,6 +2986,7 @@ function createNextRound() {
     createdAt: new Date().toISOString(),
     completedAt: null,
     completed: false,
+    createdBy: "automatic",
     standingsBefore,
     pairings: generated.pairings,
     warning: generated.warning || ""
@@ -1724,13 +2994,475 @@ function createNextRound() {
 
   if (generated.warning) {
     state.warnings.push(
-      `Round ${roundNumber}: ${generated.warning}`
+      `Round ${roundNumber}: ` +
+      generated.warning
     );
   }
 
   state.status = "running";
   render();
 }
+
+/* ============================================================
+   Manual arbiter pairing
+============================================================ */
+
+function parseManualPairingText(text) {
+  const lines = String(text || "")
+    .split(/\r?\n/);
+
+  const entries = [];
+
+  for (let lineIndex = 0;
+       lineIndex < lines.length;
+       lineIndex++) {
+    const line = lines[lineIndex].trim();
+
+    if (
+      !line ||
+      line.startsWith("//")
+    ) {
+      continue;
+    }
+
+    const byeMatch = line.match(
+      /^(?:bye|wo)\s*[:=-]?\s*#?(\d+)$/i
+    );
+
+    if (byeMatch) {
+      entries.push({
+        type: "bye",
+        playerNo: Number(byeMatch[1])
+      });
+
+      continue;
+    }
+
+    const pairingMatch = line.match(
+      /^#?(\d+)(?:\s*[-–—,;\/]\s*|\s+)#?(\d+)$/
+    );
+
+    if (pairingMatch) {
+      entries.push({
+        type: "game",
+        whiteNo: Number(pairingMatch[1]),
+        blackNo: Number(pairingMatch[2])
+      });
+
+      continue;
+    }
+
+    throw new Error(
+      `Could not understand manual pairing line ` +
+      `${lineIndex + 1}: "${line}".`
+    );
+  }
+
+  return entries;
+}
+
+function createManualRound() {
+  if (getCurrentRound()) {
+    alert(
+      "Complete the current round first."
+    );
+
+    return;
+  }
+
+  const roundNumber =
+    state.rounds.length + 1;
+
+  if (roundNumber > state.totalRounds) {
+    alert(
+      "All scheduled rounds have already been created."
+    );
+
+    return;
+  }
+
+  if (
+    roundNumber === state.totalRounds &&
+    getUnresolvedAdjournedGames().length > 0
+  ) {
+    alert(
+      "Resolve all adjourned games before creating " +
+      "the final round."
+    );
+
+    return;
+  }
+
+  const activePlayers =
+    state.players
+      .filter(player => !player.withdrawn)
+      .sort(
+        (a, b) =>
+          a.startNo - b.startNo
+      );
+
+  if (activePlayers.length === 0) {
+    alert("There are no active players.");
+    return;
+  }
+
+  const enteredText = window.prompt(
+    `Manual arbiter pairing for Round ${roundNumber}\n\n` +
+    "Enter one pairing per line. Put White first:\n" +
+    "12-7\n3-18\nBYE 21\n\n" +
+    "Every active player must appear exactly once. " +
+    "Repeated opponents and illegal pre-final colour " +
+    "assignments are rejected."
+  );
+
+  if (enteredText === null) {
+    return;
+  }
+
+  try {
+    const entries =
+      parseManualPairingText(
+        enteredText
+      );
+
+    if (entries.length === 0) {
+      throw new Error(
+        "No pairings were entered."
+      );
+    }
+
+    const playerByStartNo = new Map(
+      activePlayers.map(player => [
+        player.startNo,
+        player
+      ])
+    );
+
+    const appearances = new Set();
+    const stats =
+      buildStats(roundNumber);
+
+    const orderedPlayers = [
+      ...activePlayers
+    ].sort((a, b) => {
+      const pointsA =
+        stats.get(a.id).points;
+
+      const pointsB =
+        stats.get(b.id).points;
+
+      if (
+        !approximatelyEqual(
+          pointsA,
+          pointsB
+        )
+      ) {
+        return pointsB - pointsA;
+      }
+
+      return a.startNo - b.startNo;
+    });
+
+    const rankMap = new Map(
+      orderedPlayers.map(
+        (player, index) => [
+          player.id,
+          index
+        ]
+      )
+    );
+
+    const pairings = [];
+    let byePlayer = null;
+    let crossGroupPairings = 0;
+    let rule8DMismatches = 0;
+
+    for (const entry of entries) {
+      if (entry.type === "bye") {
+        if (byePlayer) {
+          throw new Error(
+            "More than one bye was entered."
+          );
+        }
+
+        const player =
+          playerByStartNo.get(
+            entry.playerNo
+          );
+
+        if (!player) {
+          throw new Error(
+            `Start number ${entry.playerNo} is not an active player.`
+          );
+        }
+
+        if (appearances.has(player.id)) {
+          throw new Error(
+            `#${player.startNo} ${player.name} appears more than once.`
+          );
+        }
+
+        appearances.add(player.id);
+        byePlayer = player;
+
+        pairings.push({
+          type: "bye",
+          whiteId: player.id,
+          blackId: null,
+          result: "1-0"
+        });
+
+        continue;
+      }
+
+      const white =
+        playerByStartNo.get(
+          entry.whiteNo
+        );
+
+      const black =
+        playerByStartNo.get(
+          entry.blackNo
+        );
+
+      if (!white || !black) {
+        throw new Error(
+          "A manual pairing refers to a start number " +
+          "that is not currently active."
+        );
+      }
+
+      if (white.id === black.id) {
+        throw new Error(
+          "A player cannot be paired against themselves."
+        );
+      }
+
+      if (
+        appearances.has(white.id) ||
+        appearances.has(black.id)
+      ) {
+        throw new Error(
+          "A player appears more than once in the manual round."
+        );
+      }
+
+      if (
+        stats.get(white.id)
+          .opponents.has(black.id)
+      ) {
+        throw new Error(
+          `#${white.startNo} ${white.name} and ` +
+          `#${black.startNo} ${black.name} have already met.`
+        );
+      }
+
+      appearances.add(white.id);
+      appearances.add(black.id);
+
+      if (
+        !approximatelyEqual(
+          stats.get(white.id).points,
+          stats.get(black.id).points
+        )
+      ) {
+        crossGroupPairings++;
+      }
+
+      const desiredWhite =
+        desiredWhiteForRule8D(
+          white,
+          black,
+          roundNumber,
+          stats,
+          rankMap
+        );
+
+      if (
+        desiredWhite &&
+        desiredWhite.id !== white.id
+      ) {
+        const enteredViolations =
+          hardColorViolationCount(
+            stats.get(white.id),
+            "W"
+          ) +
+          hardColorViolationCount(
+            stats.get(black.id),
+            "B"
+          );
+
+        const requiredViolations =
+          hardColorViolationCount(
+            stats.get(black.id),
+            "W"
+          ) +
+          hardColorViolationCount(
+            stats.get(white.id),
+            "B"
+          );
+
+        if (
+          requiredViolations <=
+          enteredViolations
+        ) {
+          rule8DMismatches++;
+        }
+      }
+
+      pairings.push({
+        type: "game",
+        whiteId: white.id,
+        blackId: black.id,
+        result: null
+      });
+    }
+
+    const expectedByeCount =
+      activePlayers.length % 2;
+
+    const actualByeCount =
+      byePlayer ? 1 : 0;
+
+    if (
+      expectedByeCount !==
+      actualByeCount
+    ) {
+      throw new Error(
+        expectedByeCount === 1
+          ? "An odd number of active players requires exactly one bye."
+          : "An even number of active players must not have a bye."
+      );
+    }
+
+    const missingPlayers =
+      activePlayers.filter(
+        player =>
+          !appearances.has(player.id)
+      );
+
+    if (missingPlayers.length > 0) {
+      throw new Error(
+        "The following active players are missing:\n" +
+        missingPlayers
+          .map(
+            player =>
+              `#${player.startNo} ${player.name}`
+          )
+          .join("\n")
+      );
+    }
+
+    if (byePlayer) {
+      const eligibleByeCandidates =
+        selectByeCandidates(
+          orderedPlayers,
+          stats
+        );
+
+      if (
+        !eligibleByeCandidates.some(
+          player =>
+            player.id === byePlayer.id
+        )
+      ) {
+        throw new Error(
+          `#${byePlayer.startNo} ${byePlayer.name} is not ` +
+          "in the lowest score group eligible for the bye."
+        );
+      }
+    }
+
+    const colorViolations =
+      countRoundColorViolations(
+        pairings,
+        stats
+      );
+
+    const isFinalRound =
+      roundNumber === state.totalRounds;
+
+    if (
+      !isFinalRound &&
+      colorViolations > 0
+    ) {
+      throw new Error(
+        "The manual pairing violates mandatory colour " +
+        "rule 7A or 7B. Such violations are not permitted " +
+        "before the final round."
+      );
+    }
+
+    const notices = [
+      "This round was entered manually by an arbiter."
+    ];
+
+    if (crossGroupPairings > 0) {
+      notices.push(
+        `${crossGroupPairings} pairing(s) cross a score group.`
+      );
+    }
+
+    if (rule8DMismatches > 0) {
+      notices.push(
+        `${rule8DMismatches} pairing(s) appear to differ from ` +
+        "the colour assignment in rule 8D."
+      );
+    }
+
+    if (colorViolations > 0) {
+      notices.push(
+        `${colorViolations} final-round violation(s) of ` +
+        "rules 7A or 7B are present."
+      );
+    }
+
+    const confirmed = window.confirm(
+      `Create manual Round ${roundNumber}?\n\n` +
+      notices.join("\n")
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const standingsBefore =
+      buildRoundList(roundNumber);
+
+    const numberedPairings =
+      pairings.map((pairing, index) => ({
+        ...pairing,
+        board: index + 1
+      }));
+
+    const warning = notices.join(" ");
+
+    state.rounds.push({
+      number: roundNumber,
+      createdAt:
+        new Date().toISOString(),
+      completedAt: null,
+      completed: false,
+      createdBy: "manual",
+      standingsBefore,
+      pairings: numberedPairings,
+      warning
+    });
+
+    state.warnings.push(
+      `Round ${roundNumber}: ${warning}`
+    );
+
+    state.status = "running";
+    render();
+  } catch (error) {
+    alert(error.message);
+  }
+}
+
+/* ============================================================
+   Round completion
+============================================================ */
 
 function getCurrentRound() {
   return (
@@ -1759,16 +3491,40 @@ function completeCurrentRound() {
     alert(
       "Enter a result for every game before completing the round."
     );
+
     return;
   }
 
-  const confirmed = window.confirm(
-    `Complete Round ${round.number}? ` +
-    "Results cannot be edited after completion unless the saved JSON " +
-    "file is manually changed."
-  );
+  const hasAdjournedGame =
+    round.pairings.some(
+      pairing =>
+        pairing.type === "game" &&
+        pairing.result === "ADJ"
+    );
 
-  if (!confirmed) {
+  if (
+    round.number === state.totalRounds &&
+    hasAdjournedGame
+  ) {
+    alert(
+      "The final round cannot be completed with an " +
+      "adjourned result. Enter the actual result first."
+    );
+
+    return;
+  }
+
+  let confirmationText =
+    `Complete Round ${round.number}? ` +
+    "Ordinary results cannot be edited afterwards.";
+
+  if (hasAdjournedGame) {
+    confirmationText +=
+      "\n\nAdjourned games will provisionally count as " +
+      "draws. Their actual results can be entered later.";
+  }
+
+  if (!window.confirm(confirmationText)) {
     return;
   }
 
@@ -1776,16 +3532,28 @@ function completeCurrentRound() {
   round.completedAt =
     new Date().toISOString();
 
-  if (
-    round.number >= state.totalRounds
-  ) {
-    state.status = "finished";
-  }
-
+  refreshTournamentStatus();
   render();
 }
 
-function setPairingResult(board, result) {
+function setPairingResult(
+  board,
+  result
+) {
+  const allowedResults = new Set([
+    "1-0",
+    "0.5-0.5",
+    "0-1",
+    "W-F",
+    "F-W",
+    "0-0",
+    "ADJ"
+  ]);
+
+  if (!allowedResults.has(result)) {
+    return;
+  }
+
   const round = getCurrentRound();
 
   if (!round) {
@@ -1793,7 +3561,8 @@ function setPairingResult(board, result) {
   }
 
   const pairing = round.pairings.find(
-    item => item.board === Number(board)
+    item =>
+      item.board === Number(board)
   );
 
   if (
@@ -1803,12 +3572,12 @@ function setPairingResult(board, result) {
     return;
   }
 
-  pairing.result = result || null;
+  pairing.result = result;
 }
 
-/* ------------------------------------------------------------
+/* ============================================================
    Rendering
------------------------------------------------------------- */
+============================================================ */
 
 function roundListTableHTML(rows) {
   return `
@@ -1822,22 +3591,30 @@ function roundListTableHTML(rows) {
             <th>Club</th>
             <th class="number">Rating</th>
             <th class="number">Points</th>
-            <th class="number">Buchholz</th>
+            <th class="number">
+              Quality points
+            </th>
           </tr>
         </thead>
 
         <tbody>
           ${rows.map(row => `
-            <tr class="${row.withdrawn ? "withdrawn" : ""}">
-              <td class="number">${row.rank}</td>
-              <td class="number">${row.startNo}</td>
+            <tr>
+              <td class="number">
+                ${row.rank}
+              </td>
+
+              <td class="number">
+                ${row.startNo}
+              </td>
 
               <td>
                 ${escapeHTML(row.name)}
-                ${row.withdrawn ? " (withdrawn)" : ""}
               </td>
 
-              <td>${escapeHTML(row.club)}</td>
+              <td>
+                ${escapeHTML(row.club)}
+              </td>
 
               <td class="number">
                 ${row.rating ?? ""}
@@ -1859,9 +3636,10 @@ function roundListTableHTML(rows) {
 }
 
 function renderCurrentRound() {
-  const container = document.getElementById(
-    "currentRoundContent"
-  );
+  const container =
+    document.getElementById(
+      "currentRoundContent"
+    );
 
   const round = getCurrentRound();
 
@@ -1884,6 +3662,27 @@ function renderCurrentRound() {
       return;
     }
 
+    const adjournedGames =
+      getUnresolvedAdjournedGames();
+
+    if (
+      state.rounds.length >=
+        state.totalRounds &&
+      adjournedGames.length > 0
+    ) {
+      container.innerHTML = `
+        <h2>Awaiting adjourned results</h2>
+
+        <div class="notice warning">
+          All scheduled rounds have been played, but the
+          tournament cannot be finalised until every adjourned
+          game has an actual result.
+        </div>
+      `;
+
+      return;
+    }
+
     const nextRoundNumber =
       completedCount + 1;
 
@@ -1891,13 +3690,21 @@ function renderCurrentRound() {
       buildRoundList(nextRoundNumber);
 
     container.innerHTML = `
-      <h2>Round ${completedCount} complete</h2>
+      <h2>
+        ${
+          completedCount === 0
+            ? "Tournament ready"
+            : `Round ${completedCount} complete`
+        }
+      </h2>
 
       <div class="notice">
-        Review withdrawals, then create Round ${nextRoundNumber}.
+        Review withdrawals and unresolved games, then create
+        Round ${nextRoundNumber}.
       </div>
 
       <h3>Current round list</h3>
+
       ${roundListTableHTML(interimList)}
 
       <div class="button-row">
@@ -1907,11 +3714,20 @@ function renderCurrentRound() {
         >
           Create Round ${nextRoundNumber}
         </button>
+
+        <button
+          id="createManualRoundButton"
+          class="warning"
+        >
+          Arbiter: Enter Manual Round
+        </button>
       </div>
     `;
 
     document
-      .getElementById("createNextRoundButton")
+      .getElementById(
+        "createNextRoundButton"
+      )
       .addEventListener("click", () => {
         try {
           createNextRound();
@@ -1919,6 +3735,15 @@ function renderCurrentRound() {
           alert(error.message);
         }
       });
+
+    document
+      .getElementById(
+        "createManualRoundButton"
+      )
+      .addEventListener(
+        "click",
+        createManualRound
+      );
 
     return;
   }
@@ -1929,7 +3754,8 @@ function renderCurrentRound() {
     ["0-1", "0-1"],
     ["W-F", "White WO"],
     ["F-W", "Black WO"],
-    ["0-0", "0-0"]
+    ["0-0", "0-0"],
+    ["ADJ", "Adjourned"]
   ];
 
   container.innerHTML = `
@@ -1971,13 +3797,13 @@ function renderCurrentRound() {
 
         <tbody>
           ${round.pairings.map(pairing => {
-            const white = getPlayer(
-              pairing.whiteId
-            );
+            const white =
+              getPlayer(pairing.whiteId);
 
-            const black = pairing.blackId
-              ? getPlayer(pairing.blackId)
-              : null;
+            const black =
+              pairing.blackId
+                ? getPlayer(pairing.blackId)
+                : null;
 
             if (pairing.type === "bye") {
               return `
@@ -1991,7 +3817,7 @@ function renderCurrentRound() {
                   </td>
 
                   <td class="center">
-                    1 point
+                    <strong>1 point</strong>
                   </td>
 
                   <td>
@@ -2074,7 +3900,9 @@ function renderCurrentRound() {
   `;
 
   container
-    .querySelectorAll("[data-result-value]")
+    .querySelectorAll(
+      "[data-result-value]"
+    )
     .forEach(button => {
       button.addEventListener(
         "click",
@@ -2088,7 +3916,11 @@ function renderCurrentRound() {
             event.currentTarget.dataset
               .resultValue;
 
-          setPairingResult(board, result);
+          setPairingResult(
+            board,
+            result
+          );
+
           renderCurrentRound();
         }
       );
@@ -2112,11 +3944,141 @@ function renderCurrentRound() {
     });
 
   document
-    .getElementById("completeRoundButton")
+    .getElementById(
+      "completeRoundButton"
+    )
     .addEventListener(
       "click",
       completeCurrentRound
     );
+}
+
+function renderAdjournedGames() {
+  const card =
+    document.getElementById(
+      "adjournedGamesCard"
+    );
+
+  const content =
+    document.getElementById(
+      "adjournedGamesContent"
+    );
+
+  const games =
+    getUnresolvedAdjournedGames();
+
+  if (games.length === 0) {
+    card.classList.add("hidden");
+    content.innerHTML = "";
+    return;
+  }
+
+  card.classList.remove("hidden");
+
+  const resultChoices = [
+    ["1-0", "1-0"],
+    ["0.5-0.5", "½-½"],
+    ["0-1", "0-1"],
+    ["W-F", "White WO"],
+    ["F-W", "Black WO"],
+    ["0-0", "0-0"]
+  ];
+
+  content.innerHTML = `
+    <div class="notice warning">
+      Adjourned games provisionally count as draws. Every
+      earlier adjourned game must be resolved before the
+      final round is paired.
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="number">Round</th>
+            <th class="number">Board</th>
+            <th>White</th>
+            <th>Black</th>
+            <th class="center">Actual result</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${games.map(({ round, pairing }) => {
+            const white =
+              getPlayer(pairing.whiteId);
+
+            const black =
+              getPlayer(pairing.blackId);
+
+            return `
+              <tr>
+                <td class="number">
+                  ${round.number}
+                </td>
+
+                <td class="number">
+                  ${pairing.board}
+                </td>
+
+                <td>
+                  ${playerDisplay(white)}
+                </td>
+
+                <td>
+                  ${playerDisplay(black)}
+                </td>
+
+                <td class="center">
+                  <div class="result-buttons">
+                    ${resultChoices.map(
+                      ([value, label]) => `
+                        <button
+                          type="button"
+                          class="result-choice"
+                          data-adj-round="${round.number}"
+                          data-adj-board="${pairing.board}"
+                          data-adj-result="${value}"
+                        >
+                          ${label}
+                        </button>
+                      `
+                    ).join("")}
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  content
+    .querySelectorAll(
+      "[data-adj-result]"
+    )
+    .forEach(button => {
+      button.addEventListener(
+        "click",
+        event => {
+          resolveAdjournedGame(
+            Number(
+              event.currentTarget.dataset
+                .adjRound
+            ),
+
+            Number(
+              event.currentTarget.dataset
+                .adjBoard
+            ),
+
+            event.currentTarget.dataset
+              .adjResult
+          );
+        }
+      );
+    });
 }
 
 function withdrawPlayer() {
@@ -2124,6 +4086,7 @@ function withdrawPlayer() {
     alert(
       "Start or load a tournament first."
     );
+
     return;
   }
 
@@ -2131,79 +4094,96 @@ function withdrawPlayer() {
     alert(
       "The tournament has already finished."
     );
+
     return;
   }
 
-  const activePlayers = state.players
-    .filter(player => !player.withdrawn)
-    .sort(
-      (a, b) => a.startNo - b.startNo
-    );
+  const activePlayers =
+    state.players
+      .filter(
+        player => !player.withdrawn
+      )
+      .sort(
+        (a, b) =>
+          a.startNo - b.startNo
+      );
 
   if (activePlayers.length === 0) {
     alert(
       "There are no active players to withdraw."
     );
+
     return;
   }
 
-  const playerList = activePlayers
-    .map(player => {
-      const club = player.club
-        ? ` — ${player.club}`
-        : "";
+  const playerList =
+    activePlayers
+      .map(player => {
+        const club = player.club
+          ? ` — ${player.club}`
+          : "";
 
-      return (
-        `#${player.startNo} ` +
-        `${player.name}${club}`
-      );
-    })
-    .join("\n");
+        return (
+          `#${player.startNo} ` +
+          `${player.name}${club}`
+        );
+      })
+      .join("\n");
 
-  const enteredValue = window.prompt(
-    "Enter the start number of the player to withdraw:\n\n" +
-    playerList
-  );
+  const enteredValue =
+    window.prompt(
+      "Enter the start number of the player to withdraw:\n\n" +
+      playerList
+    );
 
   if (enteredValue === null) {
     return;
   }
 
-  const normalizedValue = enteredValue
-    .trim()
-    .replace(/^#/, "");
+  const normalizedValue =
+    enteredValue
+      .trim()
+      .replace(/^#/, "");
 
   const startNumber =
     Number(normalizedValue);
 
   if (!Number.isInteger(startNumber)) {
-    alert("Enter a valid start number.");
+    alert(
+      "Enter a valid start number."
+    );
+
     return;
   }
 
-  const player = activePlayers.find(
-    item => item.startNo === startNumber
-  );
+  const player =
+    activePlayers.find(
+      item =>
+        item.startNo === startNumber
+    );
 
   if (!player) {
     alert(
       `There is no active player with start number ${startNumber}.`
     );
+
     return;
   }
 
-  const currentRound = getCurrentRound();
+  const currentRound =
+    getCurrentRound();
 
-  const currentPairing = currentRound
-    ? currentRound.pairings.find(
-        pairing => {
-          return (
-            pairing.whiteId === player.id ||
-            pairing.blackId === player.id
-          );
-        }
-      )
-    : null;
+  const currentPairing =
+    currentRound
+      ? currentRound.pairings.find(
+          pairing => {
+            return (
+              pairing.whiteId === player.id ||
+              pairing.blackId === player.id
+            );
+          }
+        )
+      : null;
 
   let message =
     `Withdraw #${player.startNo} ` +
@@ -2211,16 +4191,16 @@ function withdrawPlayer() {
 
   if (currentPairing) {
     message +=
-      "\n\nThe player is already included in the current round. " +
-      "The withdrawal will apply only to future rounds.";
+      "\n\nThe player is already included in the current " +
+      "round. The withdrawal applies only to future rounds.";
 
     if (currentPairing.type === "game") {
       message +=
-        "\n\nIf the player does not play the current game, record " +
-        "the appropriate White WO or Black WO result.";
+        "\n\nIf the player does not play the current game, " +
+        "record the appropriate White WO or Black WO result.";
     } else {
       message +=
-        "\n\nThe current-round bye and its point will remain unchanged.";
+        "\n\nThe current bye and its point remain unchanged.";
     }
   }
 
@@ -2244,7 +4224,12 @@ function finalStandingsTableHTML(rows) {
             <th>Club</th>
             <th class="number">Rating</th>
             <th class="number">Points</th>
-            <th class="number">Buchholz</th>
+            <th class="number">
+              Quality points
+            </th>
+            <th class="number">
+              Restored cut scores
+            </th>
             <th class="number">
               Sonneborn–Berger
             </th>
@@ -2253,7 +4238,11 @@ function finalStandingsTableHTML(rows) {
 
         <tbody>
           ${rows.map(row => `
-            <tr class="${row.withdrawn ? "withdrawn" : ""}">
+            <tr class="${
+              row.withdrawn
+                ? "withdrawn"
+                : ""
+            }">
               <td class="number">
                 ${row.rank}
               </td>
@@ -2264,7 +4253,11 @@ function finalStandingsTableHTML(rows) {
 
               <td>
                 ${escapeHTML(row.name)}
-                ${row.withdrawn ? " (withdrawn)" : ""}
+                ${
+                  row.withdrawn
+                    ? " (withdrawn)"
+                    : ""
+                }
               </td>
 
               <td>
@@ -2284,6 +4277,10 @@ function finalStandingsTableHTML(rows) {
               </td>
 
               <td class="number">
+                ${formatDropped(row.dropped)}
+              </td>
+
+              <td class="number">
                 ${formatNumber(
                   row.sonnebornBerger
                 )}
@@ -2297,13 +4294,15 @@ function finalStandingsTableHTML(rows) {
 }
 
 function renderFinalStandings() {
-  const card = document.getElementById(
-    "finalResultsCard"
-  );
+  const card =
+    document.getElementById(
+      "finalResultsCard"
+    );
 
-  const content = document.getElementById(
-    "finalResultsContent"
-  );
+  const content =
+    document.getElementById(
+      "finalResultsContent"
+    );
 
   if (state.status !== "finished") {
     card.classList.add("hidden");
@@ -2313,13 +4312,15 @@ function renderFinalStandings() {
 
   card.classList.remove("hidden");
 
-  const standings = buildFinalStandings();
+  const standings =
+    buildFinalStandings();
 
   content.innerHTML = `
     <p class="muted small">
-      Players are ranked by points, Buchholz, restored dropped opponent
-      scores, Sonneborn–Berger and, only if still tied, a saved
-      drawing-of-lots value.
+      Players are ranked by points, quality points after the
+      prescribed cuts, restored cut scores one at a time from
+      highest to lowest, Sonneborn–Berger, and finally the saved
+      drawing-of-lots order.
     </p>
 
     ${finalStandingsTableHTML(standings)}
@@ -2327,9 +4328,10 @@ function renderFinalStandings() {
 }
 
 function renderHistoricalRoundSelector() {
-  const select = document.getElementById(
-    "historyRoundSelect"
-  );
+  const select =
+    document.getElementById(
+      "historyRoundSelect"
+    );
 
   if (state.rounds.length === 0) {
     select.innerHTML = `
@@ -2341,15 +4343,17 @@ function renderHistoricalRoundSelector() {
     return;
   }
 
-  const previousValue = select.value;
+  const previousValue =
+    select.value;
 
-  select.innerHTML = state.rounds
-    .map(round => `
-      <option value="${round.number}">
-        Round ${round.number} — list before play
-      </option>
-    `)
-    .join("");
+  select.innerHTML =
+    state.rounds
+      .map(round => `
+        <option value="${round.number}">
+          Round ${round.number} — list before play
+        </option>
+      `)
+      .join("");
 
   if (
     previousValue &&
@@ -2370,9 +4374,10 @@ function renderHistoricalRoundSelector() {
 }
 
 function renderWarnings() {
-  const container = document.getElementById(
-    "globalWarnings"
-  );
+  const container =
+    document.getElementById(
+      "globalWarnings"
+    );
 
   if (
     !state.warnings ||
@@ -2388,7 +4393,9 @@ function renderWarnings() {
 
       <ul>
         ${state.warnings.map(warning => `
-          <li>${escapeHTML(warning)}</li>
+          <li>
+            ${escapeHTML(warning)}
+          </li>
         `).join("")}
       </ul>
     </div>
@@ -2409,6 +4416,31 @@ function renderTournament() {
     state.players.filter(
       player => !player.withdrawn
     ).length;
+
+  const currentRound =
+    getCurrentRound();
+
+  const adjournedCount =
+    getUnresolvedAdjournedGames()
+      .length;
+
+  let statusText;
+
+  if (state.status === "finished") {
+    statusText = "Finished";
+  } else if (currentRound) {
+    statusText =
+      `Round ${currentRound.number} in progress`;
+  } else if (
+    state.rounds.length >=
+      state.totalRounds &&
+    adjournedCount > 0
+  ) {
+    statusText =
+      "Awaiting adjourned results";
+  } else {
+    statusText = "Between rounds";
+  }
 
   document.getElementById(
     "tournamentSummary"
@@ -2431,32 +4463,28 @@ function renderTournament() {
     </div>
 
     <div>
-      <strong>Status</strong>
+      <strong>Adjourned</strong>
+      <span>${adjournedCount}</span>
+    </div>
 
-      <span>
-        ${
-          state.status === "finished"
-            ? "Finished"
-            : getCurrentRound()
-              ? `Round ${
-                  getCurrentRound().number
-                } in progress`
-              : "Between rounds"
-        }
-      </span>
+    <div>
+      <strong>Status</strong>
+      <span>${statusText}</span>
     </div>
   `;
 
   renderWarnings();
   renderCurrentRound();
+  renderAdjournedGames();
   renderHistoricalRoundSelector();
   renderFinalStandings();
 }
 
 function render() {
-  const setupPanel = document.getElementById(
-    "setupPanel"
-  );
+  const setupPanel =
+    document.getElementById(
+      "setupPanel"
+    );
 
   const tournamentPanel =
     document.getElementById(
@@ -2484,29 +4512,42 @@ function render() {
     );
 
   if (state.status === "setup") {
-    setupPanel.classList.remove("hidden");
-    tournamentPanel.classList.add("hidden");
+    setupPanel.classList.remove(
+      "hidden"
+    );
+
+    tournamentPanel.classList.add(
+      "hidden"
+    );
   } else {
-    setupPanel.classList.add("hidden");
-    tournamentPanel.classList.remove("hidden");
+    setupPanel.classList.add(
+      "hidden"
+    );
+
+    tournamentPanel.classList.remove(
+      "hidden"
+    );
+
     renderTournament();
   }
 }
 
-/* ------------------------------------------------------------
+/* ============================================================
    Printing
------------------------------------------------------------- */
+============================================================ */
 
-function openPrintWindow(title, bodyHTML) {
-  const printWindow = window.open(
-    "",
-    "_blank"
-  );
+function openPrintWindow(
+  title,
+  bodyHTML
+) {
+  const printWindow =
+    window.open("", "_blank");
 
   if (!printWindow) {
     alert(
       "The print window was blocked. Allow pop-ups for this page."
     );
+
     return;
   }
 
@@ -2517,7 +4558,10 @@ function openPrintWindow(title, bodyHTML) {
     <html lang="en">
     <head>
       <meta charset="UTF-8">
-      <title>${escapeHTML(title)}</title>
+
+      <title>
+        ${escapeHTML(title)}
+      </title>
 
       <style>
         @page {
@@ -2526,8 +4570,8 @@ function openPrintWindow(title, bodyHTML) {
         }
 
         body {
-          font-family: Arial, Helvetica, sans-serif;
           color: #000;
+          font-family: Arial, Helvetica, sans-serif;
           font-size: 12px;
         }
 
@@ -2590,10 +4634,12 @@ function openPrintWindow(title, bodyHTML) {
 
     <body>
       <h1>${escapeHTML(state.name)}</h1>
+
       ${bodyHTML}
 
       <div class="notes">
-        Printed ${escapeHTML(
+        Printed
+        ${escapeHTML(
           new Date().toLocaleString()
         )}
       </div>
@@ -2616,80 +4662,89 @@ function printCurrentPairings() {
     alert(
       "There is no current round to print."
     );
+
     return;
   }
 
-  const rows = round.pairings
-    .map(pairing => {
-      const white = getPlayer(
-        pairing.whiteId
-      );
+  const rows =
+    round.pairings
+      .map(pairing => {
+        const white =
+          getPlayer(pairing.whiteId);
 
-      const black = pairing.blackId
-        ? getPlayer(pairing.blackId)
-        : null;
+        const black =
+          pairing.blackId
+            ? getPlayer(pairing.blackId)
+            : null;
 
-      return `
-        <tr>
-          <td class="number">
-            ${pairing.board}
-          </td>
+        const resultCell =
+          pairing.type === "bye"
+            ? "1"
+            : "-";
 
-          <td>
-            #${white.startNo}
-            ${escapeHTML(white.name)}
+        return `
+          <tr>
+            <td class="number">
+              ${pairing.board}
+            </td>
 
-            ${
-              white.club
-                ? `
-                  <br>
-                  <small>
-                    ${escapeHTML(white.club)}
-                  </small>
-                `
-                : ""
-            }
-          </td>
+            <td>
+              #${white.startNo}
+              ${escapeHTML(white.name)}
 
-          <td class="result">-</td>
+              ${
+                white.club
+                  ? `
+                    <br>
+                    <small>
+                      ${escapeHTML(white.club)}
+                    </small>
+                  `
+                  : ""
+              }
+            </td>
 
-          <td>
-            ${
-              pairing.type === "bye"
-                ? "<strong>BYE</strong>"
-                : `
-                  #${black.startNo}
-                  ${escapeHTML(black.name)}
+            <td class="result">
+              ${resultCell}
+            </td>
 
-                  ${
-                    black.club
-                      ? `
-                        <br>
-                        <small>
-                          ${escapeHTML(
-                            black.club
-                          )}
-                        </small>
-                      `
-                      : ""
-                  }
-                `
-            }
-          </td>
-        </tr>
-      `;
-    })
-    .join("");
+            <td>
+              ${
+                pairing.type === "bye"
+                  ? "<strong>BYE</strong>"
+                  : `
+                    #${black.startNo}
+                    ${escapeHTML(black.name)}
+
+                    ${
+                      black.club
+                        ? `
+                          <br>
+                          <small>
+                            ${escapeHTML(black.club)}
+                          </small>
+                        `
+                        : ""
+                    }
+                  `
+              }
+            </td>
+          </tr>
+        `;
+      })
+      .join("");
 
   openPrintWindow(
     `${state.name} — Round ${round.number} pairings`,
+
     `
       <h2>
         Round ${round.number} — Pairing Sheet
       </h2>
 
       <div class="meta">
-        Results have intentionally been left blank.
+        Ordinary game results have intentionally
+        been left blank.
       </div>
 
       <table>
@@ -2711,48 +4766,63 @@ function printCurrentPairings() {
 }
 
 function printRoundList(roundNumber) {
-  const round = state.rounds.find(
-    item =>
-      item.number === Number(roundNumber)
-  );
+  const round =
+    state.rounds.find(
+      item =>
+        item.number === Number(roundNumber)
+    );
 
   if (!round) {
     alert(
       "The selected round list could not be found."
     );
+
     return;
   }
 
-  const rows = round.standingsBefore
-    .map(row => `
-      <tr>
-        <td class="number">${row.rank}</td>
-        <td class="number">${row.startNo}</td>
+  const rows =
+    round.standingsBefore
+      .map(row => `
+        <tr>
+          <td class="number">
+            ${row.rank}
+          </td>
 
-        <td>
-          ${escapeHTML(row.name)}
-          ${row.withdrawn ? " (withdrawn)" : ""}
-        </td>
+          <td class="number">
+            ${row.startNo}
+          </td>
 
-        <td>${escapeHTML(row.club)}</td>
+          <td>
+            ${escapeHTML(row.name)}
+            ${
+              row.withdrawn
+                ? " (withdrawn)"
+                : ""
+            }
+          </td>
 
-        <td class="number">
-          ${row.rating ?? ""}
-        </td>
+          <td>
+            ${escapeHTML(row.club)}
+          </td>
 
-        <td class="number">
-          ${formatScore(row.points)}
-        </td>
+          <td class="number">
+            ${row.rating ?? ""}
+          </td>
 
-        <td class="number">
-          ${formatNumber(row.quality)}
-        </td>
-      </tr>
-    `)
-    .join("");
+          <td class="number">
+            ${formatScore(row.points)}
+          </td>
+
+          <td class="number">
+            ${formatNumber(row.quality)}
+          </td>
+        </tr>
+      `)
+      .join("");
 
   openPrintWindow(
     `${state.name} — List before Round ${round.number}`,
+
     `
       <h2>
         Round List Before Round ${round.number}
@@ -2771,7 +4841,9 @@ function printRoundList(roundNumber) {
             <th>Club</th>
             <th class="number">Rating</th>
             <th class="number">Points</th>
-            <th class="number">Buchholz</th>
+            <th class="number">
+              Quality points
+            </th>
           </tr>
         </thead>
 
@@ -2788,47 +4860,66 @@ function printFinalResults() {
     alert(
       "The tournament has not finished."
     );
+
     return;
   }
 
-  const standings = buildFinalStandings();
+  const standings =
+    buildFinalStandings();
 
-  const rows = standings
-    .map(row => `
-      <tr>
-        <td class="number">${row.rank}</td>
-        <td class="number">${row.startNo}</td>
+  const rows =
+    standings
+      .map(row => `
+        <tr>
+          <td class="number">
+            ${row.rank}
+          </td>
 
-        <td>
-          ${escapeHTML(row.name)}
-          ${row.withdrawn ? " (withdrawn)" : ""}
-        </td>
+          <td class="number">
+            ${row.startNo}
+          </td>
 
-        <td>${escapeHTML(row.club)}</td>
+          <td>
+            ${escapeHTML(row.name)}
+            ${
+              row.withdrawn
+                ? " (withdrawn)"
+                : ""
+            }
+          </td>
 
-        <td class="number">
-          ${row.rating ?? ""}
-        </td>
+          <td>
+            ${escapeHTML(row.club)}
+          </td>
 
-        <td class="number">
-          ${formatScore(row.points)}
-        </td>
+          <td class="number">
+            ${row.rating ?? ""}
+          </td>
 
-        <td class="number">
-          ${formatNumber(row.quality)}
-        </td>
+          <td class="number">
+            ${formatScore(row.points)}
+          </td>
 
-        <td class="number">
-          ${formatNumber(
-            row.sonnebornBerger
-          )}
-        </td>
-      </tr>
-    `)
-    .join("");
+          <td class="number">
+            ${formatNumber(row.quality)}
+          </td>
+
+          <td class="number">
+            ${formatDropped(row.dropped)}
+          </td>
+
+          <td class="number">
+            ${formatNumber(
+              row.sonnebornBerger
+            )}
+          </td>
+        </tr>
+      `)
+      .join("");
 
   openPrintWindow(
     `${state.name} — Final standings`,
+
     `
       <h2>Final Standings</h2>
 
@@ -2845,7 +4936,12 @@ function printFinalResults() {
             <th>Club</th>
             <th class="number">Rating</th>
             <th class="number">Points</th>
-            <th class="number">Buchholz</th>
+            <th class="number">
+              Quality points
+            </th>
+            <th class="number">
+              Restored cuts
+            </th>
             <th class="number">
               Sonneborn–Berger
             </th>
@@ -2860,9 +4956,9 @@ function printFinalResults() {
   );
 }
 
-/* ------------------------------------------------------------
-   Save and load
------------------------------------------------------------- */
+/* ============================================================
+   Saving, loading and validation
+============================================================ */
 
 function collectSetupDraft() {
   return {
@@ -2901,25 +4997,31 @@ function restoreSetupDraft(draft) {
 
   document.getElementById(
     "totalRounds"
-  ).value = draft.totalRounds || 7;
+  ).value =
+    draft.totalRounds || 7;
 
   document.getElementById(
     "startNumberMethod"
   ).value =
-    draft.startNumberMethod || "seeded";
+    draft.startNumberMethod === "random"
+      ? "random"
+      : "seeded";
 
   document.getElementById(
     "playersText"
-  ).value = draft.playersText || "";
+  ).value =
+    draft.playersText || "";
 }
 
 function saveTournament() {
   const data = {
     application:
-      "Norwegian Monrad Tournament Manager",
-    formatVersion: 1,
+      "Monrad Tournament Manager",
+
+    formatVersion: 2,
     savedAt: new Date().toISOString(),
     state,
+
     setupDraft:
       state.status === "setup"
         ? collectSetupDraft()
@@ -2927,14 +5029,24 @@ function saveTournament() {
   };
 
   const blob = new Blob(
-    [JSON.stringify(data, null, 2)],
+    [
+      JSON.stringify(
+        data,
+        null,
+        2
+      )
+    ],
+
     {
       type: "application/json"
     }
   );
 
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
+  const url =
+    URL.createObjectURL(blob);
+
+  const link =
+    document.createElement("a");
 
   const name =
     state.status === "setup"
@@ -2951,35 +5063,331 @@ function saveTournament() {
   link.click();
   link.remove();
 
-  URL.revokeObjectURL(url);
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 1000);
+}
+
+function validateLoadedState(result) {
+  if (
+    !Number.isInteger(result.totalRounds) ||
+    result.totalRounds < 1 ||
+    result.totalRounds > 30
+  ) {
+    throw new Error(
+      "The tournament has an invalid number of rounds."
+    );
+  }
+
+  if (
+    result.status === "setup" &&
+    result.rounds.length > 0
+  ) {
+    throw new Error(
+      "A setup-state file must not contain played rounds."
+    );
+  }
+
+  const playerIds = new Set();
+  const startNumbers = new Set();
+
+  for (const player of result.players) {
+    if (!player.id) {
+      throw new Error(
+        "A player has no valid identifier."
+      );
+    }
+
+    if (playerIds.has(player.id)) {
+      throw new Error(
+        "The tournament file contains duplicate player identifiers."
+      );
+    }
+
+    playerIds.add(player.id);
+
+    if (
+      !Number.isInteger(player.startNo) ||
+      player.startNo < 1
+    ) {
+      throw new Error(
+        "A player has an invalid start number."
+      );
+    }
+
+    if (
+      startNumbers.has(player.startNo)
+    ) {
+      throw new Error(
+        "The tournament file contains duplicate start numbers."
+      );
+    }
+
+    startNumbers.add(player.startNo);
+  }
+
+  if (
+    result.status !== "setup" &&
+    result.players.length < 2
+  ) {
+    throw new Error(
+      "A tournament must contain at least two players."
+    );
+  }
+
+  if (
+    result.status !== "setup" &&
+    result.players.length >= 2
+  ) {
+    const maximumRounds =
+      result.players.length % 2 === 0
+        ? result.players.length - 1
+        : result.players.length;
+
+    if (
+      result.totalRounds >
+      maximumRounds
+    ) {
+      throw new Error(
+        `With ${result.players.length} players and no ` +
+        `repeated opponents, at most ${maximumRounds} rounds ` +
+        "can be scheduled."
+      );
+    }
+  }
+
+  if (
+    result.rounds.length >
+    result.totalRounds
+  ) {
+    throw new Error(
+      "The tournament file contains more rounds than scheduled."
+    );
+  }
+
+  const allowedResults = new Set([
+    null,
+    "1-0",
+    "0.5-0.5",
+    "0-1",
+    "W-F",
+    "F-W",
+    "0-0",
+    "ADJ"
+  ]);
+
+  const previousOpponents =
+    new Set();
+
+  let incompleteRoundSeen = false;
+
+  for (
+    let roundIndex = 0;
+    roundIndex < result.rounds.length;
+    roundIndex++
+  ) {
+    const round =
+      result.rounds[roundIndex];
+
+    if (
+      round.number !==
+      roundIndex + 1
+    ) {
+      throw new Error(
+        "Round numbers are missing, duplicated or out of order."
+      );
+    }
+
+    if (
+      !Array.isArray(round.pairings) ||
+      round.pairings.length === 0
+    ) {
+      throw new Error(
+        `Round ${round.number} has no pairings.`
+      );
+    }
+
+    if (incompleteRoundSeen) {
+      throw new Error(
+        "A later round exists after an incomplete round."
+      );
+    }
+
+    if (!round.completed) {
+      incompleteRoundSeen = true;
+    }
+
+    const appearances = new Set();
+    const boardNumbers = new Set();
+    let byeCount = 0;
+
+    for (const pairing of round.pairings) {
+      if (
+        !Number.isInteger(pairing.board) ||
+        pairing.board < 1 ||
+        boardNumbers.has(pairing.board)
+      ) {
+        throw new Error(
+          `Round ${round.number} contains invalid or duplicate board numbers.`
+        );
+      }
+
+      boardNumbers.add(pairing.board);
+
+      if (
+        !playerIds.has(pairing.whiteId)
+      ) {
+        throw new Error(
+          `Round ${round.number} refers to an unknown White player.`
+        );
+      }
+
+      if (
+        appearances.has(pairing.whiteId)
+      ) {
+        throw new Error(
+          `A player appears more than once in Round ${round.number}.`
+        );
+      }
+
+      appearances.add(pairing.whiteId);
+
+      if (pairing.type === "bye") {
+        byeCount++;
+
+        if (
+          pairing.blackId !== null ||
+          pairing.result !== "1-0"
+        ) {
+          throw new Error(
+            `Round ${round.number} contains an invalid bye.`
+          );
+        }
+
+        continue;
+      }
+
+      if (
+        pairing.type !== "game"
+      ) {
+        throw new Error(
+          `Round ${round.number} contains an unknown pairing type.`
+        );
+      }
+
+      if (
+        !pairing.blackId ||
+        !playerIds.has(pairing.blackId)
+      ) {
+        throw new Error(
+          `Round ${round.number} refers to an unknown Black player.`
+        );
+      }
+
+      if (
+        pairing.whiteId ===
+        pairing.blackId
+      ) {
+        throw new Error(
+          `A player is paired against themselves in Round ${round.number}.`
+        );
+      }
+
+      if (
+        appearances.has(pairing.blackId)
+      ) {
+        throw new Error(
+          `A player appears more than once in Round ${round.number}.`
+        );
+      }
+
+      appearances.add(pairing.blackId);
+
+      if (
+        !allowedResults.has(
+          pairing.result
+        )
+      ) {
+        throw new Error(
+          `Round ${round.number} contains an invalid result.`
+        );
+      }
+
+      if (
+        round.completed &&
+        pairing.result === null
+      ) {
+        throw new Error(
+          `Completed Round ${round.number} has a missing result.`
+        );
+      }
+
+      const opponentKey = [
+        pairing.whiteId,
+        pairing.blackId
+      ]
+        .sort()
+        .join("|");
+
+      if (
+        previousOpponents.has(opponentKey)
+      ) {
+        throw new Error(
+          `The tournament file repeats an opponent pairing in Round ${round.number}.`
+        );
+      }
+
+      previousOpponents.add(opponentKey);
+    }
+
+    if (byeCount > 1) {
+      throw new Error(
+        `Round ${round.number} contains more than one bye.`
+      );
+    }
+  }
 }
 
 function normalizeLoadedState(loaded) {
-  const result =
+  const source =
     loaded && loaded.state
       ? loaded.state
       : loaded;
 
   if (
-    !result ||
-    !Array.isArray(result.players)
+    !source ||
+    !Array.isArray(source.players)
   ) {
     throw new Error(
       "This is not a valid tournament file."
     );
   }
 
-  result.app = "NorwegianMonradWeb";
-  result.version = 1;
+  const result = {
+    ...source
+  };
+
+  result.app =
+    "NorwegianMonradWeb";
+
+  result.version = 2;
+
   result.status =
-    result.status || "running";
+    result.status === "setup"
+      ? "setup"
+      : "running";
+
   result.name =
-    result.name || "Loaded Tournament";
+    result.name ||
+    "Loaded Tournament";
+
   result.totalRounds =
-    Number(result.totalRounds) || 1;
+    Number(result.totalRounds);
 
   result.startNumberMethod =
-    result.startNumberMethod || "seeded";
+    result.startNumberMethod === "random"
+      ? "random"
+      : "seeded";
 
   result.rounds =
     Array.isArray(result.rounds)
@@ -2988,83 +5396,159 @@ function normalizeLoadedState(loaded) {
 
   result.warnings =
     Array.isArray(result.warnings)
-      ? result.warnings
+      ? result.warnings.map(String)
       : [];
 
-  result.players = result.players.map(
-    (player, index) => ({
-      ...player,
-      id: String(player.id || makeId()),
-      startNo:
-        Number(player.startNo) || index + 1,
-      club: player.club || "",
-      rating: Number.isFinite(
-        Number(player.rating)
-      )
-        ? Number(player.rating)
-        : null,
-      withdrawn: Boolean(player.withdrawn),
-      lot: Number.isFinite(
-        Number(player.lot)
-      )
-        ? Number(player.lot)
-        : Math.random()
-    })
-  );
+  const usedLots = new Set();
 
-  result.rounds = result.rounds.map(
-    round => ({
-      ...round,
-      number: Number(round.number),
-      completed: Boolean(round.completed),
+  result.players =
+    result.players.map(
+      (player, index) => {
+        const rawRating =
+          player.rating;
 
-      standingsBefore:
-        Array.isArray(
-          round.standingsBefore
-        )
-          ? round.standingsBefore
-          : [],
+        const numericRating =
+          rawRating === null ||
+          rawRating === undefined ||
+          rawRating === ""
+            ? null
+            : Number(rawRating);
 
-      pairings:
-        Array.isArray(round.pairings)
-          ? round.pairings.map(
-              (pairing, index) => ({
-                ...pairing,
-                board:
-                  Number(pairing.board) ||
-                  index + 1,
-                whiteId: String(
-                  pairing.whiteId
-                ),
-                blackId:
-                  pairing.blackId === null ||
-                  pairing.blackId === undefined
-                    ? null
-                    : String(
-                        pairing.blackId
-                      ),
-                type:
-                  pairing.type || "game",
-                result:
-                  pairing.result || null
-              })
+        let lot =
+          player.lot === null ||
+          player.lot === undefined ||
+          player.lot === ""
+            ? null
+            : Number(player.lot);
+
+        if (
+          !Number.isFinite(lot) ||
+          usedLots.has(lot)
+        ) {
+          do {
+            lot = Math.random();
+          } while (usedLots.has(lot));
+        }
+
+        usedLots.add(lot);
+
+        return {
+          ...player,
+          id: String(
+            player.id || makeId()
+          ),
+
+          startNo:
+            Number(player.startNo) ||
+            index + 1,
+
+          name:
+            String(
+              player.name ||
+              `Player ${index + 1}`
+            ),
+
+          club:
+            String(player.club || ""),
+
+          rating:
+            Number.isFinite(
+              numericRating
             )
-          : [],
+              ? numericRating
+              : null,
 
-      warning: round.warning || ""
-    })
-  );
+          withdrawn:
+            Boolean(player.withdrawn),
 
-  const allScheduledRoundsCompleted =
-    result.rounds.length >=
-      result.totalRounds &&
+          lot
+        };
+      }
+    );
+
+  result.rounds =
     result.rounds
-      .slice(0, result.totalRounds)
-      .every(round => round.completed);
+      .map((round, roundIndex) => {
+        const pairings =
+          Array.isArray(round.pairings)
+            ? round.pairings
+            : [];
 
-  if (allScheduledRoundsCompleted) {
-    result.status = "finished";
-  }
+        return {
+          ...round,
+
+          number:
+            Number(round.number) ||
+            roundIndex + 1,
+
+          completed:
+            Boolean(round.completed),
+
+          createdBy:
+            round.createdBy ||
+            "automatic",
+
+          standingsBefore:
+            Array.isArray(
+              round.standingsBefore
+            )
+              ? round.standingsBefore
+              : [],
+
+          pairings:
+            pairings.map(
+              (pairing, pairingIndex) => {
+                const type =
+                  pairing.type === "bye"
+                    ? "bye"
+                    : "game";
+
+                return {
+                  ...pairing,
+
+                  board:
+                    Number(pairing.board) ||
+                    pairingIndex + 1,
+
+                  whiteId:
+                    String(pairing.whiteId),
+
+                  blackId:
+                    type === "bye" ||
+                    pairing.blackId === null ||
+                    pairing.blackId === undefined
+                      ? null
+                      : String(
+                          pairing.blackId
+                        ),
+
+                  type,
+
+                  result:
+                    type === "bye"
+                      ? "1-0"
+                      : (
+                          pairing.result ===
+                            undefined ||
+                          pairing.result === ""
+                            ? null
+                            : pairing.result
+                        )
+                };
+              }
+            ),
+
+          warning:
+            String(round.warning || "")
+        };
+      })
+      .sort(
+        (a, b) =>
+          a.number - b.number
+      );
+
+  validateLoadedState(result);
+  refreshTournamentStatus(result);
 
   return result;
 }
@@ -3079,20 +5563,26 @@ async function loadTournamentFile(file) {
     state.status === "setup" &&
     parsed.setupDraft
   ) {
-    restoreSetupDraft(parsed.setupDraft);
+    restoreSetupDraft(
+      parsed.setupDraft
+    );
   }
 
   render();
 }
 
-/* ------------------------------------------------------------
+/* ============================================================
    Setup actions
------------------------------------------------------------- */
+============================================================ */
 
 function startTournament() {
-  const name = document
-    .getElementById("tournamentName")
-    .value.trim();
+  const name =
+    document
+      .getElementById(
+        "tournamentName"
+      )
+      .value
+      .trim();
 
   const totalRounds = Number(
     document.getElementById(
@@ -3105,14 +5595,18 @@ function startTournament() {
       "startNumberMethod"
     ).value;
 
-  const parsedPlayers = parsePlayers(
-    document.getElementById(
-      "playersText"
-    ).value
-  );
+  const parsedPlayers =
+    parsePlayers(
+      document.getElementById(
+        "playersText"
+      ).value
+    );
 
   if (!name) {
-    alert("Enter a tournament name.");
+    alert(
+      "Enter a tournament name."
+    );
+
     return;
   }
 
@@ -3124,22 +5618,56 @@ function startTournament() {
     alert(
       "The number of rounds must be between 1 and 30."
     );
+
     return;
   }
 
   if (parsedPlayers.length < 2) {
-    alert("Enter at least two players.");
+    alert(
+      "Enter at least two players."
+    );
+
     return;
   }
 
-  const players = assignStartNumbers(
-    parsedPlayers,
-    method
-  );
+  const maximumRoundsWithoutRepeats =
+    parsedPlayers.length % 2 === 0
+      ? parsedPlayers.length - 1
+      : parsedPlayers.length;
+
+  if (
+    totalRounds >
+    maximumRoundsWithoutRepeats
+  ) {
+    alert(
+      `With ${parsedPlayers.length} players and no ` +
+      `repeated opponents, at most ` +
+      `${maximumRoundsWithoutRepeats} rounds can be played.`
+    );
+
+    return;
+  }
+
+  if (
+    method !== "seeded" &&
+    method !== "random"
+  ) {
+    alert(
+      "Select a valid start-number method."
+    );
+
+    return;
+  }
+
+  const players =
+    assignStartNumbers(
+      parsedPlayers,
+      method
+    );
 
   state = {
     app: "NorwegianMonradWeb",
-    version: 1,
+    version: 2,
     status: "running",
     name,
     totalRounds,
@@ -3162,8 +5690,11 @@ function resetTournament() {
   const hasData =
     state.status !== "setup" ||
     document
-      .getElementById("playersText")
-      .value.trim() !== "";
+      .getElementById(
+        "playersText"
+      )
+      .value
+      .trim() !== "";
 
   if (
     hasData &&
@@ -3196,19 +5727,23 @@ function resetTournament() {
   render();
 }
 
-/* ------------------------------------------------------------
+/* ============================================================
    Event handlers
------------------------------------------------------------- */
+============================================================ */
 
 document
-  .getElementById("saveTournamentButton")
+  .getElementById(
+    "saveTournamentButton"
+  )
   .addEventListener(
     "click",
     saveTournament
   );
 
 document
-  .getElementById("loadTournamentButton")
+  .getElementById(
+    "loadTournamentButton"
+  )
   .addEventListener("click", () => {
     document
       .getElementById(
@@ -3218,18 +5753,23 @@ document
   });
 
 document
-  .getElementById("withdrawPlayerButton")
+  .getElementById(
+    "withdrawPlayerButton"
+  )
   .addEventListener(
     "click",
     withdrawPlayer
   );
 
 document
-  .getElementById("tournamentFileInput")
+  .getElementById(
+    "tournamentFileInput"
+  )
   .addEventListener(
     "change",
     async event => {
-      const file = event.target.files[0];
+      const file =
+        event.target.files[0];
 
       if (!file) {
         return;
@@ -3248,26 +5788,35 @@ document
   );
 
 document
-  .getElementById("newTournamentButton")
+  .getElementById(
+    "newTournamentButton"
+  )
   .addEventListener(
     "click",
     resetTournament
   );
 
 document
-  .getElementById("loadPlayerFileButton")
+  .getElementById(
+    "loadPlayerFileButton"
+  )
   .addEventListener("click", () => {
     document
-      .getElementById("playerFileInput")
+      .getElementById(
+        "playerFileInput"
+      )
       .click();
   });
 
 document
-  .getElementById("playerFileInput")
+  .getElementById(
+    "playerFileInput"
+  )
   .addEventListener(
     "change",
     async event => {
-      const file = event.target.files[0];
+      const file =
+        event.target.files[0];
 
       if (!file) {
         return;
@@ -3276,7 +5825,8 @@ document
       try {
         document.getElementById(
           "playersText"
-        ).value = await file.text();
+        ).value =
+          await file.text();
       } catch (error) {
         alert(
           `Could not read player file: ${error.message}`
@@ -3288,7 +5838,9 @@ document
   );
 
 document
-  .getElementById("loadSampleButton")
+  .getElementById(
+    "loadSampleButton"
+  )
   .addEventListener("click", () => {
     document.getElementById(
       "playersText"
@@ -3312,7 +5864,9 @@ Peter Parker;University Chess Club;1420`;
   });
 
 document
-  .getElementById("clearPlayersButton")
+  .getElementById(
+    "clearPlayersButton"
+  )
   .addEventListener("click", () => {
     document.getElementById(
       "playersText"
@@ -3320,7 +5874,9 @@ document
   });
 
 document
-  .getElementById("startTournamentButton")
+  .getElementById(
+    "startTournamentButton"
+  )
   .addEventListener(
     "click",
     startTournament
@@ -3340,6 +5896,7 @@ document
       alert(
         "No round list is available."
       );
+
       return;
     }
 
