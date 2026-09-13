@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Ett lottningssystem för schack enligt Berger (alla‑mot‑alla), som körs direkt i webbläsaren.">
-  <meta name="author" content="Mats Winther">
+  <meta name="description" content="Ett lottningssystem för schack enligt Berger (alla‑mot‑alla), helt enligt FIDE Handbook C.05 Annex 1.">
+<meta name="author" content="Mats Winther">
   <link rel="canonical" href="https://mats-winther.github.io/berger.htm">
   <title>FIDE Berger Turneringssystem (Alla-mot-alla)</title>
   <style>
@@ -33,7 +33,7 @@
     }
 
     .container {
-      max-width: 1050px;
+      max-width: 1080px;
       margin: 0 auto;
       background: var(--surface);
       border-radius: 8px;
@@ -46,7 +46,7 @@
       padding-bottom: 16px;
       margin-bottom: 24px;
     }
-    h1 { font-size: 26px; color: var(--primary); font-weight: 700; }
+    h1 { font-size: 25px; color: var(--primary); font-weight: 700; }
     header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
 
     .top-actions {
@@ -108,7 +108,8 @@
 
     .radio-group {
       display: flex;
-      gap: 20px;
+      flex-wrap: wrap;
+      gap: 16px;
       margin-top: 6px;
       font-size: 14px;
     }
@@ -183,7 +184,7 @@
     .section-title h3 { font-size: 16px; color: var(--primary); }
 
     .matrix-table { overflow-x: auto; display: block; }
-    .matrix-table th, .matrix-table td { min-width: 34px; text-align: center; font-size: 13px; }
+    .matrix-table th, .matrix-table td { min-width: 36px; text-align: center; font-size: 13px; }
     .matrix-table td.matrix-diag { background: #e2e8f0; font-weight: bold; }
   </style>
 </head>
@@ -191,7 +192,7 @@
 <div class="container">
   <header>
     <h1>FIDE Berger Turneringssystem (Alla-mot-alla)</h1>
-    <p>Officiella Berger-lottningstabeller för 3 till 16 spelare enligt FIDE:s handbok (Annex 1) — nedladdningsbart eller online</p>
+    <p>Officiella Berger-lottningstabeller för 3 till 16 spelare enligt FIDE Handbook (Annex 1 &amp; C.07)</p>
   </header>
 
   <!-- START / INSTÄLLNINGAR -->
@@ -216,7 +217,7 @@
       <div style="display: flex; gap: 10px; margin-top: 8px;">
         <button type="button" class="btn-secondary" onclick="loadSamplePlayers()">Ladda exempel (16 världsmästare)</button>
         <label class="btn-secondary file-btn">
-          Importera spelare från textfil (.txt)
+          Importera deltagare (.txt)
           <input type="file" id="loadTxtInput" accept=".txt" onchange="importPlayersTxt(event)">
         </label>
       </div>
@@ -226,16 +227,18 @@
       <input type="checkbox" id="doubleRoundRobin">
       <div>
         <label for="doubleRoundRobin" style="margin-bottom: 2px;">Dubbelrondig turnering (två varv)</label>
-        <div class="hint">(Kastar om ordningen på de två sista ronderna i det första varvet enligt FIDE:s regler för att förhindra tre på varandra följande partier med samma färg)</div>
+        <div class="hint">Enligt FIDE Annex 1: Omkastning av de två sista ronderna i första varvet för att eliminera 3 partier i rad med samma färg. Varv 2 följer ordinarie ordning med skiftade färger.</div>
       </div>
     </div>
 
     <div class="form-group">
-      <label>Förvald särskiljning vid lika poäng</label>
+      <label>Förvald särskiljning vid lika poäng (FIDE C.07)</label>
       <div class="radio-group">
-        <label><input type="radio" name="defaultTb" value="Progressive" checked> Progressiv poäng (kumulativ poäng)</label>
-        <label><input type="radio" name="defaultTb" value="Buchholz"> Buchholz-systemet (Solkoff)</label>
+        <label><input type="radio" name="defaultTb" value="Sonneborn" checked> <strong>Sonneborn-Berger</strong> (Officiell FIDE-standard)</label>
+        <label><input type="radio" name="defaultTb" value="DirectEncounter"> Inbördes möte</label>
+        <label><input type="radio" name="defaultTb" value="Progressive"> Progressiv poäng</label>
       </div>
+      <div class="hint">Notera: FIDE:s regelverk förbjuder Buchholz i Berger-turneringar, då alla deltagare möter samma motståndare.</div>
     </div>
 
     <button type="button" class="btn-primary" style="padding: 10px 24px; font-size: 15px;" onclick="startTournament()">Starta turneringen</button>
@@ -245,8 +248,8 @@
   <section id="tournamentSection" style="display: none;">
     <div class="top-actions">
       <button type="button" class="btn-secondary" onclick="saveTournamentJson()">Spara turnering (.json)</button>
-      <button type="button" class="btn-danger" onclick="promptWithdraw()">Spelare utgår / Lämna w.o.</button>
-      <button type="button" class="btn-dark" onclick="finishTournament()">Avsluta turneringen</button>
+      <button type="button" class="btn-danger" onclick="promptWithdraw()">Registrera utträde (w.o.)</button>
+      <button type="button" class="btn-dark" onclick="finishTournament()">Avsluta &amp; visa sluttabell</button>
     </div>
 
     <!-- Rondväljare -->
@@ -257,8 +260,8 @@
       </div>
       <h2 id="currentRoundTitle">Rond 1</h2>
       <div>
-        <button type="button" class="btn-preround" onclick="printPreRoundSheet()" title="Skriv ut rondkort och ställning inför denna rond">
-          🖨️ Skriv ut inför rond (Bord &amp; ställning)
+        <button type="button" class="btn-preround" onclick="printPreRoundSheet()" title="Skriv ut bordskort och aktuell ställning inför ronden">
+          🖨️ Skriv ut inför rond
         </button>
       </div>
     </div>
@@ -267,10 +270,10 @@
     <table>
       <thead>
         <tr>
-          <th style="width: 80px;" class="text-center">Bord</th>
-          <th style="width: 35%;">Vit</th>
-          <th style="width: 140px;" class="text-center">Resultat</th>
-          <th style="width: 35%;">Svart</th>
+          <th style="width: 70px;" class="text-center">Bord</th>
+          <th style="width: 36%;">Vit</th>
+          <th style="width: 170px;" class="text-center">Resultat</th>
+          <th style="width: 36%;">Svart</th>
         </tr>
       </thead>
       <tbody id="pairingsBody"></tbody>
@@ -281,11 +284,14 @@
       <h3 id="standingsTitle">Aktuell tabell</h3>
       <div style="font-size: 13px;">
         <strong>Särskiljning:</strong>
-        <label style="margin-left: 8px; font-weight: normal; cursor: pointer;">
-          <input type="radio" name="roundTb" value="Progressive" onchange="renderRoundStandings()" checked> Progressiv
+        <label style="margin-left: 8px; cursor: pointer;">
+          <input type="radio" name="roundTb" value="Sonneborn" onchange="renderRoundStandings()" checked> Sonneborn-B.
         </label>
-        <label style="margin-left: 8px; font-weight: normal; cursor: pointer;">
-          <input type="radio" name="roundTb" value="Buchholz" onchange="renderRoundStandings()"> Buchholz
+        <label style="margin-left: 8px; cursor: pointer;">
+          <input type="radio" name="roundTb" value="DirectEncounter" onchange="renderRoundStandings()"> Inbördes
+        </label>
+        <label style="margin-left: 8px; cursor: pointer;">
+          <input type="radio" name="roundTb" value="Progressive" onchange="renderRoundStandings()"> Progressiv
         </label>
       </div>
     </div>
@@ -301,15 +307,15 @@
           <th class="text-center">R</th>
           <th class="text-center">F</th>
           <th class="text-center">P</th>
-          <th class="text-center" id="colTbHeader">Särskiljning</th>
-          <th class="text-center">Status</th>
+          <th class="text-center" id="colTbHeader" style="width: 110px;">S-B</th>
+          <th class="text-center" style="width: 90px;">Status</th>
         </tr>
       </thead>
       <tbody id="standingsBody"></tbody>
     </table>
 
     <div class="top-actions" style="margin-top: 16px;">
-      <button type="button" class="btn-secondary" onclick="printRoundResults()">🖨️ Skriv ut resultat</button>
+      <button type="button" class="btn-secondary" onclick="printRoundResults()">🖨️ Skriv ut rondresultat &amp; tabell</button>
       <button type="button" class="btn-secondary" onclick="saveTournamentJson()">Exportera (.json)</button>
     </div>
   </section>
@@ -319,7 +325,7 @@
     <div class="top-actions">
       <button type="button" class="btn-secondary" onclick="backToRounds()">← Tillbaka till ronderna</button>
       <button type="button" class="btn-primary" onclick="newTournamentSetup()">Ny turnering</button>
-      <button type="button" class="btn-secondary" onclick="printFinalResults()">🖨️ Skriv ut slutresultat</button>
+      <button type="button" class="btn-secondary" onclick="printFinalResults()">🖨️ Skriv ut slutprotokoll</button>
       <button type="button" class="btn-secondary" onclick="saveTournamentJson()">Exportera (.json)</button>
     </div>
 
@@ -327,11 +333,14 @@
       <h2>Slutresultat och tabell</h2>
       <div style="font-size: 13px;">
         <strong>Särskiljning:</strong>
-        <label style="margin-left: 8px; font-weight: normal; cursor: pointer;">
-          <input type="radio" name="finalTb" value="Progressive" onchange="renderFinals()" checked> Progressiv poäng
+        <label style="margin-left: 8px; cursor: pointer;">
+          <input type="radio" name="finalTb" value="Sonneborn" onchange="renderFinals()" checked> Sonneborn-Berger
         </label>
-        <label style="margin-left: 8px; font-weight: normal; cursor: pointer;">
-          <input type="radio" name="finalTb" value="Buchholz" onchange="renderFinals()"> Buchholz-systemet
+        <label style="margin-left: 8px; cursor: pointer;">
+          <input type="radio" name="finalTb" value="DirectEncounter" onchange="renderFinals()"> Inbördes möte
+        </label>
+        <label style="margin-left: 8px; cursor: pointer;">
+          <input type="radio" name="finalTb" value="Progressive" onchange="renderFinals()"> Progressiv poäng
         </label>
       </div>
     </div>
@@ -339,18 +348,23 @@
     <table>
       <thead>
         <tr>
-          <th class="text-center" style="width: 60px;">Plac.</th>
-          <th class="text-center" style="width: 60px;">Nr.</th>
+          <th class="text-center" style="width: 55px;">Plac.</th>
+          <th class="text-center" style="width: 55px;">Nr.</th>
           <th>Spelare</th>
+          <th class="text-center" style="width: 70px;">Sp</th>
+          <th class="text-center" style="width: 50px;">V</th>
+          <th class="text-center" style="width: 50px;">R</th>
+          <th class="text-center" style="width: 50px;">F</th>
           <th class="text-center" style="width: 80px;">Poäng</th>
-          <th class="text-center" style="width: 130px;" id="finalTbHeader">Progressiv</th>
-          <th class="text-center" style="width: 100px;">Status</th>
+          <th class="text-center" style="width: 120px;" id="finalTbHeader">Sonneborn-B.</th>
+          <th class="text-center" style="width: 90px;">Status</th>
         </tr>
       </thead>
       <tbody id="finalStandingsBody"></tbody>
     </table>
 
-    <h3 style="margin-top: 32px; margin-bottom: 12px; color: var(--primary);">Berger-korstabell</h3>
+    <h3 style="margin-top: 32px; margin-bottom: 12px; color: var(--primary);">FIDE Berger-korstabell</h3>
+    <div class="hint" style="margin-bottom: 8px;">Notation: 1, ½, 0 = spelat parti. + = vinst på w.o., - = förlust på w.o., -- = dubbel-w.o.</div>
     <div class="matrix-table" id="crosstableContainer"></div>
   </section>
 </div>
@@ -359,7 +373,7 @@
 let tournament = {
   name: "",
   isDouble: false,
-  defaultTieBreak: "Progressive",
+  defaultTieBreak: "Sonneborn",
   players: [],
   rounds: [],
   currentRound: 1,
@@ -407,9 +421,6 @@ function getRoundStatus(roundObj) {
   };
 }
 
-/**
- * Fastställer dynamisk tabellrubrik och antal ronder som ska summeras
- */
 function getStandingsContext(viewingRoundNum) {
   const viewingRound = tournament.rounds[viewingRoundNum - 1];
   const status = getRoundStatus(viewingRound);
@@ -421,11 +432,10 @@ function getStandingsContext(viewingRoundNum) {
     };
   } else if (status.isInProgress) {
     return {
-      title: `Aktuell ställning (Rond ${viewingRoundNum} pågår — ${status.completed}/${status.total} partier färdigspelade)`,
+      title: `Aktuell ställning (Rond ${viewingRoundNum} pågår — ${status.completed}/${status.total} partier färdiga)`,
       calcUpToRound: viewingRoundNum
     };
   } else {
-    // Rond har inte påbörjats än. Hitta den senaste ronden med färdiga partier.
     let prevRoundWithGames = 0;
     for (let i = viewingRoundNum - 1; i >= 1; i--) {
       const s = getRoundStatus(tournament.rounds[i - 1]);
@@ -454,7 +464,7 @@ function getStandingsContext(viewingRoundNum) {
 }
 
 /**
- * FIDE Berger-lottning (Annex 1)
+ * FIDE Berger-lottningstabell (Annex 1)
  */
 function generateBergerPairings(numPlayers) {
   const N = (numPlayers % 2 === 0) ? numPlayers : numPlayers + 1;
@@ -492,7 +502,7 @@ function startTournament() {
     .filter(s => s.length > 0);
 
   if (rawRoster.length < 3 || rawRoster.length > 16) {
-    alert("Vänligen ange mellan 3 och 16 spelare.");
+    alert("Vänligen ange mellan 3 och 16 deltagare.");
     return;
   }
 
@@ -525,6 +535,7 @@ function startTournament() {
       pairings: pairs
     }));
   } else {
+    // FIDE Annex 1: Kasta om de två sista ronderna i första varvet
     const cycle1 = JSON.parse(JSON.stringify(baseBerger));
     if (cycle1.length >= 2) {
       const lastIdx = cycle1.length - 1;
@@ -534,7 +545,8 @@ function startTournament() {
       cycle1[secondLastIdx] = temp;
     }
 
-    const cycle2 = cycle1.map(round =>
+    // FIDE Annex 1: Varv 2 följer grundtabellen (baseBerger) med skiftade färger
+    const cycle2 = baseBerger.map(round =>
       round.map(p => ({
         white: p.black,
         black: p.white,
@@ -586,7 +598,7 @@ function backToRounds() {
 }
 
 function newTournamentSetup() {
-  if (confirm("Vill du starta en ny turnering? Osparade data rensas.")) {
+  if (confirm("Vill du starta en ny turnering? Nuvarande turnering raderas om den inte sparats som JSON.")) {
     document.getElementById("setupSection").style.display = "block";
     document.getElementById("tournamentSection").style.display = "none";
     document.getElementById("finalSection").style.display = "none";
@@ -627,8 +639,9 @@ function renderRound() {
             <option value="1-0" ${pair.result === "1-0" ? "selected" : ""}>1 - 0</option>
             <option value="1/2-1/2" ${pair.result === "1/2-1/2" ? "selected" : ""}>½ - ½</option>
             <option value="0-1" ${pair.result === "0-1" ? "selected" : ""}>0 - 1</option>
-            <option value="1-0 WO" ${pair.result === "1-0 WO" ? "selected" : ""}>1-0 (w.o.)</option>
-            <option value="0-1 WO" ${pair.result === "0-1 WO" ? "selected" : ""}>0-1 (w.o.)</option>
+            <option value="1-0 WO" ${pair.result === "1-0 WO" ? "selected" : ""}>1 - 0 (w.o.)</option>
+            <option value="0-1 WO" ${pair.result === "0-1 WO" ? "selected" : ""}>0 - 1 (w.o.)</option>
+            <option value="0-0 WO" ${pair.result === "0-0 WO" ? "selected" : ""}>0 - 0 (dubbel-w.o.)</option>
           </select>
         `}
       </td>
@@ -660,6 +673,9 @@ function nextRound() {
   }
 }
 
+/**
+ * Beräkning av ställning och särskiljning (FIDE C.07)
+ */
 function calculateScores(upToRound) {
   const stats = {};
   tournament.players.forEach(p => {
@@ -674,8 +690,8 @@ function calculateScores(upToRound) {
         l: 0,
         pts: 0,
         progressive: 0,
-        buchholz: 0,
-        opponents: [],
+        sonneborn: 0,
+        directWinsAgainst: {},
         status: p.status
       };
     }
@@ -685,9 +701,8 @@ function calculateScores(upToRound) {
 
   const roundsToProcess = tournament.rounds.filter(r => r.roundNumber <= upToRound);
 
+  // Steg 1: Samla poäng och resultat
   roundsToProcess.forEach(rd => {
-    let roundHasScoredGames = false;
-
     rd.pairings.forEach(p => {
       const w = stats[p.white];
       const b = stats[p.black];
@@ -695,54 +710,90 @@ function calculateScores(upToRound) {
 
       if (!w || !b || !res || res === "*") return;
 
-      roundHasScoredGames = true;
-      w.opponents.push(b.id);
-      b.opponents.push(w.id);
-
       if (res === "1-0" || res === "1-0 WO") {
         w.w++; w.pts += 1.0;
         b.l++;
+        w.directWinsAgainst[b.id] = (w.directWinsAgainst[b.id] || 0) + 1.0;
       } else if (res === "0-1" || res === "0-1 WO") {
         b.w++; b.pts += 1.0;
         w.l++;
+        b.directWinsAgainst[w.id] = (b.directWinsAgainst[w.id] || 0) + 1.0;
       } else if (res === "1/2-1/2") {
         w.d++; w.pts += 0.5;
         b.d++; b.pts += 0.5;
+        w.directWinsAgainst[b.id] = (w.directWinsAgainst[b.id] || 0) + 0.5;
+        b.directWinsAgainst[w.id] = (b.directWinsAgainst[w.id] || 0) + 0.5;
+      } else if (res === "0-0 WO") {
+        w.l++; b.l++;
       }
 
-      if (!res.includes("WO")) {
-        w.pld++;
-        b.pld++;
-      }
+      // Alla avgjorda/bokförda partier räknas i Sp (Sp = V + R + F)
+      w.pld++;
+      b.pld++;
     });
 
-    // Lägg endast till progressiv poäng om partier faktiskt spelats i denna rond
-    if (roundHasScoredGames) {
+    // Progressiv poäng ackumuleras endast efter färdigspelad rond
+    const rdStatus = getRoundStatus(rd);
+    if (rdStatus.isComplete) {
       Object.values(stats).forEach(s => {
         s.progressive += s.pts;
       });
     }
   });
 
-  Object.values(stats).forEach(s => {
-    s.buchholz = s.opponents.reduce((sum, oppId) => sum + (stats[oppId] ? stats[oppId].pts : 0), 0);
+  // Steg 2: Beräkna Sonneborn-Berger (FIDE C.07 Art. 9.1 / 9.2)
+  roundsToProcess.forEach(rd => {
+    rd.pairings.forEach(p => {
+      const w = stats[p.white];
+      const b = stats[p.black];
+      const res = p.result;
+      if (!w || !b || !res || res === "*") return;
+
+      if (res === "1-0" || res === "1-0 WO") {
+        w.sonneborn += b.pts;
+      } else if (res === "0-1" || res === "0-1 WO") {
+        b.sonneborn += w.pts;
+      } else if (res === "1/2-1/2") {
+        w.sonneborn += (b.pts * 0.5);
+        b.sonneborn += (w.pts * 0.5);
+      }
+    });
   });
 
   return stats;
 }
 
 function getSortedStandings(stats, tieBreakType) {
-  const tbKey = tieBreakType === "Buchholz" ? "buchholz" : "progressive";
   return Object.values(stats).sort((a, b) => {
     if (b.pts !== a.pts) return b.pts - a.pts;
-    if (b[tbKey] !== a[tbKey]) return b[tbKey] - a[tbKey];
+
+    if (tieBreakType === "Sonneborn") {
+      if (b.sonneborn !== a.sonneborn) return b.sonneborn - a.sonneborn;
+    } else if (tieBreakType === "DirectEncounter") {
+      const h2h_a = a.directWinsAgainst[b.id] || 0;
+      const h2h_b = b.directWinsAgainst[a.id] || 0;
+      if (h2h_b !== h2h_a) return h2h_b - h2h_a;
+      if (b.sonneborn !== a.sonneborn) return b.sonneborn - a.sonneborn;
+    } else if (tieBreakType === "Progressive") {
+      if (b.progressive !== a.progressive) return b.progressive - a.progressive;
+    }
+
+    if (b.w !== a.w) return b.w - a.w; // FIDE sekundär: flest vinster
     return a.no - b.no;
   });
 }
 
+function getTbValueFormatted(player, tieBreakType) {
+  if (tieBreakType === "Sonneborn") return player.sonneborn.toFixed(2);
+  if (tieBreakType === "Progressive") return player.progressive.toFixed(1);
+  if (tieBreakType === "DirectEncounter") return `SB: ${player.sonneborn.toFixed(2)}`;
+  return "-";
+}
+
 function renderRoundStandings() {
   const tbType = document.querySelector('input[name="roundTb"]:checked').value;
-  document.getElementById("colTbHeader").textContent = tbType === "Buchholz" ? "Buchholz" : "Progressiv";
+  const colHeader = document.getElementById("colTbHeader");
+  colHeader.textContent = tbType === "Sonneborn" ? "Sonneborn-B." : (tbType === "DirectEncounter" ? "Inbördes / SB" : "Progressiv");
 
   const context = getStandingsContext(tournament.currentRound);
   document.getElementById("standingsTitle").innerHTML = context.title;
@@ -756,7 +807,7 @@ function renderRoundStandings() {
   sorted.forEach((p, idx) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td class="text-center font-bold">${idx + 1}</td>
+      <td class="text-center"><strong>${idx + 1}</strong></td>
       <td class="text-center">${p.no}</td>
       <td>${p.name}</td>
       <td class="text-center">${p.pld}</td>
@@ -764,7 +815,7 @@ function renderRoundStandings() {
       <td class="text-center">${p.d}</td>
       <td class="text-center">${p.l}</td>
       <td class="text-center"><strong>${p.pts.toFixed(1)}</strong></td>
-      <td class="text-center">${(tbType === "Buchholz" ? p.buchholz : p.progressive).toFixed(1)}</td>
+      <td class="text-center">${getTbValueFormatted(p, tbType)}</td>
       <td class="text-center">
         <span class="badge-status ${p.status === 'Active' ? 'status-active' : 'status-withdrawn'}">${getStatusLabel(p.status)}</span>
       </td>
@@ -776,7 +827,7 @@ function renderRoundStandings() {
 function openPrintWindow(title, contentHtml) {
   const printWindow = window.open("", "_blank", "width=920,height=800");
   if (!printWindow) {
-    alert("Popup-fönster blockerades. Tillåt popup-fönster för den här sidan för att kunna skriva ut.");
+    alert("Popup blockerades. Tillåt popup-fönster i webbläsaren för att skriva ut.");
     return;
   }
   printWindow.document.write(`<!DOCTYPE html>
@@ -787,16 +838,16 @@ function openPrintWindow(title, contentHtml) {
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      padding: 30px;
+      padding: 24px;
       color: #0f172a;
       background: #ffffff;
       margin: 0;
     }
-    h1 { font-size: 22px; margin: 0 0 4px 0; color: #1e3a8a; }
-    h2 { font-size: 15px; margin: 0 0 20px 0; color: #475569; font-weight: normal; }
+    h1 { font-size: 20px; margin: 0 0 4px 0; color: #1e3a8a; }
+    h2 { font-size: 14px; margin: 0 0 16px 0; color: #475569; font-weight: normal; }
     h3 {
-      font-size: 14px;
-      margin: 24px 0 8px 0;
+      font-size: 13px;
+      margin: 20px 0 6px 0;
       border-bottom: 1px solid #94a3b8;
       padding-bottom: 4px;
       text-transform: uppercase;
@@ -806,7 +857,7 @@ function openPrintWindow(title, contentHtml) {
     .print-table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       font-size: 13px;
     }
     .print-table th, .print-table td {
@@ -814,36 +865,30 @@ function openPrintWindow(title, contentHtml) {
       padding: 6px 10px;
       text-align: left;
     }
-    .print-table th {
-      background-color: #f1f5f9;
-      font-weight: 600;
-    }
+    .print-table th { background-color: #f1f5f9; font-weight: 600; }
     .text-center { text-align: center !important; }
     .matrix-diag { background-color: #e2e8f0; font-weight: bold; }
     @media print {
       body { padding: 0; }
-      @page { margin: 1.5cm; }
+      @page { margin: 1.2cm; }
     }
   </style>
 </head>
 <body>
   ${contentHtml}
-  <script>
-    window.onload = function() {
-      window.focus();
-      window.print();
-    };
-  <\/script>
 </body>
 </html>`);
   printWindow.document.close();
+  setTimeout(() => {
+    printWindow.focus();
+    printWindow.print();
+  }, 250);
 }
 
 function printPreRoundSheet() {
   const currentRoundNum = tournament.currentRound;
   const currentRoundData = tournament.rounds[currentRoundNum - 1];
   const tbType = document.querySelector('input[name="roundTb"]:checked').value;
-  const tbLabel = tbType === "Buchholz" ? "Buchholz" : "Progressiv";
   const statsBefore = calculateScores(currentRoundNum - 1);
   const sortedBefore = getSortedStandings(statsBefore, tbType);
 
@@ -886,7 +931,7 @@ function printPreRoundSheet() {
           <th style="width: 8%;" class="text-center">R</th>
           <th style="width: 8%;" class="text-center">F</th>
           <th style="width: 10%;" class="text-center">P</th>
-          <th style="width: 12%;" class="text-center">${tbLabel}</th>
+          <th style="width: 14%;" class="text-center">Särskiljning</th>
           <th style="width: 12%;" class="text-center">Status</th>
         </tr>
       </thead>
@@ -904,7 +949,7 @@ function printPreRoundSheet() {
         <td class="text-center">${s.d}</td>
         <td class="text-center">${s.l}</td>
         <td class="text-center" style="font-weight: bold;">${s.pts.toFixed(1)}</td>
-        <td class="text-center">${(tbType === "Buchholz" ? s.buchholz : s.progressive).toFixed(1)}</td>
+        <td class="text-center">${getTbValueFormatted(s, tbType)}</td>
         <td class="text-center">${getStatusLabel(s.status)}</td>
       </tr>
     `;
@@ -913,10 +958,10 @@ function printPreRoundSheet() {
 
   const content = `
     <h1>${tournament.name}</h1>
-    <h2>Rond ${currentRoundNum} &mdash; Bordslottning &amp; ställning inför ronden</h2>
-    <h3>Bordslottning för rond ${currentRoundNum}</h3>
+    <h2>Rond ${currentRoundNum} &mdash; Bordslottning och ställning inför ronden</h2>
+    <h3>Bordslottning</h3>
     ${pairingsHtml}
-    <h3>${currentRoundNum === 1 ? "Startlista / Seedning" : "Ställning efter rond " + (currentRoundNum - 1)}</h3>
+    <h3>${currentRoundNum === 1 ? "Startlista" : "Ställning efter rond " + (currentRoundNum - 1)}</h3>
     ${standingsHtml}
   `;
 
@@ -927,7 +972,6 @@ function printRoundResults() {
   const currentRoundNum = tournament.currentRound;
   const currentRoundData = tournament.rounds[currentRoundNum - 1];
   const tbType = document.querySelector('input[name="roundTb"]:checked').value;
-  const tbLabel = tbType === "Buchholz" ? "Buchholz" : "Progressiv";
   const context = getStandingsContext(currentRoundNum);
   const stats = calculateScores(context.calcUpToRound);
   const sorted = getSortedStandings(stats, tbType);
@@ -971,7 +1015,7 @@ function printRoundResults() {
           <th style="width: 8%;" class="text-center">R</th>
           <th style="width: 8%;" class="text-center">F</th>
           <th style="width: 10%;" class="text-center">P</th>
-          <th style="width: 12%;" class="text-center">${tbLabel}</th>
+          <th style="width: 14%;" class="text-center">Särskiljning</th>
           <th style="width: 12%;" class="text-center">Status</th>
         </tr>
       </thead>
@@ -989,7 +1033,7 @@ function printRoundResults() {
         <td class="text-center">${s.d}</td>
         <td class="text-center">${s.l}</td>
         <td class="text-center" style="font-weight: bold;">${s.pts.toFixed(1)}</td>
-        <td class="text-center">${(tbType === "Buchholz" ? s.buchholz : s.progressive).toFixed(1)}</td>
+        <td class="text-center">${getTbValueFormatted(s, tbType)}</td>
         <td class="text-center">${getStatusLabel(s.status)}</td>
       </tr>
     `;
@@ -998,8 +1042,8 @@ function printRoundResults() {
 
   const content = `
     <h1>${tournament.name}</h1>
-    <h2>Rond ${currentRoundNum} Resultat &amp; tabell</h2>
-    <h3>Bord och partieresultat (Rond ${currentRoundNum})</h3>
+    <h2>Rond ${currentRoundNum} &mdash; Resultat och tabell</h2>
+    <h3>Bordsresultat (Rond ${currentRoundNum})</h3>
     ${pairingsHtml}
     <h3>${context.title}</h3>
     ${standingsHtml}
@@ -1022,23 +1066,32 @@ function generateCrosstableHtml(stats) {
   tournament.rounds.forEach(rd => {
     rd.pairings.forEach(pair => {
       if (mapResults[pair.white] && mapResults[pair.white][pair.black]) {
-        if (pair.result === "1-0" || pair.result === "1-0 WO") {
+        if (pair.result === "1-0") {
           mapResults[pair.white][pair.black].push("1");
           mapResults[pair.black][pair.white].push("0");
-        } else if (pair.result === "0-1" || pair.result === "0-1 WO") {
+        } else if (pair.result === "0-1") {
           mapResults[pair.white][pair.black].push("0");
           mapResults[pair.black][pair.white].push("1");
         } else if (pair.result === "1/2-1/2") {
           mapResults[pair.white][pair.black].push("½");
           mapResults[pair.black][pair.white].push("½");
+        } else if (pair.result === "1-0 WO") {
+          mapResults[pair.white][pair.black].push("+");
+          mapResults[pair.black][pair.white].push("-");
+        } else if (pair.result === "0-1 WO") {
+          mapResults[pair.white][pair.black].push("-");
+          mapResults[pair.black][pair.white].push("+");
+        } else if (pair.result === "0-0 WO") {
+          mapResults[pair.white][pair.black].push("--");
+          mapResults[pair.black][pair.white].push("--");
         }
       }
     });
   });
 
   let ctHtml = `<table class="print-table"><thead><tr><th style="width: 40px;" class="text-center">Nr.</th><th>Spelare</th>`;
-  activeHumans.forEach((_, i) => { ctHtml += `<th class="text-center" style="min-width: 30px;">${i + 1}</th>`; });
-  ctHtml += `<th class="text-center" style="width: 50px;">P</th></tr></thead><tbody>`;
+  activeHumans.forEach((_, i) => { ctHtml += `<th class="text-center" style="min-width: 32px;">${i + 1}</th>`; });
+  ctHtml += `<th class="text-center" style="width: 50px;">P</th><th class="text-center" style="width: 65px;">SB</th></tr></thead><tbody>`;
 
   activeHumans.forEach(p => {
     const pStat = stats[p.id];
@@ -1048,10 +1101,11 @@ function generateCrosstableHtml(stats) {
         ctHtml += `<td class="text-center matrix-diag">✕</td>`;
       } else {
         const scores = mapResults[p.id][opp.id];
-        ctHtml += `<td class="text-center">${scores.length > 0 ? scores.join(", ") : "-"}</td>`;
+        ctHtml += `<td class="text-center">${scores.length > 0 ? scores.join(" ") : "-"}</td>`;
       }
     });
-    ctHtml += `<td class="text-center font-bold">${pStat ? pStat.pts.toFixed(1) : "0.0"}</td></tr>`;
+    ctHtml += `<td class="text-center font-bold">${pStat ? pStat.pts.toFixed(1) : "0.0"}</td>`;
+    ctHtml += `<td class="text-center">${pStat ? pStat.sonneborn.toFixed(2) : "0.00"}</td></tr>`;
   });
   ctHtml += `</tbody></table>`;
   return ctHtml;
@@ -1059,7 +1113,6 @@ function generateCrosstableHtml(stats) {
 
 function printFinalResults() {
   const tbType = document.querySelector('input[name="finalTb"]:checked').value;
-  const tbLabel = tbType === "Buchholz" ? "Buchholz" : "Progressiv";
   const stats = calculateScores(tournament.rounds.length);
   const sorted = getSortedStandings(stats, tbType);
 
@@ -1067,11 +1120,15 @@ function printFinalResults() {
     <table class="print-table">
       <thead>
         <tr>
-          <th style="width: 8%;" class="text-center">Plac.</th>
-          <th style="width: 8%;" class="text-center">Nr.</th>
+          <th style="width: 7%;" class="text-center">Plac.</th>
+          <th style="width: 7%;" class="text-center">Nr.</th>
           <th>Spelare</th>
-          <th style="width: 12%;" class="text-center">Poäng</th>
-          <th style="width: 14%;" class="text-center">${tbLabel}</th>
+          <th style="width: 7%;" class="text-center">Sp</th>
+          <th style="width: 6%;" class="text-center">V</th>
+          <th style="width: 6%;" class="text-center">R</th>
+          <th style="width: 6%;" class="text-center">F</th>
+          <th style="width: 10%;" class="text-center">Poäng</th>
+          <th style="width: 14%;" class="text-center">Särskiljning</th>
           <th style="width: 12%;" class="text-center">Status</th>
         </tr>
       </thead>
@@ -1084,8 +1141,12 @@ function printFinalResults() {
         <td class="text-center" style="font-weight: bold;">${idx + 1}</td>
         <td class="text-center">${p.no}</td>
         <td><strong>${p.name}</strong></td>
+        <td class="text-center">${p.pld}</td>
+        <td class="text-center">${p.w}</td>
+        <td class="text-center">${p.d}</td>
+        <td class="text-center">${p.l}</td>
         <td class="text-center" style="font-weight: bold;">${p.pts.toFixed(1)}</td>
-        <td class="text-center">${(tbType === "Buchholz" ? p.buchholz : p.progressive).toFixed(1)}</td>
+        <td class="text-center">${getTbValueFormatted(p, tbType)}</td>
         <td class="text-center">${getStatusLabel(p.status)}</td>
       </tr>
     `;
@@ -1119,15 +1180,22 @@ function promptWithdraw() {
     return;
   }
 
-  if (confirm(`Ska ${target.name} verkligen utgå? Resterande ospelade partier registreras som förlust på w.o.`)) {
+  if (confirm(`Bekräfta utträde för ${target.name}. Resterande ospelade partier registreras som förlust på w.o.`)) {
     target.status = "Withdrawn";
 
     tournament.rounds.forEach(rd => {
       if (rd.roundNumber >= tournament.currentRound) {
         rd.pairings.forEach(p => {
-          if (p.result === "*") {
-            if (p.white === pId) p.result = "0-1 WO";
-            if (p.black === pId) p.result = "1-0 WO";
+          if (p.white === pId || p.black === pId) {
+            const oppId = (p.white === pId) ? p.black : p.white;
+            if (isByePlayer(oppId)) return; // Frirond ändras ej
+
+            const opp = tournament.players.find(pl => pl.id === oppId);
+            if (opp && opp.status === "Withdrawn") {
+              p.result = "0-0 WO"; // Båda har utgått: dubbel-w.o.
+            } else if (p.result === "*") {
+              p.result = (p.white === pId) ? "0-1 WO" : "1-0 WO";
+            }
           }
         });
       }
@@ -1140,7 +1208,7 @@ function promptWithdraw() {
 
 function renderFinals() {
   const tbType = document.querySelector('input[name="finalTb"]:checked').value;
-  document.getElementById("finalTbHeader").textContent = tbType === "Buchholz" ? "Buchholz" : "Progressiv";
+  document.getElementById("finalTbHeader").textContent = tbType === "Sonneborn" ? "Sonneborn-B." : (tbType === "DirectEncounter" ? "Inbördes / SB" : "Progressiv");
 
   const stats = calculateScores(tournament.rounds.length);
   const sorted = getSortedStandings(stats, tbType);
@@ -1153,8 +1221,12 @@ function renderFinals() {
       <td class="text-center font-bold">${idx + 1}</td>
       <td class="text-center">${p.no}</td>
       <td><strong>${p.name}</strong></td>
+      <td class="text-center">${p.pld}</td>
+      <td class="text-center">${p.w}</td>
+      <td class="text-center">${p.d}</td>
+      <td class="text-center">${p.l}</td>
       <td class="text-center"><strong>${p.pts.toFixed(1)}</strong></td>
-      <td class="text-center">${(tbType === "Buchholz" ? p.buchholz : p.progressive).toFixed(1)}</td>
+      <td class="text-center">${getTbValueFormatted(p, tbType)}</td>
       <td class="text-center">
         <span class="badge-status ${p.status === 'Active' ? 'status-active' : 'status-withdrawn'}">${getStatusLabel(p.status)}</span>
       </td>
