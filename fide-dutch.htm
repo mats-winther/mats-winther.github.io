@@ -1,0 +1,4666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Experimental FIDE Dutch Pairing System — 2026 Rules</title>
+
+<style>
+  :root {
+    --primary: #1a365d;
+    --primary-light: #2b6cb0;
+    --accent: #d69e2e;
+    --bg: #f7fafc;
+    --card: #ffffff;
+    --text: #2d3748;
+    --text-muted: #718096;
+    --border: #e2e8f0;
+    --success: #38a169;
+    --danger: #e53e3e;
+    --warning: #dd6b20;
+    --info: #3182ce;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding-bottom: 50px;
+  }
+
+  header {
+    background: var(--primary);
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  header h1 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  header .subtitle {
+    font-size: 0.8rem;
+    color: #cbd5e0;
+  }
+
+  .container {
+    max-width: 1250px;
+    margin: 1.5rem auto;
+    padding: 0 1rem;
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  .btn-primary {
+    background: var(--primary-light);
+    color: white;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: var(--primary);
+  }
+
+  .btn-success {
+    background: var(--success);
+    color: white;
+  }
+
+  .btn-success:hover:not(:disabled) {
+    background: #2f855a;
+  }
+
+  .btn-danger {
+    background: var(--danger);
+    color: white;
+  }
+
+  .btn-danger:hover:not(:disabled) {
+    background: #c53030;
+  }
+
+  .btn-warning {
+    background: var(--warning);
+    color: white;
+  }
+
+  .btn-warning:hover:not(:disabled) {
+    background: #c05621;
+  }
+
+  .btn-secondary {
+    background: #edf2f7;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background: #e2e8f0;
+  }
+
+  .btn-dark {
+    background: #2d3748;
+    color: white;
+  }
+
+  .btn-dark:hover:not(:disabled) {
+    background: #1a202c;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .nav-tabs {
+    display: flex;
+    gap: 0.25rem;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+  }
+
+  .nav-tab {
+    padding: 0.6rem 1.2rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-muted);
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .nav-tab.active {
+    color: var(--primary-light);
+    border-bottom-color: var(--primary-light);
+    background: rgba(43, 108, 176, 0.05);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  th,
+  td {
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    background: #f8fafc;
+    font-weight: 700;
+    color: #4a5568;
+  }
+
+  tr:hover {
+    background: #f7fafc;
+  }
+
+  .text-center {
+    text-align: center;
+  }
+
+  .text-right {
+    text-align: right;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+
+  .badge-white {
+    background: #ffffff;
+    color: #1a202c;
+    border: 1px solid #cbd5e0;
+  }
+
+  .badge-black {
+    background: #1a202c;
+    color: #ffffff;
+  }
+
+  .badge-bye {
+    background: #feebc8;
+    color: #7b341e;
+  }
+
+  .badge-float {
+    background: #e2e8f0;
+    color: #2d3748;
+    font-size: 0.7rem;
+  }
+
+  .badge-withdrawn {
+    background: #fed7d7;
+    color: #9b2c2c;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .form-group label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #4a5568;
+  }
+
+  .form-control {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.875rem;
+    background: #ffffff;
+  }
+
+  .form-control:focus {
+    outline: none;
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
+  }
+
+  .form-control:disabled {
+    background: #edf2f7;
+    color: #718096;
+    cursor: not-allowed;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .modal-overlay.active {
+    display: flex;
+  }
+
+  .modal-content {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    width: 90%;
+    max-width: 650px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  }
+
+  .result-select {
+    padding: 0.3rem 0.5rem;
+    font-weight: 700;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: #edf2f7;
+    cursor: pointer;
+  }
+
+  .print-result {
+    display: none;
+  }
+
+  .alert {
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .alert-info {
+    background: #ebf8ff;
+    color: #2b6cb0;
+    border: 1px solid #bee3f8;
+  }
+
+  .alert-success {
+    background: #f0fff4;
+    color: #276749;
+    border: 1px solid #c6f6d5;
+  }
+
+  .alert-warning {
+    background: #fffaf0;
+    color: #c05621;
+    border: 1px solid #feebc8;
+  }
+
+  .alert-danger {
+    background: #fff5f5;
+    color: #9b2c2c;
+    border: 1px solid #fed7d7;
+  }
+
+  .small-note {
+    font-size: 0.78rem;
+    color: #718096;
+  }
+
+  @media print {
+    header,
+    .nav-tabs,
+    .btn-group,
+    .btn,
+    .no-print,
+    .form-card {
+      display: none !important;
+    }
+
+    body {
+      background: white;
+      color: black;
+      font-size: 10pt;
+    }
+
+    .container {
+      max-width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    .card {
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      margin-bottom: 1.5rem;
+    }
+
+    .print-only {
+      display: block !important;
+    }
+
+    table {
+      border: 1px solid #000;
+      font-size: 9pt;
+    }
+
+    th,
+    td {
+      border: 1px solid #333;
+      padding: 4px 6px;
+    }
+
+    th {
+      background: #eee !important;
+      color: black !important;
+    }
+
+    .page-break {
+      page-break-after: always;
+    }
+
+    .result-select {
+      display: none !important;
+    }
+
+    .print-result {
+      display: inline-block !important;
+      font-weight: 700;
+      font-size: 1.15rem;
+      text-align: center;
+      width: 100%;
+      letter-spacing: 2px;
+    }
+
+    #pairingsTable td {
+      padding: 8px 6px;
+    }
+
+    #pabContainer .card,
+    #unplayedContainer .card {
+      border: 1px solid #333 !important;
+      padding: 8px !important;
+    }
+  }
+
+  .print-only {
+    display: none;
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <div>
+    <h1>Experimental FIDE Dutch Swiss Pairing System</h1>
+    <div class="subtitle">
+      Operational implementation of C.04.3 effective February 1, 2026 —
+      validation against official test cases is still required
+    </div>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn btn-secondary" onclick="saveTournament()">
+      💾 Save Tournament
+    </button>
+
+    <button class="btn btn-dark" onclick="window.print()">
+      🖨️ Print
+    </button>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="alert alert-warning no-print">
+    <strong>Validation notice:</strong>
+    This implementation follows the supplied operational interpretation and
+    performs an exhaustive, deterministic search without arbitrary candidate
+    caps. It has not been certified by FIDE and should be checked against
+    official examples or an approved pairing checker before official use.
+  </div>
+
+  <div class="print-only" style="margin-bottom:15px;">
+    <h2 id="printTitle" style="font-size:16pt;">
+      Tournament Standings / Pairings
+    </h2>
+
+    <div id="printSubtitle" style="font-size:10pt;color:#555;">
+      Generated by an experimental FIDE Dutch implementation
+    </div>
+  </div>
+
+  <div class="nav-tabs no-print">
+    <div class="nav-tab active" onclick="switchTab('setupTab')">
+      ⚙️ Setup & Registration
+    </div>
+
+    <div class="nav-tab" onclick="switchTab('pairingsTab')">
+      ♟️ Round Pairings
+    </div>
+
+    <div class="nav-tab" onclick="switchTab('standingsTab')">
+      📊 Standings
+    </div>
+
+    <div class="nav-tab" onclick="switchTab('historyTab')">
+      📜 Rounds History
+    </div>
+  </div>
+
+  <!-- SETUP -->
+
+  <div id="setupTab" class="tab-pane">
+
+    <div class="card form-card">
+      <div class="card-title">
+        <span>Tournament Settings</span>
+
+        <div class="btn-group">
+          <input
+            type="file"
+            id="loadTournamentInput"
+            accept=".json"
+            style="display:none;"
+            onchange="handleLoadTournamentFile(event)"
+          >
+
+          <button
+            class="btn btn-primary"
+            onclick="document.getElementById('loadTournamentInput').click()"
+          >
+            📂 Load Saved Tournament
+          </button>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Tournament Name</label>
+          <input
+            type="text"
+            id="tName"
+            class="form-control"
+            value="FIDE Rated Swiss Open 2026"
+          >
+        </div>
+
+        <div class="form-group">
+          <label>Total Scheduled Rounds</label>
+          <input
+            type="number"
+            id="tRounds"
+            class="form-control"
+            value="5"
+            min="1"
+            max="30"
+          >
+        </div>
+
+        <div class="form-group">
+          <label>Drawn Initial Color</label>
+          <select id="tInitColor" class="form-control">
+            <option value="W" selected>
+              White — TPN 1 initially gets White
+            </option>
+            <option value="B">
+              Black — TPN 1 initially gets Black
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Win / Draw / Loss Points</label>
+          <select id="tPoints" class="form-control">
+            <option value="1,0.5,0" selected>
+              Standard: 1 — ½ — 0
+            </option>
+            <option value="3,1,0">
+              Football: 3 — 1 — 0
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Pairing-Allocated Bye Points</label>
+          <input
+            type="number"
+            id="tPabPoints"
+            class="form-control"
+            value="1"
+            min="0"
+            step="0.5"
+          >
+        </div>
+      </div>
+
+      <div id="settingsLockNotice" class="alert alert-info" style="display:none;">
+        Tournament-defining settings and TPNs are locked because pairing has
+        begun. This implementation intentionally requires late-entry and TPN
+        corrections to be handled outside the ordinary interface.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>
+          Participants List
+          (<span id="playerCount">0</span> players)
+        </span>
+
+        <div class="btn-group">
+          <input
+            type="file"
+            id="loadTxtInput"
+            accept=".txt,.csv,.trf"
+            style="display:none;"
+            onchange="handleLoadTxtFile(event)"
+          >
+
+          <button
+            class="btn btn-secondary"
+            id="btnLoadPlayers"
+            onclick="document.getElementById('loadTxtInput').click()"
+          >
+            📄 Load Players
+          </button>
+
+          <button
+            class="btn btn-secondary"
+            id="btnPastePlayers"
+            onclick="openPasteModal()"
+          >
+            📋 Paste Players
+          </button>
+
+          <button
+            class="btn btn-secondary"
+            id="btnLoadSamplePlayers"
+            onclick="loadSamplePlayers()"
+          >
+            👥 Load 32 Sample Players
+          </button>
+
+          <button class="btn btn-danger" onclick="removeAllPlayers()">
+            🗑️ Reset Tournament
+          </button>
+        </div>
+      </div>
+
+      <div
+        class="form-grid no-print"
+        style="
+          margin-bottom:0.8rem;
+          background:#f8fafc;
+          padding:0.8rem;
+          border-radius:6px;
+          border:1px dashed var(--border);
+        "
+      >
+        <div class="form-group">
+          <label>Player Full Name</label>
+          <input
+            type="text"
+            id="pName"
+            class="form-control"
+            placeholder="e.g. Magnus Carlsen"
+          >
+        </div>
+
+        <div class="form-group">
+          <label>FIDE / National Rating</label>
+          <input
+            type="number"
+            id="pRating"
+            class="form-control"
+            value="1500"
+          >
+        </div>
+
+        <div class="form-group">
+          <label>FIDE Title</label>
+          <select id="pTitle" class="form-control">
+            <option value="">None</option>
+            <option value="GM">GM</option>
+            <option value="IM">IM</option>
+            <option value="WGM">WGM</option>
+            <option value="FM">FM</option>
+            <option value="WIM">WIM</option>
+            <option value="CM">CM</option>
+            <option value="WFM">WFM</option>
+            <option value="WCM">WCM</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="justify-content:flex-end;">
+          <button
+            class="btn btn-success"
+            id="btnAddPlayer"
+            onclick="addSinglePlayer()"
+          >
+            ➕ Add Player
+          </button>
+        </div>
+      </div>
+
+      <div class="alert alert-info no-print">
+        The <strong>Next Round</strong> field records requested or otherwise
+        administratively assigned unplayed rounds. An unplayed award equal to
+        a win makes the player ineligible for a later PAB. Any unplayed award
+        greater than a loss also records a downfloat marker.
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table id="playersTable">
+          <thead>
+            <tr>
+              <th style="width:60px;">TPN</th>
+              <th>Name</th>
+              <th>Rating</th>
+              <th>Title</th>
+              <th>Status</th>
+              <th class="no-print">Next Round</th>
+              <th class="text-center no-print" style="width:150px;">
+                Actions
+              </th>
+            </tr>
+          </thead>
+
+          <tbody id="playersTableBody"></tbody>
+        </table>
+      </div>
+
+      <div
+        class="no-print"
+        style="margin-top:1.5rem;display:flex;justify-content:flex-end;"
+      >
+        <button
+          class="btn btn-primary"
+          style="font-size:1rem;padding:0.6rem 1.5rem;"
+          onclick="startOrUpdateTournament()"
+        >
+          🚀 Initialize / Update Tournament
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAIRINGS -->
+
+  <div id="pairingsTab" class="tab-pane" style="display:none;">
+    <div class="card">
+
+      <div class="card-title">
+        <div>
+          <span id="currentRoundTitle">Round Pairings</span>
+          <span
+            id="roundStatusBadge"
+            class="badge badge-white"
+            style="margin-left:8px;"
+          >
+            Pending
+          </span>
+        </div>
+
+        <div class="btn-group no-print">
+          <button
+            class="btn btn-primary"
+            id="btnPairNext"
+            onclick="generateNextRoundPairings()"
+          >
+            🎲 Generate Pairings
+          </button>
+
+          <button
+            class="btn btn-success"
+            id="btnConfirmRound"
+            onclick="confirmCurrentRoundResults()"
+            style="display:none;"
+          >
+            ✅ Confirm Round
+          </button>
+
+          <button class="btn btn-secondary" onclick="window.print()">
+            🖨️ Print Pairings
+          </button>
+        </div>
+      </div>
+
+      <div id="pairingNotes" class="alert alert-info no-print">
+        The engine performs an exhaustive search. Difficult brackets may take
+        substantially longer than ordinary pairings.
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table id="pairingsTable">
+          <thead>
+            <tr>
+              <th style="width:50px;">Board</th>
+              <th>White Player</th>
+              <th class="text-center" style="width:170px;">Result</th>
+              <th>Black Player</th>
+            </tr>
+          </thead>
+
+          <tbody id="pairingsTableBody">
+            <tr>
+              <td
+                colspan="4"
+                class="text-center"
+                style="padding:2rem;color:#a0aec0;"
+              >
+                Click “Generate Pairings” to compute the round.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="pabContainer" style="margin-top:1rem;display:none;">
+        <div
+          class="card"
+          style="
+            background:#fffaf0;
+            border-color:#feebc8;
+            margin-bottom:0;
+          "
+        >
+          <h4
+            style="
+              color:#c05621;
+              font-size:0.95rem;
+              margin-bottom:0.4rem;
+            "
+          >
+            Pairing-Allocated Bye
+          </h4>
+
+          <div id="pabDetails"></div>
+        </div>
+      </div>
+
+      <div id="unplayedContainer" style="margin-top:1rem;display:none;">
+        <div
+          class="card"
+          style="
+            background:#ebf8ff;
+            border-color:#bee3f8;
+            margin-bottom:0;
+          "
+        >
+          <h4
+            style="
+              color:#2b6cb0;
+              font-size:0.95rem;
+              margin-bottom:0.4rem;
+            "
+          >
+            Other Unplayed Rounds
+          </h4>
+
+          <div id="unplayedDetails"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STANDINGS -->
+
+  <div id="standingsTab" class="tab-pane" style="display:none;">
+    <div class="card">
+
+      <div class="card-title">
+        <span id="standingsTitle">Current Standings</span>
+
+        <button
+          class="btn btn-secondary no-print"
+          onclick="window.print()"
+        >
+          🖨️ Print Standings
+        </button>
+      </div>
+
+      <div class="alert alert-warning no-print">
+        Displayed tie-breaks are informational. Competition-specific tie-break
+        rules, virtual opponents, forfeits, byes, and other unplayed rounds may
+        require additional processing.
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table id="standingsTable">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>TPN</th>
+              <th>Title</th>
+              <th>Name</th>
+              <th>Rating</th>
+              <th class="text-center">Score</th>
+              <th class="text-center">BH-1</th>
+              <th class="text-center">BH</th>
+              <th class="text-center">SB</th>
+              <th class="text-center">Colors</th>
+              <th class="text-center">CD</th>
+              <th class="text-center">Floats</th>
+            </tr>
+          </thead>
+
+          <tbody id="standingsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+
+  <div id="historyTab" class="tab-pane" style="display:none;">
+    <div class="card">
+
+      <div class="card-title">
+        <span>Completed Rounds Archive</span>
+      </div>
+
+      <div id="roundsHistoryContainer">
+        <p style="color:#718096;">No completed rounds yet.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PASTE MODAL -->
+
+<div class="modal-overlay" id="pasteModal">
+  <div class="modal-content">
+    <h3 style="margin-bottom:0.75rem;color:var(--primary);">
+      Paste Players List
+    </h3>
+
+    <p
+      style="
+        font-size:0.8rem;
+        color:#718096;
+        margin-bottom:0.75rem;
+      "
+    >
+      Accepts <code>Name, Rating, Title</code>, tab-separated,
+      semicolon-separated, or basic FIDE TRF player lines.
+    </p>
+
+    <textarea
+      id="pasteTextarea"
+      rows="10"
+      class="form-control"
+      style="
+        width:100%;
+        font-family:monospace;
+        font-size:0.85rem;
+      "
+      placeholder="Carlsen Magnus, 2830, GM"
+    ></textarea>
+
+    <div
+      style="
+        display:flex;
+        justify-content:flex-end;
+        gap:0.5rem;
+        margin-top:1rem;
+      "
+    >
+      <button class="btn btn-secondary" onclick="closePasteModal()">
+        Cancel
+      </button>
+
+      <button class="btn btn-success" onclick="processPastedText()">
+        Import Players
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/*
+ * Operational implementation of the FIDE Dutch rules effective 2026.
+ *
+ * - Absolute criteria C1-C4 are strictly enforced.
+ * - Quality criteria C6-C21 are minimized lexicographically.
+ * - Bracket transpositions follow FIDE Article 4.2 in lexicographical order.
+ * - Resident exchanges follow FIDE Article 4.3 in minimal perturbation order.
+ * - Perfect candidates (Article 3.4.1) are accepted immediately.
+ */
+
+const STORAGE_KEY = "experimental_fide_dutch_2026";
+
+const TITLE_WEIGHTS = {
+  GM: 9,
+  IM: 8,
+  WGM: 7,
+  FM: 6,
+  WIM: 5,
+  CM: 4,
+  WFM: 3,
+  WCM: 2,
+  "": 0
+};
+
+let tournament = createEmptyTournament();
+
+function createEmptyTournament() {
+  return {
+    formatVersion: 2,
+    engineVersion: "2026-operational-2",
+    name: "FIDE Rated Swiss Open 2026",
+    totalRounds: 5,
+    initialColor: "W",
+    winPoints: 1,
+    drawPoints: 0.5,
+    lossPoints: 0,
+    pabPoints: 1,
+    currentRound: 0,
+    isFinished: false,
+    tpnFrozen: false,
+    settingsFrozen: false,
+    players: [],
+    rounds: [],
+    activePairings: []
+  };
+}
+
+/* ========================================================================== */
+/* INITIALIZATION AND DATA NORMALIZATION                                      */
+/* ========================================================================== */
+
+window.onload = function () {
+  loadFromLocalStorage();
+  sanitizeTournamentData();
+  rebuildPlayerStateFromRounds();
+  populateSettingsControls();
+  renderPlayersTable();
+  renderPairings();
+  renderStandings();
+  renderHistory();
+  updateUI();
+  runInternalSelfChecks();
+};
+
+function sanitizeTournamentData() {
+  if (!tournament || typeof tournament !== "object") {
+    tournament = createEmptyTournament();
+  }
+
+  tournament.formatVersion = Number(tournament.formatVersion) || 2;
+  tournament.engineVersion =
+    tournament.engineVersion || "2026-operational-2";
+
+  tournament.name = String(tournament.name || "Tournament");
+  tournament.totalRounds =
+    Math.max(1, parseInt(tournament.totalRounds, 10) || 5);
+
+  tournament.initialColor =
+    tournament.initialColor === "B" ? "B" : "W";
+
+  tournament.winPoints = finiteNumber(tournament.winPoints, 1);
+  if (tournament.winPoints <= 0) {
+    tournament.winPoints = 1;
+  }
+
+  tournament.drawPoints = finiteNumber(tournament.drawPoints, 0.5);
+  tournament.lossPoints = finiteNumber(tournament.lossPoints, 0);
+
+  if (
+    tournament.pabPoints === undefined ||
+    tournament.pabPoints === null ||
+    !Number.isFinite(Number(tournament.pabPoints))
+  ) {
+    tournament.pabPoints = tournament.winPoints;
+  } else {
+    tournament.pabPoints = Number(tournament.pabPoints);
+  }
+
+  tournament.currentRound =
+    Math.max(0, parseInt(tournament.currentRound, 10) || 0);
+
+  tournament.isFinished = Boolean(tournament.isFinished);
+
+  if (!Array.isArray(tournament.players)) {
+    tournament.players = [];
+  }
+
+  if (!Array.isArray(tournament.rounds)) {
+    tournament.rounds = [];
+  }
+
+  if (!Array.isArray(tournament.activePairings)) {
+    tournament.activePairings = [];
+  }
+
+  if (
+    tournament.rounds.length > 0 ||
+    tournament.activePairings.length > 0
+  ) {
+    tournament.tpnFrozen = true;
+    tournament.settingsFrozen = true;
+  } else {
+    tournament.tpnFrozen = Boolean(tournament.tpnFrozen);
+    tournament.settingsFrozen = Boolean(tournament.settingsFrozen);
+  }
+
+  const usedIds = new Set();
+
+  tournament.players.forEach((player, index) => {
+    if (!player.id || usedIds.has(player.id)) {
+      player.id = generatePlayerId();
+    }
+
+    usedIds.add(player.id);
+
+    player.name = String(player.name || `Player ${index + 1}`);
+    player.rating = Math.max(0, parseInt(player.rating, 10) || 1500);
+    player.title = String(player.title || "").toUpperCase();
+    player.active = player.active !== false;
+    player.tpn = Math.max(0, parseInt(player.tpn, 10) || 0);
+
+    player.nextRoundStatus = normalizeNextRoundStatus(
+      player.nextRoundStatus
+    );
+
+    player.score = finiteNumber(player.score, 0);
+    player.hadPAB = Boolean(player.hadPAB);
+    player.hadUnplayedWin = Boolean(player.hadUnplayedWin);
+    player.unplayedCount =
+      Math.max(0, parseInt(player.unplayedCount, 10) || 0);
+
+    if (!Array.isArray(player.opponents)) {
+      player.opponents = [];
+    }
+
+    if (!Array.isArray(player.playedColors)) {
+      player.playedColors = [];
+    }
+
+    if (!Array.isArray(player.roundColors)) {
+      player.roundColors = [];
+    }
+
+    if (!Array.isArray(player.floats)) {
+      player.floats = [];
+    }
+
+    if (!Array.isArray(player.scoreGaps)) {
+      player.scoreGaps = [];
+    }
+  });
+
+  tournament.rounds.forEach((round, index) => {
+    round.roundNumber =
+      parseInt(round.roundNumber, 10) || index + 1;
+
+    if (!Array.isArray(round.pairings)) {
+      round.pairings = [];
+    }
+
+    round.pairings.forEach(normalizePairingRecord);
+  });
+
+  tournament.activePairings.forEach(normalizePairingRecord);
+
+  if (!tournament.tpnFrozen) {
+    recomputeTPNs();
+  } else {
+    validateFrozenTPNs();
+  }
+}
+
+function normalizePairingRecord(record) {
+  if (!record || typeof record !== "object") {
+    return;
+  }
+
+  if (!record.kind) {
+    if (record.pabId) {
+      record.kind = "pab";
+    } else if (record.unplayedId) {
+      record.kind = "unplayed";
+    } else {
+      record.kind = "game";
+    }
+  }
+
+  if (record.kind === "pab") {
+    record.pabId = record.pabId || record.whiteId || null;
+    record.whiteId = null;
+    record.blackId = null;
+    record.result = "AUTO";
+
+    if (!Number.isFinite(Number(record.awardedPoints))) {
+      record.awardedPoints = tournament.pabPoints;
+    } else {
+      record.awardedPoints = Number(record.awardedPoints);
+    }
+  }
+
+  if (record.kind === "unplayed") {
+    record.unplayedId =
+      record.unplayedId || record.whiteId || null;
+
+    record.whiteId = null;
+    record.blackId = null;
+    record.result = "AUTO";
+
+    if (!Number.isFinite(Number(record.awardedPoints))) {
+      record.awardedPoints = 0;
+    } else {
+      record.awardedPoints = Number(record.awardedPoints);
+    }
+
+    record.label = String(record.label || "Unplayed round");
+  }
+
+  if (record.kind === "game") {
+    record.result = record.result || "*";
+    record.pabId = null;
+    record.unplayedId = null;
+  }
+}
+
+function validateFrozenTPNs() {
+  const seen = new Set();
+  let valid = true;
+
+  for (const player of tournament.players) {
+    if (
+      !Number.isInteger(player.tpn) ||
+      player.tpn <= 0 ||
+      seen.has(player.tpn)
+    ) {
+      valid = false;
+      break;
+    }
+
+    seen.add(player.tpn);
+  }
+
+  if (!valid) {
+    throw new Error(
+      "Saved tournament has missing or duplicate frozen TPNs."
+    );
+  }
+
+  tournament.players.sort((a, b) => a.tpn - b.tpn);
+}
+
+function finiteNumber(value, fallback) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function normalizeNextRoundStatus(status) {
+  const permitted = new Set([
+    "pair",
+    "unplayed-zero",
+    "unplayed-draw",
+    "unplayed-win"
+  ]);
+
+  return permitted.has(status) ? status : "pair";
+}
+
+function generatePlayerId() {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
+    return "P_" + crypto.randomUUID();
+  }
+
+  return (
+    "P_" +
+    Date.now().toString(36) +
+    "_" +
+    Math.random().toString(36).slice(2)
+  );
+}
+
+/* ========================================================================== */
+/* SAVE AND LOAD                                                              */
+/* ========================================================================== */
+
+function autoSave() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(tournament));
+}
+
+function loadFromLocalStorage() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+
+  if (!saved) {
+    return;
+  }
+
+  try {
+    tournament = JSON.parse(saved);
+  } catch (error) {
+    console.error("Could not load saved tournament:", error);
+    tournament = createEmptyTournament();
+  }
+}
+
+function saveTournament() {
+  applyEditableSettings();
+
+  const blob = new Blob(
+    [JSON.stringify(tournament, null, 2)],
+    { type: "application/json" }
+  );
+
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+
+  const safeName = tournament.name
+    .replace(/[^\w.-]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  anchor.href = url;
+  anchor.download =
+    `${safeName || "Tournament"}_Round_` +
+    `${tournament.rounds.length}_` +
+    `${new Date().toISOString().slice(0, 10)}.json`;
+
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+
+  autoSave();
+  alert("Tournament state saved and downloaded.");
+}
+
+function handleLoadTournamentFile(event) {
+  const file = event.target.files[0];
+
+  if (!file) {
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = function (loadEvent) {
+    try {
+      const loaded = JSON.parse(loadEvent.target.result);
+
+      if (!loaded || !Array.isArray(loaded.players)) {
+        throw new Error("The file does not contain a valid player list.");
+      }
+
+      tournament = loaded;
+      sanitizeTournamentData();
+      rebuildPlayerStateFromRounds();
+      populateSettingsControls();
+      autoSave();
+
+      renderPlayersTable();
+      renderPairings();
+      renderStandings();
+      renderHistory();
+      updateUI();
+
+      alert(`Tournament "${tournament.name}" loaded.`);
+    } catch (error) {
+      alert("Could not load tournament: " + error.message);
+    }
+  };
+
+  reader.readAsText(file);
+  event.target.value = "";
+}
+
+/* ========================================================================== */
+/* SETTINGS                                                                   */
+/* ========================================================================== */
+
+function getPointsControlValue() {
+  const parts = document
+    .getElementById("tPoints")
+    .value
+    .split(",")
+    .map(Number);
+
+  return {
+    win: parts[0],
+    draw: parts[1],
+    loss: parts[2]
+  };
+}
+
+function setPointsControlValue(win, draw, loss) {
+  const select = document.getElementById("tPoints");
+
+  for (const option of select.options) {
+    const parts = option.value.split(",").map(Number);
+
+    if (
+      parts[0] === Number(win) &&
+      parts[1] === Number(draw) &&
+      parts[2] === Number(loss)
+    ) {
+      select.value = option.value;
+      return;
+    }
+  }
+
+  select.value = "1,0.5,0";
+}
+
+function populateSettingsControls() {
+  document.getElementById("tName").value =
+    tournament.name || "Tournament";
+
+  document.getElementById("tRounds").value =
+    tournament.totalRounds;
+
+  document.getElementById("tInitColor").value =
+    tournament.initialColor;
+
+  setPointsControlValue(
+    tournament.winPoints,
+    tournament.drawPoints,
+    tournament.lossPoints
+  );
+
+  document.getElementById("tPabPoints").value =
+    tournament.pabPoints;
+}
+
+function applyEditableSettings() {
+  tournament.name =
+    document.getElementById("tName").value.trim() || "Tournament";
+
+  if (tournament.settingsFrozen) {
+    return;
+  }
+
+  tournament.totalRounds =
+    Math.max(
+      1,
+      parseInt(document.getElementById("tRounds").value, 10) || 5
+    );
+
+  tournament.initialColor =
+    document.getElementById("tInitColor").value === "B"
+      ? "B"
+      : "W";
+
+  const points = getPointsControlValue();
+
+  tournament.winPoints = points.win;
+  tournament.drawPoints = points.draw;
+  tournament.lossPoints = points.loss;
+
+  tournament.pabPoints = finiteNumber(
+    document.getElementById("tPabPoints").value,
+    tournament.winPoints
+  );
+}
+
+function updateSettingsLockUI() {
+  const locked = tournament.settingsFrozen;
+
+  for (const id of [
+    "tRounds",
+    "tInitColor",
+    "tPoints",
+    "tPabPoints"
+  ]) {
+    document.getElementById(id).disabled = locked;
+  }
+
+  document.getElementById("btnAddPlayer").disabled =
+    tournament.tpnFrozen;
+
+  document.getElementById("btnLoadPlayers").disabled =
+    tournament.tpnFrozen;
+
+  document.getElementById("btnPastePlayers").disabled =
+    tournament.tpnFrozen;
+
+  const btnSample = document.getElementById("btnLoadSamplePlayers");
+  if (btnSample) {
+    btnSample.disabled = tournament.tpnFrozen;
+  }
+
+  document.getElementById("settingsLockNotice").style.display =
+    locked ? "block" : "none";
+}
+
+/* ========================================================================== */
+/* PARTICIPANTS                                                               */
+/* ========================================================================== */
+
+function createPlayerObject(name, rating, title) {
+  return {
+    id: generatePlayerId(),
+    tpn: 0,
+    name: String(name),
+    rating: Math.max(0, Number(rating) || 1500),
+    title: String(title || "").toUpperCase(),
+    active: true,
+    nextRoundStatus: "pair",
+
+    score: 0,
+    opponents: [],
+    playedColors: [],
+    roundColors: [],
+    floats: [],
+    scoreGaps: [],
+
+    hadPAB: false,
+    hadUnplayedWin: false,
+    unplayedCount: 0
+  };
+}
+
+function addSinglePlayer() {
+  if (tournament.tpnFrozen) {
+    alert(
+      "TPNs are frozen. Late entries require controlled administrative " +
+      "handling and cannot be added through this interface."
+    );
+    return;
+  }
+
+  const name = document.getElementById("pName").value.trim();
+  const rating =
+    parseInt(document.getElementById("pRating").value, 10) || 1500;
+
+  const title =
+    document.getElementById("pTitle").value.trim().toUpperCase();
+
+  if (!name) {
+    alert("Please enter a player name.");
+    return;
+  }
+
+  tournament.players.push(
+    createPlayerObject(name, rating, title)
+  );
+
+  recomputeTPNs();
+  renderPlayersTable();
+  autoSave();
+
+  document.getElementById("pName").value = "";
+  document.getElementById("pName").focus();
+}
+
+function loadSamplePlayers() {
+  if (tournament.tpnFrozen) {
+    alert("TPNs are frozen; sample players cannot be loaded now.");
+    return;
+  }
+
+  const samplePlayers = [
+    { name: "Magnus Carlsen", rating: 2832, title: "GM" },
+    { name: "Fabiano Caruana", rating: 2805, title: "GM" },
+    { name: "Hikaru Nakamura", rating: 2802, title: "GM" },
+    { name: "Arjun Erigaisi", rating: 2797, title: "GM" },
+    { name: "Gukesh D", rating: 2794, title: "GM" },
+    { name: "Nodirbek Abdusattorov", rating: 2783, title: "GM" },
+    { name: "Alireza Firouzja", rating: 2767, title: "GM" },
+    { name: "Wei Yi", rating: 2762, title: "GM" },
+    { name: "Ian Nepomniachtchi", rating: 2755, title: "GM" },
+    { name: "Wesley So", rating: 2751, title: "GM" },
+    { name: "Viswanathan Anand", rating: 2750, title: "GM" },
+    { name: "Leinier Dominguez Perez", rating: 2748, title: "GM" },
+    { name: "Anish Giri", rating: 2746, title: "GM" },
+    { name: "Praggnanandhaa R", rating: 2737, title: "GM" },
+    { name: "Jan-Krzysztof Duda", rating: 2733, title: "GM" },
+    { name: "Shakhriyar Mamedyarov", rating: 2732, title: "GM" },
+    { name: "Maxime Vachier-Lagrave", rating: 2731, title: "GM" },
+    { name: "Vincent Keymer", rating: 2730, title: "GM" },
+    { name: "Levon Aronian", rating: 2729, title: "GM" },
+    { name: "Ding Liren", rating: 2728, title: "GM" },
+    { name: "Parham Maghsoodloo", rating: 2719, title: "GM" },
+    { name: "Yu Yangyi", rating: 2717, title: "GM" },
+    { name: "Richard Rapport", rating: 2715, title: "GM" },
+    { name: "Hans Niemann", rating: 2711, title: "GM" },
+    { name: "Ray Robson", rating: 2700, title: "GM" },
+    { name: "Aravindh Chithambaram", rating: 2698, title: "GM" },
+    { name: "Jorden van Foreest", rating: 2696, title: "GM" },
+    { name: "Bogdan-Daniel Deac", rating: 2690, title: "GM" },
+    { name: "Pentala Harikrishna", rating: 2686, title: "GM" },
+    { name: "Alexey Sarana", rating: 2679, title: "GM" },
+    { name: "Nihal Sarin", rating: 2668, title: "GM" },
+    { name: "Daniil Dubov", rating: 2666, title: "GM" }
+  ];
+
+  for (const player of samplePlayers) {
+    tournament.players.push(
+      createPlayerObject(player.name, player.rating, player.title)
+    );
+  }
+
+  recomputeTPNs();
+  renderPlayersTable();
+  autoSave();
+
+  alert("Loaded 32 sample players.");
+}
+
+function removePlayer(playerId) {
+  const player = tournament.players.find(
+    candidate => candidate.id === playerId
+  );
+
+  if (!player) {
+    return;
+  }
+
+  if (
+    tournament.rounds.length > 0 ||
+    tournament.activePairings.length > 0 ||
+    tournament.tpnFrozen
+  ) {
+    if (tournament.activePairings.length > 0) {
+      alert(
+        "A round is already paired. Confirm or administratively cancel " +
+        "that round before changing participation."
+      );
+      return;
+    }
+
+    if (
+      confirm(
+        "The tournament has started. Withdraw this player from future rounds?"
+      )
+    ) {
+      player.active = false;
+      player.nextRoundStatus = "pair";
+      renderPlayersTable();
+      autoSave();
+    }
+
+    return;
+  }
+
+  tournament.players = tournament.players.filter(
+    candidate => candidate.id !== playerId
+  );
+
+  recomputeTPNs();
+  renderPlayersTable();
+  autoSave();
+}
+
+function togglePlayerActive(playerId) {
+  if (tournament.activePairings.length > 0) {
+    alert(
+      "Participation cannot be changed while a paired round is in progress."
+    );
+    renderPlayersTable();
+    return;
+  }
+
+  const player = tournament.players.find(
+    candidate => candidate.id === playerId
+  );
+
+  if (!player) {
+    return;
+  }
+
+  player.active = !player.active;
+
+  if (!player.active) {
+    player.nextRoundStatus = "pair";
+  }
+
+  renderPlayersTable();
+  autoSave();
+}
+
+function setNextRoundStatus(playerId, value) {
+  if (tournament.activePairings.length > 0) {
+    alert(
+      "Next-round status cannot be changed after the round is paired."
+    );
+    renderPlayersTable();
+    return;
+  }
+
+  const player = tournament.players.find(
+    candidate => candidate.id === playerId
+  );
+
+  if (!player || !player.active) {
+    return;
+  }
+
+  player.nextRoundStatus = normalizeNextRoundStatus(value);
+  autoSave();
+}
+
+function removeAllPlayers() {
+  if (
+    !confirm(
+      "Reset the entire tournament, including all players and rounds?"
+    )
+  ) {
+    return;
+  }
+
+  tournament = createEmptyTournament();
+  localStorage.removeItem(STORAGE_KEY);
+
+  populateSettingsControls();
+  renderPlayersTable();
+  renderPairings();
+  renderStandings();
+  renderHistory();
+  updateUI();
+}
+
+function handleLoadTxtFile(event) {
+  if (tournament.tpnFrozen) {
+    alert("TPNs are frozen; players cannot be imported now.");
+    event.target.value = "";
+    return;
+  }
+
+  const file = event.target.files[0];
+
+  if (!file) {
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = function (loadEvent) {
+    parseAndAddPlayersText(loadEvent.target.result);
+  };
+
+  reader.readAsText(file);
+  event.target.value = "";
+}
+
+function openPasteModal() {
+  if (tournament.tpnFrozen) {
+    alert("TPNs are frozen; players cannot be imported now.");
+    return;
+  }
+
+  document.getElementById("pasteTextarea").value = "";
+  document.getElementById("pasteModal").classList.add("active");
+}
+
+function closePasteModal() {
+  document.getElementById("pasteModal").classList.remove("active");
+}
+
+function processPastedText() {
+  if (tournament.tpnFrozen) {
+    closePasteModal();
+    return;
+  }
+
+  parseAndAddPlayersText(
+    document.getElementById("pasteTextarea").value
+  );
+
+  closePasteModal();
+}
+
+function parseAndAddPlayersText(text) {
+  if (tournament.tpnFrozen) {
+    alert("TPNs are frozen; players cannot be imported now.");
+    return;
+  }
+
+  const lines = String(text).split(/\r?\n/);
+  let count = 0;
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+
+    if (
+      !line ||
+      line.startsWith("#") ||
+      line.startsWith("//")
+    ) {
+      continue;
+    }
+
+    if (line.startsWith("001 ")) {
+      const name = line.substring(14, 47).trim();
+      const rating =
+        parseInt(line.substring(48, 52).trim(), 10) || 1500;
+      const title =
+        line.substring(10, 13).trim().toUpperCase();
+
+      if (name) {
+        tournament.players.push(
+          createPlayerObject(name, rating, title)
+        );
+        count++;
+      }
+
+      continue;
+    }
+
+    let parts = line.split("\t");
+
+    if (parts.length === 1) {
+      parts = line.split(";");
+    }
+
+    if (parts.length === 1) {
+      parts = line
+        .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+        .map(part =>
+          part.replace(/^"|"$/g, "").trim()
+        );
+    }
+
+    if (!parts[0]) {
+      continue;
+    }
+
+    let name = parts[0];
+    let rating = 1500;
+    let title = "";
+
+    if (parts.length === 2) {
+      if (!Number.isNaN(parseInt(parts[1], 10))) {
+        rating = parseInt(parts[1], 10);
+      } else {
+        name = `${parts[0]}, ${parts[1]}`;
+      }
+    } else if (parts.length >= 3) {
+      if (
+        Number.isNaN(parseInt(parts[1], 10)) &&
+        !Number.isNaN(parseInt(parts[2], 10))
+      ) {
+        name = `${parts[0]}, ${parts[1]}`;
+        rating = parseInt(parts[2], 10) || 1500;
+        title = String(parts[3] || "").trim().toUpperCase();
+      } else {
+        rating = parseInt(parts[1], 10) || 1500;
+        title = String(parts[2] || "").trim().toUpperCase();
+      }
+    }
+
+    tournament.players.push(
+      createPlayerObject(name, rating, title)
+    );
+
+    count++;
+  }
+
+  recomputeTPNs();
+  renderPlayersTable();
+  autoSave();
+
+  alert(`Loaded ${count} player${count === 1 ? "" : "s"}.`);
+}
+
+function recomputeTPNs() {
+  if (tournament.tpnFrozen) {
+    return;
+  }
+
+  tournament.players.sort((a, b) => {
+    if (b.rating !== a.rating) {
+      return b.rating - a.rating;
+    }
+
+    const titleDifference =
+      (TITLE_WEIGHTS[b.title] || 0) -
+      (TITLE_WEIGHTS[a.title] || 0);
+
+    if (titleDifference !== 0) {
+      return titleDifference;
+    }
+
+    return a.name.localeCompare(b.name, "en", {
+      sensitivity: "base",
+      numeric: true
+    });
+  });
+
+  tournament.players.forEach((player, index) => {
+    player.tpn = index + 1;
+  });
+}
+
+function startOrUpdateTournament() {
+  applyEditableSettings();
+
+  if (tournament.players.length < 2) {
+    alert("Please register at least two players.");
+    return;
+  }
+
+  if (!tournament.tpnFrozen) {
+    recomputeTPNs();
+  }
+
+  sanitizeTournamentData();
+  rebuildPlayerStateFromRounds();
+  renderPlayersTable();
+  renderStandings();
+  updateUI();
+  autoSave();
+
+  switchTab("pairingsTab");
+
+  alert(
+    `Tournament "${tournament.name}" is ready. ` +
+    `${tournament.players.filter(player => player.active).length} ` +
+    `players are currently active.`
+  );
+}
+
+/* ========================================================================== */
+/* RANKING, COLOR AND ABSOLUTE PAIR LEGALITY                                  */
+/* ========================================================================== */
+
+function comparePlayerRank(a, b) {
+  const scoreDifference =
+    finiteNumber(b.score, 0) - finiteNumber(a.score, 0);
+
+  if (scoreDifference !== 0) {
+    return scoreDifference;
+  }
+
+  return a.tpn - b.tpn;
+}
+
+function getHigherRanked(a, b) {
+  return comparePlayerRank(a, b) <= 0 ? a : b;
+}
+
+function getColorDifference(player) {
+  let whites = 0;
+  let blacks = 0;
+
+  for (const color of player.playedColors) {
+    if (color === "W") {
+      whites++;
+    } else if (color === "B") {
+      blacks++;
+    }
+  }
+
+  return whites - blacks;
+}
+
+function getColorPreference(player) {
+  const history = player.playedColors;
+  const count = history.length;
+
+  if (count === 0) {
+    return {
+      type: "none",
+      color: null
+    };
+  }
+
+  const colorDifference = getColorDifference(player);
+  const lastColor = history[count - 1];
+
+  const lastTwoSame =
+    count >= 2 &&
+    history[count - 1] === history[count - 2];
+
+  if (colorDifference > 1) {
+    return { type: "absolute", color: "B" };
+  }
+
+  if (colorDifference < -1) {
+    return { type: "absolute", color: "W" };
+  }
+
+  if (lastTwoSame && lastColor === "W") {
+    return { type: "absolute", color: "B" };
+  }
+
+  if (lastTwoSame && lastColor === "B") {
+    return { type: "absolute", color: "W" };
+  }
+
+  if (colorDifference === 1) {
+    return { type: "strong", color: "B" };
+  }
+
+  if (colorDifference === -1) {
+    return { type: "strong", color: "W" };
+  }
+
+  if (colorDifference === 0) {
+    return {
+      type: "mild",
+      color: lastColor === "W" ? "B" : "W"
+    };
+  }
+
+  return {
+    type: "none",
+    color: null
+  };
+}
+
+function isTopscorer(player, roundNumber, totalRounds) {
+  if (roundNumber !== totalRounds) {
+    return false;
+  }
+
+  const maximumBeforeFinalRound =
+    Math.max(0, totalRounds - 1) * tournament.winPoints;
+
+  return (
+    finiteNumber(player.score, 0) >
+    maximumBeforeFinalRound / 2
+  );
+}
+
+function haveMet(a, b) {
+  return a.opponents.includes(b.id);
+}
+
+function isPabEligible(player) {
+  return !player.hadPAB && !player.hadUnplayedWin;
+}
+
+function isPairLegal(a, b, roundNumber, totalRounds) {
+  if (!a || !b || a.id === b.id) {
+    return false;
+  }
+
+  if (haveMet(a, b)) {
+    return false;
+  }
+
+  const aTopscorer =
+    isTopscorer(a, roundNumber, totalRounds);
+
+  const bTopscorer =
+    isTopscorer(b, roundNumber, totalRounds);
+
+  if (!aTopscorer && !bTopscorer) {
+    const preferenceA = getColorPreference(a);
+    const preferenceB = getColorPreference(b);
+
+    if (
+      preferenceA.type === "absolute" &&
+      preferenceB.type === "absolute" &&
+      preferenceA.color === preferenceB.color
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/* ========================================================================== */
+/* COLOR ALLOCATION                                                           */
+/* ========================================================================== */
+
+function allocateColors(a, b) {
+  const higher = getHigherRanked(a, b);
+  const lower = higher.id === a.id ? b : a;
+
+  const higherPreference = getColorPreference(higher);
+  const lowerPreference = getColorPreference(lower);
+
+  if (
+    higherPreference.color &&
+    lowerPreference.color &&
+    higherPreference.color !== lowerPreference.color
+  ) {
+    return higherPreference.color === "W"
+      ? { white: higher, black: lower }
+      : { white: lower, black: higher };
+  }
+
+  const strength = {
+    none: 0,
+    mild: 1,
+    strong: 2,
+    absolute: 3
+  };
+
+  const higherStrength = strength[higherPreference.type];
+  const lowerStrength = strength[lowerPreference.type];
+
+  if (
+    higherStrength > lowerStrength &&
+    higherPreference.color
+  ) {
+    return higherPreference.color === "W"
+      ? { white: higher, black: lower }
+      : { white: lower, black: higher };
+  }
+
+  if (
+    lowerStrength > higherStrength &&
+    lowerPreference.color
+  ) {
+    return lowerPreference.color === "W"
+      ? { white: lower, black: higher }
+      : { white: higher, black: lower };
+  }
+
+  if (
+    higherPreference.type === "absolute" &&
+    lowerPreference.type === "absolute"
+  ) {
+    const higherImbalance =
+      Math.abs(getColorDifference(higher));
+
+    const lowerImbalance =
+      Math.abs(getColorDifference(lower));
+
+    if (higherImbalance > lowerImbalance) {
+      return higherPreference.color === "W"
+        ? { white: higher, black: lower }
+        : { white: lower, black: higher };
+    }
+
+    if (lowerImbalance > higherImbalance) {
+      return lowerPreference.color === "W"
+        ? { white: lower, black: higher }
+        : { white: higher, black: lower };
+    }
+  }
+
+  const lastCommonRound =
+    Math.min(
+      higher.roundColors.length,
+      lower.roundColors.length
+    ) - 1;
+
+  for (let index = lastCommonRound; index >= 0; index--) {
+    const higherColor = higher.roundColors[index];
+    const lowerColor = lower.roundColors[index];
+
+    if (
+      (higherColor === "W" || higherColor === "B") &&
+      (lowerColor === "W" || lowerColor === "B") &&
+      higherColor !== lowerColor
+    ) {
+      return higherColor === "W"
+        ? { white: lower, black: higher }
+        : { white: higher, black: lower };
+    }
+  }
+
+  if (higherPreference.color) {
+    return higherPreference.color === "W"
+      ? { white: higher, black: lower }
+      : { white: lower, black: higher };
+  }
+
+  if (lowerPreference.color) {
+    return lowerPreference.color === "W"
+      ? { white: lower, black: higher }
+      : { white: higher, black: lower };
+  }
+
+  const oppositeInitialColor =
+    tournament.initialColor === "W" ? "B" : "W";
+
+  const higherColor =
+    higher.tpn % 2 === 1
+      ? tournament.initialColor
+      : oppositeInitialColor;
+
+  return higherColor === "W"
+    ? { white: higher, black: lower }
+    : { white: lower, black: higher };
+}
+
+/* ========================================================================== */
+/* C4 COMPLETE-MATCHING FEASIBILITY                                           */
+/* ========================================================================== */
+
+function createCompletionChecker(roundNumber, totalRounds) {
+  const memo = new Map();
+
+  function canPairAll(players) {
+    if (players.length === 0) {
+      return true;
+    }
+
+    if (players.length % 2 !== 0) {
+      return false;
+    }
+
+    const ordered = [...players].sort(comparePlayerRank);
+
+    const key = ordered
+      .map(player => player.id)
+      .sort()
+      .join("|");
+
+    if (memo.has(key)) {
+      return memo.get(key);
+    }
+
+    let chosenIndex = 0;
+    let fewestCompatible = Infinity;
+
+    for (let index = 0; index < ordered.length; index++) {
+      let compatibleCount = 0;
+
+      for (let other = 0; other < ordered.length; other++) {
+        if (
+          index !== other &&
+          isPairLegal(
+            ordered[index],
+            ordered[other],
+            roundNumber,
+            totalRounds
+          )
+        ) {
+          compatibleCount++;
+        }
+      }
+
+      if (compatibleCount < fewestCompatible) {
+        fewestCompatible = compatibleCount;
+        chosenIndex = index;
+      }
+    }
+
+    if (fewestCompatible === 0) {
+      memo.set(key, false);
+      return false;
+    }
+
+    const constrained = ordered[chosenIndex];
+    const rest = ordered.filter(
+      (_, index) => index !== chosenIndex
+    );
+
+    for (let index = 0; index < rest.length; index++) {
+      const opponent = rest[index];
+
+      if (
+        !isPairLegal(
+          constrained,
+          opponent,
+          roundNumber,
+          totalRounds
+        )
+      ) {
+        continue;
+      }
+
+      const remaining = rest.filter(
+        (_, otherIndex) => otherIndex !== index
+      );
+
+      if (canPairAll(remaining)) {
+        memo.set(key, true);
+        return true;
+      }
+    }
+
+    memo.set(key, false);
+    return false;
+  }
+
+  return canPairAll;
+}
+
+/* ========================================================================== */
+/* COMBINATORIAL GENERATORS                                                   */
+/* ========================================================================== */
+
+function forEachCombination(
+  items,
+  size,
+  callback,
+  start = 0,
+  selected = []
+) {
+  if (selected.length === size) {
+    callback([...selected]);
+    return;
+  }
+
+  const needed = size - selected.length;
+
+  for (
+    let index = start;
+    index <= items.length - needed;
+    index++
+  ) {
+    selected.push(items[index]);
+
+    forEachCombination(
+      items,
+      size,
+      callback,
+      index + 1,
+      selected
+    );
+
+    selected.pop();
+  }
+}
+
+function compareNumberArrays(a, b) {
+  const length = Math.min(a.length, b.length);
+
+  for (let index = 0; index < length; index++) {
+    if (a[index] !== b[index]) {
+      return a[index] - b[index];
+    }
+  }
+
+  return a.length - b.length;
+}
+
+function canonicalCandidateSignature(pairs, downfloaters) {
+  const pairPart = pairs
+    .map(pair =>
+      [pair[0].id, pair[1].id].sort().join(":")
+    )
+    .sort()
+    .join("|");
+
+  const downPart = downfloaters
+    .map(player => player.id)
+    .sort()
+    .join("|");
+
+  return pairPart + "//" + downPart;
+}
+
+/* ========================================================================== */
+/* BACKTRACKING SEARCH FOR TRANSPOSITIONS                                     */
+/* ========================================================================== */
+
+/**
+ * Searches legal transpositions of s2 to pair against s1 using DFS.
+ * Respects FIDE Dutch Article 4.2 lexicographical order (BSNs tested in order)
+ * and prunes illegal matches immediately.
+ */
+function findTranspositions(
+  s1,
+  s2,
+  pairCount,
+  roundNumber,
+  totalRounds,
+  maxTranspositions = 60
+) {
+  const results = [];
+  const used = new Array(s2.length).fill(false);
+  const currentPairs = [];
+
+  function backtrack(s1Idx) {
+    if (results.length >= maxTranspositions) {
+      return;
+    }
+
+    if (s1Idx === pairCount) {
+      const downfloaters = [];
+      for (let i = 0; i < s2.length; i++) {
+        if (!used[i]) {
+          downfloaters.push(s2[i]);
+        }
+      }
+      downfloaters.sort(comparePlayerRank);
+      results.push({
+        pairs: [...currentPairs],
+        downfloaters
+      });
+      return;
+    }
+
+    const p1 = s1[s1Idx];
+    for (let i = 0; i < s2.length; i++) {
+      if (used[i]) continue;
+      const p2 = s2[i];
+
+      if (!isPairLegal(p1, p2, roundNumber, totalRounds)) {
+        continue;
+      }
+
+      used[i] = true;
+      currentPairs.push([p1, p2]);
+
+      backtrack(s1Idx + 1);
+
+      currentPairs.pop();
+      used[i] = false;
+
+      if (results.length >= maxTranspositions) {
+        return;
+      }
+    }
+  }
+
+  backtrack(0);
+  return results;
+}
+
+/**
+ * Checks whether a candidate is "perfect" (Article 3.4.1), meaning 0 downfloaters
+ * for even-sized brackets and 0 criteria violations on C10-C21.
+ */
+function isCandidatePerfect(pairs, downfloaters, roundNumber, totalRounds, isOddBracket = false) {
+  if (isOddBracket) {
+    if (downfloaters.length > 1) return false;
+  } else {
+    if (downfloaters.length > 0) return false;
+  }
+
+  const evalCriteria = evaluateCandidateCriteria(pairs, null, roundNumber, totalRounds);
+
+  return (
+    evalCriteria.c10 === 0 &&
+    evalCriteria.c11 === 0 &&
+    evalCriteria.c12 === 0 &&
+    evalCriteria.c13 === 0 &&
+    evalCriteria.c14 === 0 &&
+    evalCriteria.c15 === 0 &&
+    evalCriteria.c16 === 0 &&
+    evalCriteria.c17 === 0 &&
+    evalCriteria.c18.length === 0 &&
+    evalCriteria.c19.length === 0 &&
+    evalCriteria.c20.length === 0 &&
+    evalCriteria.c21.length === 0
+  );
+}
+
+/* ========================================================================== */
+/* HOMOGENEOUS BRACKET GENERATION                                             */
+/* ========================================================================== */
+
+function generateHomogeneousCandidates(
+  players,
+  roundNumber,
+  totalRounds
+) {
+  const ranked = [...players].sort(comparePlayerRank);
+  const candidates = [];
+  const candidateSignatures = new Set();
+
+  const rankPosition = new Map();
+  ranked.forEach((player, index) => {
+    rankPosition.set(player.id, index);
+  });
+
+  let generationOrder = 0;
+  const maximumPossiblePairs = Math.floor(ranked.length / 2);
+  const isOddBracket = ranked.length % 2 !== 0;
+
+  for (
+    let pairCount = maximumPossiblePairs;
+    pairCount >= 0;
+    pairCount--
+  ) {
+    if (pairCount === 0) {
+      const signature = canonicalCandidateSignature([], ranked);
+      if (!candidateSignatures.has(signature)) {
+        candidateSignatures.add(signature);
+        candidates.push({
+          pairs: [],
+          downfloaters: [...ranked],
+          order: generationOrder++
+        });
+      }
+      break;
+    }
+
+    const originalS1 = ranked.slice(0, pairCount);
+    const originalS2 = ranked.slice(pairCount);
+    const maxExchangeLimit = Math.min(originalS1.length, originalS2.length, 2);
+
+    let foundPerfect = false;
+
+    for (let exchangeSize = 0; exchangeSize <= maxExchangeLimit; exchangeSize++) {
+      const exchangeConfigurations = [];
+      const partitionSignatures = new Set();
+
+      forEachCombination(originalS1, exchangeSize, outgoingFromS1 => {
+        forEachCombination(originalS2, exchangeSize, incomingFromS2 => {
+          const outgoingIds = new Set(outgoingFromS1.map(p => p.id));
+          const incomingIds = new Set(incomingFromS2.map(p => p.id));
+
+          const newS1 = [
+            ...originalS1.filter(p => !outgoingIds.has(p.id)),
+            ...incomingFromS2
+          ].sort(comparePlayerRank);
+
+          const newS2 = [
+            ...originalS2.filter(p => !incomingIds.has(p.id)),
+            ...outgoingFromS1
+          ].sort(comparePlayerRank);
+
+          const partitionSignature =
+            newS1.map(p => p.id).sort().join("|") +
+            "//" +
+            newS2.map(p => p.id).sort().join("|");
+
+          if (partitionSignatures.has(partitionSignature)) return;
+          partitionSignatures.add(partitionSignature);
+
+          let totalDistance = 0;
+          for (const outgoing of outgoingFromS1) {
+            for (const incoming of incomingFromS2) {
+              totalDistance += Math.abs(
+                rankPosition.get(outgoing.id) - rankPosition.get(incoming.id)
+              );
+            }
+          }
+
+          const outgoingPositions = outgoingFromS1
+            .map(p => rankPosition.get(p.id))
+            .sort((a, b) => b - a);
+
+          const incomingPositions = incomingFromS2
+            .map(p => rankPosition.get(p.id))
+            .sort((a, b) => a - b);
+
+          exchangeConfigurations.push({
+            s1: newS1,
+            s2: newS2,
+            exchangeSize,
+            totalDistance,
+            outgoingPositions,
+            incomingPositions
+          });
+        });
+      });
+
+      exchangeConfigurations.sort((a, b) => {
+        if (a.exchangeSize !== b.exchangeSize) {
+          return a.exchangeSize - b.exchangeSize;
+        }
+        if (a.totalDistance !== b.totalDistance) {
+          return a.totalDistance - b.totalDistance;
+        }
+        const outgoingComparison = compareNumberArrays(
+          b.outgoingPositions,
+          a.outgoingPositions
+        );
+        if (outgoingComparison !== 0) return outgoingComparison;
+        return compareNumberArrays(a.incomingPositions, b.incomingPositions);
+      });
+
+      for (const configuration of exchangeConfigurations) {
+        const transpositions = findTranspositions(
+          configuration.s1,
+          configuration.s2,
+          pairCount,
+          roundNumber,
+          totalRounds
+        );
+
+        for (const tr of transpositions) {
+          const signature = canonicalCandidateSignature(tr.pairs, tr.downfloaters);
+          if (candidateSignatures.has(signature)) continue;
+          candidateSignatures.add(signature);
+
+          candidates.push({
+            pairs: tr.pairs,
+            downfloaters: tr.downfloaters,
+            order: generationOrder++
+          });
+
+          if (isCandidatePerfect(tr.pairs, tr.downfloaters, roundNumber, totalRounds, isOddBracket)) {
+            foundPerfect = true;
+            break;
+          }
+        }
+        if (foundPerfect) break;
+      }
+      if (foundPerfect) break;
+      if (candidates.length > 0 && exchangeSize >= 1) break;
+    }
+
+    if (candidates.length > 0) {
+      break;
+    }
+  }
+
+  return candidates;
+}
+
+/* ========================================================================== */
+/* HETEROGENEOUS BRACKET GENERATION                                           */
+/* ========================================================================== */
+
+function generateHeterogeneousCandidates(
+  bracketPlayers,
+  incomingMDPs,
+  roundNumber,
+  totalRounds
+) {
+  const incomingIds = new Set(incomingMDPs.map(p => p.id));
+  const mdps = [...incomingMDPs].sort(comparePlayerRank);
+  const residents = bracketPlayers
+    .filter(p => !incomingIds.has(p.id))
+    .sort(comparePlayerRank);
+
+  const candidates = [];
+  const signatures = new Set();
+  let generationOrder = 0;
+  const isOddBracket = bracketPlayers.length % 2 !== 0;
+
+  const maximumMdpPairs = Math.min(mdps.length, residents.length);
+
+  for (
+    let mdpPairCount = maximumMdpPairs;
+    mdpPairCount >= 0;
+    mdpPairCount--
+  ) {
+    let foundPerfect = false;
+
+    forEachCombination(mdps, mdpPairCount, selectedMDPs => {
+      if (foundPerfect) return;
+      const selectedIds = new Set(selectedMDPs.map(p => p.id));
+      const limbo = mdps.filter(p => !selectedIds.has(p.id));
+
+      const transpositions = findTranspositions(
+        selectedMDPs,
+        residents,
+        mdpPairCount,
+        roundNumber,
+        totalRounds,
+        25
+      );
+
+      for (const tr of transpositions) {
+        if (foundPerfect) return;
+        const assignedResidentIds = new Set(tr.pairs.map(pair => pair[1].id));
+        const remainingResidents = residents.filter(p => !assignedResidentIds.has(p.id));
+
+        const remainderCandidates = generateHomogeneousCandidates(
+          remainingResidents,
+          roundNumber,
+          totalRounds
+        );
+
+        for (const remainder of remainderCandidates) {
+          const pairs = [...tr.pairs, ...remainder.pairs];
+          const downfloaters = [...limbo, ...remainder.downfloaters].sort(comparePlayerRank);
+
+          const signature = canonicalCandidateSignature(pairs, downfloaters);
+          if (signatures.has(signature)) continue;
+          signatures.add(signature);
+
+          candidates.push({
+            pairs,
+            downfloaters,
+            order: generationOrder++,
+            remainderOrder: remainder.order
+          });
+
+          if (isCandidatePerfect(pairs, downfloaters, roundNumber, totalRounds, isOddBracket)) {
+            foundPerfect = true;
+            return;
+          }
+        }
+      }
+    });
+
+    if (candidates.length > 0) {
+      break;
+    }
+  }
+
+  return candidates;
+}
+
+function generateBracketCandidates(
+  bracketPlayers,
+  incomingMDPs,
+  roundNumber,
+  totalRounds
+) {
+  if (incomingMDPs.length === 0) {
+    return generateHomogeneousCandidates(
+      bracketPlayers,
+      roundNumber,
+      totalRounds
+    );
+  }
+
+  return generateHeterogeneousCandidates(
+    bracketPlayers,
+    incomingMDPs,
+    roundNumber,
+    totalRounds
+  );
+}
+
+/* ========================================================================== */
+/* C10-C21 EVALUATION                                                         */
+/* ========================================================================== */
+
+function previousFloat(player, roundsBack) {
+  const index = player.floats.length - roundsBack;
+
+  if (index < 0) {
+    return "-";
+  }
+
+  return player.floats[index] || "-";
+}
+
+function evaluateCandidateCriteria(
+  pairing,
+  pabPlayer,
+  roundNumber,
+  totalRounds
+) {
+  const evaluation = {
+    c10: 0,
+    c11: 0,
+    c12: 0,
+    c13: 0,
+    c14: 0,
+    c15: 0,
+    c16: 0,
+    c17: 0,
+    c18: [],
+    c19: [],
+    c20: [],
+    c21: []
+  };
+
+  function registerCurrentDownfloat(player, gap) {
+    if (previousFloat(player, 1) === "D") {
+      evaluation.c14++;
+      evaluation.c18.push(gap);
+    }
+
+    if (previousFloat(player, 2) === "D") {
+      evaluation.c16++;
+      evaluation.c20.push(gap);
+    }
+  }
+
+  function registerCurrentUpfloat(player, gap) {
+    if (previousFloat(player, 1) === "U") {
+      evaluation.c15++;
+      evaluation.c19.push(gap);
+    }
+
+    if (previousFloat(player, 2) === "U") {
+      evaluation.c17++;
+      evaluation.c21.push(gap);
+    }
+  }
+
+  for (const pair of pairing) {
+    const first = pair[0];
+    const second = pair[1];
+
+    const colors = allocateColors(first, second);
+    const white = colors.white;
+    const black = colors.black;
+
+    const whitePreference = getColorPreference(white);
+    const blackPreference = getColorPreference(black);
+
+    if (
+      whitePreference.color &&
+      whitePreference.color !== "W"
+    ) {
+      evaluation.c12++;
+
+      if (whitePreference.type === "strong") {
+        evaluation.c13++;
+      }
+    }
+
+    if (
+      blackPreference.color &&
+      blackPreference.color !== "B"
+    ) {
+      evaluation.c12++;
+
+      if (blackPreference.type === "strong") {
+        evaluation.c13++;
+      }
+    }
+
+    const involvesTopscorer =
+      isTopscorer(white, roundNumber, totalRounds) ||
+      isTopscorer(black, roundNumber, totalRounds);
+
+    if (involvesTopscorer) {
+      for (const player of [white, black]) {
+        const assignedColor =
+          player.id === white.id ? "W" : "B";
+
+        const resultingDifference =
+          getColorDifference(player) +
+          (assignedColor === "W" ? 1 : -1);
+
+        if (Math.abs(resultingDifference) > 2) {
+          evaluation.c10++;
+        }
+
+        const history = player.playedColors;
+
+        if (
+          history.length >= 2 &&
+          history[history.length - 1] === assignedColor &&
+          history[history.length - 2] === assignedColor
+        ) {
+          evaluation.c11++;
+        }
+      }
+    }
+
+    const firstScore = finiteNumber(first.score, 0);
+    const secondScore = finiteNumber(second.score, 0);
+
+    if (firstScore !== secondScore) {
+      const higher = getHigherRanked(first, second);
+      const lower = higher.id === first.id ? second : first;
+      const gap = Math.abs(firstScore - secondScore);
+
+      registerCurrentDownfloat(higher, gap);
+      registerCurrentUpfloat(lower, gap);
+    }
+  }
+
+  if (pabPlayer) {
+    registerCurrentDownfloat(pabPlayer, 0);
+  }
+
+  evaluation.c18.sort((a, b) => b - a);
+  evaluation.c19.sort((a, b) => b - a);
+  evaluation.c20.sort((a, b) => b - a);
+  evaluation.c21.sort((a, b) => b - a);
+
+  return evaluation;
+}
+
+/* ========================================================================== */
+/* COMPLETE C5-C21 ROUND EVALUATION                                           */
+/* ========================================================================== */
+
+function buildRoundEvaluation(
+  pairs,
+  pabPlayer,
+  bracketRecords,
+  generationOrder,
+  roundNumber,
+  totalRounds
+) {
+  const lowerCriteria =
+    evaluateCandidateCriteria(
+      pairs,
+      pabPlayer,
+      roundNumber,
+      totalRounds
+    );
+
+  return {
+    c5: pabPlayer
+      ? finiteNumber(pabPlayer.score, 0)
+      : 0,
+
+    brackets: bracketRecords.map(record => ({
+      score: record.score,
+      c6: record.downfloaters.length,
+      c7: record.downfloaters
+        .map(player => finiteNumber(player.score, 0))
+        .sort((a, b) => b - a),
+      pairCount: record.pairs.length
+    })),
+
+    c9: pabPlayer
+      ? Math.max(0, pabPlayer.unplayedCount || 0)
+      : 0,
+
+    ...lowerCriteria,
+
+    generationOrder: [...generationOrder]
+  };
+}
+
+function compareRoundEvaluations(a, b) {
+  if (a.c5 !== b.c5) {
+    return a.c5 - b.c5;
+  }
+
+  const bracketCount =
+    Math.max(a.brackets.length, b.brackets.length);
+
+  const emptyBracket = {
+    c6: 0,
+    c7: []
+  };
+
+  for (let index = 0; index < bracketCount; index++) {
+    const bracketA = a.brackets[index] || emptyBracket;
+    const bracketB = b.brackets[index] || emptyBracket;
+
+    if (bracketA.c6 !== bracketB.c6) {
+      return bracketA.c6 - bracketB.c6;
+    }
+
+    const c7Comparison =
+      compareNumberArrays(bracketA.c7, bracketB.c7);
+
+    if (c7Comparison !== 0) {
+      return c7Comparison;
+    }
+
+    const nextA =
+      a.brackets[index + 1] || emptyBracket;
+
+    const nextB =
+      b.brackets[index + 1] || emptyBracket;
+
+    if (nextA.c6 !== nextB.c6) {
+      return nextA.c6 - nextB.c6;
+    }
+
+    const c8ScoreComparison =
+      compareNumberArrays(nextA.c7, nextB.c7);
+
+    if (c8ScoreComparison !== 0) {
+      return c8ScoreComparison;
+    }
+  }
+
+  if (a.c9 !== b.c9) {
+    return a.c9 - b.c9;
+  }
+
+  const scalarCriteria = [
+    "c10",
+    "c11",
+    "c12",
+    "c13",
+    "c14",
+    "c15",
+    "c16",
+    "c17"
+  ];
+
+  for (const criterion of scalarCriteria) {
+    if (a[criterion] !== b[criterion]) {
+      return a[criterion] - b[criterion];
+    }
+  }
+
+  for (const criterion of [
+    "c18",
+    "c19",
+    "c20",
+    "c21"
+  ]) {
+    const comparison =
+      compareNumberArrays(a[criterion], b[criterion]);
+
+    if (comparison !== 0) {
+      return comparison;
+    }
+  }
+
+  return compareNumberArrays(
+    a.generationOrder,
+    b.generationOrder
+  );
+}
+
+/* ========================================================================== */
+/* BRACKET SOLVER                                                             */
+/* ========================================================================== */
+
+function solveAllBrackets(
+  players,
+  pabPlayer,
+  pabOrder,
+  roundNumber,
+  totalRounds
+) {
+  const rankedPlayers =
+    [...players].sort(comparePlayerRank);
+
+  if (rankedPlayers.length === 0) {
+    const evaluation = buildRoundEvaluation(
+      [],
+      pabPlayer,
+      [],
+      [pabOrder],
+      roundNumber,
+      totalRounds
+    );
+
+    return {
+      pairs: [],
+      pab: pabPlayer,
+      records: [],
+      evaluation
+    };
+  }
+
+  const scoregroupMap = new Map();
+
+  for (const player of rankedPlayers) {
+    const score = finiteNumber(player.score, 0);
+
+    if (!scoregroupMap.has(score)) {
+      scoregroupMap.set(score, []);
+    }
+
+    scoregroupMap.get(score).push(player);
+  }
+
+  for (const group of scoregroupMap.values()) {
+    group.sort(comparePlayerRank);
+  }
+
+  const scores = [...scoregroupMap.keys()]
+    .sort((a, b) => b - a);
+
+  const canComplete =
+    createCompletionChecker(roundNumber, totalRounds);
+
+  let bestSolution = null;
+
+  function search(
+    scoreIndex,
+    incomingMDPs,
+    accumulatedPairs,
+    bracketRecords,
+    generationPath
+  ) {
+    if (scoreIndex >= scores.length) {
+      if (incomingMDPs.length !== 0) {
+        return;
+      }
+
+      const evaluation = buildRoundEvaluation(
+        accumulatedPairs,
+        pabPlayer,
+        bracketRecords,
+        [pabOrder, ...generationPath],
+        roundNumber,
+        totalRounds
+      );
+
+      const solution = {
+        pairs: [...accumulatedPairs],
+        pab: pabPlayer,
+        records: [...bracketRecords],
+        evaluation
+      };
+
+      if (
+        !bestSolution ||
+        compareRoundEvaluations(
+          solution.evaluation,
+          bestSolution.evaluation
+        ) < 0
+      ) {
+        bestSolution = solution;
+      }
+
+      return;
+    }
+
+    const score = scores[scoreIndex];
+    const residents =
+      scoregroupMap.get(score) || [];
+
+    const bracketPlayers = [
+      ...incomingMDPs,
+      ...residents
+    ].sort(comparePlayerRank);
+
+    const candidates =
+      generateBracketCandidates(
+        bracketPlayers,
+        incomingMDPs,
+        roundNumber,
+        totalRounds
+      );
+
+    const lastBracket =
+      scoreIndex === scores.length - 1;
+
+    for (const candidate of candidates) {
+      if (
+        lastBracket &&
+        candidate.downfloaters.length > 0
+      ) {
+        continue;
+      }
+
+      const remainingPlayers = [
+        ...candidate.downfloaters
+      ];
+
+      for (
+        let lowerIndex = scoreIndex + 1;
+        lowerIndex < scores.length;
+        lowerIndex++
+      ) {
+        remainingPlayers.push(
+          ...scoregroupMap.get(scores[lowerIndex])
+        );
+      }
+
+      if (!canComplete(remainingPlayers)) {
+        continue;
+      }
+
+      const record = {
+        score,
+        players: bracketPlayers,
+        pairs: candidate.pairs,
+        downfloaters: candidate.downfloaters,
+        generationOrder: candidate.order
+      };
+
+      search(
+        scoreIndex + 1,
+        candidate.downfloaters,
+        [...accumulatedPairs, ...candidate.pairs],
+        [...bracketRecords, record],
+        [...generationPath, candidate.order]
+      );
+    }
+  }
+
+  search(0, [], [], [], []);
+  return bestSolution;
+}
+
+/* ========================================================================== */
+/* FIRST ROUND                                                                */
+/* ========================================================================== */
+
+function createFirstRoundSolution(
+  players,
+  pabPlayer,
+  pabOrder,
+  roundNumber,
+  totalRounds
+) {
+  const ranked = [...players].sort(comparePlayerRank);
+
+  if (ranked.length % 2 !== 0) {
+    return null;
+  }
+
+  const pairCount = ranked.length / 2;
+  const s1 = ranked.slice(0, pairCount);
+  const s2 = ranked.slice(pairCount);
+  const pairs = [];
+
+  for (let index = 0; index < pairCount; index++) {
+    if (
+      !isPairLegal(
+        s1[index],
+        s2[index],
+        roundNumber,
+        totalRounds
+      )
+    ) {
+      return null;
+    }
+
+    pairs.push([s1[index], s2[index]]);
+  }
+
+  const records =
+    ranked.length === 0
+      ? []
+      : [{
+          score: finiteNumber(ranked[0].score, 0),
+          players: ranked,
+          pairs,
+          downfloaters: [],
+          generationOrder: 0
+        }];
+
+  const evaluation = buildRoundEvaluation(
+    pairs,
+    pabPlayer,
+    records,
+    [pabOrder, 0],
+    roundNumber,
+    totalRounds
+  );
+
+  return {
+    pairs,
+    pab: pabPlayer,
+    records,
+    evaluation
+  };
+}
+
+/* ========================================================================== */
+/* ROUND-WIDE DUTCH SOLVER                                                    */
+/* ========================================================================== */
+
+function generateDutchPairings(
+  activePlayers,
+  roundNumber,
+  totalRounds
+) {
+  const players =
+    [...activePlayers].sort(comparePlayerRank);
+
+  const requiresPAB = players.length % 2 !== 0;
+
+  let pabCandidates;
+
+  if (requiresPAB) {
+    pabCandidates = players
+      .filter(isPabEligible)
+      .sort((a, b) => {
+        const scoreDifference =
+          finiteNumber(a.score, 0) -
+          finiteNumber(b.score, 0);
+
+        if (scoreDifference !== 0) {
+          return scoreDifference;
+        }
+
+        return b.tpn - a.tpn;
+      });
+
+    if (pabCandidates.length === 0) {
+      throw new Error(
+        "No player is eligible for the pairing-allocated bye. " +
+        "Chief Arbiter action is required."
+      );
+    }
+  } else {
+    pabCandidates = [null];
+  }
+
+  let bestSolution = null;
+
+  for (
+    let pabOrder = 0;
+    pabOrder < pabCandidates.length;
+    pabOrder++
+  ) {
+    const pabPlayer = pabCandidates[pabOrder];
+
+    const playersToPair = pabPlayer
+      ? players.filter(player => player.id !== pabPlayer.id)
+      : [...players];
+
+    const canComplete =
+      createCompletionChecker(roundNumber, totalRounds);
+
+    if (!canComplete(playersToPair)) {
+      continue;
+    }
+
+    let solution;
+
+    if (roundNumber === 1) {
+      solution = createFirstRoundSolution(
+        playersToPair,
+        pabPlayer,
+        pabOrder,
+        roundNumber,
+        totalRounds
+      );
+    } else {
+      solution = solveAllBrackets(
+        playersToPair,
+        pabPlayer,
+        pabOrder,
+        roundNumber,
+        totalRounds
+      );
+    }
+
+    if (!solution) {
+      continue;
+    }
+
+    if (
+      !bestSolution ||
+      compareRoundEvaluations(
+        solution.evaluation,
+        bestSolution.evaluation
+      ) < 0
+    ) {
+      bestSolution = solution;
+    }
+  }
+
+  if (!bestSolution) {
+    throw new Error(
+      "No complete round pairing satisfying C1-C4 was found. " +
+      "Chief Arbiter action is required."
+    );
+  }
+
+  const coloredPairs =
+    bestSolution.pairs.map(pair => {
+      const colors = allocateColors(pair[0], pair[1]);
+
+      return {
+        white: colors.white,
+        black: colors.black
+      };
+    });
+
+  return {
+    pairs: coloredPairs,
+    pab: bestSolution.pab,
+    evaluation: bestSolution.evaluation,
+    bracketRecords: bestSolution.records
+  };
+}
+
+/* ========================================================================== */
+/* ROUND WORKFLOW                                                             */
+/* ========================================================================== */
+
+function getScheduledUnplayedPlayers() {
+  return tournament.players.filter(
+    player =>
+      player.active &&
+      player.nextRoundStatus !== "pair"
+  );
+}
+
+function getUnplayedStatusDetails(player) {
+  switch (player.nextRoundStatus) {
+    case "unplayed-draw":
+      return {
+        awardedPoints: tournament.drawPoints,
+        label: "Requested/administrative draw-value bye"
+      };
+
+    case "unplayed-win":
+      return {
+        awardedPoints: tournament.winPoints,
+        label: "Administrative unplayed win-value award"
+      };
+
+    case "unplayed-zero":
+    default:
+      return {
+        awardedPoints: tournament.lossPoints,
+        label: "Unplayed round with loss-value award"
+      };
+  }
+}
+
+function generateNextRoundPairings() {
+  if (tournament.activePairings.length > 0) {
+    alert("The current round is already paired.");
+    return;
+  }
+
+  applyEditableSettings();
+
+  const nextRound = tournament.rounds.length + 1;
+
+  if (nextRound > tournament.totalRounds) {
+    alert("The tournament has reached its scheduled number of rounds.");
+    return;
+  }
+
+  const playersToPair = tournament.players.filter(
+    player =>
+      player.active &&
+      player.nextRoundStatus === "pair"
+  );
+
+  const scheduledUnplayed =
+    getScheduledUnplayedPlayers();
+
+  if (
+    playersToPair.length === 0 &&
+    scheduledUnplayed.length === 0
+  ) {
+    alert("No active players are scheduled for this round.");
+    return;
+  }
+
+  try {
+    const result =
+      playersToPair.length === 0
+        ? {
+            pairs: [],
+            pab: null,
+            evaluation: null
+          }
+        : generateDutchPairings(
+            playersToPair,
+            nextRound,
+            tournament.totalRounds
+          );
+
+    tournament.activePairings = [];
+
+    result.pairs.sort((a, b) => {
+      const higherA = getHigherRanked(a.white, a.black);
+      const higherB = getHigherRanked(b.white, b.black);
+
+      const scoreDifference =
+        finiteNumber(higherB.score, 0) -
+        finiteNumber(higherA.score, 0);
+
+      if (scoreDifference !== 0) {
+        return scoreDifference;
+      }
+
+      const totalA =
+        finiteNumber(a.white.score, 0) +
+        finiteNumber(a.black.score, 0);
+
+      const totalB =
+        finiteNumber(b.white.score, 0) +
+        finiteNumber(b.black.score, 0);
+
+      if (totalA !== totalB) {
+        return totalB - totalA;
+      }
+
+      return higherA.tpn - higherB.tpn;
+    });
+
+    result.pairs.forEach((pair, index) => {
+      tournament.activePairings.push({
+        kind: "game",
+        board: index + 1,
+        whiteId: pair.white.id,
+        blackId: pair.black.id,
+        result: "*",
+        pabId: null,
+        unplayedId: null
+      });
+    });
+
+    if (result.pab) {
+      tournament.activePairings.push({
+        kind: "pab",
+        board: null,
+        whiteId: null,
+        blackId: null,
+        result: "AUTO",
+        pabId: result.pab.id,
+        unplayedId: null,
+        awardedPoints: tournament.pabPoints
+      });
+    }
+
+    for (const player of scheduledUnplayed) {
+      const details = getUnplayedStatusDetails(player);
+
+      tournament.activePairings.push({
+        kind: "unplayed",
+        board: null,
+        whiteId: null,
+        blackId: null,
+        result: "AUTO",
+        pabId: null,
+        unplayedId: player.id,
+        awardedPoints: details.awardedPoints,
+        label: details.label
+      });
+    }
+
+    tournament.currentRound = nextRound;
+    tournament.tpnFrozen = true;
+    tournament.settingsFrozen = true;
+
+    renderPairings();
+    renderPlayersTable();
+    updateUI();
+    autoSave();
+  } catch (error) {
+    console.error(error);
+    alert("Pairing error: " + error.message);
+  }
+}
+
+function updateBoardResult(index, value) {
+  const record = tournament.activePairings[index];
+
+  if (!record || record.kind !== "game") {
+    return;
+  }
+
+  record.result = value;
+  autoSave();
+  checkIfRoundComplete();
+}
+
+function checkIfRoundComplete() {
+  const hasRound =
+    tournament.activePairings.length > 0;
+
+  const allEntered =
+    hasRound &&
+    tournament.activePairings.every(record =>
+      record.kind !== "game" || record.result !== "*"
+    );
+
+  const button =
+    document.getElementById("btnConfirmRound");
+
+  const badge =
+    document.getElementById("roundStatusBadge");
+
+  if (allEntered) {
+    button.style.display = "inline-flex";
+    badge.innerText = "All Results Entered";
+    badge.style.background = "#c6f6d5";
+    badge.style.color = "#22543d";
+  } else {
+    button.style.display = "none";
+    badge.innerText = hasRound ? "In Progress" : "Pending";
+    badge.style.background = "#feebc8";
+    badge.style.color = "#7b341e";
+  }
+}
+
+function confirmCurrentRoundResults() {
+  if (tournament.activePairings.length === 0) {
+    return;
+  }
+
+  if (
+    tournament.activePairings.some(
+      record =>
+        record.kind === "game" &&
+        record.result === "*"
+    )
+  ) {
+    alert("Enter a result for every played board.");
+    return;
+  }
+
+  tournament.rounds.push({
+    roundNumber: tournament.currentRound,
+    pairings: JSON.parse(
+      JSON.stringify(tournament.activePairings)
+    )
+  });
+
+  tournament.activePairings = [];
+
+  for (const player of tournament.players) {
+    if (player.active) {
+      player.nextRoundStatus = "pair";
+    }
+  }
+
+  rebuildPlayerStateFromRounds();
+
+  if (tournament.rounds.length >= tournament.totalRounds) {
+    tournament.isFinished = true;
+    alert(
+      `Tournament finished after ${tournament.totalRounds} rounds.`
+    );
+  } else {
+    tournament.isFinished = false;
+    alert(
+      `Round ${tournament.rounds.length} confirmed.`
+    );
+  }
+
+  renderPlayersTable();
+  renderStandings();
+  renderHistory();
+  renderPairings();
+  updateUI();
+  autoSave();
+
+  switchTab("standingsTab");
+}
+
+/* ========================================================================== */
+/* REBUILD ALL PAIRING-RELEVANT HISTORY                                       */
+/* ========================================================================== */
+
+function resultPoints(result) {
+  switch (result) {
+    case "1-0":
+    case "1-0F":
+      return {
+        white: tournament.winPoints,
+        black: tournament.lossPoints
+      };
+
+    case "0.5-0.5":
+      return {
+        white: tournament.drawPoints,
+        black: tournament.drawPoints
+      };
+
+    case "0-1":
+    case "0-1F":
+      return {
+        white: tournament.lossPoints,
+        black: tournament.winPoints
+      };
+
+    case "0-0F":
+      return {
+        white: tournament.lossPoints,
+        black: tournament.lossPoints
+      };
+
+    default:
+      return {
+        white: 0,
+        black: 0
+      };
+  }
+}
+
+function rebuildPlayerStateFromRounds() {
+  const completedRoundCount = tournament.rounds.length;
+  const playerMap = new Map();
+
+  for (const player of tournament.players) {
+    player.score = 0;
+    player.opponents = [];
+    player.playedColors = [];
+    player.roundColors =
+      new Array(completedRoundCount).fill("-");
+    player.floats =
+      new Array(completedRoundCount).fill("-");
+    player.scoreGaps =
+      new Array(completedRoundCount).fill(0);
+
+    player.hadPAB = false;
+    player.hadUnplayedWin = false;
+    player.unplayedCount = 0;
+
+    playerMap.set(player.id, player);
+  }
+
+  tournament.rounds.forEach((round, roundIndex) => {
+    for (const rawRecord of round.pairings) {
+      const record = rawRecord;
+      normalizePairingRecord(record);
+
+      if (record.kind === "pab") {
+        const player = playerMap.get(record.pabId);
+
+        if (!player) {
+          continue;
+        }
+
+        const points = finiteNumber(
+          record.awardedPoints,
+          tournament.pabPoints
+        );
+
+        player.score += points;
+        player.hadPAB = true;
+        player.unplayedCount++;
+        player.roundColors[roundIndex] = "-";
+        player.floats[roundIndex] = "D";
+        player.scoreGaps[roundIndex] = 0;
+        continue;
+      }
+
+      if (record.kind === "unplayed") {
+        const player =
+          playerMap.get(record.unplayedId);
+
+        if (!player) {
+          continue;
+        }
+
+        const points =
+          finiteNumber(record.awardedPoints, 0);
+
+        player.score += points;
+        player.unplayedCount++;
+        player.roundColors[roundIndex] = "-";
+        player.scoreGaps[roundIndex] = 0;
+
+        if (points >= tournament.winPoints) {
+          player.hadUnplayedWin = true;
+        }
+
+        player.floats[roundIndex] =
+          points > tournament.lossPoints ? "D" : "-";
+
+        continue;
+      }
+
+      const white = playerMap.get(record.whiteId);
+      const black = playerMap.get(record.blackId);
+
+      if (!white || !black) {
+        continue;
+      }
+
+      const whiteScoreBefore =
+        finiteNumber(white.score, 0);
+
+      const blackScoreBefore =
+        finiteNumber(black.score, 0);
+
+      const points = resultPoints(record.result);
+
+      const isForfeit =
+        record.result === "1-0F" ||
+        record.result === "0-1F" ||
+        record.result === "0-0F";
+
+      if (!isForfeit) {
+        white.opponents.push(black.id);
+        black.opponents.push(white.id);
+
+        white.playedColors.push("W");
+        black.playedColors.push("B");
+
+        white.roundColors[roundIndex] = "W";
+        black.roundColors[roundIndex] = "B";
+
+        if (whiteScoreBefore > blackScoreBefore) {
+          const gap =
+            whiteScoreBefore - blackScoreBefore;
+
+          white.floats[roundIndex] = "D";
+          black.floats[roundIndex] = "U";
+          white.scoreGaps[roundIndex] = gap;
+          black.scoreGaps[roundIndex] = gap;
+        } else if (blackScoreBefore > whiteScoreBefore) {
+          const gap =
+            blackScoreBefore - whiteScoreBefore;
+
+          black.floats[roundIndex] = "D";
+          white.floats[roundIndex] = "U";
+          black.scoreGaps[roundIndex] = gap;
+          white.scoreGaps[roundIndex] = gap;
+        }
+      } else {
+        white.unplayedCount++;
+        black.unplayedCount++;
+
+        white.roundColors[roundIndex] = "-";
+        black.roundColors[roundIndex] = "-";
+
+        white.floats[roundIndex] =
+          points.white > tournament.lossPoints
+            ? "D"
+            : "-";
+
+        black.floats[roundIndex] =
+          points.black > tournament.lossPoints
+            ? "D"
+            : "-";
+
+        if (points.white >= tournament.winPoints) {
+          white.hadUnplayedWin = true;
+        }
+
+        if (points.black >= tournament.winPoints) {
+          black.hadUnplayedWin = true;
+        }
+      }
+
+      white.score += points.white;
+      black.score += points.black;
+    }
+  });
+}
+
+function recomputeAllScores() {
+  rebuildPlayerStateFromRounds();
+}
+
+/* ========================================================================== */
+/* RENDER PLAYERS                                                             */
+/* ========================================================================== */
+
+function renderPlayersTable() {
+  const body =
+    document.getElementById("playersTableBody");
+
+  body.innerHTML = "";
+
+  document.getElementById("playerCount").innerText =
+    tournament.players.length;
+
+  if (tournament.players.length === 0) {
+    body.innerHTML = `
+      <tr>
+        <td
+          colspan="7"
+          class="text-center"
+          style="padding:1.5rem;color:#a0aec0;"
+        >
+          No participants registered.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  const ordered =
+    [...tournament.players].sort(
+      (a, b) => a.tpn - b.tpn
+    );
+
+  for (const player of ordered) {
+    const row = document.createElement("tr");
+
+    const statusDisabled =
+      !player.active ||
+      tournament.activePairings.length > 0;
+
+    row.innerHTML = `
+      <td><strong>${player.tpn}</strong></td>
+
+      <td><strong>${escapeHtml(player.name)}</strong></td>
+
+      <td>${player.rating}</td>
+
+      <td>
+        ${
+          player.title
+            ? `<span class="badge badge-white">
+                 ${escapeHtml(player.title)}
+               </span>`
+            : "-"
+        }
+      </td>
+
+      <td>
+        ${
+          player.active
+            ? `<span
+                 class="badge"
+                 style="background:#c6f6d5;color:#22543d;"
+               >
+                 Active
+               </span>`
+            : `<span class="badge badge-withdrawn">
+                 Withdrawn
+               </span>`
+        }
+      </td>
+
+      <td class="no-print">
+        <select
+          class="form-control"
+          style="min-width:190px;"
+          onchange="setNextRoundStatus(
+            '${player.id}',
+            this.value
+          )"
+          ${statusDisabled ? "disabled" : ""}
+        >
+          <option
+            value="pair"
+            ${
+              player.nextRoundStatus === "pair"
+                ? "selected"
+                : ""
+            }
+          >
+            Pair normally
+          </option>
+
+          <option
+            value="unplayed-zero"
+            ${
+              player.nextRoundStatus === "unplayed-zero"
+                ? "selected"
+                : ""
+            }
+          >
+            Unplayed — loss value
+          </option>
+
+          <option
+            value="unplayed-draw"
+            ${
+              player.nextRoundStatus === "unplayed-draw"
+                ? "selected"
+                : ""
+            }
+          >
+            Unplayed — draw value
+          </option>
+
+          <option
+            value="unplayed-win"
+            ${
+              player.nextRoundStatus === "unplayed-win"
+                ? "selected"
+                : ""
+            }
+          >
+            Unplayed — win value
+          </option>
+        </select>
+      </td>
+
+      <td class="text-center no-print">
+        <button
+          class="btn btn-secondary"
+          style="padding:2px 6px;font-size:0.75rem;"
+          onclick="togglePlayerActive('${player.id}')"
+        >
+          ${player.active ? "Withdraw" : "Re-admit"}
+        </button>
+
+        <button
+          class="btn btn-danger"
+          style="padding:2px 6px;font-size:0.75rem;"
+          onclick="removePlayer('${player.id}')"
+        >
+          ✕
+        </button>
+      </td>
+    `;
+
+    body.appendChild(row);
+  }
+}
+
+/* ========================================================================== */
+/* RENDER PAIRINGS                                                            */
+/* ========================================================================== */
+
+function renderPairings() {
+  const body =
+    document.getElementById("pairingsTableBody");
+
+  const pabContainer =
+    document.getElementById("pabContainer");
+
+  const unplayedContainer =
+    document.getElementById("unplayedContainer");
+
+  body.innerHTML = "";
+  pabContainer.style.display = "none";
+  unplayedContainer.style.display = "none";
+
+  const roundNumber =
+    tournament.activePairings.length > 0
+      ? tournament.currentRound
+      : tournament.rounds.length + 1;
+
+  document.getElementById("currentRoundTitle").innerText =
+    `Round ${roundNumber} Pairings`;
+
+  document.getElementById("printTitle").innerText =
+    `${tournament.name} — Round ${roundNumber} Pairings`;
+
+  if (tournament.activePairings.length === 0) {
+    body.innerHTML = `
+      <tr>
+        <td
+          colspan="4"
+          class="text-center"
+          style="padding:2rem;color:#a0aec0;"
+        >
+          Click “Generate Pairings” to create round
+          ${tournament.rounds.length + 1}.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  let gameCount = 0;
+  const unplayedLines = [];
+
+  tournament.activePairings.forEach((record, index) => {
+    if (record.kind === "pab") {
+      const player =
+        tournament.players.find(
+          candidate => candidate.id === record.pabId
+        );
+
+      if (player) {
+        pabContainer.style.display = "block";
+
+        document.getElementById("pabDetails").innerHTML = `
+          [TPN ${player.tpn}]
+          <strong>${escapeHtml(player.name)}</strong>
+          (${player.rating}) receives
+          <strong>${formatPoints(record.awardedPoints)}</strong>
+          points. The round has no opponent or color and records a
+          downfloat marker.
+        `;
+      }
+
+      return;
+    }
+
+    if (record.kind === "unplayed") {
+      const player =
+        tournament.players.find(
+          candidate =>
+            candidate.id === record.unplayedId
+        );
+
+      if (player) {
+        unplayedLines.push(`
+          <div style="margin-bottom:0.35rem;">
+            [TPN ${player.tpn}]
+            <strong>${escapeHtml(player.name)}</strong> —
+            ${escapeHtml(record.label)}:
+            <strong>
+              ${formatPoints(record.awardedPoints)}
+            </strong>
+            points
+          </div>
+        `);
+      }
+
+      return;
+    }
+
+    gameCount++;
+
+    const white =
+      tournament.players.find(
+        player => player.id === record.whiteId
+      );
+
+    const black =
+      tournament.players.find(
+        player => player.id === record.blackId
+      );
+
+    if (!white || !black) {
+      return;
+    }
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td><strong>${record.board}</strong></td>
+
+      <td>
+        <span class="badge badge-white">W</span>
+        [${white.tpn}]
+        <strong>${escapeHtml(white.name)}</strong>
+        (${white.rating})
+        <span class="badge badge-float">
+          ${formatPoints(white.score)} pts
+        </span>
+      </td>
+
+      <td class="text-center">
+        <select
+          class="result-select no-print"
+          onchange="updateBoardResult(
+            ${index},
+            this.value
+          )"
+        >
+          <option
+            value="*"
+            ${record.result === "*" ? "selected" : ""}
+          >
+            [ ? — ? ]
+          </option>
+
+          <option
+            value="1-0"
+            ${record.result === "1-0" ? "selected" : ""}
+          >
+            1 — 0
+          </option>
+
+          <option
+            value="0.5-0.5"
+            ${
+              record.result === "0.5-0.5"
+                ? "selected"
+                : ""
+            }
+          >
+            ½ — ½
+          </option>
+
+          <option
+            value="0-1"
+            ${record.result === "0-1" ? "selected" : ""}
+          >
+            0 — 1
+          </option>
+
+          <option
+            value="1-0F"
+            ${record.result === "1-0F" ? "selected" : ""}
+          >
+            1 — 0 Forfeit
+          </option>
+
+          <option
+            value="0-1F"
+            ${record.result === "0-1F" ? "selected" : ""}
+          >
+            0 — 1 Forfeit
+          </option>
+
+          <option
+            value="0-0F"
+            ${record.result === "0-0F" ? "selected" : ""}
+          >
+            0 — 0 Double Forfeit
+          </option>
+        </select>
+
+        <span class="print-result">—</span>
+      </td>
+
+      <td>
+        <span class="badge badge-black">B</span>
+        [${black.tpn}]
+        <strong>${escapeHtml(black.name)}</strong>
+        (${black.rating})
+        <span class="badge badge-float">
+          ${formatPoints(black.score)} pts
+        </span>
+      </td>
+    `;
+
+    body.appendChild(row);
+  });
+
+  if (unplayedLines.length > 0) {
+    unplayedContainer.style.display = "block";
+    document.getElementById("unplayedDetails").innerHTML =
+      unplayedLines.join("");
+  }
+
+  if (gameCount === 0) {
+    body.innerHTML = `
+      <tr>
+        <td
+          colspan="4"
+          class="text-center"
+          style="padding:1.5rem;color:#718096;"
+        >
+          This round contains no played boards.
+        </td>
+      </tr>
+    `;
+  }
+}
+
+/* ========================================================================== */
+/* STANDINGS AND INFORMATIONAL TIE-BREAKS                                     */
+/* ========================================================================== */
+
+function calculateTiebreaks() {
+  const playerMap = new Map(
+    tournament.players.map(player => [
+      player.id,
+      player
+    ])
+  );
+
+  for (const player of tournament.players) {
+    const opponentScores = [];
+    let sonnebornBerger = 0;
+
+    for (const opponentId of player.opponents) {
+      const opponent = playerMap.get(opponentId);
+
+      if (opponent) {
+        opponentScores.push(
+          finiteNumber(opponent.score, 0)
+        );
+      }
+    }
+
+    for (const round of tournament.rounds) {
+      const record = round.pairings.find(candidate =>
+        candidate.kind === "game" &&
+        (
+          candidate.whiteId === player.id ||
+          candidate.blackId === player.id
+        )
+      );
+
+      if (!record) {
+        continue;
+      }
+
+      if (
+        record.result === "1-0F" ||
+        record.result === "0-1F" ||
+        record.result === "0-0F"
+      ) {
+        continue;
+      }
+
+      const isWhite =
+        record.whiteId === player.id;
+
+      const opponentId = isWhite
+        ? record.blackId
+        : record.whiteId;
+
+      const opponent = playerMap.get(opponentId);
+
+      if (!opponent) {
+        continue;
+      }
+
+      const opponentScore =
+        finiteNumber(opponent.score, 0);
+
+      const won =
+        (isWhite && record.result === "1-0") ||
+        (!isWhite && record.result === "0-1");
+
+      if (won) {
+        sonnebornBerger += opponentScore;
+      } else if (record.result === "0.5-0.5") {
+        sonnebornBerger += opponentScore * 0.5;
+      }
+    }
+
+    opponentScores.sort((a, b) => a - b);
+
+    player.buchholzTotal =
+      opponentScores.reduce(
+        (sum, score) => sum + score,
+        0
+      );
+
+    player.buchholzCut1 =
+      opponentScores.length > 1
+        ? opponentScores
+            .slice(1)
+            .reduce(
+              (sum, score) => sum + score,
+              0
+            )
+        : player.buchholzTotal;
+
+    player.sonnebornBerger = sonnebornBerger;
+  }
+}
+
+function renderStandings() {
+  calculateTiebreaks();
+
+  const sorted = [...tournament.players].sort((a, b) => {
+    if (b.score !== a.score) {
+      return b.score - a.score;
+    }
+
+    if (b.buchholzCut1 !== a.buchholzCut1) {
+      return b.buchholzCut1 - a.buchholzCut1;
+    }
+
+    if (b.buchholzTotal !== a.buchholzTotal) {
+      return b.buchholzTotal - a.buchholzTotal;
+    }
+
+    if (b.sonnebornBerger !== a.sonnebornBerger) {
+      return b.sonnebornBerger - a.sonnebornBerger;
+    }
+
+    return a.tpn - b.tpn;
+  });
+
+  const body =
+    document.getElementById("standingsTableBody");
+
+  body.innerHTML = "";
+
+  const final =
+    tournament.isFinished ||
+    (
+      tournament.rounds.length >=
+        tournament.totalRounds &&
+      tournament.rounds.length > 0
+    );
+
+  document.getElementById("standingsTitle").innerText =
+    final ? "Final Result" : "Current Standings";
+
+  document.getElementById("printTitle").innerText =
+    final
+      ? `${tournament.name} — Final Result`
+      : `${tournament.name} — Standings after Round ` +
+        `${tournament.rounds.length}`;
+
+  sorted.forEach((player, index) => {
+    const row = document.createElement("tr");
+    const colorDifference =
+      getColorDifference(player);
+
+    row.innerHTML = `
+      <td><strong>${index + 1}</strong></td>
+      <td>${player.tpn}</td>
+
+      <td>
+        ${
+          player.title
+            ? `<span class="badge badge-white">
+                 ${escapeHtml(player.title)}
+               </span>`
+            : ""
+        }
+      </td>
+
+      <td>
+        <strong>${escapeHtml(player.name)}</strong>
+        ${
+          !player.active
+            ? `<span
+                 class="badge badge-withdrawn"
+                 style="font-size:0.65rem;"
+               >
+                 Withdrawn
+               </span>`
+            : ""
+        }
+      </td>
+
+      <td>${player.rating}</td>
+
+      <td class="text-center">
+        <strong>${formatPoints(player.score)}</strong>
+      </td>
+
+      <td class="text-center">
+        ${formatDecimal(player.buchholzCut1, 1)}
+      </td>
+
+      <td class="text-center">
+        ${formatDecimal(player.buchholzTotal, 1)}
+      </td>
+
+      <td class="text-center">
+        ${formatDecimal(player.sonnebornBerger, 2)}
+      </td>
+
+      <td class="text-center">
+        <span style="font-family:monospace;">
+          ${player.roundColors.join(" ") || "-"}
+        </span>
+      </td>
+
+      <td class="text-center">
+        ${
+          colorDifference > 0
+            ? "+" + colorDifference
+            : colorDifference
+        }
+      </td>
+
+      <td class="text-center">
+        <span style="font-family:monospace;">
+          ${player.floats.join(" ") || "-"}
+        </span>
+      </td>
+    `;
+
+    body.appendChild(row);
+  });
+}
+
+/* ========================================================================== */
+/* HISTORY                                                                    */
+/* ========================================================================== */
+
+function renderHistory() {
+  const container =
+    document.getElementById("roundsHistoryContainer");
+
+  if (tournament.rounds.length === 0) {
+    container.innerHTML =
+      `<p style="color:#718096;">` +
+      `No completed rounds yet.</p>`;
+    return;
+  }
+
+  container.innerHTML = "";
+
+  for (const round of tournament.rounds) {
+    const card = document.createElement("div");
+
+    card.className = "card";
+    card.style.marginBottom = "1rem";
+
+    const rows = round.pairings.map(record => {
+      if (record.kind === "pab") {
+        const player =
+          tournament.players.find(
+            candidate => candidate.id === record.pabId
+          );
+
+        return `
+          <tr>
+            <td>—</td>
+            <td colspan="3">
+              <span class="badge badge-bye">PAB</span>
+              ${
+                player
+                  ? `[${player.tpn}] ` +
+                    `<strong>${escapeHtml(player.name)}</strong>`
+                  : "Unknown player"
+              }
+              — ${formatPoints(record.awardedPoints)} points
+            </td>
+          </tr>
+        `;
+      }
+
+      if (record.kind === "unplayed") {
+        const player =
+          tournament.players.find(
+            candidate =>
+              candidate.id === record.unplayedId
+          );
+
+        return `
+          <tr>
+            <td>—</td>
+            <td colspan="3">
+              <span class="badge badge-float">Unplayed</span>
+              ${
+                player
+                  ? `[${player.tpn}] ` +
+                    `<strong>${escapeHtml(player.name)}</strong>`
+                  : "Unknown player"
+              }
+              — ${escapeHtml(record.label)} —
+              ${formatPoints(record.awardedPoints)} points
+            </td>
+          </tr>
+        `;
+      }
+
+      const white =
+        tournament.players.find(
+          player => player.id === record.whiteId
+        );
+
+      const black =
+        tournament.players.find(
+          player => player.id === record.blackId
+        );
+
+      return `
+        <tr>
+          <td>${record.board}</td>
+
+          <td>
+            ${
+              white
+                ? `[${white.tpn}] ` +
+                  `${escapeHtml(white.name)} ` +
+                  `(${white.rating})`
+                : "Unknown"
+            }
+          </td>
+
+          <td class="text-center">
+            <strong>${escapeHtml(record.result)}</strong>
+          </td>
+
+          <td>
+            ${
+              black
+                ? `[${black.tpn}] ` +
+                  `${escapeHtml(black.name)} ` +
+                  `(${black.rating})`
+                : "Unknown"
+            }
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    card.innerHTML = `
+      <h4
+        style="
+          color:var(--primary);
+          margin-bottom:0.5rem;
+        "
+      >
+        Round ${round.roundNumber}
+      </h4>
+
+      <table style="font-size:0.85rem;">
+        <thead>
+          <tr>
+            <th style="width:50px;">Board</th>
+            <th>White / Entry</th>
+            <th class="text-center" style="width:130px;">
+              Result
+            </th>
+            <th>Black</th>
+          </tr>
+        </thead>
+
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+
+    container.appendChild(card);
+  }
+}
+
+/* ========================================================================== */
+/* NAVIGATION AND UI                                                          */
+/* ========================================================================== */
+
+function switchTab(tabId) {
+  document
+    .querySelectorAll(".tab-pane")
+    .forEach(element => {
+      element.style.display = "none";
+    });
+
+  document
+    .querySelectorAll(".nav-tab")
+    .forEach(element => {
+      element.classList.remove("active");
+    });
+
+  document.getElementById(tabId).style.display = "block";
+
+  const selectedTab = [...document.querySelectorAll(".nav-tab")]
+    .find(element =>
+      String(element.getAttribute("onclick")).includes(tabId)
+    );
+
+  if (selectedTab) {
+    selectedTab.classList.add("active");
+  }
+
+  if (tabId === "standingsTab") {
+    renderStandings();
+  }
+
+  if (tabId === "historyTab") {
+    renderHistory();
+  }
+
+  if (tabId === "pairingsTab") {
+    renderPairings();
+  }
+}
+
+function updateUI() {
+  const pairButton =
+    document.getElementById("btnPairNext");
+
+  if (
+    tournament.rounds.length >=
+    tournament.totalRounds
+  ) {
+    pairButton.disabled = true;
+    pairButton.innerText = "Tournament Complete";
+  } else if (tournament.activePairings.length > 0) {
+    pairButton.disabled = true;
+    pairButton.innerText =
+      `Round ${tournament.currentRound} In Progress`;
+  } else {
+    pairButton.disabled = false;
+    pairButton.innerText =
+      `🎲 Pair Round ${tournament.rounds.length + 1}`;
+  }
+
+  updateSettingsLockUI();
+  checkIfRoundComplete();
+}
+
+/* ========================================================================== */
+/* INTERNAL CHECKS                                                            */
+/* ========================================================================== */
+
+function runInternalSelfChecks() {
+  try {
+    const testPlayer = {
+      score: 2.5,
+      playedColors: [],
+      roundColors: [],
+      opponents: [],
+      floats: [],
+      tpn: 1,
+      id: "SELF_TEST"
+    };
+
+    console.assert(
+      isTopscorer(testPlayer, 5, 5) === true,
+      "Topscorer threshold self-check failed."
+    );
+
+    console.assert(
+      isTopscorer(testPlayer, 4, 5) === false,
+      "Topscorer final-round restriction self-check failed."
+    );
+
+    console.assert(
+      compareNumberArrays([3.5, 3], [4, 1]) < 0,
+      "C7 descending score-vector comparison failed."
+    );
+  } catch (error) {
+    console.error("Internal self-check error:", error);
+  }
+}
+
+/* ========================================================================== */
+/* GENERAL UTILITIES                                                          */
+/* ========================================================================== */
+
+function formatPoints(value) {
+  const number = finiteNumber(value, 0);
+
+  if (Number.isInteger(number)) {
+    return String(number);
+  }
+
+  return String(
+    Math.round((number + Number.EPSILON) * 1000) / 1000
+  );
+}
+
+function formatDecimal(value, digits) {
+  return finiteNumber(value, 0).toFixed(digits);
+}
+
+function escapeHtml(value) {
+  return String(value || "").replace(
+    /[&<>'"]/g,
+    character => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "'": "&#39;",
+      '"': "&quot;"
+    })[character]
+  );
+}
+</script>
+
+</body>
+</html>
