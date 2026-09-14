@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Experimentellt FIDE Holländskt Lottningssystem — 2026 års regler</title>
+<title>Experimentellt FIDE Holländskt Lottningssystem – 2026 års regler</title>
 
 <style>
   :root {
@@ -560,10 +560,10 @@
           <label>Lottad startfärg (rond 1)</label>
           <select id="tInitColor" class="form-control">
             <option value="W" selected>
-              Vit — Startnr 1 börjar med vit
+              Vit – Startnr 1 börjar med vit
             </option>
             <option value="B">
-              Svart — Startnr 1 börjar med svart
+              Svart – Startnr 1 börjar med svart
             </option>
           </select>
         </div>
@@ -572,10 +572,10 @@
           <label>Poäng: Vinst / Remi / Förlust</label>
           <select id="tPoints" class="form-control">
             <option value="1,0.5,0" selected>
-              Standard: 1 — ½ — 0
+              Standard: 1 – ½ – 0
             </option>
             <option value="3,1,0">
-              Fotboll: 3 — 1 — 0
+              Fotboll: 3 – 1 – 0
             </option>
           </select>
         </div>
@@ -825,7 +825,7 @@
               margin-bottom:0.4rem;
             "
           >
-            Lottad frirond (Pairing-Allocated Bye — PAB)
+            Lottad frirond (Pairing-Allocated Bye – PAB)
           </h4>
 
           <div id="pabDetails"></div>
@@ -3857,7 +3857,7 @@ function renderPlayersTable() {
                 : ""
             }
           >
-            Spelfri — 0 p
+            Spelfri – 0 p
           </option>
 
           <option
@@ -3868,7 +3868,7 @@ function renderPlayersTable() {
                 : ""
             }
           >
-            Spelfri — ½ p (remi)
+            Spelfri – ½ p (remi)
           </option>
 
           <option
@@ -3879,7 +3879,7 @@ function renderPlayersTable() {
                 : ""
             }
           >
-            Spelfri — 1 p (vinst)
+            Spelfri – 1 p (vinst)
           </option>
         </select>
       </td>
@@ -3890,7 +3890,7 @@ function renderPlayersTable() {
           style="padding:2px 6px;font-size:0.75rem;"
           onclick="togglePlayerActive('${player.id}')"
         >
-          ${player.active ? "Uteslut" : "Återinsätt"}
+          ${player.active ? "Utgått" : "Återinsätt"}
         </button>
 
         <button
@@ -3931,10 +3931,10 @@ function renderPairings() {
       : tournament.rounds.length + 1;
 
   document.getElementById("currentRoundTitle").innerText =
-    `Lottning — Rond ${roundNumber}`;
+    `Lottning – Rond ${roundNumber}`;
 
   document.getElementById("printTitle").innerText =
-    `${tournament.name} — Lottning rond ${roundNumber}`;
+    `${tournament.name} – Lottning rond ${roundNumber}`;
 
   if (tournament.activePairings.length === 0) {
     body.innerHTML = `
@@ -3988,7 +3988,7 @@ function renderPairings() {
         unplayedLines.push(`
           <div style="margin-bottom:0.35rem;">
             [Startnr ${player.tpn}]
-            <strong>${escapeHtml(player.name)}</strong> —
+            <strong>${escapeHtml(player.name)}</strong> –
             ${escapeHtml(record.label)}:
             <strong>
               ${formatPoints(record.awardedPoints)}
@@ -4044,14 +4044,14 @@ function renderPairings() {
             value="*"
             ${record.result === "*" ? "selected" : ""}
           >
-            [ ? — ? ]
+            &nbsp;&nbsp;&nbsp;*
           </option>
 
           <option
             value="1-0"
             ${record.result === "1-0" ? "selected" : ""}
           >
-            1 — 0
+            1 – 0
           </option>
 
           <option
@@ -4062,39 +4062,39 @@ function renderPairings() {
                 : ""
             }
           >
-            ½ — ½
+            ½ – ½
           </option>
 
           <option
             value="0-1"
             ${record.result === "0-1" ? "selected" : ""}
           >
-            0 — 1
+            0 – 1
           </option>
 
           <option
             value="1-0F"
             ${record.result === "1-0F" ? "selected" : ""}
           >
-            1 — 0 (W.O.)
+            1 – 0 (W.O.)
           </option>
 
           <option
             value="0-1F"
             ${record.result === "0-1F" ? "selected" : ""}
           >
-            0 — 1 (W.O.)
+            0 – 1 (W.O.)
           </option>
 
           <option
             value="0-0F"
             ${record.result === "0-0F" ? "selected" : ""}
           >
-            0 — 0 (Dubbel W.O.)
+            0 – 0 (Dubbel W.O.)
           </option>
         </select>
 
-        <span class="print-result">—</span>
+        <span class="print-result">–</span>
       </td>
 
       <td>
@@ -4269,8 +4269,8 @@ function renderStandings() {
 
   document.getElementById("printTitle").innerText =
     final
-      ? `${tournament.name} — Slutställning`
-      : `${tournament.name} — Ställning efter rond ` +
+      ? `${tournament.name} – Slutställning`
+      : `${tournament.name} – Ställning efter rond ` +
         `${tournament.rounds.length}`;
 
   sorted.forEach((player, index) => {
@@ -4381,7 +4381,7 @@ function renderHistory() {
 
         return `
           <tr>
-            <td>—</td>
+            <td>–</td>
             <td colspan="3">
               <span class="badge badge-bye">Frirond (PAB)</span>
               ${
@@ -4390,7 +4390,7 @@ function renderHistory() {
                     `<strong>${escapeHtml(player.name)}</strong>`
                   : "Okänd spelare"
               }
-              — ${formatPoints(record.awardedPoints)} poäng
+              – ${formatPoints(record.awardedPoints)} poäng
             </td>
           </tr>
         `;
@@ -4405,7 +4405,7 @@ function renderHistory() {
 
         return `
           <tr>
-            <td>—</td>
+            <td>–</td>
             <td colspan="3">
               <span class="badge badge-float">Spelfri</span>
               ${
@@ -4414,7 +4414,7 @@ function renderHistory() {
                     `<strong>${escapeHtml(player.name)}</strong>`
                   : "Okänd spelare"
               }
-              — ${escapeHtml(record.label)} —
+              – ${escapeHtml(record.label)} –
               ${formatPoints(record.awardedPoints)} poäng
             </td>
           </tr>
