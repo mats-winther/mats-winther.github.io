@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="style4.css" rel="stylesheet" type="text/css">
   <meta name="description" content=
-  "En teknisk genomgång av lottning i schackturneringar med fokus på monrad och schweizer. Artikeln kritiserar nordisk schweizer och presenterar ett alternativt schweizer-system som ett mer stabilt och rättvist alternativ för öppna turneringar.">
+  "En teknisk genomgång av lottning i schackturneringar med fokus på monrad och schweizer. Artikeln presenterar ett nytt schweizer-system som ett stabilt och rättvist alternativ för öppna turneringar.">
   <meta name="keywords" content=
   "Monrad, Schweizer, Berger, Scheveningen, lottning, schack, program, winther-accelerering">
   <meta name="author" content="Mats Winther">
@@ -38,10 +38,10 @@
     ett misstag än av vilken färg man får.<br>
     <br>
     Ovanstående gäller för dansk-svensk monrad. Enligt FIDE:s officiella regler får en spelare inte ha samma färg tre
-    gånger i rad, och inte heller ha en färgbalans som avviker med mer än &plusmn;2. Den nederländska monrad-versionen (FIDE),
-    följer denna regel, utom i extremfall. Det norska systemet är mindre strikt: en spelare får aldrig ha mer än
-    <i>tre</i> partier i rad med samma färg, och om möjligt bör ingen spelare ha mer än 50%&nbsp;+&nbsp;1 partier med
-    samma färg (se <a href="https://2000.sjakk.no/kunnskap/systemer/norges-sjakkforbunds-monradsystem/" title=
+    gånger i rad, och inte heller ha en färgbalans som avviker med mer än &plusmn;2. Den nederländska monrad-versionen
+    (FIDE), följer denna regel, utom i extremfall. Det norska systemet är mindre strikt: en spelare får aldrig ha mer
+    än <i>tre</i> partier i rad med samma färg, och om möjligt bör ingen spelare ha mer än 50%&nbsp;+&nbsp;1 partier
+    med samma färg (se <a href="https://2000.sjakk.no/kunnskap/systemer/norges-sjakkforbunds-monradsystem/" title=
     "Norges Schackförbunds Monradsystem">här</a>). (Dessa regler är inte absoluta och kan i undantagsfall åsidosättas.)
     Men eftersom monrad knappast används i elitturneringar är det kanske en onödig restriktion.<br>
     <br>
@@ -57,8 +57,8 @@
     <br>
     <b>Berger-systemet</b> innebär att alla möter alla, antingen en eller två gånger. Jag har skapat ett online-program
     för berger-lottning för 3-16 spelare enligt FIDE:s specifikationer. Det kan användas direkt i webbläsaren, men går
-    även att ladda ned och köra lokalt: <a href="../berger.htm" title="Berger lottningsprogram">Berger
-    Turneringssystem (alla-mot-alla)</a>.<br>
+    även att ladda ned och köra lokalt: <a href="../berger.htm" title="Berger lottningsprogram">Berger Turneringssystem
+    (alla-mot-alla)</a>.<br>
     <br>
     <b>Scheveningen</b> är ett format för lagspel där två lag av samma storlek spelar ett fullständigt korsmöte: alla
     spelare i lag A möter alla spelare i lag B över n ronder: <a href="../scheveningen.htm">Scheveningen
@@ -115,9 +115,50 @@
     undviker den pendling som annars förtar spelglädjen. Från rond tre möter spelare med liknande rating allt oftare
     varandra, vilket ger turneringen en naturlig utveckling. Att buchholz används som sekundärt kriterium harmonierar
     med målet att spelare med liknande motstånd ska mötas, och färgregeln (som garanterar att ingen får samma färg tre
-    gånger i rad) eliminerar ett av de mest störande inslagen i vissa andra system. Ett bra schweizerformat måste vara
-    enkelt att förstå, svårt att manipulera och ge spelarna en känsla av att turneringen fortskrider logiskt. Systemet
-    är konstruerat med just dessa principer i åtanke.<br>
+    gånger i rad) eliminerar ett av de mest störande inslagen i vissa andra system.<br>
+    <br>
+    <span class="bigger">FIDE Schweizer (&ldquo;Dutch&rdquo;)</span><br>
+    <br>
+    Det holländska systemet (FIDE Dutch Swiss) är den internationella guldstandarden för schackturneringar och det
+    officiella system som FIDE föreskriver för merparten av alla öppna tävlingar från och med 1 februari 2026. Det
+    syftar till att få en så rättvis lottning som möjligt. Algoritmen, som är mycket komplex (se <a href=
+    "https://handbook.fide.com/chapter/C0403202602" title=
+    "C. GENERAL RULES AND TECHNICAL RECOMMENDATIONS FOR TOURNAMENTS / 04. FIDE Swiss Rules / C.04.3 FIDE (Dutch) System / C.04.3 FIDE (Dutch) System (effective from 1 February 2026) /">
+    här</a>), publicerades första gången 2023-2024 i FIDEs tekniska kommitté och fastställdes som officiellt system
+    2026, giltigt från 1 februari 2026. Det ersätter det tidigare Dutch (2009) och Dutch (2017) som användes i vissa
+    turneringar men aldrig blev global standard. Det är en modern algoritm som FIDE utvecklat för att minska
+    färgobalanser, minska float-kaos, öka determinism och reproducerbarhet, och undvika förutsägbarhet i toppstriden.
+    Att FIDE kräver att systemet är deterministiskt och reproducerbart betyder att samma indata ger samma parning, inga
+    &quot;mänskliga bedömningar&quot; får förekomma, och inga subjektiva val är tillåtna. I praktiken är det omöjligt
+    att lotta Dutch för hand då det är ohyggligt omständligt och beräkningsmässigt explosivt.<br>
+    <br>
+    Att just det nederländska systemet blivit norm beror på hur det balanserar sportslig rättvisa, färgfördelning och
+    en tydlig differentiering av deltagarna. Systemet har de striktaste färgreglerna av alla schweiziska metoder. En
+    spelare får aldrig ha samma färg tre ronder i rad (med undantag för extremfall i toppstriden i den allra sista
+    ronden). Algoritmen strävar dessutom efter att ingen spelare vid något givet tillfälle ska ha <i>mer än ett</i>
+    vitt eller svart parti mer än motparten. Många andra schweiziska system tillåter större obalanser, vilket ofta
+    leder till att spelare missgynnas med flera svarta partier i avgörande skeden. Fördelen med det holländska systemet
+    anses vara att det erbjuder högsta sportsliga integritet: det skyddar färgfördelningen maximalt och ser till att
+    spelare med bäst resultat möter varandra mot slutet av turneringen.<br>
+    <br>
+    Jag har skapat en experimentell version här: <a href=
+    "https://mats-winther.github.io/fide-hollandskt.htm">Experimentellt FIDE Holländskt Lottningssystem</a>. Programmet
+    är inte giltigt för elo-baserade turneringar eftersom det inte verifierats. Om programmet visar sig fungera kan man
+    ändå använda det på klubbnivå, men då bör lottningen benämnas &quot;modifierad holländsk&quot; eller liknande.
+    Programmet kan användas för att testa algoritmen, och troligen fungerar den i huvudsak korrekt (åtminstone tror
+    GPT-Sol det). Algoritmen är tung, så det tar en stund när man genererar nästa rond.<br>
+    <br>
+    I Dutch-systemet är två svarta partier i rad helt normalt. Tre svarta i rad är i regel förbjudet, med sällsynta
+    undantag i sista ronden. Fyra svarta i rad är aldrig möjligt. En spelare kan i vissa fall avsluta turneringen med
+    två fler svarta än vita partier. En färgdifferens på -3 eller lägre är något systemet aktivt försöker undvika för
+    toppspelare och deras motståndare. Spelarna rangordnas efter poäng och därefter TPN (Tournament Pairing Number).
+    Det är samma princip som i klassisk Monrad: (1) seedning, (2) strikt parning efter ordning, (3) inga
+    accelerationsregler.<br>
+    <br>
+    Ur spelarens perspektiv är systemet betydligt mer svårförutsägbart än klassisk monrad. Den slutliga parningen är
+    ofta omöjlig att förutse. Algoritmen försöker optimera över 16 olika kvalitetskriterier. Spelare med samma poäng
+    möter inte nödvändigtvis varandra, och man kan få möta någon med helt annan TPN än väntat. Färgallokeringen är
+    komplex och inte intuitiv.<br>
     <br>
     &copy; Mats Winther, 2026.</p>
     <p><br>
@@ -131,6 +172,12 @@
     <a href="https://handbook.fide.com/chapter/C05Annex1" title=
     "FIDE Handbook: General Regulations for Competitions. Annex 1: Details of Berger Table">https://handbook.fide.com/chapter/C05Annex1</a><br>
 
+    <br>
+    &lsquo;General Rules and Technical Recommendations for Tournaments. 04.&nbsp;FIDE Swiss Rules. C.04.3&nbsp;FIDE
+    (Dutch) System&rsquo;. FIDE Handbook.<br>
+    <a href="https://handbook.fide.com/chapter/C0403202602" title=
+    "C. GENERAL RULES AND TECHNICAL RECOMMENDATIONS FOR TOURNAMENTS / 04. FIDE Swiss Rules / C.04.3 FIDE (Dutch) System / C.04.3 FIDE (Dutch) System (effective from 1 February 2026) /">
+    https://handbook.fide.com/chapter/C0403202602</a>)<br>
     <br>
     &lsquo;Norges Sjakkforbunds Monradsystem&rsquo;. Sjakktuelt.<br>
     <a href="https://2000.sjakk.no/kunnskap/systemer/norges-sjakkforbunds-monradsystem/" title=
@@ -151,6 +198,13 @@
     <br>
     <b>Online lottningsprogram:</b><br>
     <br>
+    Berger Turneringssystem (Alla-mot-alla).<br>
+    <a href="../berger.htm" title=
+    "Berger Turneringssystem (Alla-mot-alla)">https://mats-winther.github.io/berger.htm</a><br>
+    <br>
+    Experimentellt FIDE Holländskt Lottningssystem<br>
+    <a href="../fide-hollandskt.htm">https://mats-winther.github.io/fide-hollandskt.htm</a><br>
+    <br>
     Monrads lottningssystem (dansk-svensk modell).<br>
     <a href="../monrad.htm" title=
     "Monrads lottningssystem (dansk-svensk modell)">https://mats-winther.github.io/monrad.htm</a><br>
@@ -158,10 +212,6 @@
     Turneringshanterare för Monrad (norsk modell).<br>
     <a href="../norsk-monrad.htm" title=
     "Turneringshanterare för Monrad (norsk modell)">https://mats-winther.github.io/norsk-monrad.htm</a><br>
-    <br>
-    Berger Turneringssystem (Alla-mot-alla).<br>
-    <a href="../berger.htm" title=
-    "Berger Turneringssystem (Alla-mot-alla)">https://mats-winther.github.io/berger.htm</a><br>
     <br>
     Scheveningen Turneringssystem (för lagspel).<br>
     <a href="../scheveningen.htm" title=
