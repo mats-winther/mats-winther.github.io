@@ -456,7 +456,7 @@
   <div>
     <h1>Experimentellt FIDE Holländskt Lottningssystem</h1>
     <div class="subtitle">
-      I enlighet med FIDE-handbok C.04.3 (1 februari 2026)
+      Implementerat i enlighet med FIDE-handbok C.04.3 (1 februari 2026) – verifiering mot FIDEs officiella testfall återstår
     </div>
   </div>
 
@@ -468,16 +468,15 @@
     <button class="btn btn-dark" onclick="window.print()">
       🖨️ Skriv ut
     </button>
+
+    <button class="btn btn-dark" onclick="openNewWindow()">
+	📜 Om&hellip;
+    </button>
+
   </div>
 </header>
 
 <div class="container">
-
-  <div class="alert alert-warning no-print">
-    <strong>Valideringsmeddelande:</strong>
-    Detta program implementerar FIDE:s holländska regler men ska inte användas för FIDE-registrerade tävlingar
-    innan det blivit testat och godkänt.
-  </div>
 
   <div class="print-only" style="margin-bottom:15px;">
     <h2 id="printTitle" style="font-size:16pt;">
@@ -656,7 +655,7 @@
             type="text"
             id="pName"
             class="form-control"
-            placeholder="t.ex. Nils Grandelius"
+            placeholder="t.ex. Karl Magnusson"
           >
         </div>
 
@@ -4620,6 +4619,11 @@ function escapeHtml(value) {
     })[character]
   );
 }
+
+function openNewWindow() {
+   window.open("https://mats-winther.github.io/bg/schacklottning.htm", "_blank");
+}
+
 </script>
 
 </body>

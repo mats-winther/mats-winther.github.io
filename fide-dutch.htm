@@ -461,7 +461,7 @@
   <div>
     <h1>Experimental FIDE Dutch Swiss Pairing System</h1>
     <div class="subtitle">
-      Operational implementation of C.04.3 effective February 1, 2026 –
+      Implemented in accordance with FIDE Handbook C.04.3 effective February 1, 2026 –
       validation against official test cases is still required
     </div>
   </div>
@@ -474,16 +474,15 @@
     <button class="btn btn-dark" onclick="window.print()">
       🖨️ Print
     </button>
+
+    <button class="btn btn-dark" onclick="openNewWindow()">
+	📜 About&hellip;
+    </button>
+
   </div>
 </header>
 
 <div class="container">
-
-  <div class="alert alert-warning no-print">
-    <strong>Validation notice:</strong>
-    This implementation follows the supplied operational interpretation. It has not been certified by FIDE and should be checked against
-    official examples or an approved pairing checker before official use.
-  </div>
 
   <div class="print-only" style="margin-bottom:15px;">
     <h2 id="printTitle" style="font-size:16pt;">
@@ -662,7 +661,7 @@
             type="text"
             id="pName"
             class="form-control"
-            placeholder="e.g. Magnus Carlsen"
+            placeholder="e.g. Carl Magnuson"
           >
         </div>
 
@@ -4652,6 +4651,11 @@ function escapeHtml(value) {
     })[character]
   );
 }
+
+function openNewWindow() {
+   window.open("https://mats-winther.github.io/bg/chesspairing.htm", "_blank");
+}
+
 </script>
 
 </body>
