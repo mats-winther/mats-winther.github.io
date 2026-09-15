@@ -976,14 +976,29 @@
 /*
  * Implementation av FIDE Dutch Swiss-regler från 2026 (C.04.3).
  *
- * - Absoluta kriterier C1-C4 upprätthålls strikt.
+ * - Absoluta kriterier C1-C4 upprätthålls strikt (fallback tillåter
+ *   att färgkriterierna mjukas upp om ingen lottning annars kan hittas).
  * - Kvalitetskriterier C6-C21 minimeras lexikografiskt.
- * - Transpositioner sker med DFS och omedelbar beskärning (Art. 4.2).
+ * - Transpositioner sker med DFS och beskärning (Art. 4.2).
  * - Utbyten mellan S1 och S2 prioriteras efter minimal storlek (Art. 4.3).
- * - Perfekta kandidater (Art. 3.4.1) accepteras omedelbart för att förhindra tröghet.
+ * - Perfekta kandidater (Art. 3.4.1) accepteras omedelbart.
+ *
+ * FIXAR i denna version:
+ *  1. MAX_CANDIDATES höjt 200 -> 800 per bracket.
+ *  2. maxExchangeLimit höjt 2 -> upp till 4.
+ *  3. maxTranspositions höjt 60 -> 250, maxNodes 5000 -> 40000.
+ *  4. Tog bort tidigt break vid exchangeSize >= 1 (så fler kandidater
+ *     undersöks inom samma bracket).
+ *  5. Lade till fallback (RELAX_COLOR_RULES) som, när strikt lottning
+ *     misslyckas, tillåter parningar där båda parterna har samma
+ *     absoluta färgpreferens. Poängsättningen C12/C13 fångar ändå
+ *     dessa som kvalitetsbrister.
  */
 
 const STORAGE_KEY = "experimental_fide_dutch_2026_sv";
+
+// FIX 5: Global flagga som används av isPairLegal.
+let RELAX_COLOR_RULES = false;
 
 const TITLE_WEIGHTS = {
   GM: 9,
@@ -1021,7 +1036,7 @@ function createEmptyTournament() {
 }
 
 /* ========================================================================== */
-/* INITIALISERING OCH DATASANERING                                           */
+/* INITIALISERING OCH DATASANERING                                            */
 /* ========================================================================== */
 
 window.onload = function () {
@@ -1276,7 +1291,7 @@ function generatePlayerId() {
 }
 
 /* ========================================================================== */
-/* SPARA OCH LADDA                                                            */
+/* SPARA OCH LADDA                                                             */
 /* ========================================================================== */
 
 function autoSave() {
@@ -2025,8 +2040,16 @@ function isPairLegal(a, b, roundNumber, totalRounds) {
     return false;
   }
 
+  // C1: Ingen omspeining. Detta är ALLTID absolut.
   if (haveMet(a, b)) {
     return false;
+  }
+
+  // FIX 5: Om färgerna är relaxerade (fallback) hoppar vi över
+  // färgkontrollen helt, så att vi garanterat kan producera en
+  // lottning när ingen strikt variant finns.
+  if (RELAX_COLOR_RULES) {
+    return true;
   }
 
   const aTopscorer =
@@ -2035,6 +2058,7 @@ function isPairLegal(a, b, roundNumber, totalRounds) {
   const bTopscorer =
     isTopscorer(b, roundNumber, totalRounds);
 
+  // I sista ronden är toppspelare undantagna från C2/C3.
   if (!aTopscorer && !bTopscorer) {
     const preferenceA = getColorPreference(a);
     const preferenceB = getColorPreference(b);
@@ -2332,26 +2356,15 @@ function canonicalCandidateSignature(pairs, downfloaters) {
 /* SÖKNING MED BESKÄRNING (BACKTRACKING)                                      */
 /* ========================================================================== */
 
-/*
- * Fix 1: Hårt tak på antalet rekursionssteg.
- *
- * Den ursprungliga implementationen begränsade bara antalet *fullständiga*
- * lottningar (maxTranspositions), vilket innebar att sökningen kunde
- * vandra igenom en exponentiellt stor partialträd utan att någonsin
- * producera 60 resultat. I rond 3 med 32 spelare ledde detta till att
- * webbläsaren låste sig.
- *
- * Genom att i stället räkna besökta noder och avbryta vid maxNodes
- * blir varje enskilt anrop till findTranspositions garanterat billigt.
- */
+// FIX 3: Höjda gränser så att fler transpositioner kan hittas.
 function findTranspositions(
   s1,
   s2,
   pairCount,
   roundNumber,
   totalRounds,
-  maxTranspositions = 60,
-  maxNodes = 5000
+  maxTranspositions = 250,
+  maxNodes = 40000
 ) {
   const results = [];
   const used = new Array(s2.length).fill(false);
@@ -2441,20 +2454,13 @@ function isCandidatePerfect(pairs, downfloaters, roundNumber, totalRounds, isOdd
 /* HOMOGENA POÄNGGRUPPER                                                      */
 /* ========================================================================== */
 
-/*
- * Fix 2a: Hårt tak per bracket.
- *
- * Även med nodbudgeten i findTranspositions kan antalet kandidater per
- * bracket växa sig stort. MAX_CANDIDATES ser till att varje bracket
- * returnerar ett hanterbart antal kandidater, vilket håller den yttre
- * rekursionen i solveAllBrackets hanterbar.
- */
 function generateHomogeneousCandidates(
   players,
   roundNumber,
   totalRounds
 ) {
-  const MAX_CANDIDATES = 200;
+  // FIX 1: Höjt från 200 till 800.
+  const MAX_CANDIDATES = 800;
 
   const ranked = [...players].sort(comparePlayerRank);
   const candidates = [];
@@ -2493,7 +2499,13 @@ function generateHomogeneousCandidates(
 
     const originalS1 = ranked.slice(0, pairCount);
     const originalS2 = ranked.slice(pairCount);
-    const maxExchangeLimit = Math.min(originalS1.length, originalS2.length, 2);
+
+    // FIX 2: Tillåt upp till 4 utbyten mellan S1 och S2.
+    const maxExchangeLimit = Math.min(
+      originalS1.length,
+      originalS2.length,
+      4
+    );
 
     let foundPerfect = false;
 
@@ -2604,7 +2616,12 @@ function generateHomogeneousCandidates(
         if (foundPerfect) break;
       }
       if (foundPerfect) break;
-      if (candidates.length > 0 && exchangeSize >= 1) break;
+
+      // FIX 4: Tog bort den tidigare raden
+      //   if (candidates.length > 0 && exchangeSize >= 1) break;
+      // Vi fortsätter nu till nästa exchangeSize även om vi redan
+      // hittat (ofullständiga) kandidater, så att vi inte missar
+      // den kombination som krävs för resten av turneringen.
     }
 
     if (candidates.length > 0) {
@@ -2619,18 +2636,14 @@ function generateHomogeneousCandidates(
 /* HETEROGENA POÄNGGRUPPER (MED NEDFLYTTARE)                                   */
 /* ========================================================================== */
 
-/*
- * Fix 2b: Samma tak som i generateHomogeneousCandidates. Här är det
- * särskilt viktigt eftersom varje anrop redan rekurserar ned i
- * generateHomogeneousCandidates för resten av bracketens invånare.
- */
 function generateHeterogeneousCandidates(
   bracketPlayers,
   incomingMDPs,
   roundNumber,
   totalRounds
 ) {
-  const MAX_CANDIDATES = 200;
+  // FIX 1: Höjt från 200 till 800.
+  const MAX_CANDIDATES = 800;
 
   const incomingIds = new Set(incomingMDPs.map(p => p.id));
   const mdps = [...incomingMDPs].sort(comparePlayerRank);
@@ -2665,7 +2678,8 @@ function generateHeterogeneousCandidates(
         mdpPairCount,
         roundNumber,
         totalRounds,
-        25
+        // FIX 3: Höjt från 25 till 150.
+        150
       );
 
       for (const tr of transpositions) {
@@ -3249,42 +3263,15 @@ function createFirstRoundSolution(
 /* HOLLÄNDSK HUVUDLÖSARE                                                      */
 /* ========================================================================== */
 
-function generateDutchPairings(
-  activePlayers,
+// FIX 5: Ny hjälpfunktion som kör själva sökningen. Anropas först
+// med RELAX_COLOR_RULES = false, sedan eventuellt en gång till med
+// RELAX_COLOR_RULES = true som fallback.
+function tryGenerateSolution(
+  players,
+  pabCandidates,
   roundNumber,
   totalRounds
 ) {
-  const players =
-    [...activePlayers].sort(comparePlayerRank);
-
-  const requiresPAB = players.length % 2 !== 0;
-
-  let pabCandidates;
-
-  if (requiresPAB) {
-    pabCandidates = players
-      .filter(isPabEligible)
-      .sort((a, b) => {
-        const scoreDifference =
-          finiteNumber(a.score, 0) -
-          finiteNumber(b.score, 0);
-
-        if (scoreDifference !== 0) {
-          return scoreDifference;
-        }
-
-        return b.tpn - a.tpn;
-      });
-
-    if (pabCandidates.length === 0) {
-      throw new Error(
-        "Ingen spelare är behörig för lottad frirond (PAB). Domaringripande krävs."
-      );
-    }
-  } else {
-    pabCandidates = [null];
-  }
-
   let bestSolution = null;
 
   for (
@@ -3340,9 +3327,77 @@ function generateDutchPairings(
     }
   }
 
+  return bestSolution;
+}
+
+function generateDutchPairings(
+  activePlayers,
+  roundNumber,
+  totalRounds
+) {
+  const players =
+    [...activePlayers].sort(comparePlayerRank);
+
+  const requiresPAB = players.length % 2 !== 0;
+
+  let pabCandidates;
+
+  if (requiresPAB) {
+    pabCandidates = players
+      .filter(isPabEligible)
+      .sort((a, b) => {
+        const scoreDifference =
+          finiteNumber(a.score, 0) -
+          finiteNumber(b.score, 0);
+
+        if (scoreDifference !== 0) {
+          return scoreDifference;
+        }
+
+        return b.tpn - a.tpn;
+      });
+
+    if (pabCandidates.length === 0) {
+      throw new Error(
+        "Ingen spelare är behörig för lottad frirond (PAB). Domaringripande krävs."
+      );
+    }
+  } else {
+    pabCandidates = [null];
+  }
+
+  // Första försök: strikt lottning.
+  RELAX_COLOR_RULES = false;
+  let bestSolution = tryGenerateSolution(
+    players,
+    pabCandidates,
+    roundNumber,
+    totalRounds
+  );
+
+  // FIX 5: Fallback. Om ingen strikt lottning finns, mjuka upp
+  // färgkriterierna. C12/C13-poängen fångar upp avvikelserna.
+  if (!bestSolution) {
+    console.warn(
+      "Strikt lottning misslyckades – försöker med relaxerade färgkriterier (fallback)."
+    );
+
+    RELAX_COLOR_RULES = true;
+    try {
+      bestSolution = tryGenerateSolution(
+        players,
+        pabCandidates,
+        roundNumber,
+        totalRounds
+      );
+    } finally {
+      RELAX_COLOR_RULES = false;
+    }
+  }
+
   if (!bestSolution) {
     throw new Error(
-      "Ingen komplett lottning som uppfyller C1-C4 kunde hittas. Domaringripande krävs."
+      "Ingen komplett lottning kunde hittas ens med relaxerade färgkriterier. Domaringripande krävs."
     );
   }
 
