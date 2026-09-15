@@ -34,10 +34,10 @@
   losses there depend less on which colour one gets and more on who makes the first mistake.<br>
   <br>
   The above applies to Danish-Swedish Monrad. According to FIDE&rsquo;s official rules, a player may not have the same
-  colour three times in a row, nor may they have a colour balance that deviates by more than &plusmn;2. The Dutch Monrad
-  version (FIDE) follows this rule, except in rare cases. The Norwegian system is less strict: a player may never have
-  more than <i>three</i> consecutive games with the same colour, and if possible no player should have more than
-  50%&nbsp;+&nbsp;1 games with the same colour (see <a href=
+  colour three times in a row, nor may they have a colour balance that deviates by more than &plusmn;2. The Dutch
+  Monrad version (FIDE) follows this rule, except in rare cases. The Norwegian system is less strict: a player may
+  never have more than <i>three</i> consecutive games with the same colour, and if possible no player should have more
+  than 50%&nbsp;+&nbsp;1 games with the same colour (see <a href=
   "https://2000.sjakk.no/kunnskap/systemer/norges-sjakkforbunds-monradsystem/" title=
   "The Norwegian Chess Federation&#39;s Monrad system">here</a>). (These rules are not absolute and may, in exceptional
   cases, be overridden.) But since Monrad is hardly used in elite tournaments, this restriction may be unnecessary.<br>
@@ -83,12 +83,12 @@
   <b>Colour allocation:</b> The player with fewer White games receives White. If equal, the lower-seeded player
   receives White. Absolute colour balance is guaranteed (color difference can never reach 3). If color balance
   conflicts with the 2-in-a-row rule, up to three games in a row with the same colour are permitted.</p>
-  <p>This system is well suited for open tournaments. Elite players have little reason to object, as they face
-  lower-ranked players in the first two rounds. At the same time, it avoids the oscillation from which intermediate
-  players often suffer in other Swiss pairings. The program uses Buchholz as a secondary sorting criterion when pairing
-  players, after score. Buchholz is stable, well-known, and harmonizes with the objective that players who have faced
-  similar opposition should be paired. Buchholz is standard in international Swiss tournaments, making the system
-  compatible with established practice.</p>
+  <p>This system is well suited for open blitz and rapid tournaments. Elite players have little reason to object, as
+  they face lower-ranked players in the first two rounds. At the same time, it avoids the oscillation from which
+  intermediate players often suffer in other Swiss pairings. The program uses Buchholz as a secondary sorting criterion
+  when pairing players, after score. Buchholz is stable, well-known, and harmonizes with the objective that players who
+  have faced similar opposition should be paired. Buchholz is standard in international Swiss tournaments, making the
+  system compatible with established practice.</p>
   <p>Having the winners in the second half receive White against the winners in the first half in round two is, in my
   view, a good idea&#8239;&mdash;&thinsp;all players will be pleased. From round three onward, players with similar
   ratings meet each other more consistently. Generally, top players prefer Black against weaker opposition and White
@@ -106,9 +106,50 @@
   three onward, players with similar ratings meet each other with increasing frequency, lending the tournament a
   natural progression. The fact that Buchholz is used as a secondary criterion harmonizes with the objective that
   players with similar opposition should meet, and the colour rule (which guarantees that no one is assigned the same
-  colour three times in a row) eliminates one of the most disruptive elements in certain other systems. A good Swiss
-  format must be easy to understand, difficult to manipulate, and convey a clear sense of logical progression. The
-  system is designed with precisely these principles in mind.<br>
+  colour three times in a row) eliminates one of the most disruptive elements in certain other systems.<br>
+  <br>
+  <span class="bigger">FIDE Swiss (&ldquo;Dutch&rdquo;)</span><br>
+  <br>
+  The Dutch system (FIDE Dutch Swiss) is the international gold standard for chess tournaments and the official system
+  prescribed by FIDE for most open Elo events as of 1&nbsp;February 2026. Its purpose is to achieve the fairest pairing
+  possible. The algorithm, which is highly complex (see <a href="https://handbook.fide.com/chapter/C0403202602" title=
+  "C. GENERAL RULES AND TECHNICAL RECOMMENDATIONS FOR TOURNAMENTS / 04. FIDE Swiss Rules / C.04.3 FIDE (Dutch) System / C.04.3 FIDE (Dutch) System (effective from 1 February 2026) /">
+  here</a>), was first published in 2023-2024 by FIDE&rsquo;s Technical Commission and was established as the official
+  system in 2026, effective from 1 February 2026. It replaces the earlier Dutch (2009) and Dutch (2017), which were
+  used in some tournaments but never became a global standard. It is a modern algorithm developed by FIDE to reduce
+  colour imbalance, reduce float chaos, increase determinism and reproducibility, and avoid predictability in the top
+  standings. FIDE&rsquo;s requirement that the system be deterministic and reproducible means that the same input
+  yields the same pairing, no &ldquo;human judgement&rdquo; may occur, and no subjective choices are allowed. In
+  practice, it is impossible to pair Dutch by hand, as it is extremely cumbersome and computationally explosive.<br>
+  <br>
+  The reason the Dutch system has become the norm is how it balances sporting fairness, colour allocation, and a clear
+  differentiation of the participants. The system has the strictest colour rules of all Swiss methods. A player may
+  never have the same colour three rounds in a row (with exceptions only in extreme cases in the very last round). The
+  algorithm also strives to ensure that no player ever has <i>more than one</i> additional white or black game compared
+  to their opponent. Many other Swiss systems allow greater imbalances, which often leads to players being
+  disadvantaged with several black games in decisive stages. The Dutch system is held to deliver the highest standard
+  of sporting integrity: it maximally protects colour allocation and ensures that players with the best results meet
+  each other towards the end of the tournament.<br>
+  <br>
+  I have created an experimental version here: <a href=
+  "https://mats-winther.github.io/fide-hollandskt.htm">Experimental FIDE Dutch Pairing System</a>. As it has not been
+  verified, the program is not valid for Elo tournaments. If the program proves to work, it can still be used for blitz
+  and rapid tournaments, but the pairing should then be labelled &ldquo;modified Dutch&rdquo; or something similar. The
+  program can be used to test the algorithm, and it probably works broadly correctly (at least GPT-Sol thinks so). The
+  algorithm is heavy, so generating the next round takes a short moment.<br>
+  <br>
+  In the Dutch system, having two consecutive black games is normal. Three black games in a row is generally forbidden,
+  with rare exceptions in the last round. Four black games in a row is never possible. A player may in some cases
+  finish the tournament with two more black games than white. A colour difference of –3 or more is something the system
+  actively tries to avoid for top scorers and their opponents. Players are ranked by score and then by TPN (Tournament
+  Pairing Number). This follows the same principle as classical Monrad: (1)&nbsp;seeding, (2)&nbsp;strict pairing by
+  order, (3)&nbsp;no acceleration rules.<br>
+  <br>
+  From the player&rsquo;s perspective, the system is significantly more unpredictable than classical Monrad. The final
+  pairing is often impossible to foresee. The algorithm attempts to optimise across 16 different quality criteria.
+  Players with the same score do not necessarily meet each other, and one may face someone with a completely different
+  TPN than expected. Colour allocation is complex and not intuitive.
+  <br>
   <br>
   &copy; Mats Winther, 2026.</p>
   <p><br>
