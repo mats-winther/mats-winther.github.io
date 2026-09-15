@@ -92,12 +92,12 @@
     Absolut färgbalans garanteras (färgskillnaden kan aldrig bli 3). Vid krock mellan färgbalans och 2-i-rad-regeln
     tillåts tre partier med samma färg i rad.<br>
     <br>
-    Detta system lämpar sig väl för öppna turneringar. Elitspelarna har ingen anledning att klaga, eftersom de får möta
-    lägre rankade spelare i de två första ronderna. Samtidigt undviker man den pendling som mellanstarka spelare ofta
-    drabbas av i andra schweizerlottningar. Programmet använder buchholz som sekundärt sorteringskriterium vid parning
-    av spelare, efter poäng. Buchholz är stabilt och välkänt och harmonierar med målet att spelare med liknande
-    motstånd ska mötas. Buchholz är standard i internationella schweizerturneringar, vilket gör systemet förenligt med
-    etablerad praxis.<br>
+    Detta system lämpar sig väl för öppna turneringar i blixt och snabbschack. Elitspelarna har ingen anledning att
+    klaga, eftersom de får möta lägre rankade spelare i de två första ronderna. Samtidigt undviker man den pendling som
+    mellanstarka spelare ofta drabbas av i andra schweizerlottningar. Programmet använder buchholz som sekundärt
+    sorteringskriterium vid parning av spelare, efter poäng. Buchholz är stabilt och välkänt och harmonierar med målet
+    att spelare med liknande motstånd ska mötas. Buchholz är standard i internationella schweizerturneringar, vilket
+    gör systemet förenligt med etablerad praxis.<br>
     <br>
     Att vinnarna i den andra halvan får vit mot vinnarna i den första halvan i rond två, anser jag är en bra
     idé&nbsp;&ndash; alla spelare blir nöjda. Från och med rond tre möter spelare med liknande rating allt oftare
@@ -120,7 +120,7 @@
     <span class="bigger">FIDE Schweizer (&ldquo;Dutch&rdquo;)</span><br>
     <br>
     Det holländska systemet (FIDE Dutch Swiss) är den internationella guldstandarden för schackturneringar och det
-    officiella system som FIDE föreskriver för merparten av alla öppna tävlingar från och med 1 februari 2026. Det
+    officiella system som FIDE föreskriver för merparten av alla öppna elo-tävlingar från och med 1 februari 2026. Det
     syftar till att få en så rättvis lottning som möjligt. Algoritmen, som är mycket komplex (se <a href=
     "https://handbook.fide.com/chapter/C0403202602" title=
     "C. GENERAL RULES AND TECHNICAL RECOMMENDATIONS FOR TOURNAMENTS / 04. FIDE Swiss Rules / C.04.3 FIDE (Dutch) System / C.04.3 FIDE (Dutch) System (effective from 1 February 2026) /">
@@ -143,16 +143,16 @@
     <br>
     Jag har skapat en experimentell version här: <a href=
     "https://mats-winther.github.io/fide-hollandskt.htm">Experimentellt FIDE Holländskt Lottningssystem</a>. Programmet
-    är inte giltigt för elo-baserade turneringar eftersom det inte verifierats. Om programmet visar sig fungera kan man
-    ändå använda det på klubbnivå, men då bör lottningen benämnas &quot;modifierad holländsk&quot; eller liknande.
+    är inte giltigt för elo-turneringar eftersom det inte verifierats. Om programmet visar sig fungera kan man
+    ändå använda det för blixt och snabbschack, men då bör lottningen benämnas &quot;modifierad holländsk&quot; eller liknande.
     Programmet kan användas för att testa algoritmen, och troligen fungerar den i huvudsak korrekt (åtminstone tror
-    GPT-Sol det). Algoritmen är tung, så det tar en stund när man genererar nästa rond.<br>
+    GPT-Sol det). Algoritmen är tung, så det tar en kort stund att generera nästa rond.<br>
     <br>
     I Dutch-systemet är två svarta partier i rad helt normalt. Tre svarta i rad är i regel förbjudet, med sällsynta
     undantag i sista ronden. Fyra svarta i rad är aldrig möjligt. En spelare kan i vissa fall avsluta turneringen med
     två fler svarta än vita partier. En färgdifferens på -3 eller lägre är något systemet aktivt försöker undvika för
     toppspelare och deras motståndare. Spelarna rangordnas efter poäng och därefter TPN (Tournament Pairing Number).
-    Det är samma princip som i klassisk Monrad: (1) seedning, (2) strikt parning efter ordning, (3) inga
+    Det är samma princip som i klassisk monrad: (1) seedning, (2) strikt parning efter ordning, (3) inga
     accelerationsregler.<br>
     <br>
     Ur spelarens perspektiv är systemet betydligt mer svårförutsägbart än klassisk monrad. Den slutliga parningen är
