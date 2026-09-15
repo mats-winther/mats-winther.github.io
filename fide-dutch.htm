@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Experimental FIDE Dutch Pairing System — 2026 Rules</title>
+<title>Experimental FIDE Dutch Pairing System</title>
 
 <style>
   :root {
@@ -461,7 +461,7 @@
   <div>
     <h1>Experimental FIDE Dutch Swiss Pairing System</h1>
     <div class="subtitle">
-      Operational implementation of C.04.3 effective February 1, 2026 —
+      Operational implementation of C.04.3 effective February 1, 2026 –
       validation against official test cases is still required
     </div>
   </div>
@@ -481,9 +481,7 @@
 
   <div class="alert alert-warning no-print">
     <strong>Validation notice:</strong>
-    This implementation follows the supplied operational interpretation and
-    performs an exhaustive, deterministic search without arbitrary candidate
-    caps. It has not been certified by FIDE and should be checked against
+    This implementation follows the supplied operational interpretation. It has not been certified by FIDE and should be checked against
     official examples or an approved pairing checker before official use.
   </div>
 
@@ -568,10 +566,10 @@
           <label>Drawn Initial Color</label>
           <select id="tInitColor" class="form-control">
             <option value="W" selected>
-              White — TPN 1 initially gets White
+              White – TPN 1 initially gets White
             </option>
             <option value="B">
-              Black — TPN 1 initially gets Black
+              Black – TPN 1 initially gets Black
             </option>
           </select>
         </div>
@@ -580,10 +578,10 @@
           <label>Win / Draw / Loss Points</label>
           <select id="tPoints" class="form-control">
             <option value="1,0.5,0" selected>
-              Standard: 1 — ½ — 0
+              Standard: 1 – ½ – 0
             </option>
             <option value="3,1,0">
-              Football: 3 — 1 — 0
+              Football: 3 – 1 – 0
             </option>
           </select>
         </div>
@@ -599,12 +597,6 @@
             step="0.5"
           >
         </div>
-      </div>
-
-      <div id="settingsLockNotice" class="alert alert-info" style="display:none;">
-        Tournament-defining settings and TPNs are locked because pairing has
-        begun. This implementation intentionally requires late-entry and TPN
-        corrections to be handled outside the ordinary interface.
       </div>
     </div>
 
@@ -713,7 +705,7 @@
       <div class="alert alert-info no-print">
         The <strong>Next Round</strong> field records requested or otherwise
         administratively assigned unplayed rounds. An unplayed award equal to
-        a win makes the player ineligible for a later PAB. Any unplayed award
+        a win makes the player ineligible for a later PAB (Pairing-Allocated Bye). Any unplayed award
         greater than a loss also records a downfloat marker.
       </div>
 
@@ -3892,7 +3884,7 @@ function renderPlayersTable() {
                 : ""
             }
           >
-            Unplayed — loss value
+            Unplayed – loss value
           </option>
 
           <option
@@ -3903,7 +3895,7 @@ function renderPlayersTable() {
                 : ""
             }
           >
-            Unplayed — draw value
+            Unplayed – draw value
           </option>
 
           <option
@@ -3914,7 +3906,7 @@ function renderPlayersTable() {
                 : ""
             }
           >
-            Unplayed — win value
+            Unplayed – win value
           </option>
         </select>
       </td>
@@ -3969,7 +3961,7 @@ function renderPairings() {
     `Round ${roundNumber} Pairings`;
 
   document.getElementById("printTitle").innerText =
-    `${tournament.name} — Round ${roundNumber} Pairings`;
+    `${tournament.name} – Round ${roundNumber} Pairings`;
 
   if (tournament.activePairings.length === 0) {
     body.innerHTML = `
@@ -4024,7 +4016,7 @@ function renderPairings() {
         unplayedLines.push(`
           <div style="margin-bottom:0.35rem;">
             [TPN ${player.tpn}]
-            <strong>${escapeHtml(player.name)}</strong> —
+            <strong>${escapeHtml(player.name)}</strong> –
             ${escapeHtml(record.label)}:
             <strong>
               ${formatPoints(record.awardedPoints)}
@@ -4080,14 +4072,14 @@ function renderPairings() {
             value="*"
             ${record.result === "*" ? "selected" : ""}
           >
-            [ ? — ? ]
+            &nbsp;&nbsp;&nbsp;*
           </option>
 
           <option
             value="1-0"
             ${record.result === "1-0" ? "selected" : ""}
           >
-            1 — 0
+            1 – 0
           </option>
 
           <option
@@ -4098,39 +4090,39 @@ function renderPairings() {
                 : ""
             }
           >
-            ½ — ½
+            ½ – ½
           </option>
 
           <option
             value="0-1"
             ${record.result === "0-1" ? "selected" : ""}
           >
-            0 — 1
+            0 – 1
           </option>
 
           <option
             value="1-0F"
             ${record.result === "1-0F" ? "selected" : ""}
           >
-            1 — 0 Forfeit
+            1 – 0 Forfeit
           </option>
 
           <option
             value="0-1F"
             ${record.result === "0-1F" ? "selected" : ""}
           >
-            0 — 1 Forfeit
+            0 – 1 Forfeit
           </option>
 
           <option
             value="0-0F"
             ${record.result === "0-0F" ? "selected" : ""}
           >
-            0 — 0 Double Forfeit
+            0 – 0 Double Forfeit
           </option>
         </select>
 
-        <span class="print-result">—</span>
+        <span class="print-result">–</span>
       </td>
 
       <td>
@@ -4305,8 +4297,8 @@ function renderStandings() {
 
   document.getElementById("printTitle").innerText =
     final
-      ? `${tournament.name} — Final Result`
-      : `${tournament.name} — Standings after Round ` +
+      ? `${tournament.name} – Final Result`
+      : `${tournament.name} – Standings after Round ` +
         `${tournament.rounds.length}`;
 
   sorted.forEach((player, index) => {
@@ -4417,7 +4409,7 @@ function renderHistory() {
 
         return `
           <tr>
-            <td>—</td>
+            <td>–</td>
             <td colspan="3">
               <span class="badge badge-bye">PAB</span>
               ${
@@ -4426,7 +4418,7 @@ function renderHistory() {
                     `<strong>${escapeHtml(player.name)}</strong>`
                   : "Unknown player"
               }
-              — ${formatPoints(record.awardedPoints)} points
+              – ${formatPoints(record.awardedPoints)} points
             </td>
           </tr>
         `;
@@ -4441,7 +4433,7 @@ function renderHistory() {
 
         return `
           <tr>
-            <td>—</td>
+            <td>–</td>
             <td colspan="3">
               <span class="badge badge-float">Unplayed</span>
               ${
@@ -4450,7 +4442,7 @@ function renderHistory() {
                     `<strong>${escapeHtml(player.name)}</strong>`
                   : "Unknown player"
               }
-              — ${escapeHtml(record.label)} —
+              – ${escapeHtml(record.label)} –
               ${formatPoints(record.awardedPoints)} points
             </td>
           </tr>
