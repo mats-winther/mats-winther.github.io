@@ -2332,22 +2332,42 @@ function canonicalCandidateSignature(pairs, downfloaters) {
 /* SÖKNING MED BESKÄRNING (BACKTRACKING)                                      */
 /* ========================================================================== */
 
+/*
+ * Fix 1: Hårt tak på antalet rekursionssteg.
+ *
+ * Den ursprungliga implementationen begränsade bara antalet *fullständiga*
+ * lottningar (maxTranspositions), vilket innebar att sökningen kunde
+ * vandra igenom en exponentiellt stor partialträd utan att någonsin
+ * producera 60 resultat. I rond 3 med 32 spelare ledde detta till att
+ * webbläsaren låste sig.
+ *
+ * Genom att i stället räkna besökta noder och avbryta vid maxNodes
+ * blir varje enskilt anrop till findTranspositions garanterat billigt.
+ */
 function findTranspositions(
   s1,
   s2,
   pairCount,
   roundNumber,
   totalRounds,
-  maxTranspositions = 60
+  maxTranspositions = 60,
+  maxNodes = 5000
 ) {
   const results = [];
   const used = new Array(s2.length).fill(false);
   const currentPairs = [];
+  let nodesVisited = 0;
 
   function backtrack(s1Idx) {
     if (results.length >= maxTranspositions) {
       return;
     }
+
+    if (nodesVisited >= maxNodes) {
+      return;
+    }
+
+    nodesVisited++;
 
     if (s1Idx === pairCount) {
       const downfloaters = [];
@@ -2367,6 +2387,7 @@ function findTranspositions(
     const p1 = s1[s1Idx];
     for (let i = 0; i < s2.length; i++) {
       if (used[i]) continue;
+      if (nodesVisited >= maxNodes) return;
       const p2 = s2[i];
 
       if (!isPairLegal(p1, p2, roundNumber, totalRounds)) {
@@ -2420,11 +2441,21 @@ function isCandidatePerfect(pairs, downfloaters, roundNumber, totalRounds, isOdd
 /* HOMOGENA POÄNGGRUPPER                                                      */
 /* ========================================================================== */
 
+/*
+ * Fix 2a: Hårt tak per bracket.
+ *
+ * Även med nodbudgeten i findTranspositions kan antalet kandidater per
+ * bracket växa sig stort. MAX_CANDIDATES ser till att varje bracket
+ * returnerar ett hanterbart antal kandidater, vilket håller den yttre
+ * rekursionen i solveAllBrackets hanterbar.
+ */
 function generateHomogeneousCandidates(
   players,
   roundNumber,
   totalRounds
 ) {
+  const MAX_CANDIDATES = 200;
+
   const ranked = [...players].sort(comparePlayerRank);
   const candidates = [];
   const candidateSignatures = new Set();
@@ -2443,6 +2474,10 @@ function generateHomogeneousCandidates(
     pairCount >= 0;
     pairCount--
   ) {
+    if (candidates.length >= MAX_CANDIDATES) {
+      break;
+    }
+
     if (pairCount === 0) {
       const signature = canonicalCandidateSignature([], ranked);
       if (!candidateSignatures.has(signature)) {
@@ -2463,6 +2498,9 @@ function generateHomogeneousCandidates(
     let foundPerfect = false;
 
     for (let exchangeSize = 0; exchangeSize <= maxExchangeLimit; exchangeSize++) {
+      if (foundPerfect) break;
+      if (candidates.length >= MAX_CANDIDATES) break;
+
       const exchangeConfigurations = [];
       const partitionSignatures = new Set();
 
@@ -2533,6 +2571,8 @@ function generateHomogeneousCandidates(
       });
 
       for (const configuration of exchangeConfigurations) {
+        if (candidates.length >= MAX_CANDIDATES) break;
+
         const transpositions = findTranspositions(
           configuration.s1,
           configuration.s2,
@@ -2551,6 +2591,10 @@ function generateHomogeneousCandidates(
             downfloaters: tr.downfloaters,
             order: generationOrder++
           });
+
+          if (candidates.length >= MAX_CANDIDATES) {
+            return candidates;
+          }
 
           if (isCandidatePerfect(tr.pairs, tr.downfloaters, roundNumber, totalRounds, isOddBracket)) {
             foundPerfect = true;
@@ -2575,12 +2619,19 @@ function generateHomogeneousCandidates(
 /* HETEROGENA POÄNGGRUPPER (MED NEDFLYTTARE)                                   */
 /* ========================================================================== */
 
+/*
+ * Fix 2b: Samma tak som i generateHomogeneousCandidates. Här är det
+ * särskilt viktigt eftersom varje anrop redan rekurserar ned i
+ * generateHomogeneousCandidates för resten av bracketens invånare.
+ */
 function generateHeterogeneousCandidates(
   bracketPlayers,
   incomingMDPs,
   roundNumber,
   totalRounds
 ) {
+  const MAX_CANDIDATES = 200;
+
   const incomingIds = new Set(incomingMDPs.map(p => p.id));
   const mdps = [...incomingMDPs].sort(comparePlayerRank);
   const residents = bracketPlayers
@@ -2603,6 +2654,8 @@ function generateHeterogeneousCandidates(
 
     forEachCombination(mdps, mdpPairCount, selectedMDPs => {
       if (foundPerfect) return;
+      if (candidates.length >= MAX_CANDIDATES) return;
+
       const selectedIds = new Set(selectedMDPs.map(p => p.id));
       const limbo = mdps.filter(p => !selectedIds.has(p.id));
 
@@ -2617,6 +2670,8 @@ function generateHeterogeneousCandidates(
 
       for (const tr of transpositions) {
         if (foundPerfect) return;
+        if (candidates.length >= MAX_CANDIDATES) return;
+
         const assignedResidentIds = new Set(tr.pairs.map(pair => pair[1].id));
         const remainingResidents = residents.filter(p => !assignedResidentIds.has(p.id));
 
@@ -2640,6 +2695,10 @@ function generateHeterogeneousCandidates(
             order: generationOrder++,
             remainderOrder: remainder.order
           });
+
+          if (candidates.length >= MAX_CANDIDATES) {
+            return;
+          }
 
           if (isCandidatePerfect(pairs, downfloaters, roundNumber, totalRounds, isOddBracket)) {
             foundPerfect = true;
