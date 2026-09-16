@@ -42,7 +42,8 @@
     följer denna regel, utom i extremfall.) Det norska monrad-systemet är mindre strikt: en spelare får aldrig ha mer
     än <i>tre</i> partier i rad med samma färg, och om möjligt bör ingen spelare ha mer än 50%&nbsp;+&nbsp;1 partier
     med samma färg (se <a href="https://2000.sjakk.no/kunnskap/systemer/norges-sjakkforbunds-monradsystem/" title=
-    "Norges Schackförbunds Monradsystem">här</a>). Dessa regler är inte absoluta och kan i undantagsfall åsidosättas.<br>
+    "Norges Schackförbunds Monradsystem">här</a>). Dessa regler är inte absoluta och kan i undantagsfall
+    åsidosättas.<br>
     <br>
     Jag har skapat ett program i JavaScript för dansk-svensk monrad här: <a href="../monrad.htm" title=
     "Monrad lottningsprogram">Monrads lottningssystem</a>. Min online-version av det norska systemet finns här:
@@ -54,26 +55,34 @@
     med en vinst och sedan en förlust ger 2 kumulativa poäng efter två ronder, medan två remier ger 1,5. Det är på sätt
     och vis rättvist.)<br>
     <br>
-    <b>Berger-systemet</b> innebär att alla möter alla, antingen en eller två gånger. Jag har skapat ett online-program
-    för berger-lottning för 3-16 spelare enligt FIDE:s specifikationer. Det kan användas direkt i webbläsaren, men går
-    även att ladda ned och köra lokalt: <a href="../berger.htm" title="Berger lottningsprogram">Berger Turneringssystem
+    <b>Berger</b> innebär att alla möter alla, antingen en eller två gånger. Berger-systemet formaliserades av
+    Johann&nbsp;Berger i slutet av 1800-talet. Det är det mest rättvisa av alla lottningssystem, vilket gör det
+    idealiskt för kandidatturneringar och elitturneringar. Spelarna alternerar färg automatiskt. Jag har skapat ett
+    berger-system för 3-16 spelare enligt FIDE:s specifikationer. Det kan användas direkt i webbläsaren, men går även
+    att ladda ned och köra lokalt: <a href="../berger.htm" title="Berger lottningsprogram">Berger Turneringssystem
     (alla-mot-alla)</a>.<br>
     <br>
     <b>Scheveningen</b> är ett format för lagspel där två lag av samma storlek spelar ett fullständigt korsmöte: alla
     spelare i lag A möter alla spelare i lag B över n ronder: <a href="../scheveningen.htm">Scheveningen
-    Turneringssystem</a>. Denna turneringsform kan även användas inom en klubb, om spelarna delas upp i två jämna lag.
-    Det blir då både en individuell turnering och en lagmatch, vilket kan vara stimulerande.<br>
+    Turneringssystem</a>. Det har sitt namn från en turnering i Scheveningen, Nederländerna, 1923, där formatet
+    användes i en lagmatch mellan två grupper av stormästare. Systemet är rättvist och deterministiskt (ingen lottning
+    krävs) och systemet fick därför snabb spridning. Denna turneringsform kan även användas inom en klubb, om spelarna
+    delas upp i två jämna lag. Det blir då både en individuell turnering och en lagmatch, vilket kan vara
+    stimulerande.<br>
     <br>
-    <b>Schweizer-systemen</b> är konstruerade på olika sätt. Det finns bland annat dubbelaccelererad schweizer,
-    haldane-accelerering och FIDE-accelerering (numera sällsynt). Vissa varianter fungerar dock riktigt dåligt,
-    däribland nordisk schweizer (se <a href="https://www.kristallen.org/ongoingtournaments/nordch.html" title=
-    "Nordisk schweizer">här</a>). Ett typiskt problem för mellanstarka spelare är att de pendlar mellan alltför starkt
-    och alltför svagt motstånd: i en rond möter de en betydligt starkare spelare, i nästa en klart svagare, och
-    därefter åter en alltför stark. Denna pendling förtar spelglädjen och ger en ojämn turneringsupplevelse. I mitt
-    accelererade schweizer-system inträffar inte detta: <a href="../swiss.htm" title=
-    "Program för schweizer-lottning med winther-accelerering">Schweiziskt turneringssystem</a>. 
-	Programmet har en spärr som gör att risken att få samma färg tre gånger i rad hålls på ett minimum. Det är
-    tydligt bättre än nordisk schweizer, förutsatt att programmet visar sig pålitligt efter noggrann testning.<br>
+    <b>Schweizer-systemet</b> uppstod i Schweiz i slutet av 1800-talet, främst för stora schackturneringar där
+    alla-mot-alla var opraktiskt. Tidiga schweizerturneringar var informella och använde enkla regler: spelare med samma
+    poäng möttes, liknande hur dagens Monrad-lottning fungerar. Schweizer-systemen är idag konstruerade på olika sätt.
+    Det finns bland annat dubbelaccelererad schweizer, haldane-accelerering och FIDE-accelerering (numera sällsynt).
+    Vissa varianter fungerar dock riktigt dåligt, däribland nordisk schweizer (se <a href=
+    "https://www.kristallen.org/ongoingtournaments/nordch.html" title="Nordisk schweizer">här</a>). Ett typiskt problem
+    för mellanstarka spelare är att de pendlar mellan alltför starkt och alltför svagt motstånd: i en rond möter de en
+    betydligt starkare spelare, i nästa en klart svagare, och därefter åter en alltför stark. Denna pendling förtar
+    spelglädjen och ger en ojämn turneringsupplevelse. I mitt accelererade schweizer-system inträffar inte detta:
+    <a href="../swiss.htm" title="Program för schweizer-lottning med winther-accelerering">Schweiziskt
+    turneringssystem</a>. Programmet har en spärr som gör att risken att få samma färg tre gånger i rad hålls på ett
+    minimum. Det är tydligt bättre än nordisk schweizer, förutsatt att programmet visar sig pålitligt efter noggrann
+    testning.<br>
     <br>
     <b>Accelererad schweizerlottning (winther-accelerering)</b>:<br>
     <br>
@@ -88,15 +97,15 @@
     Lottning sker uppifrån och ned.<br>
     <br>
     <b>Färgfördelning:</b> Spelaren med färre vita partier får vit. Vid lika får den lägre seedade spelaren vit.
-    Absolut färgbalans garanteras (färgskillnaden kan aldrig överskrida 2). Vid krock mellan färgbalans och 2-i-rad-regeln
-    tillåts tre partier med samma färg i rad.<br>
+    Absolut färgbalans garanteras (färgskillnaden kan aldrig överskrida 2). Vid krock mellan färgbalans och
+    2-i-rad-regeln tillåts tre partier med samma färg i rad.<br>
     <br>
-    Detta system lämpar sig väl för öppna turneringar. Elitspelarna har ingen anledning att
-    klaga, eftersom de får möta lägre rankade spelare i de två första ronderna. Samtidigt undviker man den pendling som
-    mellanstarka spelare ofta drabbas av i andra schweizerlottningar. Programmet använder buchholz som sekundärt
-    sorteringskriterium vid parning av spelare, efter poäng. Buchholz är stabilt och välkänt och harmonierar med målet
-    att spelare med liknande motstånd ska mötas. Buchholz är standard i internationella schweizerturneringar, vilket
-    gör systemet förenligt med etablerad praxis.<br>
+    Detta system lämpar sig väl för öppna turneringar. Elitspelarna har ingen anledning att klaga, eftersom de får möta
+    lägre rankade spelare i de två första ronderna. Samtidigt undviker man den pendling som mellanstarka spelare ofta
+    drabbas av i andra schweizerlottningar. Programmet använder buchholz som sekundärt sorteringskriterium vid parning
+    av spelare, efter poäng. Buchholz är stabilt och välkänt och harmonierar med målet att spelare med liknande
+    motstånd ska mötas. Buchholz är standard i internationella schweizerturneringar, vilket gör systemet förenligt med
+    etablerad praxis.<br>
     <br>
     Att vinnarna i den andra halvan får vit mot vinnarna i den första halvan i rond två, anser jag är en bra
     idé&nbsp;&ndash; alla spelare blir nöjda. Från och med rond tre möter spelare med liknande rating allt oftare
@@ -140,12 +149,12 @@
     anses vara att det erbjuder högsta sportsliga integritet: det skyddar färgfördelningen maximalt och ser till att
     spelare med bäst resultat möter varandra mot slutet av turneringen.<br>
     <br>
-    Jag har skapat en experimentell version här: <a href=
-    "../fide-hollandskt.htm">Experimentellt FIDE Holländskt Lottningssystem</a>. Programmet
-    är inte giltigt för elo-turneringar eftersom det inte verifierats. Om programmet visar sig fungera kan man
-    ändå använda det för blixt och snabbschack, men då bör lottningen benämnas &ldquo;modifierad holländsk&rdquo; eller liknande.
-    Programmet kan användas för att testa algoritmen, och troligen fungerar den i huvudsak korrekt (åtminstone tror
-    GPT-Sol det). Algoritmen är tung, så det tar en kort stund att generera nästa rond.<br>
+    Jag har skapat en experimentell version här: <a href="../fide-hollandskt.htm">Experimentellt FIDE Holländskt
+    Lottningssystem</a>. Programmet är inte giltigt för elo-turneringar eftersom det inte verifierats. Om programmet
+    visar sig fungera kan man ändå använda det för blixt och snabbschack, men då bör lottningen benämnas
+    &ldquo;modifierad holländsk&rdquo; eller liknande. Programmet kan användas för att testa algoritmen, och troligen
+    fungerar den i huvudsak korrekt (åtminstone tror GPT-Sol det). Algoritmen är tung, så det tar en kort stund att
+    generera nästa rond.<br>
     <br>
     I Dutch-systemet är två svarta partier i rad helt normalt. Tre svarta i rad är i regel förbjudet, med sällsynta
     undantag i sista ronden. Fyra svarta i rad är aldrig möjligt. En spelare kan i vissa fall avsluta turneringen med

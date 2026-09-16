@@ -34,41 +34,45 @@
   losses there depend less on which colour one gets and more on who makes the first mistake.<br>
   <br>
   The above applies to Danish-Swedish Monrad. According to FIDE&rsquo;s official rules, a player may not have the same
-  colour three times in a row, nor may they have a colour balance that deviates by more than &plusmn;2. (Dutch
-  Swiss follows this rule, except in rare cases.) The Norwegian Monrad system is less strict: a player may
-  never have more than <i>three</i> consecutive games with the same colour, and if possible no player should have more
-  than 50%&nbsp;+&nbsp;1 games with the same colour (see <a href=
+  colour three times in a row, nor may they have a colour balance that deviates by more than &plusmn;2. (Dutch Swiss
+  follows this rule, except in rare cases.) The Norwegian Monrad system is less strict: a player may never have more
+  than <i>three</i> consecutive games with the same colour, and if possible no player should have more than
+  50%&nbsp;+&nbsp;1 games with the same colour (see <a href=
   "https://2000.sjakk.no/kunnskap/systemer/norges-sjakkforbunds-monradsystem/" title=
   "The Norwegian Chess Federation&#39;s Monrad system">here</a>). These rules are not absolute and may, in exceptional
   cases, be overridden.<br>
   <br>
-  I have created a program in JavaScript for Danish-Swedish Monrad here: <a href="../monrad-eng.htm">Monrad Pairing System</a>. My
-  online version of the Norwegian system is available here: <a href="../norwegian-monrad.htm" title=
+  I have created a program in JavaScript for Danish-Swedish Monrad here: <a href="../monrad-eng.htm">Monrad Pairing
+  System</a>. My online version of the Norwegian system is available here: <a href="../norwegian-monrad.htm" title=
   "Monrad Tournament Manager, Norwegian model">Monrad Tournament Manager</a>. The final standings is sorted according
   Buchholz (Cut 1/2). Both can be used online, but the page itself can also be downloaded and run locally. The
   Danish-Swedish version uses either cumulative (progressive) score or Buchholz (the opponents&rsquo; total score) to
   differentiate players with the same final result. Cumulative score is defined so that early wins yield a higher
   tiebreak, which favours an aggressive playing style. (Starting with a win and then a loss gives 2 cumulative points
   after two rounds, whereas two draws give 1.5. In a sense, this can be considered fair.)</p>
-  <p><b>The Berger system</b> entails that everyone plays everyone, either once or twice. I have created an online
-  program for Berger pairings for 3-16 players according to FIDE specifications. It can be used directly in the
-  browser, but can also be downloaded and run locally: <a href="../berger-eng.htm">Berger Tournament System
-  (Round-Robin)</a>.</p>
+  <p><b>Berger</b> means that every player meets every other player, either once or twice. It was formalised by
+  Johann&nbsp;Berger in the late 19th century. It is the fairest of all pairing systems, which makes it ideal for
+  Candidates tournaments and elite events. Players alternate colours automatically. I have created a Berger system for
+  3-16 players according to FIDE specifications. It can be used directly in the browser, but can also be downloaded and
+  run locally: <a href="../berger-eng.htm">Berger Tournament System (Round-Robin)</a>.</p>
   <p><b>Scheveningen</b> is a team-play format in which two teams of equal size meet in a full cross-pairing: every
   player in Team A faces every player in Team B over n rounds: <a href="../scheveningen-eng.htm" title=
-  "Scheveningen tournament manager">Scheveningen Chess Manager</a>. This format can also be used within a club by
-  dividing the players into two evenly matched teams. It then becomes both an individual tournament and a team match,
-  which can be quite stimulating.</p>
-  <p><b>Swiss systems</b> are constructed in various ways. These include double-accelerated Swiss, Haldane
-  acceleration, and FIDE acceleration (now rare). Certain variants, however, perform very poorly, among them Nordic
-  Swiss (see <a href="https://www.kristallen.org/ongoingtournaments/nordch.html">here</a>). A typical problem for
-  intermediate players is that they oscillate between overly strong and overly weak opposition: in one round they face
-  a significantly stronger player, in the next a clearly weaker one, and then once again an overly strong opponent.
-  This oscillation diminishes the enjoyment of the tournament and produces an uneven tournament experience. In my
-  accelerated Swiss system, this does not occur: <a href="../swiss-eng.htm" title=
-  "Program for Swiss pairing with Winther acceleration">Swiss Tournament System</a>. The program includes a safeguard
-  that keeps the chance of receiving the same colour three times in a row to a minimum. It is distinctly superior to
-  Nordic Swiss, provided that the program proves reliable after thorough testing.</p>
+  "Scheveningen tournament manager">Scheveningen Chess Manager</a>. It takes its name from a tournament in
+  Scheveningen, the Netherlands, in 1923, where the format was used in a team match between two groups of grandmasters.
+  The system is fair and deterministic (no arbitrary pairing is required) and it therefore spread quickly. This format
+  can also be used within a club by dividing the players into two evenly matched teams. It then becomes both an
+  individual tournament and a team match, which can be quite stimulating.</p>
+  <p><b>The Swiss system</b> originated in Switzerland in the late 1800s, primarily to handle large chess tournaments where a round-robin format was impractical. Early Swiss events were informal and used simple rules: players with the same score were paired together, much like the modern Monrad system. Swiss systems are constructed in various ways. These include
+  double-accelerated Swiss, Haldane acceleration, and FIDE acceleration (now rare). Certain variants, however, perform
+  very poorly, among them Nordic Swiss (see <a href=
+  "https://www.kristallen.org/ongoingtournaments/nordch.html">here</a>). A typical problem for intermediate players is
+  that they oscillate between overly strong and overly weak opposition: in one round they face a significantly stronger
+  player, in the next a clearly weaker one, and then once again an overly strong opponent. This oscillation diminishes
+  the enjoyment of the tournament and produces an uneven tournament experience. In my accelerated Swiss system, this
+  does not occur: <a href="../swiss-eng.htm" title="Program for Swiss pairing with Winther acceleration">Swiss
+  Tournament System</a>. The program includes a safeguard that keeps the chance of receiving the same colour three
+  times in a row to a minimum. It is distinctly superior to Nordic Swiss, provided that the program proves reliable
+  after thorough testing.</p>
   <p><b>Accelerated Swiss Pairing (Winther acceleration):</b></p>
   <p><b>Round 1:</b> Players are divided into four groups (quadrants). The highest-ranked player in Q1 plays White
   against the highest-ranked player in Q2, and correspondingly for Q3 and Q4. (For uneven groups, sizes are adjusted
@@ -83,12 +87,12 @@
   <b>Colour allocation:</b> The player with fewer White games receives White. If equal, the lower-seeded player
   receives White. Absolute colour balance is guaranteed (colour difference can never reach 3). If colour balance
   conflicts with the 2-in-a-row rule, up to three games in a row with the same colour is permitted.</p>
-  <p>This system is well suited for open tournaments. Elite players have little reason to object, as
-  they face lower-ranked players in the first two rounds. At the same time, it avoids the oscillation from which
-  intermediate players often suffer in other Swiss pairings. The program uses Buchholz as a secondary sorting criterion
-  when pairing players, after score. Buchholz is stable, well-known, and harmonizes with the objective that players who
-  have faced similar opposition should be paired. Buchholz is standard in international Swiss tournaments, making the
-  system compatible with established practice.</p>
+  <p>This system is well suited for open tournaments. Elite players have little reason to object, as they face
+  lower-ranked players in the first two rounds. At the same time, it avoids the oscillation from which intermediate
+  players often suffer in other Swiss pairings. The program uses Buchholz as a secondary sorting criterion when pairing
+  players, after score. Buchholz is stable, well-known, and harmonizes with the objective that players who have faced
+  similar opposition should be paired. Buchholz is standard in international Swiss tournaments, making the system
+  compatible with established practice.</p>
   <p>Having the winners in the second half receive White against the winners in the first half in round two is, in my
   view, a good idea&#8239;&mdash;&thinsp;all players will be pleased. From round three onward, players with similar
   ratings meet each other more consistently. Generally, top players prefer Black against weaker opposition and White
@@ -131,12 +135,11 @@
   of sporting integrity: it maximally protects colour allocation and ensures that players with the best results meet
   each other towards the end of the tournament.<br>
   <br>
-  I have created an experimental version here: <a href=
-  "../fide-dutch.htm">Experimental FIDE Dutch Pairing System</a>. As it has not been
-  verified, the program is not valid for Elo tournaments. If the program proves to work, it can still be used for blitz
-  and rapid tournaments, but the pairing should then be labelled &ldquo;modified Dutch&rdquo; or something similar. The
-  program can be used to test the algorithm, and it probably works broadly correctly (at least GPT-Sol thinks so). The
-  algorithm is heavy, so generating the next round takes a short moment.<br>
+  I have created an experimental version here: <a href="../fide-dutch.htm">Experimental FIDE Dutch Pairing System</a>.
+  As it has not been verified, the program is not valid for Elo tournaments. If the program proves to work, it can
+  still be used for blitz and rapid tournaments, but the pairing should then be labelled &ldquo;modified Dutch&rdquo;
+  or something similar. The program can be used to test the algorithm, and it probably works broadly correctly (at
+  least GPT-Sol thinks so). The algorithm is heavy, so generating the next round takes a short moment.<br>
   <br>
   In the Dutch system, having two consecutive black games is normal. Three black games in a row is generally forbidden,
   with rare exceptions in the last round. Four black games in a row is never possible. A player may in some cases
@@ -148,8 +151,7 @@
   From the player&rsquo;s perspective, the system is significantly more unpredictable than classical Monrad. The final
   pairing is often impossible to foresee. The algorithm attempts to optimise across 16 different quality criteria.
   Players with the same score do not necessarily meet each other, and one may face someone with a completely different
-  TPN than expected. Colour allocation is complex and not intuitive.
-  <br>
+  TPN than expected. Colour allocation is complex and not intuitive.<br>
   <br>
   &copy; Mats Winther, 2026.</p>
   <p><br>
