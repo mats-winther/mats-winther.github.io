@@ -6,455 +6,471 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="description" content="A FIDE Swiss (Dutch) pairing system for chess running directly in the browser.">
+<meta
+  name="description"
+  content="An experimental browser-based FIDE Dutch Swiss chess pairing system."
+>
 <meta name="author" content="Mats Winther">
-<link rel="canonical" href="https://mats-winther.github.io/fide-dutch.htm">
+<link
+  rel="canonical"
+  href="https://mats-winther.github.io/fide-dutch.htm"
+>
 
 <title>Experimental FIDE Dutch Pairing System</title>
 
 <style>
-  :root {
-    --primary: #1a365d;
-    --primary-light: #2b6cb0;
-    --accent: #d69e2e;
-    --bg: #f7fafc;
-    --card: #ffffff;
-    --text: #2d3748;
-    --text-muted: #718096;
-    --border: #e2e8f0;
-    --success: #38a169;
-    --danger: #e53e3e;
-    --warning: #dd6b20;
-    --info: #3182ce;
-  }
+:root {
+  --primary:#1a365d;
+  --primary-light:#2b6cb0;
+  --accent:#d69e2e;
+  --bg:#f7fafc;
+  --card:#fff;
+  --text:#2d3748;
+  --text-muted:#718096;
+  --border:#e2e8f0;
+  --success:#38a169;
+  --danger:#e53e3e;
+  --warning:#dd6b20;
+  --info:#3182ce;
+}
 
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-      Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  }
+* {
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,
+    Ubuntu,Cantarell,sans-serif;
+}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.5;
-    padding-bottom: 50px;
-  }
+body {
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.5;
+  padding-bottom:50px;
+}
 
+header {
+  background:var(--primary);
+  color:#fff;
+  padding:1rem 2rem;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:1rem;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+
+header h1 {
+  font-size:1.35rem;
+  font-weight:700;
+  letter-spacing:.5px;
+}
+
+header .subtitle {
+  font-size:.8rem;
+  color:#cbd5e0;
+}
+
+.container {
+  max-width:1250px;
+  margin:1.5rem auto;
+  padding:0 1rem;
+}
+
+.btn-group {
+  display:flex;
+  gap:.5rem;
+  flex-wrap:wrap;
+}
+
+.btn {
+  display:inline-flex;
+  align-items:center;
+  gap:.4rem;
+  padding:.45rem .9rem;
+  font-size:.875rem;
+  font-weight:600;
+  border-radius:6px;
+  border:none;
+  cursor:pointer;
+  transition:all .2s;
+}
+
+.btn:disabled {
+  cursor:not-allowed;
+  opacity:.55;
+}
+
+.btn-primary {
+  background:var(--primary-light);
+  color:#fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background:var(--primary);
+}
+
+.btn-success {
+  background:var(--success);
+  color:#fff;
+}
+
+.btn-success:hover:not(:disabled) {
+  background:#2f855a;
+}
+
+.btn-danger {
+  background:var(--danger);
+  color:#fff;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background:#c53030;
+}
+
+.btn-warning {
+  background:var(--warning);
+  color:#fff;
+}
+
+.btn-warning:hover:not(:disabled) {
+  background:#c05621;
+}
+
+.btn-secondary {
+  background:#edf2f7;
+  color:var(--text);
+  border:1px solid var(--border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background:#e2e8f0;
+}
+
+.btn-dark {
+  background:#2d3748;
+  color:#fff;
+}
+
+.btn-dark:hover:not(:disabled) {
+  background:#1a202c;
+}
+
+.card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:1.25rem;
+  margin-bottom:1.5rem;
+  box-shadow:0 1px 3px rgba(0,0,0,.05);
+}
+
+.card-title {
+  font-size:1.1rem;
+  font-weight:700;
+  margin-bottom:1rem;
+  color:var(--primary);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:1rem;
+}
+
+.nav-tabs {
+  display:flex;
+  gap:.25rem;
+  border-bottom:2px solid var(--border);
+  margin-bottom:1.5rem;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding-bottom:2px;
+}
+
+.nav-tab {
+  padding:.6rem 1.2rem;
+  cursor:pointer;
+  font-weight:600;
+  color:var(--text-muted);
+  border-bottom:3px solid transparent;
+  margin-bottom:-2px;
+  transition:all .2s;
+  white-space:nowrap;
+}
+
+.nav-tab.active {
+  color:var(--primary-light);
+  border-bottom-color:var(--primary-light);
+  background:rgba(43,108,176,.05);
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:.5rem;
+  font-size:.875rem;
+}
+
+th,
+td {
+  padding:.6rem .75rem;
+  text-align:left;
+  border-bottom:1px solid var(--border);
+}
+
+th {
+  background:#f8fafc;
+  font-weight:700;
+  color:#4a5568;
+}
+
+tr:hover {
+  background:#f7fafc;
+}
+
+.text-center {
+  text-align:center;
+}
+
+.text-right {
+  text-align:right;
+}
+
+.badge {
+  display:inline-block;
+  padding:.2rem .5rem;
+  font-size:.75rem;
+  font-weight:700;
+  border-radius:4px;
+  text-transform:uppercase;
+}
+
+.badge-white {
+  background:#fff;
+  color:#1a202c;
+  border:1px solid #cbd5e0;
+}
+
+.badge-black {
+  background:#1a202c;
+  color:#fff;
+}
+
+.badge-bye {
+  background:#feebc8;
+  color:#7b341e;
+}
+
+.badge-float {
+  background:#e2e8f0;
+  color:#2d3748;
+  font-size:.7rem;
+}
+
+.badge-withdrawn {
+  background:#fed7d7;
+  color:#9b2c2c;
+}
+
+.form-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:1rem;
+  margin-bottom:1rem;
+}
+
+.form-group {
+  display:flex;
+  flex-direction:column;
+  gap:.3rem;
+}
+
+.form-group label {
+  font-size:.8rem;
+  font-weight:600;
+  color:#4a5568;
+}
+
+.form-control {
+  padding:.5rem .75rem;
+  border:1px solid var(--border);
+  border-radius:6px;
+  font-size:.875rem;
+  background:#fff;
+}
+
+.form-control:focus {
+  outline:none;
+  border-color:var(--primary-light);
+  box-shadow:0 0 0 2px rgba(66,153,225,.2);
+}
+
+.form-control:disabled {
+  background:#edf2f7;
+  color:#718096;
+  cursor:not-allowed;
+}
+
+.modal-overlay {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.5);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+
+.modal-overlay.active {
+  display:flex;
+}
+
+.modal-content {
+  background:#fff;
+  border-radius:8px;
+  padding:1.5rem;
+  width:90%;
+  max-width:650px;
+  max-height:90vh;
+  overflow-y:auto;
+  box-shadow:0 10px 25px rgba(0,0,0,.2);
+}
+
+.result-select {
+  padding:.3rem .5rem;
+  font-weight:700;
+  border-radius:4px;
+  border:1px solid var(--border);
+  background:#edf2f7;
+  cursor:pointer;
+}
+
+.print-result {
+  display:none;
+}
+
+.alert {
+  padding:.75rem 1rem;
+  border-radius:6px;
+  font-size:.85rem;
+  margin-bottom:1rem;
+}
+
+.alert-info {
+  background:#ebf8ff;
+  color:#2b6cb0;
+  border:1px solid #bee3f8;
+}
+
+.alert-success {
+  background:#f0fff4;
+  color:#276749;
+  border:1px solid #c6f6d5;
+}
+
+.alert-warning {
+  background:#fffaf0;
+  color:#c05621;
+  border:1px solid #feebc8;
+}
+
+.alert-danger {
+  background:#fff5f5;
+  color:#9b2c2c;
+  border:1px solid #fed7d7;
+}
+
+.print-only {
+  display:none;
+}
+
+@media (max-width:700px) {
   header {
-    background: var(--primary);
-    color: white;
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  }
-
-  header h1 {
-    font-size: 1.35rem;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-  }
-
-  header .subtitle {
-    font-size: 0.8rem;
-    color: #cbd5e0;
-  }
-
-  .container {
-    max-width: 1250px;
-    margin: 1.5rem auto;
-    padding: 0 1rem;
-  }
-
-  .btn-group {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.45rem 0.9rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.55;
-  }
-
-  .btn-primary {
-    background: var(--primary-light);
-    color: white;
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: var(--primary);
-  }
-
-  .btn-success {
-    background: var(--success);
-    color: white;
-  }
-
-  .btn-success:hover:not(:disabled) {
-    background: #2f855a;
-  }
-
-  .btn-danger {
-    background: var(--danger);
-    color: white;
-  }
-
-  .btn-danger:hover:not(:disabled) {
-    background: #c53030;
-  }
-
-  .btn-warning {
-    background: var(--warning);
-    color: white;
-  }
-
-  .btn-warning:hover:not(:disabled) {
-    background: #c05621;
-  }
-
-  .btn-secondary {
-    background: #edf2f7;
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    background: #e2e8f0;
-  }
-
-  .btn-dark {
-    background: #2d3748;
-    color: white;
-  }
-
-  .btn-dark:hover:not(:disabled) {
-    background: #1a202c;
-  }
-
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1.25rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    align-items:flex-start;
+    flex-direction:column;
   }
 
   .card-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    color: var(--primary);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
+    align-items:flex-start;
+    flex-direction:column;
   }
-
- .nav-tabs {
-  display: flex;
-  gap: 0.25rem;
-  border-bottom: 2px solid var(--border);
-  margin-bottom: 1.5rem;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 2px;
 }
 
-  .nav-tab {
-    padding: 0.6rem 1.2rem;
-    cursor: pointer;
-    font-weight: 600;
-    color: var(--text-muted);
-    border-bottom: 3px solid transparent;
-    margin-bottom: -2px;
-    transition: all 0.2s;
-    white-space: nowrap;
+@media print {
+  header,
+  .nav-tabs,
+  .btn-group,
+  .btn,
+  .no-print,
+  .form-card {
+    display:none !important;
   }
 
-  .nav-tab.active {
-    color: var(--primary-light);
-    border-bottom-color: var(--primary-light);
-    background: rgba(43, 108, 176, 0.05);
+  body {
+    background:#fff;
+    color:#000;
+    font-size:10pt;
+  }
+
+  .container {
+    max-width:100%;
+    margin:0;
+    padding:0;
+  }
+
+  .card {
+    border:none;
+    box-shadow:none;
+    padding:0;
+    margin-bottom:1.5rem;
+  }
+
+  .print-only {
+    display:block !important;
   }
 
   table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 0.5rem;
-    font-size: 0.875rem;
+    border:1px solid #000;
+    font-size:9pt;
   }
 
   th,
   td {
-    padding: 0.6rem 0.75rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
+    border:1px solid #333;
+    padding:4px 6px;
   }
 
   th {
-    background: #f8fafc;
-    font-weight: 700;
-    color: #4a5568;
+    background:#eee !important;
+    color:#000 !important;
   }
 
-  tr:hover {
-    background: #f7fafc;
-  }
-
-  .text-center {
-    text-align: center;
-  }
-
-  .text-right {
-    text-align: right;
-  }
-
-  .badge {
-    display: inline-block;
-    padding: 0.2rem 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 700;
-    border-radius: 4px;
-    text-transform: uppercase;
-  }
-
-  .badge-white {
-    background: #ffffff;
-    color: #1a202c;
-    border: 1px solid #cbd5e0;
-  }
-
-  .badge-black {
-    background: #1a202c;
-    color: #ffffff;
-  }
-
-  .badge-bye {
-    background: #feebc8;
-    color: #7b341e;
-  }
-
-  .badge-float {
-    background: #e2e8f0;
-    color: #2d3748;
-    font-size: 0.7rem;
-  }
-
-  .badge-withdrawn {
-    background: #fed7d7;
-    color: #9b2c2c;
-  }
-
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-  }
-
-  .form-group label {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #4a5568;
-  }
-
-  .form-control {
-    padding: 0.5rem 0.75rem;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    font-size: 0.875rem;
-    background: #ffffff;
-  }
-
-  .form-control:focus {
-    outline: none;
-    border-color: var(--primary-light);
-    box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
-  }
-
-  .form-control:disabled {
-    background: #edf2f7;
-    color: #718096;
-    cursor: not-allowed;
-  }
-
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-
-  .modal-overlay.active {
-    display: flex;
-  }
-
-  .modal-content {
-    background: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-    width: 90%;
-    max-width: 650px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  .page-break {
+    page-break-after:always;
   }
 
   .result-select {
-    padding: 0.3rem 0.5rem;
-    font-weight: 700;
-    border-radius: 4px;
-    border: 1px solid var(--border);
-    background: #edf2f7;
-    cursor: pointer;
+    display:none !important;
   }
 
   .print-result {
-    display: none;
+    display:inline-block !important;
+    font-weight:700;
+    font-size:1.15rem;
+    text-align:center;
+    width:100%;
+    letter-spacing:2px;
   }
 
-  .alert {
-    padding: 0.75rem 1rem;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    margin-bottom: 1rem;
+  #pairingsTable td {
+    padding:8px 6px;
   }
 
-  .alert-info {
-    background: #ebf8ff;
-    color: #2b6cb0;
-    border: 1px solid #bee3f8;
+  #pabContainer .card,
+  #unplayedContainer .card {
+    border:1px solid #333 !important;
+    padding:8px !important;
   }
-
-  .alert-success {
-    background: #f0fff4;
-    color: #276749;
-    border: 1px solid #c6f6d5;
-  }
-
-  .alert-warning {
-    background: #fffaf0;
-    color: #c05621;
-    border: 1px solid #feebc8;
-  }
-
-  .alert-danger {
-    background: #fff5f5;
-    color: #9b2c2c;
-    border: 1px solid #fed7d7;
-  }
-
-  @media print {
-    header,
-    .nav-tabs,
-    .btn-group,
-    .btn,
-    .no-print,
-    .form-card {
-      display: none !important;
-    }
-
-    body {
-      background: white;
-      color: black;
-      font-size: 10pt;
-    }
-
-    .container {
-      max-width: 100%;
-      margin: 0;
-      padding: 0;
-    }
-
-    .card {
-      border: none;
-      box-shadow: none;
-      padding: 0;
-      margin-bottom: 1.5rem;
-    }
-
-    .print-only {
-      display: block !important;
-    }
-
-    table {
-      border: 1px solid #000;
-      font-size: 9pt;
-    }
-
-    th,
-    td {
-      border: 1px solid #333;
-      padding: 4px 6px;
-    }
-
-    th {
-      background: #eee !important;
-      color: black !important;
-    }
-
-    .page-break {
-      page-break-after: always;
-    }
-
-    .result-select {
-      display: none !important;
-    }
-
-    .print-result {
-      display: inline-block !important;
-      font-weight: 700;
-      font-size: 1.15rem;
-      text-align: center;
-      width: 100%;
-      letter-spacing: 2px;
-    }
-
-    #pairingsTable td {
-      padding: 8px 6px;
-    }
-
-    #pabContainer .card,
-    #unplayedContainer .card {
-      border: 1px solid #333 !important;
-      padding: 8px !important;
-    }
-  }
-
-  .print-only {
-    display: none;
-  }
+}
 </style>
 </head>
 
@@ -463,8 +479,10 @@
 <header>
   <div>
     <h1>Experimental FIDE Dutch Pairing System</h1>
+
     <div class="subtitle">
-      Implemented in accordance with the FIDE Handbook C.04.3 (1 February 2026) – verification against FIDE's official test cases is still pending
+      Implemented using a time-bounded FIDE Dutch search.
+      Verification against the official FIDE test cases remains to be done.
     </div>
   </div>
 
@@ -478,9 +496,8 @@
     </button>
 
     <button class="btn btn-dark" onclick="openNewWindow()">
-	📜 About&hellip;
+      📜 About…
     </button>
-
   </div>
 </header>
 
@@ -488,11 +505,11 @@
 
   <div class="print-only" style="margin-bottom:15px;">
     <h2 id="printTitle" style="font-size:16pt;">
-      Tournament pairings / Standings
+      Tournament Pairings / Standings
     </h2>
 
     <div id="printSubtitle" style="font-size:10pt;color:#555;">
-      Generated by the experimental FIDE Dutch system (2026)
+      Generated by the experimental FIDE Dutch system
     </div>
   </div>
 
@@ -506,7 +523,7 @@
     </div>
 
     <div class="nav-tab" onclick="switchTab('standingsTab')">
-      📊 Crosstable &amp; Standings
+      📊 Standings
     </div>
 
     <div class="nav-tab" onclick="switchTab('historyTab')">
@@ -516,13 +533,15 @@
 
   <!-- SETUP -->
 
-<div id="setupTab" class="tab-pane">
+  <div id="setupTab" class="tab-pane">
 
-  <div id="settingsLockNotice"
-       class="alert alert-warning no-print"
-       style="display:none;">
-    Settings are locked because the tournament has started.
-  </div>
+    <div
+      id="settingsLockNotice"
+      class="alert alert-warning no-print"
+      style="display:none;"
+    >
+      The settings are locked because the tournament has started.
+    </div>
 
     <div class="card form-card">
       <div class="card-title">
@@ -548,7 +567,8 @@
 
       <div class="form-grid">
         <div class="form-group">
-          <label>Tournament name</label>
+          <label for="tName">Tournament name</label>
+
           <input
             type="text"
             id="tName"
@@ -558,7 +578,8 @@
         </div>
 
         <div class="form-group">
-          <label>Number of rounds</label>
+          <label for="tRounds">Number of rounds</label>
+
           <input
             type="number"
             id="tRounds"
@@ -570,31 +591,38 @@
         </div>
 
         <div class="form-group">
-          <label>Drawn initial color (round 1)</label>
+          <label for="tInitColor">Initial color allocation (round 1)</label>
+
           <select id="tInitColor" class="form-control">
             <option value="W" selected>
-              W: player 1 starts with white
+              W: pairing number 1 starts with White
             </option>
+
             <option value="B">
-              B: player 1 starts with black
+              B: pairing number 1 starts with Black
             </option>
           </select>
         </div>
 
         <div class="form-group">
-          <label>Points: Win / Draw / Loss</label>
+          <label for="tPoints">Points: Win / Draw / Loss</label>
+
           <select id="tPoints" class="form-control">
             <option value="1,0.5,0" selected>
               Standard: 1 – ½ – 0
             </option>
+
             <option value="3,1,0">
-              Football: 3 – 1 – 0
+              Football scoring: 3 – 1 – 0
             </option>
           </select>
         </div>
 
         <div class="form-group">
-          <label>Points for pairing-allocated bye (PAB)</label>
+          <label for="tPabPoints">
+            Pairing-Allocated Bye points
+          </label>
+
           <input
             type="number"
             id="tPabPoints"
@@ -656,25 +684,27 @@
       <div
         class="form-grid no-print"
         style="
-          margin-bottom:0.8rem;
+          margin-bottom:.8rem;
           background:#f8fafc;
-          padding:0.8rem;
+          padding:.8rem;
           border-radius:6px;
           border:1px dashed var(--border);
         "
       >
         <div class="form-group">
-          <label>Player's full name</label>
+          <label for="pName">Player's full name</label>
+
           <input
             type="text"
             id="pName"
             class="form-control"
-            placeholder="e.g. Karl Magnusson"
+            placeholder="e.g. John Smith"
           >
         </div>
 
         <div class="form-group">
-          <label>Elo / Rating</label>
+          <label for="pRating">Elo / Rating</label>
+
           <input
             type="number"
             id="pRating"
@@ -684,7 +714,8 @@
         </div>
 
         <div class="form-group">
-          <label>FIDE title</label>
+          <label for="pTitle">FIDE title</label>
+
           <select id="pTitle" class="form-control">
             <option value="">None</option>
             <option value="GM">GM</option>
@@ -710,19 +741,23 @@
       </div>
 
       <div class="alert alert-info no-print">
-        The <strong>Next round</strong> field records requested or administratively assigned unplayed rounds. An unplayed assignment awarding points equivalent to a win makes the player ineligible for a later PAB (Pairing-Allocated Bye). Any unplayed assignment greater than a loss also records a downfloat marker.
+        The <strong>Next round</strong> field records requested or
+        administratively assigned unplayed rounds. An unplayed allocation
+        worth the same as a win makes the player ineligible for a later
+        Pairing-Allocated Bye.
       </div>
 
       <div style="overflow-x:auto;">
         <table id="playersTable">
           <thead>
             <tr>
-              <th style="width:60px;">Start no.</th>
+              <th style="width:60px;">Pairing no.</th>
               <th>Name</th>
               <th>Rating</th>
               <th>Title</th>
               <th>Status</th>
               <th class="no-print">Next round</th>
+
               <th class="text-center no-print" style="width:150px;">
                 Actions
               </th>
@@ -735,11 +770,15 @@
 
       <div
         class="no-print"
-        style="margin-top:1.5rem;display:flex;justify-content:flex-end;"
+        style="
+          margin-top:1.5rem;
+          display:flex;
+          justify-content:flex-end;
+        "
       >
         <button
           class="btn btn-primary"
-          style="font-size:1rem;padding:0.6rem 1.5rem;"
+          style="font-size:1rem;padding:.6rem 1.5rem;"
           onclick="startOrUpdateTournament()"
         >
           🚀 Initialize / Update tournament
@@ -756,6 +795,7 @@
       <div class="card-title">
         <div>
           <span id="currentRoundTitle">Round pairings</span>
+
           <span
             id="roundStatusBadge"
             class="badge badge-white"
@@ -790,7 +830,8 @@
       </div>
 
       <div id="pairingNotes" class="alert alert-info no-print">
-        The pairing may take some time to complete.
+        The optimized search has time and node limits to prevent it from
+        locking the browser for an extended period.
       </div>
 
       <div style="overflow-x:auto;">
@@ -798,9 +839,13 @@
           <thead>
             <tr>
               <th style="width:50px;">Board</th>
-              <th>White player</th>
-              <th class="text-center" style="width:170px;">Result</th>
-              <th>Black player</th>
+              <th>White</th>
+
+              <th class="text-center" style="width:170px;">
+                Result
+              </th>
+
+              <th>Black</th>
             </tr>
           </thead>
 
@@ -811,7 +856,7 @@
                 class="text-center"
                 style="padding:2rem;color:#a0aec0;"
               >
-                Click "Generate pairings" to create the round.
+                Click “Generate pairings” to create the round.
               </td>
             </tr>
           </tbody>
@@ -830,8 +875,8 @@
           <h3
             style="
               color:#c05621;
-              font-size:0.95rem;
-              margin-bottom:0.4rem;
+              font-size:.95rem;
+              margin-bottom:.4rem;
             "
           >
             Pairing-Allocated Bye (PAB)
@@ -853,8 +898,8 @@
           <h3
             style="
               color:#2b6cb0;
-              font-size:0.95rem;
-              margin-bottom:0.4rem;
+              font-size:.95rem;
+              margin-bottom:.4rem;
             "
           >
             Other unplayed rounds / byes
@@ -878,12 +923,14 @@
           class="btn btn-secondary no-print"
           onclick="window.print()"
         >
-          🖨️ Print table
+          🖨️ Print standings
         </button>
       </div>
 
       <div class="alert alert-warning no-print">
-        Tiebreak scores are shown as guidance: Buchholz -1 (BH-1), Buchholz total (BH), and Sonneborn-Berger (SB).
+        The tiebreak values are displayed as guidance:
+        Buchholz Cut 1 (BH-1), Buchholz Total (BH), and
+        Sonneborn-Berger (SB).
       </div>
 
       <div style="overflow-x:auto;">
@@ -891,7 +938,7 @@
           <thead>
             <tr>
               <th>Rank</th>
-              <th>Start no.</th>
+              <th>Pairing no.</th>
               <th>Title</th>
               <th>Name</th>
               <th>Rating</th>
@@ -917,11 +964,13 @@
     <div class="card">
 
       <div class="card-title">
-        <span>Archive of completed rounds</span>
+        <span>Completed round archive</span>
       </div>
 
       <div id="roundsHistoryContainer">
-        <p style="color:#718096;">No completed rounds yet.</p>
+        <p style="color:#718096;">
+          No completed rounds yet.
+        </p>
       </div>
     </div>
   </div>
@@ -931,18 +980,13 @@
 
 <div class="modal-overlay" id="pasteModal">
   <div class="modal-content">
-    <h3 style="margin-bottom:0.75rem;color:var(--primary);">
+    <h3 style="margin-bottom:.75rem;color:var(--primary);">
       Paste player list
     </h3>
 
-    <p
-      style="
-        font-size:0.8rem;
-        color:#718096;
-        margin-bottom:0.75rem;
-      "
-    >
-      Supports the formats <code>Name, Rating, Title</code>, tab-separated, semicolon-separated, or lines from FIDE TRF files.
+    <p style="font-size:.8rem;color:#718096;margin-bottom:.75rem;">
+      Supports <code>Name, Rating, Title</code>, tab-separated,
+      semicolon-separated, and FIDE TRF player records.
     </p>
 
     <textarea
@@ -952,7 +996,7 @@
       style="
         width:100%;
         font-family:monospace;
-        font-size:0.85rem;
+        font-size:.85rem;
       "
       placeholder="Grandelius Nils, 2660, GM"
     ></textarea>
@@ -961,7 +1005,7 @@
       style="
         display:flex;
         justify-content:flex-end;
-        gap:0.5rem;
+        gap:.5rem;
         margin-top:1rem;
       "
     >
@@ -980,107 +1024,221 @@
 "use strict";
 
 /*
- * Implementation of the FIDE Dutch Swiss rules from 2026 (C.04.3).
+ * Experimental implementation of the FIDE Dutch Swiss pairing rules.
  *
- * - Absolute criteria C1-C4 are strictly enforced (fallback allows
- *   color criteria to be relaxed if no pairing can otherwise be found).
- * - Quality criteria C6-C21 are minimized lexicographically.
- * - Transpositions use DFS with pruning (Art. 4.2).
- * - Exchanges between S1 and S2 are prioritized by minimal size (Art. 4.3).
- * - Perfect candidates (Art. 3.4.1) are accepted immediately.
+ * The earlier implementation could generate millions of exchange
+ * combinations and then search an extremely large product of bracket
+ * candidates.
  *
- * FIXES in this version:
- *  1. MAX_CANDIDATES raised 200 -> 800 per bracket.
- *  2. maxExchangeLimit raised 2 -> up to 4.
- *  3. maxTranspositions raised 60 -> 250, maxNodes 5000 -> 40000.
- *  4. Removed the early break at exchangeSize >= 1 (so more candidates
- *     are examined within the same bracket).
- *  5. Added fallback (RELAX_COLOR_RULES) which, when strict pairing
- *     fails, allows pairings where both players have the same
- *     absolute color preference. The C12/C13 scoring still captures
- *     these as quality defects.
+ * This implementation:
+ *
+ * - limits combinations and bracket candidates;
+ * - uses global time and node budgets;
+ * - prioritizes the best local candidates;
+ * - stops after a limited number of complete solutions;
+ * - uses a fast complete-matching search as a fallback.
  */
 
 const STORAGE_KEY = "experimental_fide_dutch_2026_en";
 
-// FIX 5: Global flag used by isPairLegal.
-let RELAX_COLOR_RULES = false;
-
 const TITLE_WEIGHTS = {
-  GM: 9,
-  IM: 8,
-  WGM: 7,
-  FM: 6,
-  WIM: 5,
-  CM: 4,
-  WFM: 3,
-  WCM: 2,
-  "": 0
+  GM:9,
+  IM:8,
+  WGM:7,
+  FM:6,
+  WIM:5,
+  CM:4,
+  WFM:3,
+  WCM:2,
+  "":0
 };
 
+const SEARCH_LIMITS = Object.freeze({
+  DUTCH_TIME_MS:1100,
+  DUTCH_MAX_NODES:6000,
+  COMPLETION_MAX_NODES:14000,
+
+  MAX_BRACKET_CANDIDATES:80,
+  MAX_EXPLORED_CANDIDATES:40,
+  MAX_COMPLETE_SOLUTIONS:16,
+
+  MAX_EXCHANGE_SIZE:3,
+  MAX_EXCHANGE_CONFIGURATIONS:140,
+  MAX_SIDE_COMBINATIONS:28,
+
+  MAX_TRANSPOSITIONS_PER_CONFIGURATION:14,
+  MAX_TRANSPOSITION_NODES:12000,
+
+  FAST_FALLBACK_TIME_MS:650,
+  FAST_FALLBACK_MAX_NODES:75000
+});
+
 let tournament = createEmptyTournament();
+let RELAX_COLOR_RULES = false;
+let ACTIVE_SEARCH_BUDGET = null;
+let pairingInProgress = false;
+
+/* ========================================================================== */
+/* BASIC DATA                                                                 */
+/* ========================================================================== */
 
 function createEmptyTournament() {
   return {
-    formatVersion: 2,
-    engineVersion: "2026-operational-en",
-    name: "FIDE Swiss Open 2026",
-    totalRounds: 5,
-    initialColor: "W",
-    winPoints: 1,
-    drawPoints: 0.5,
-    lossPoints: 0,
-    pabPoints: 1,
-    currentRound: 0,
-    isFinished: false,
-    tpnFrozen: false,
-    settingsFrozen: false,
-    players: [],
-    rounds: [],
-    activePairings: []
+    formatVersion:3,
+    engineVersion:"2026-bounded-search-en",
+    name:"FIDE Swiss Open 2026",
+    totalRounds:5,
+    initialColor:"W",
+    winPoints:1,
+    drawPoints:.5,
+    lossPoints:0,
+    pabPoints:1,
+    currentRound:0,
+    isFinished:false,
+    tpnFrozen:false,
+    settingsFrozen:false,
+    players:[],
+    rounds:[],
+    activePairings:[]
   };
 }
 
+function finiteNumber(value, fallback) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function monotonicNow() {
+  if (
+    typeof performance !== "undefined" &&
+    typeof performance.now === "function"
+  ) {
+    return performance.now();
+  }
+
+  return Date.now();
+}
+
+function createSearchBudget(milliseconds, maxNodes) {
+  return {
+    deadline:monotonicNow() + milliseconds,
+    nodes:0,
+    maxNodes
+  };
+}
+
+function searchBudgetExpired() {
+  if (!ACTIVE_SEARCH_BUDGET) {
+    return false;
+  }
+
+  return (
+    ACTIVE_SEARCH_BUDGET.nodes >= ACTIVE_SEARCH_BUDGET.maxNodes ||
+    monotonicNow() >= ACTIVE_SEARCH_BUDGET.deadline
+  );
+}
+
+function consumeSearchNode(amount = 1) {
+  if (!ACTIVE_SEARCH_BUDGET) {
+    return true;
+  }
+
+  ACTIVE_SEARCH_BUDGET.nodes += amount;
+  return !searchBudgetExpired();
+}
+
+function waitForBrowserPaint() {
+  return new Promise(resolve => {
+    requestAnimationFrame(() => {
+      setTimeout(resolve, 0);
+    });
+  });
+}
+
+function generatePlayerId() {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
+    return "P_" + crypto.randomUUID();
+  }
+
+  return (
+    "P_" +
+    Date.now().toString(36) +
+    "_" +
+    Math.random().toString(36).slice(2)
+  );
+}
+
+function normalizeNextRoundStatus(status) {
+  const permitted = new Set([
+    "pair",
+    "unplayed-zero",
+    "unplayed-draw",
+    "unplayed-win"
+  ]);
+
+  return permitted.has(status) ? status : "pair";
+}
+
 /* ========================================================================== */
-/* INITIALIZATION AND DATA SANITIZATION                                       */
+/* INITIALIZATION                                                             */
 /* ========================================================================== */
 
-window.onload = function () {
-  loadFromLocalStorage();
-  sanitizeTournamentData();
-  rebuildPlayerStateFromRounds();
-  populateSettingsControls();
-  renderPlayersTable();
-  renderPairings();
-  renderStandings();
-  renderHistory();
-  updateUI();
-  runInternalSelfChecks();
-};
+window.addEventListener("load", () => {
+  try {
+    loadFromLocalStorage();
+    sanitizeTournamentData();
+    rebuildPlayerStateFromRounds();
+    populateSettingsControls();
+    renderPlayersTable();
+    renderPairings();
+    renderStandings();
+    renderHistory();
+    updateUI();
+    runInternalSelfChecks();
+  } catch (error) {
+    console.error(error);
+    alert("Could not initialize the tournament: " + error.message);
+  }
+});
 
 function sanitizeTournamentData() {
   if (!tournament || typeof tournament !== "object") {
     tournament = createEmptyTournament();
   }
 
-  tournament.formatVersion = Number(tournament.formatVersion) || 2;
-  tournament.engineVersion =
-    tournament.engineVersion || "2026-operational-en";
+  tournament.formatVersion =
+    Math.max(3, Number(tournament.formatVersion) || 3);
 
-  tournament.name = String(tournament.name || "Tournament");
-  tournament.totalRounds =
-    Math.max(1, parseInt(tournament.totalRounds, 10) || 5);
+  tournament.engineVersion =
+    tournament.engineVersion || "2026-bounded-search-en";
+
+  tournament.name = String(
+    tournament.name || "Tournament"
+  );
+
+  tournament.totalRounds = Math.max(
+    1,
+    parseInt(tournament.totalRounds, 10) || 5
+  );
 
   tournament.initialColor =
     tournament.initialColor === "B" ? "B" : "W";
 
-  tournament.winPoints = finiteNumber(tournament.winPoints, 1);
+  tournament.winPoints =
+    finiteNumber(tournament.winPoints, 1);
+
   if (tournament.winPoints <= 0) {
     tournament.winPoints = 1;
   }
 
-  tournament.drawPoints = finiteNumber(tournament.drawPoints, 0.5);
-  tournament.lossPoints = finiteNumber(tournament.lossPoints, 0);
+  tournament.drawPoints =
+    finiteNumber(tournament.drawPoints, .5);
+
+  tournament.lossPoints =
+    finiteNumber(tournament.lossPoints, 0);
 
   if (
     tournament.pabPoints === undefined ||
@@ -1092,10 +1250,13 @@ function sanitizeTournamentData() {
     tournament.pabPoints = Number(tournament.pabPoints);
   }
 
-  tournament.currentRound =
-    Math.max(0, parseInt(tournament.currentRound, 10) || 0);
+  tournament.currentRound = Math.max(
+    0,
+    parseInt(tournament.currentRound, 10) || 0
+  );
 
-  tournament.isFinished = Boolean(tournament.isFinished);
+  tournament.isFinished =
+    Boolean(tournament.isFinished);
 
   if (!Array.isArray(tournament.players)) {
     tournament.players = [];
@@ -1116,8 +1277,11 @@ function sanitizeTournamentData() {
     tournament.tpnFrozen = true;
     tournament.settingsFrozen = true;
   } else {
-    tournament.tpnFrozen = Boolean(tournament.tpnFrozen);
-    tournament.settingsFrozen = Boolean(tournament.settingsFrozen);
+    tournament.tpnFrozen =
+      Boolean(tournament.tpnFrozen);
+
+    tournament.settingsFrozen =
+      Boolean(tournament.settingsFrozen);
   }
 
   const usedIds = new Set();
@@ -1129,21 +1293,38 @@ function sanitizeTournamentData() {
 
     usedIds.add(player.id);
 
-    player.name = String(player.name || `Player ${index + 1}`);
-    player.rating = Math.max(0, parseInt(player.rating, 10) || 1500);
-    player.title = String(player.title || "").toUpperCase();
-    player.active = player.active !== false;
-    player.tpn = Math.max(0, parseInt(player.tpn, 10) || 0);
-
-    player.nextRoundStatus = normalizeNextRoundStatus(
-      player.nextRoundStatus
+    player.name = String(
+      player.name || `Player ${index + 1}`
     );
+
+    player.rating = Math.max(
+      0,
+      parseInt(player.rating, 10) || 1500
+    );
+
+    player.title =
+      String(player.title || "").toUpperCase();
+
+    player.active = player.active !== false;
+
+    player.tpn = Math.max(
+      0,
+      parseInt(player.tpn, 10) || 0
+    );
+
+    player.nextRoundStatus =
+      normalizeNextRoundStatus(player.nextRoundStatus);
 
     player.score = finiteNumber(player.score, 0);
     player.hadPAB = Boolean(player.hadPAB);
-    player.hadUnplayedWin = Boolean(player.hadUnplayedWin);
-    player.unplayedCount =
-      Math.max(0, parseInt(player.unplayedCount, 10) || 0);
+
+    player.hadUnplayedWin =
+      Boolean(player.hadUnplayedWin);
+
+    player.unplayedCount = Math.max(
+      0,
+      parseInt(player.unplayedCount, 10) || 0
+    );
 
     if (!Array.isArray(player.opponents)) {
       player.opponents = [];
@@ -1177,7 +1358,9 @@ function sanitizeTournamentData() {
     round.pairings.forEach(normalizePairingRecord);
   });
 
-  tournament.activePairings.forEach(normalizePairingRecord);
+  tournament.activePairings.forEach(
+    normalizePairingRecord
+  );
 
   if (!tournament.tpnFrozen) {
     recomputeTPNs();
@@ -1202,16 +1385,18 @@ function normalizePairingRecord(record) {
   }
 
   if (record.kind === "pab") {
-    record.pabId = record.pabId || record.whiteId || null;
+    record.pabId =
+      record.pabId || record.whiteId || null;
+
     record.whiteId = null;
     record.blackId = null;
     record.result = "AUTO";
 
-    if (!Number.isFinite(Number(record.awardedPoints))) {
-      record.awardedPoints = tournament.pabPoints;
-    } else {
-      record.awardedPoints = Number(record.awardedPoints);
-    }
+    record.awardedPoints = Number.isFinite(
+      Number(record.awardedPoints)
+    )
+      ? Number(record.awardedPoints)
+      : tournament.pabPoints;
   }
 
   if (record.kind === "unplayed") {
@@ -1222,13 +1407,15 @@ function normalizePairingRecord(record) {
     record.blackId = null;
     record.result = "AUTO";
 
-    if (!Number.isFinite(Number(record.awardedPoints))) {
-      record.awardedPoints = 0;
-    } else {
-      record.awardedPoints = Number(record.awardedPoints);
-    }
+    record.awardedPoints = Number.isFinite(
+      Number(record.awardedPoints)
+    )
+      ? Number(record.awardedPoints)
+      : 0;
 
-    record.label = String(record.label || "Unplayed round");
+    record.label = String(
+      record.label || "Unplayed round"
+    );
   }
 
   if (record.kind === "game") {
@@ -1240,7 +1427,6 @@ function normalizePairingRecord(record) {
 
 function validateFrozenTPNs() {
   const seen = new Set();
-  let valid = true;
 
   for (const player of tournament.players) {
     if (
@@ -1248,52 +1434,15 @@ function validateFrozenTPNs() {
       player.tpn <= 0 ||
       seen.has(player.tpn)
     ) {
-      valid = false;
-      break;
+      throw new Error(
+        "The saved tournament contains invalid or duplicate pairing numbers."
+      );
     }
 
     seen.add(player.tpn);
   }
 
-  if (!valid) {
-    throw new Error(
-      "The saved tournament has invalid or duplicate start numbers."
-    );
-  }
-
   tournament.players.sort((a, b) => a.tpn - b.tpn);
-}
-
-function finiteNumber(value, fallback) {
-  const number = Number(value);
-  return Number.isFinite(number) ? number : fallback;
-}
-
-function normalizeNextRoundStatus(status) {
-  const permitted = new Set([
-    "pair",
-    "unplayed-zero",
-    "unplayed-draw",
-    "unplayed-win"
-  ]);
-
-  return permitted.has(status) ? status : "pair";
-}
-
-function generatePlayerId() {
-  if (
-    typeof crypto !== "undefined" &&
-    typeof crypto.randomUUID === "function"
-  ) {
-    return "P_" + crypto.randomUUID();
-  }
-
-  return (
-    "P_" +
-    Date.now().toString(36) +
-    "_" +
-    Math.random().toString(36).slice(2)
-  );
 }
 
 /* ========================================================================== */
@@ -1301,7 +1450,17 @@ function generatePlayerId() {
 /* ========================================================================== */
 
 function autoSave() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tournament));
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(tournament)
+    );
+  } catch (error) {
+    console.error(
+      "Could not automatically save the tournament:",
+      error
+    );
+  }
 }
 
 function loadFromLocalStorage() {
@@ -1314,7 +1473,11 @@ function loadFromLocalStorage() {
   try {
     tournament = JSON.parse(saved);
   } catch (error) {
-    console.error("Could not load saved tournament:", error);
+    console.error(
+      "Could not load the saved tournament:",
+      error
+    );
+
     tournament = createEmptyTournament();
   }
 }
@@ -1324,7 +1487,7 @@ function saveTournament() {
 
   const blob = new Blob(
     [JSON.stringify(tournament, null, 2)],
-    { type: "application/json" }
+    { type:"application/json" }
   );
 
   const url = URL.createObjectURL(blob);
@@ -1335,6 +1498,7 @@ function saveTournament() {
     .replace(/^_+|_+$/g, "");
 
   anchor.href = url;
+
   anchor.download =
     `${safeName || "Tournament"}_Round_` +
     `${tournament.rounds.length}_` +
@@ -1343,13 +1507,23 @@ function saveTournament() {
   document.body.appendChild(anchor);
   anchor.click();
   anchor.remove();
-  URL.revokeObjectURL(url);
+
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 
   autoSave();
-  alert("The tournament file has been saved and downloaded.");
+
+  alert(
+    "The tournament file has been saved and downloaded."
+  );
 }
 
 function handleLoadTournamentFile(event) {
+  if (pairingInProgress) {
+    alert("Please wait until the pairing process is complete.");
+    event.target.value = "";
+    return;
+  }
+
   const file = event.target.files[0];
 
   if (!file) {
@@ -1358,15 +1532,18 @@ function handleLoadTournamentFile(event) {
 
   const reader = new FileReader();
 
-  reader.onload = function (loadEvent) {
+  reader.onload = loadEvent => {
     try {
       const loaded = JSON.parse(loadEvent.target.result);
 
       if (!loaded || !Array.isArray(loaded.players)) {
-        throw new Error("The file does not contain a valid player list.");
+        throw new Error(
+          "The file does not contain a valid player list."
+        );
       }
 
       tournament = loaded;
+
       sanitizeTournamentData();
       rebuildPlayerStateFromRounds();
       populateSettingsControls();
@@ -1378,9 +1555,14 @@ function handleLoadTournamentFile(event) {
       renderHistory();
       updateUI();
 
-      alert(`The tournament "${tournament.name}" has been loaded.`);
+      alert(
+        `Tournament “${tournament.name}” has been loaded.`
+      );
     } catch (error) {
-      alert("Could not load the tournament: " + error.message);
+      alert(
+        "Could not load the tournament: " +
+        error.message
+      );
     }
   };
 
@@ -1400,17 +1582,19 @@ function getPointsControlValue() {
     .map(Number);
 
   return {
-    win: parts[0],
-    draw: parts[1],
-    loss: parts[2]
+    win:parts[0],
+    draw:parts[1],
+    loss:parts[2]
   };
 }
 
 function setPointsControlValue(win, draw, loss) {
-  const select = document.getElementById("tPoints");
+  const select =
+    document.getElementById("tPoints");
 
   for (const option of select.options) {
-    const parts = option.value.split(",").map(Number);
+    const parts =
+      option.value.split(",").map(Number);
 
     if (
       parts[0] === Number(win) &&
@@ -1447,17 +1631,20 @@ function populateSettingsControls() {
 
 function applyEditableSettings() {
   tournament.name =
-    document.getElementById("tName").value.trim() || "Tournament";
+    document.getElementById("tName").value.trim() ||
+    "Tournament";
 
   if (tournament.settingsFrozen) {
     return;
   }
 
-  tournament.totalRounds =
-    Math.max(
-      1,
-      parseInt(document.getElementById("tRounds").value, 10) || 5
-    );
+  tournament.totalRounds = Math.max(
+    1,
+    parseInt(
+      document.getElementById("tRounds").value,
+      10
+    ) || 5
+  );
 
   tournament.initialColor =
     document.getElementById("tInitColor").value === "B"
@@ -1477,7 +1664,8 @@ function applyEditableSettings() {
 }
 
 function updateSettingsLockUI() {
-  const locked = tournament.settingsFrozen;
+  const locked =
+    tournament.settingsFrozen || pairingInProgress;
 
   for (const id of [
     "tRounds",
@@ -1489,21 +1677,26 @@ function updateSettingsLockUI() {
   }
 
   document.getElementById("btnAddPlayer").disabled =
-    tournament.tpnFrozen;
+    tournament.tpnFrozen || pairingInProgress;
 
   document.getElementById("btnLoadPlayers").disabled =
-    tournament.tpnFrozen;
+    tournament.tpnFrozen || pairingInProgress;
 
   document.getElementById("btnPastePlayers").disabled =
-    tournament.tpnFrozen;
+    tournament.tpnFrozen || pairingInProgress;
 
-  const btnSample = document.getElementById("btnLoadSamplePlayers");
-  if (btnSample) {
-    btnSample.disabled = tournament.tpnFrozen;
+  const sampleButton =
+    document.getElementById("btnLoadSamplePlayers");
+
+  if (sampleButton) {
+    sampleButton.disabled =
+      tournament.tpnFrozen || pairingInProgress;
   }
 
-  document.getElementById("settingsLockNotice").style.display =
-    locked ? "block" : "none";
+  document.getElementById(
+    "settingsLockNotice"
+  ).style.display =
+    tournament.settingsFrozen ? "block" : "none";
 }
 
 /* ========================================================================== */
@@ -1512,39 +1705,53 @@ function updateSettingsLockUI() {
 
 function createPlayerObject(name, rating, title) {
   return {
-    id: generatePlayerId(),
-    tpn: 0,
-    name: String(name),
-    rating: Math.max(0, Number(rating) || 1500),
-    title: String(title || "").toUpperCase(),
-    active: true,
-    nextRoundStatus: "pair",
+    id:generatePlayerId(),
+    tpn:0,
+    name:String(name),
+    rating:Math.max(0, Number(rating) || 1500),
+    title:String(title || "").toUpperCase(),
+    active:true,
+    nextRoundStatus:"pair",
 
-    score: 0,
-    opponents: [],
-    playedColors: [],
-    roundColors: [],
-    floats: [],
-    scoreGaps: [],
+    score:0,
+    opponents:[],
+    playedColors:[],
+    roundColors:[],
+    floats:[],
+    scoreGaps:[],
 
-    hadPAB: false,
-    hadUnplayedWin: false,
-    unplayedCount: 0
+    hadPAB:false,
+    hadUnplayedWin:false,
+    unplayedCount:0
   };
 }
 
 function addSinglePlayer() {
-  if (tournament.tpnFrozen) {
-    alert("Start numbers are locked after pairing has begun.");
+  if (pairingInProgress) {
+    alert("Please wait until the pairing process is complete.");
     return;
   }
 
-  const name = document.getElementById("pName").value.trim();
+  if (tournament.tpnFrozen) {
+    alert(
+      "Pairing numbers are locked after pairing has started."
+    );
+    return;
+  }
+
+  const name =
+    document.getElementById("pName").value.trim();
+
   const rating =
-    parseInt(document.getElementById("pRating").value, 10) || 1500;
+    parseInt(
+      document.getElementById("pRating").value,
+      10
+    ) || 1500;
 
   const title =
-    document.getElementById("pTitle").value.trim().toUpperCase();
+    document.getElementById("pTitle").value
+      .trim()
+      .toUpperCase();
 
   if (!name) {
     alert("Please enter the player's name.");
@@ -1563,51 +1770,61 @@ function addSinglePlayer() {
   document.getElementById("pName").focus();
 }
 
-// 32 international sample players preserved exactly as requested
 function loadSamplePlayers() {
+  if (pairingInProgress) {
+    alert("Please wait until the pairing process is complete.");
+    return;
+  }
+
   if (tournament.tpnFrozen) {
-    alert("Start numbers are locked. Sample players cannot be loaded now.");
+    alert(
+      "Pairing numbers are locked. Sample players cannot be loaded now."
+    );
     return;
   }
 
   const samplePlayers = [
-    { name: "Magnus Carlsen", rating: 2832, title: "GM" },
-    { name: "Fabiano Caruana", rating: 2805, title: "GM" },
-    { name: "Hikaru Nakamura", rating: 2802, title: "GM" },
-    { name: "Arjun Erigaisi", rating: 2797, title: "GM" },
-    { name: "Gukesh D", rating: 2794, title: "GM" },
-    { name: "Nodirbek Abdusattorov", rating: 2783, title: "GM" },
-    { name: "Alireza Firouzja", rating: 2767, title: "GM" },
-    { name: "Wei Yi", rating: 2762, title: "GM" },
-    { name: "Ian Nepomniachtchi", rating: 2755, title: "GM" },
-    { name: "Wesley So", rating: 2751, title: "GM" },
-    { name: "Viswanathan Anand", rating: 2750, title: "GM" },
-    { name: "Leinier Dominguez Perez", rating: 2748, title: "GM" },
-    { name: "Anish Giri", rating: 2746, title: "GM" },
-    { name: "Praggnanandhaa R", rating: 2737, title: "GM" },
-    { name: "Jan-Krzysztof Duda", rating: 2733, title: "GM" },
-    { name: "Shakhriyar Mamedyarov", rating: 2732, title: "GM" },
-    { name: "Maxime Vachier-Lagrave", rating: 2731, title: "GM" },
-    { name: "Vincent Keymer", rating: 2730, title: "GM" },
-    { name: "Levon Aronian", rating: 2729, title: "GM" },
-    { name: "Ding Liren", rating: 2728, title: "GM" },
-    { name: "Parham Maghsoodloo", rating: 2719, title: "GM" },
-    { name: "Yu Yangyi", rating: 2717, title: "GM" },
-    { name: "Richard Rapport", rating: 2715, title: "GM" },
-    { name: "Hans Niemann", rating: 2711, title: "GM" },
-    { name: "Ray Robson", rating: 2700, title: "GM" },
-    { name: "Aravindh Chithambaram", rating: 2698, title: "GM" },
-    { name: "Jorden van Foreest", rating: 2696, title: "GM" },
-    { name: "Bogdan-Daniel Deac", rating: 2690, title: "GM" },
-    { name: "Pentala Harikrishna", rating: 2686, title: "GM" },
-    { name: "Alexey Sarana", rating: 2679, title: "GM" },
-    { name: "Nihal Sarin", rating: 2668, title: "GM" },
-    { name: "Daniil Dubov", rating: 2666, title: "GM" }
+    { name:"Magnus Carlsen", rating:2832, title:"GM" },
+    { name:"Fabiano Caruana", rating:2805, title:"GM" },
+    { name:"Hikaru Nakamura", rating:2802, title:"GM" },
+    { name:"Arjun Erigaisi", rating:2797, title:"GM" },
+    { name:"Gukesh D", rating:2794, title:"GM" },
+    { name:"Nodirbek Abdusattorov", rating:2783, title:"GM" },
+    { name:"Alireza Firouzja", rating:2767, title:"GM" },
+    { name:"Wei Yi", rating:2762, title:"GM" },
+    { name:"Ian Nepomniachtchi", rating:2755, title:"GM" },
+    { name:"Wesley So", rating:2751, title:"GM" },
+    { name:"Viswanathan Anand", rating:2750, title:"GM" },
+    { name:"Leinier Dominguez Perez", rating:2748, title:"GM" },
+    { name:"Anish Giri", rating:2746, title:"GM" },
+    { name:"Praggnanandhaa R", rating:2737, title:"GM" },
+    { name:"Jan-Krzysztof Duda", rating:2733, title:"GM" },
+    { name:"Shakhriyar Mamedyarov", rating:2732, title:"GM" },
+    { name:"Maxime Vachier-Lagrave", rating:2731, title:"GM" },
+    { name:"Vincent Keymer", rating:2730, title:"GM" },
+    { name:"Levon Aronian", rating:2729, title:"GM" },
+    { name:"Ding Liren", rating:2728, title:"GM" },
+    { name:"Parham Maghsoodloo", rating:2719, title:"GM" },
+    { name:"Yu Yangyi", rating:2717, title:"GM" },
+    { name:"Richard Rapport", rating:2715, title:"GM" },
+    { name:"Hans Niemann", rating:2711, title:"GM" },
+    { name:"Ray Robson", rating:2700, title:"GM" },
+    { name:"Aravindh Chithambaram", rating:2698, title:"GM" },
+    { name:"Jorden van Foreest", rating:2696, title:"GM" },
+    { name:"Bogdan-Daniel Deac", rating:2690, title:"GM" },
+    { name:"Pentala Harikrishna", rating:2686, title:"GM" },
+    { name:"Alexey Sarana", rating:2679, title:"GM" },
+    { name:"Nihal Sarin", rating:2668, title:"GM" },
+    { name:"Daniil Dubov", rating:2666, title:"GM" }
   ];
 
   for (const player of samplePlayers) {
     tournament.players.push(
-      createPlayerObject(player.name, player.rating, player.title)
+      createPlayerObject(
+        player.name,
+        player.rating,
+        player.title
+      )
     );
   }
 
@@ -1615,10 +1832,15 @@ function loadSamplePlayers() {
   renderPlayersTable();
   autoSave();
 
-  alert("32 sample players were successfully loaded.");
+  alert("32 sample players were loaded successfully.");
 }
 
 function removePlayer(playerId) {
+  if (pairingInProgress) {
+    alert("Please wait until the pairing process is complete.");
+    return;
+  }
+
   const player = tournament.players.find(
     candidate => candidate.id === playerId
   );
@@ -1634,14 +1856,14 @@ function removePlayer(playerId) {
   ) {
     if (tournament.activePairings.length > 0) {
       alert(
-        "A round is already paired. Confirm or reset the round before changing participation."
+        "A round has already been paired. Confirm the round before changing participation."
       );
       return;
     }
 
     if (
       confirm(
-        "The tournament has started. Do you want to withdraw/unregister this player from upcoming rounds?"
+        "The tournament has started. Do you want to withdraw this player from future rounds?"
       )
     ) {
       player.active = false;
@@ -1653,9 +1875,10 @@ function removePlayer(playerId) {
     return;
   }
 
-  tournament.players = tournament.players.filter(
-    candidate => candidate.id !== playerId
-  );
+  tournament.players =
+    tournament.players.filter(
+      candidate => candidate.id !== playerId
+    );
 
   recomputeTPNs();
   renderPlayersTable();
@@ -1663,10 +1886,17 @@ function removePlayer(playerId) {
 }
 
 function togglePlayerActive(playerId) {
+  if (pairingInProgress) {
+    alert("Please wait until the pairing process is complete.");
+    renderPlayersTable();
+    return;
+  }
+
   if (tournament.activePairings.length > 0) {
     alert(
-      "Participation status cannot be changed during an active paired round."
+      "Player status cannot be changed during a paired round."
     );
+
     renderPlayersTable();
     return;
   }
@@ -1690,10 +1920,17 @@ function togglePlayerActive(playerId) {
 }
 
 function setNextRoundStatus(playerId, value) {
+  if (pairingInProgress) {
+    alert("Please wait until the pairing process is complete.");
+    renderPlayersTable();
+    return;
+  }
+
   if (tournament.activePairings.length > 0) {
     alert(
-      "Next round status cannot be changed after the round has been paired."
+      "The next-round status cannot be changed after the round has been paired."
     );
+
     renderPlayersTable();
     return;
   }
@@ -1706,11 +1943,18 @@ function setNextRoundStatus(playerId, value) {
     return;
   }
 
-  player.nextRoundStatus = normalizeNextRoundStatus(value);
+  player.nextRoundStatus =
+    normalizeNextRoundStatus(value);
+
   autoSave();
 }
 
 function removeAllPlayers() {
+  if (pairingInProgress) {
+    alert("Please wait until the pairing process is complete.");
+    return;
+  }
+
   if (
     !confirm(
       "Do you want to reset the entire tournament and remove all players and rounds?"
@@ -1731,8 +1975,17 @@ function removeAllPlayers() {
 }
 
 function handleLoadTxtFile(event) {
+  if (pairingInProgress) {
+    alert("Please wait until the pairing process is complete.");
+    event.target.value = "";
+    return;
+  }
+
   if (tournament.tpnFrozen) {
-    alert("Start numbers are locked. Players cannot be imported now.");
+    alert(
+      "Pairing numbers are locked. Players cannot be imported now."
+    );
+
     event.target.value = "";
     return;
   }
@@ -1745,7 +1998,7 @@ function handleLoadTxtFile(event) {
 
   const reader = new FileReader();
 
-  reader.onload = function (loadEvent) {
+  reader.onload = loadEvent => {
     parseAndAddPlayersText(loadEvent.target.result);
   };
 
@@ -1754,21 +2007,33 @@ function handleLoadTxtFile(event) {
 }
 
 function openPasteModal() {
+  if (pairingInProgress) {
+    alert("Please wait until the pairing process is complete.");
+    return;
+  }
+
   if (tournament.tpnFrozen) {
-    alert("Start numbers are locked. Players cannot be pasted now.");
+    alert(
+      "Pairing numbers are locked. Players cannot be pasted now."
+    );
     return;
   }
 
   document.getElementById("pasteTextarea").value = "";
-  document.getElementById("pasteModal").classList.add("active");
+
+  document
+    .getElementById("pasteModal")
+    .classList.add("active");
 }
 
 function closePasteModal() {
-  document.getElementById("pasteModal").classList.remove("active");
+  document
+    .getElementById("pasteModal")
+    .classList.remove("active");
 }
 
 function processPastedText() {
-  if (tournament.tpnFrozen) {
+  if (tournament.tpnFrozen || pairingInProgress) {
     closePasteModal();
     return;
   }
@@ -1781,8 +2046,8 @@ function processPastedText() {
 }
 
 function parseAndAddPlayersText(text) {
-  if (tournament.tpnFrozen) {
-    alert("Start numbers are locked. Players cannot be imported now.");
+  if (tournament.tpnFrozen || pairingInProgress) {
+    alert("Players cannot be imported now.");
     return;
   }
 
@@ -1801,9 +2066,15 @@ function parseAndAddPlayersText(text) {
     }
 
     if (line.startsWith("001 ")) {
-      const name = line.substring(14, 47).trim();
+      const name =
+        line.substring(14, 47).trim();
+
       const rating =
-        parseInt(line.substring(48, 52).trim(), 10) || 1500;
+        parseInt(
+          line.substring(48, 52).trim(),
+          10
+        ) || 1500;
+
       const title =
         line.substring(10, 13).trim().toUpperCase();
 
@@ -1811,6 +2082,7 @@ function parseAndAddPlayersText(text) {
         tournament.players.push(
           createPlayerObject(name, rating, title)
         );
+
         count++;
       }
 
@@ -1852,10 +2124,16 @@ function parseAndAddPlayersText(text) {
       ) {
         name = `${parts[0]}, ${parts[1]}`;
         rating = parseInt(parts[2], 10) || 1500;
-        title = String(parts[3] || "").trim().toUpperCase();
+
+        title = String(parts[3] || "")
+          .trim()
+          .toUpperCase();
       } else {
         rating = parseInt(parts[1], 10) || 1500;
-        title = String(parts[2] || "").trim().toUpperCase();
+
+        title = String(parts[2] || "")
+          .trim()
+          .toUpperCase();
       }
     }
 
@@ -1870,7 +2148,7 @@ function parseAndAddPlayersText(text) {
   renderPlayersTable();
   autoSave();
 
-  alert(`Loaded ${count} players.`);
+  alert(`Imported ${count} players.`);
 }
 
 function recomputeTPNs() {
@@ -1892,8 +2170,8 @@ function recomputeTPNs() {
     }
 
     return a.name.localeCompare(b.name, "en", {
-      sensitivity: "base",
-      numeric: true
+      sensitivity:"base",
+      numeric:true
     });
   });
 
@@ -1903,6 +2181,11 @@ function recomputeTPNs() {
 }
 
 function startOrUpdateTournament() {
+  if (pairingInProgress) {
+    alert("Please wait until the pairing process is complete.");
+    return;
+  }
+
   applyEditableSettings();
 
   if (tournament.players.length < 2) {
@@ -1924,19 +2207,20 @@ function startOrUpdateTournament() {
   switchTab("pairingsTab");
 
   alert(
-    `The tournament "${tournament.name}" is ready. ` +
+    `Tournament “${tournament.name}” is ready. ` +
     `${tournament.players.filter(player => player.active).length} ` +
     `players are active.`
   );
 }
 
 /* ========================================================================== */
-/* RANKING, COLOR PREFERENCES, AND C1-C3 LEGALITY                             */
+/* RANKING AND COLOR PREFERENCES                                              */
 /* ========================================================================== */
 
 function comparePlayerRank(a, b) {
   const scoreDifference =
-    finiteNumber(b.score, 0) - finiteNumber(a.score, 0);
+    finiteNumber(b.score, 0) -
+    finiteNumber(a.score, 0);
 
   if (scoreDifference !== 0) {
     return scoreDifference;
@@ -1970,52 +2254,73 @@ function getColorPreference(player) {
 
   if (count === 0) {
     return {
-      type: "none",
-      color: null
+      type:"none",
+      color:null
     };
   }
 
-  const colorDifference = getColorDifference(player);
-  const lastColor = history[count - 1];
+  const colorDifference =
+    getColorDifference(player);
+
+  const lastColor =
+    history[count - 1];
 
   const lastTwoSame =
     count >= 2 &&
     history[count - 1] === history[count - 2];
 
   if (colorDifference > 1) {
-    return { type: "absolute", color: "B" };
+    return {
+      type:"absolute",
+      color:"B"
+    };
   }
 
   if (colorDifference < -1) {
-    return { type: "absolute", color: "W" };
+    return {
+      type:"absolute",
+      color:"W"
+    };
   }
 
   if (lastTwoSame && lastColor === "W") {
-    return { type: "absolute", color: "B" };
+    return {
+      type:"absolute",
+      color:"B"
+    };
   }
 
   if (lastTwoSame && lastColor === "B") {
-    return { type: "absolute", color: "W" };
+    return {
+      type:"absolute",
+      color:"W"
+    };
   }
 
   if (colorDifference === 1) {
-    return { type: "strong", color: "B" };
+    return {
+      type:"strong",
+      color:"B"
+    };
   }
 
   if (colorDifference === -1) {
-    return { type: "strong", color: "W" };
+    return {
+      type:"strong",
+      color:"W"
+    };
   }
 
   if (colorDifference === 0) {
     return {
-      type: "mild",
-      color: lastColor === "W" ? "B" : "W"
+      type:"mild",
+      color:lastColor === "W" ? "B" : "W"
     };
   }
 
   return {
-    type: "none",
-    color: null
+    type:"none",
+    color:null
   };
 }
 
@@ -2025,7 +2330,8 @@ function isTopscorer(player, roundNumber, totalRounds) {
   }
 
   const maximumBeforeFinalRound =
-    Math.max(0, totalRounds - 1) * tournament.winPoints;
+    Math.max(0, totalRounds - 1) *
+    tournament.winPoints;
 
   return (
     finiteNumber(player.score, 0) >
@@ -2046,14 +2352,14 @@ function isPairLegal(a, b, roundNumber, totalRounds) {
     return false;
   }
 
-  // C1: No rematches. This is ALWAYS absolute.
+  /*
+   * C1: Two players who have already played each other
+   * cannot be paired again.
+   */
   if (haveMet(a, b)) {
     return false;
   }
 
-  // FIX 5: If colors are relaxed (fallback), skip the color check
-  // entirely so a pairing can always be produced when no strict
-  // variant exists.
   if (RELAX_COLOR_RULES) {
     return true;
   }
@@ -2064,7 +2370,6 @@ function isPairLegal(a, b, roundNumber, totalRounds) {
   const bTopscorer =
     isTopscorer(b, roundNumber, totalRounds);
 
-  // In the final round, top scorers are exempt from C2/C3.
   if (!aTopscorer && !bTopscorer) {
     const preferenceA = getColorPreference(a);
     const preferenceB = getColorPreference(b);
@@ -2087,10 +2392,15 @@ function isPairLegal(a, b, roundNumber, totalRounds) {
 
 function allocateColors(a, b) {
   const higher = getHigherRanked(a, b);
-  const lower = higher.id === a.id ? b : a;
 
-  const higherPreference = getColorPreference(higher);
-  const lowerPreference = getColorPreference(lower);
+  const lower =
+    higher.id === a.id ? b : a;
+
+  const higherPreference =
+    getColorPreference(higher);
+
+  const lowerPreference =
+    getColorPreference(lower);
 
   if (
     higherPreference.color &&
@@ -2098,27 +2408,30 @@ function allocateColors(a, b) {
     higherPreference.color !== lowerPreference.color
   ) {
     return higherPreference.color === "W"
-      ? { white: higher, black: lower }
-      : { white: lower, black: higher };
+      ? { white:higher, black:lower }
+      : { white:lower, black:higher };
   }
 
   const strength = {
-    none: 0,
-    mild: 1,
-    strong: 2,
-    absolute: 3
+    none:0,
+    mild:1,
+    strong:2,
+    absolute:3
   };
 
-  const higherStrength = strength[higherPreference.type];
-  const lowerStrength = strength[lowerPreference.type];
+  const higherStrength =
+    strength[higherPreference.type];
+
+  const lowerStrength =
+    strength[lowerPreference.type];
 
   if (
     higherStrength > lowerStrength &&
     higherPreference.color
   ) {
     return higherPreference.color === "W"
-      ? { white: higher, black: lower }
-      : { white: lower, black: higher };
+      ? { white:higher, black:lower }
+      : { white:lower, black:higher };
   }
 
   if (
@@ -2126,8 +2439,8 @@ function allocateColors(a, b) {
     lowerPreference.color
   ) {
     return lowerPreference.color === "W"
-      ? { white: lower, black: higher }
-      : { white: higher, black: lower };
+      ? { white:lower, black:higher }
+      : { white:higher, black:lower };
   }
 
   if (
@@ -2142,14 +2455,14 @@ function allocateColors(a, b) {
 
     if (higherImbalance > lowerImbalance) {
       return higherPreference.color === "W"
-        ? { white: higher, black: lower }
-        : { white: lower, black: higher };
+        ? { white:higher, black:lower }
+        : { white:lower, black:higher };
     }
 
     if (lowerImbalance > higherImbalance) {
       return lowerPreference.color === "W"
-        ? { white: lower, black: higher }
-        : { white: higher, black: lower };
+        ? { white:lower, black:higher }
+        : { white:higher, black:lower };
     }
   }
 
@@ -2160,8 +2473,11 @@ function allocateColors(a, b) {
     ) - 1;
 
   for (let index = lastCommonRound; index >= 0; index--) {
-    const higherColor = higher.roundColors[index];
-    const lowerColor = lower.roundColors[index];
+    const higherColor =
+      higher.roundColors[index];
+
+    const lowerColor =
+      lower.roundColors[index];
 
     if (
       (higherColor === "W" || higherColor === "B") &&
@@ -2169,21 +2485,21 @@ function allocateColors(a, b) {
       higherColor !== lowerColor
     ) {
       return higherColor === "W"
-        ? { white: lower, black: higher }
-        : { white: higher, black: lower };
+        ? { white:lower, black:higher }
+        : { white:higher, black:lower };
     }
   }
 
   if (higherPreference.color) {
     return higherPreference.color === "W"
-      ? { white: higher, black: lower }
-      : { white: lower, black: higher };
+      ? { white:higher, black:lower }
+      : { white:lower, black:higher };
   }
 
   if (lowerPreference.color) {
     return lowerPreference.color === "W"
-      ? { white: lower, black: higher }
-      : { white: higher, black: lower };
+      ? { white:lower, black:higher }
+      : { white:higher, black:lower };
   }
 
   const oppositeInitialColor =
@@ -2195,16 +2511,131 @@ function allocateColors(a, b) {
       : oppositeInitialColor;
 
   return higherColor === "W"
-    ? { white: higher, black: lower }
-    : { white: lower, black: higher };
+    ? { white:higher, black:lower }
+    : { white:lower, black:higher };
 }
 
 /* ========================================================================== */
-/* C4 CHECK OF COMPLETE PAIRING                                               */
+/* COMBINATORIAL HELPERS                                                      */
 /* ========================================================================== */
 
-function createCompletionChecker(roundNumber, totalRounds) {
+function compareNumberArrays(a, b) {
+  const length =
+    Math.min(a.length, b.length);
+
+  for (let index = 0; index < length; index++) {
+    if (a[index] !== b[index]) {
+      return a[index] - b[index];
+    }
+  }
+
+  return a.length - b.length;
+}
+
+function forEachCombination(
+  items,
+  size,
+  callback,
+  start = 0,
+  selected = []
+) {
+  if (searchBudgetExpired()) {
+    return false;
+  }
+
+  if (selected.length === size) {
+    return callback([...selected]) !== false;
+  }
+
+  const needed =
+    size - selected.length;
+
+  for (
+    let index = start;
+    index <= items.length - needed;
+    index++
+  ) {
+    if (searchBudgetExpired()) {
+      return false;
+    }
+
+    selected.push(items[index]);
+
+    const keepGoing = forEachCombination(
+      items,
+      size,
+      callback,
+      index + 1,
+      selected
+    );
+
+    selected.pop();
+
+    if (!keepGoing) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function collectLimitedCombinations(
+  items,
+  size,
+  limit,
+  preferTail = false
+) {
+  if (size === 0) {
+    return [[]];
+  }
+
+  const source =
+    preferTail ? [...items].reverse() : [...items];
+
+  const result = [];
+
+  forEachCombination(source, size, combination => {
+    result.push(
+      [...combination].sort(comparePlayerRank)
+    );
+
+    return result.length < limit;
+  });
+
+  return result;
+}
+
+function canonicalCandidateSignature(
+  pairs,
+  downfloaters
+) {
+  const pairPart = pairs
+    .map(pair =>
+      [pair[0].id, pair[1].id]
+        .sort()
+        .join(":")
+    )
+    .sort()
+    .join("|");
+
+  const downPart = downfloaters
+    .map(player => player.id)
+    .sort()
+    .join("|");
+
+  return pairPart + "//" + downPart;
+}
+
+/* ========================================================================== */
+/* C4: COMPLETE MATCHING CHECK                                                */
+/* ========================================================================== */
+
+function createCompletionChecker(
+  roundNumber,
+  totalRounds
+) {
   const memo = new Map();
+  let nodesVisited = 0;
 
   function canPairAll(players) {
     if (players.length === 0) {
@@ -2215,7 +2646,23 @@ function createCompletionChecker(roundNumber, totalRounds) {
       return false;
     }
 
-    const ordered = [...players].sort(comparePlayerRank);
+    /*
+     * If the helper reaches its budget, it returns “possibly true.”
+     * This only reduces pruning. It cannot approve an incomplete
+     * final pairing.
+     */
+    if (
+      searchBudgetExpired() ||
+      nodesVisited >=
+        SEARCH_LIMITS.COMPLETION_MAX_NODES
+    ) {
+      return true;
+    }
+
+    nodesVisited++;
+
+    const ordered =
+      [...players].sort(comparePlayerRank);
 
     const key = ordered
       .map(player => player.id)
@@ -2229,10 +2676,18 @@ function createCompletionChecker(roundNumber, totalRounds) {
     let chosenIndex = 0;
     let fewestCompatible = Infinity;
 
-    for (let index = 0; index < ordered.length; index++) {
+    for (
+      let index = 0;
+      index < ordered.length;
+      index++
+    ) {
       let compatibleCount = 0;
 
-      for (let other = 0; other < ordered.length; other++) {
+      for (
+        let other = 0;
+        other < ordered.length;
+        other++
+      ) {
         if (
           index !== other &&
           isPairLegal(
@@ -2257,27 +2712,50 @@ function createCompletionChecker(roundNumber, totalRounds) {
       return false;
     }
 
-    const constrained = ordered[chosenIndex];
+    const constrained =
+      ordered[chosenIndex];
+
     const rest = ordered.filter(
       (_, index) => index !== chosenIndex
     );
 
-    for (let index = 0; index < rest.length; index++) {
-      const opponent = rest[index];
-
-      if (
-        !isPairLegal(
+    const compatibleOpponents = rest
+      .filter(opponent =>
+        isPairLegal(
           constrained,
           opponent,
           roundNumber,
           totalRounds
         )
+      )
+      .sort((a, b) =>
+        compareNumberArrays(
+          quickPairChoiceVector(
+            constrained,
+            a,
+            roundNumber,
+            totalRounds
+          ),
+          quickPairChoiceVector(
+            constrained,
+            b,
+            roundNumber,
+            totalRounds
+          )
+        )
+      );
+
+    for (const opponent of compatibleOpponents) {
+      if (
+        searchBudgetExpired() ||
+        nodesVisited >=
+          SEARCH_LIMITS.COMPLETION_MAX_NODES
       ) {
-        continue;
+        return true;
       }
 
       const remaining = rest.filter(
-        (_, otherIndex) => otherIndex !== index
+        player => player.id !== opponent.id
       );
 
       if (canPairAll(remaining)) {
@@ -2294,136 +2772,182 @@ function createCompletionChecker(roundNumber, totalRounds) {
 }
 
 /* ========================================================================== */
-/* COMBINATORIAL HELPERS                                                      */
+/* TRANSPOSITIONS                                                             */
 /* ========================================================================== */
 
-function forEachCombination(
-  items,
-  size,
-  callback,
-  start = 0,
-  selected = []
+function quickPairChoiceVector(
+  first,
+  second,
+  roundNumber,
+  totalRounds
 ) {
-  if (selected.length === size) {
-    callback([...selected]);
-    return;
-  }
+  const colors =
+    allocateColors(first, second);
 
-  const needed = size - selected.length;
+  let absoluteViolations = 0;
+  let strongViolations = 0;
+  let totalViolations = 0;
 
-  for (
-    let index = start;
-    index <= items.length - needed;
-    index++
-  ) {
-    selected.push(items[index]);
+  for (const assignment of [
+    { player:colors.white, color:"W" },
+    { player:colors.black, color:"B" }
+  ]) {
+    const preference =
+      getColorPreference(assignment.player);
 
-    forEachCombination(
-      items,
-      size,
-      callback,
-      index + 1,
-      selected
-    );
+    if (
+      preference.color &&
+      preference.color !== assignment.color
+    ) {
+      totalViolations++;
 
-    selected.pop();
-  }
-}
+      if (preference.type === "absolute") {
+        absoluteViolations++;
+      }
 
-function compareNumberArrays(a, b) {
-  const length = Math.min(a.length, b.length);
-
-  for (let index = 0; index < length; index++) {
-    if (a[index] !== b[index]) {
-      return a[index] - b[index];
+      if (preference.type === "strong") {
+        strongViolations++;
+      }
     }
   }
 
-  return a.length - b.length;
+  const scoreGap = Math.abs(
+    finiteNumber(first.score, 0) -
+    finiteNumber(second.score, 0)
+  );
+
+  const rankGap =
+    Math.abs(first.tpn - second.tpn);
+
+  const topScorerPenalty =
+    isTopscorer(first, roundNumber, totalRounds) ||
+    isTopscorer(second, roundNumber, totalRounds)
+      ? absoluteViolations
+      : 0;
+
+  return [
+    topScorerPenalty,
+    absoluteViolations,
+    strongViolations,
+    totalViolations,
+    scoreGap,
+    rankGap
+  ];
 }
 
-function canonicalCandidateSignature(pairs, downfloaters) {
-  const pairPart = pairs
-    .map(pair =>
-      [pair[0].id, pair[1].id].sort().join(":")
-    )
-    .sort()
-    .join("|");
-
-  const downPart = downfloaters
-    .map(player => player.id)
-    .sort()
-    .join("|");
-
-  return pairPart + "//" + downPart;
-}
-
-/* ========================================================================== */
-/* SEARCH WITH PRUNING (BACKTRACKING)                                         */
-/* ========================================================================== */
-
-// FIX 3: Raised limits so more transpositions can be found.
 function findTranspositions(
   s1,
   s2,
   pairCount,
   roundNumber,
   totalRounds,
-  maxTranspositions = 250,
-  maxNodes = 40000
+  maxTranspositions =
+    SEARCH_LIMITS.MAX_TRANSPOSITIONS_PER_CONFIGURATION,
+  maxNodes =
+    SEARCH_LIMITS.MAX_TRANSPOSITION_NODES
 ) {
   const results = [];
   const used = new Array(s2.length).fill(false);
   const currentPairs = [];
+
   let nodesVisited = 0;
 
-  function backtrack(s1Idx) {
-    if (results.length >= maxTranspositions) {
-      return;
-    }
-
-    if (nodesVisited >= maxNodes) {
+  function backtrack(s1Index) {
+    if (
+      results.length >= maxTranspositions ||
+      nodesVisited >= maxNodes ||
+      searchBudgetExpired()
+    ) {
       return;
     }
 
     nodesVisited++;
 
-    if (s1Idx === pairCount) {
-      const downfloaters = [];
-      for (let i = 0; i < s2.length; i++) {
-        if (!used[i]) {
-          downfloaters.push(s2[i]);
-        }
-      }
-      downfloaters.sort(comparePlayerRank);
-      results.push({
-        pairs: [...currentPairs],
-        downfloaters
-      });
+    if (!consumeSearchNode()) {
       return;
     }
 
-    const p1 = s1[s1Idx];
-    for (let i = 0; i < s2.length; i++) {
-      if (used[i]) continue;
-      if (nodesVisited >= maxNodes) return;
-      const p2 = s2[i];
+    if (s1Index === pairCount) {
+      const downfloaters = [];
 
-      if (!isPairLegal(p1, p2, roundNumber, totalRounds)) {
-        continue;
+      for (
+        let index = 0;
+        index < s2.length;
+        index++
+      ) {
+        if (!used[index]) {
+          downfloaters.push(s2[index]);
+        }
       }
 
-      used[i] = true;
-      currentPairs.push([p1, p2]);
+      downfloaters.sort(comparePlayerRank);
 
-      backtrack(s1Idx + 1);
+      results.push({
+        pairs:[...currentPairs],
+        downfloaters
+      });
 
-      currentPairs.pop();
-      used[i] = false;
+      return;
+    }
 
-      if (results.length >= maxTranspositions) {
+    const firstPlayer = s1[s1Index];
+    const opponentIndexes = [];
+
+    for (
+      let index = 0;
+      index < s2.length;
+      index++
+    ) {
+      if (
+        !used[index] &&
+        isPairLegal(
+          firstPlayer,
+          s2[index],
+          roundNumber,
+          totalRounds
+        )
+      ) {
+        opponentIndexes.push(index);
+      }
+    }
+
+    opponentIndexes.sort((indexA, indexB) => {
+      return compareNumberArrays(
+        quickPairChoiceVector(
+          firstPlayer,
+          s2[indexA],
+          roundNumber,
+          totalRounds
+        ),
+        quickPairChoiceVector(
+          firstPlayer,
+          s2[indexB],
+          roundNumber,
+          totalRounds
+        )
+      );
+    });
+
+    for (const opponentIndex of opponentIndexes) {
+      if (
+        results.length >= maxTranspositions ||
+        nodesVisited >= maxNodes ||
+        searchBudgetExpired()
+      ) {
         return;
       }
+
+      used[opponentIndex] = true;
+
+      currentPairs.push([
+        firstPlayer,
+        s2[opponentIndex]
+      ]);
+
+      backtrack(s1Index + 1);
+
+      currentPairs.pop();
+      used[opponentIndex] = false;
     }
   }
 
@@ -2431,339 +2955,157 @@ function findTranspositions(
   return results;
 }
 
-function isCandidatePerfect(pairs, downfloaters, roundNumber, totalRounds, isOddBracket = false) {
-  if (isOddBracket) {
-    if (downfloaters.length > 1) return false;
-  } else {
-    if (downfloaters.length > 0) return false;
+function buildLimitedExchangeConfigurations(
+  originalS1,
+  originalS2,
+  exchangeSize,
+  rankPosition
+) {
+  if (exchangeSize === 0) {
+    return [{
+      s1:[...originalS1],
+      s2:[...originalS2],
+      exchangeSize:0,
+      totalDistance:0,
+      outgoingPositions:[],
+      incomingPositions:[]
+    }];
   }
 
-  const evalCriteria = evaluateCandidateCriteria(pairs, null, roundNumber, totalRounds);
-
-  return (
-    evalCriteria.c10 === 0 &&
-    evalCriteria.c11 === 0 &&
-    evalCriteria.c12 === 0 &&
-    evalCriteria.c13 === 0 &&
-    evalCriteria.c14 === 0 &&
-    evalCriteria.c15 === 0 &&
-    evalCriteria.c16 === 0 &&
-    evalCriteria.c17 === 0 &&
-    evalCriteria.c18.length === 0 &&
-    evalCriteria.c19.length === 0 &&
-    evalCriteria.c20.length === 0 &&
-    evalCriteria.c21.length === 0
-  );
-}
-
-/* ========================================================================== */
-/* HOMOGENEOUS SCORE GROUPS                                                   */
-/* ========================================================================== */
-
-function generateHomogeneousCandidates(
-  players,
-  roundNumber,
-  totalRounds
-) {
-  // FIX 1: Raised from 200 to 800.
-  const MAX_CANDIDATES = 800;
-
-  const ranked = [...players].sort(comparePlayerRank);
-  const candidates = [];
-  const candidateSignatures = new Set();
-
-  const rankPosition = new Map();
-  ranked.forEach((player, index) => {
-    rankPosition.set(player.id, index);
-  });
-
-  let generationOrder = 0;
-  const maximumPossiblePairs = Math.floor(ranked.length / 2);
-  const isOddBracket = ranked.length % 2 !== 0;
-
-  for (
-    let pairCount = maximumPossiblePairs;
-    pairCount >= 0;
-    pairCount--
-  ) {
-    if (candidates.length >= MAX_CANDIDATES) {
-      break;
-    }
-
-    if (pairCount === 0) {
-      const signature = canonicalCandidateSignature([], ranked);
-      if (!candidateSignatures.has(signature)) {
-        candidateSignatures.add(signature);
-        candidates.push({
-          pairs: [],
-          downfloaters: [...ranked],
-          order: generationOrder++
-        });
-      }
-      break;
-    }
-
-    const originalS1 = ranked.slice(0, pairCount);
-    const originalS2 = ranked.slice(pairCount);
-
-    // FIX 2: Allow up to 4 exchanges between S1 and S2.
-    const maxExchangeLimit = Math.min(
-      originalS1.length,
-      originalS2.length,
-      4
+  const outgoingCombinations =
+    collectLimitedCombinations(
+      originalS1,
+      exchangeSize,
+      SEARCH_LIMITS.MAX_SIDE_COMBINATIONS,
+      true
     );
 
-    let foundPerfect = false;
+  const incomingCombinations =
+    collectLimitedCombinations(
+      originalS2,
+      exchangeSize,
+      SEARCH_LIMITS.MAX_SIDE_COMBINATIONS,
+      false
+    );
 
-    for (let exchangeSize = 0; exchangeSize <= maxExchangeLimit; exchangeSize++) {
-      if (foundPerfect) break;
-      if (candidates.length >= MAX_CANDIDATES) break;
+  const configurations = [];
+  const signatures = new Set();
 
-      const exchangeConfigurations = [];
-      const partitionSignatures = new Set();
-
-      forEachCombination(originalS1, exchangeSize, outgoingFromS1 => {
-        forEachCombination(originalS2, exchangeSize, incomingFromS2 => {
-          const outgoingIds = new Set(outgoingFromS1.map(p => p.id));
-          const incomingIds = new Set(incomingFromS2.map(p => p.id));
-
-          const newS1 = [
-            ...originalS1.filter(p => !outgoingIds.has(p.id)),
-            ...incomingFromS2
-          ].sort(comparePlayerRank);
-
-          const newS2 = [
-            ...originalS2.filter(p => !incomingIds.has(p.id)),
-            ...outgoingFromS1
-          ].sort(comparePlayerRank);
-
-          const partitionSignature =
-            newS1.map(p => p.id).sort().join("|") +
-            "//" +
-            newS2.map(p => p.id).sort().join("|");
-
-          if (partitionSignatures.has(partitionSignature)) return;
-          partitionSignatures.add(partitionSignature);
-
-          let totalDistance = 0;
-          for (const outgoing of outgoingFromS1) {
-            for (const incoming of incomingFromS2) {
-              totalDistance += Math.abs(
-                rankPosition.get(outgoing.id) - rankPosition.get(incoming.id)
-              );
-            }
-          }
-
-          const outgoingPositions = outgoingFromS1
-            .map(p => rankPosition.get(p.id))
-            .sort((a, b) => b - a);
-
-          const incomingPositions = incomingFromS2
-            .map(p => rankPosition.get(p.id))
-            .sort((a, b) => a - b);
-
-          exchangeConfigurations.push({
-            s1: newS1,
-            s2: newS2,
-            exchangeSize,
-            totalDistance,
-            outgoingPositions,
-            incomingPositions
-          });
-        });
-      });
-
-      exchangeConfigurations.sort((a, b) => {
-        if (a.exchangeSize !== b.exchangeSize) {
-          return a.exchangeSize - b.exchangeSize;
-        }
-        if (a.totalDistance !== b.totalDistance) {
-          return a.totalDistance - b.totalDistance;
-        }
-        const outgoingComparison = compareNumberArrays(
-          b.outgoingPositions,
-          a.outgoingPositions
-        );
-        if (outgoingComparison !== 0) return outgoingComparison;
-        return compareNumberArrays(a.incomingPositions, b.incomingPositions);
-      });
-
-      for (const configuration of exchangeConfigurations) {
-        if (candidates.length >= MAX_CANDIDATES) break;
-
-        const transpositions = findTranspositions(
-          configuration.s1,
-          configuration.s2,
-          pairCount,
-          roundNumber,
-          totalRounds
-        );
-
-        for (const tr of transpositions) {
-          const signature = canonicalCandidateSignature(tr.pairs, tr.downfloaters);
-          if (candidateSignatures.has(signature)) continue;
-          candidateSignatures.add(signature);
-
-          candidates.push({
-            pairs: tr.pairs,
-            downfloaters: tr.downfloaters,
-            order: generationOrder++
-          });
-
-          if (candidates.length >= MAX_CANDIDATES) {
-            return candidates;
-          }
-
-          if (isCandidatePerfect(tr.pairs, tr.downfloaters, roundNumber, totalRounds, isOddBracket)) {
-            foundPerfect = true;
-            break;
-          }
-        }
-        if (foundPerfect) break;
-      }
-      if (foundPerfect) break;
-
-      // FIX 4: Removed the previous line
-      //   if (candidates.length > 0 && exchangeSize >= 1) break;
-      // We now proceed to the next exchangeSize even if we have already
-      // found (incomplete) candidates, so we don't miss the combination
-      // required for the rest of the tournament.
-    }
-
-    if (candidates.length > 0) {
+  for (const outgoingFromS1 of outgoingCombinations) {
+    if (searchBudgetExpired()) {
       break;
     }
-  }
 
-  return candidates;
-}
+    for (const incomingFromS2 of incomingCombinations) {
+      if (searchBudgetExpired()) {
+        break;
+      }
 
-/* ========================================================================== */
-/* HETEROGENEOUS SCORE GROUPS (WITH DOWNFLOATERS)                             */
-/* ========================================================================== */
-
-function generateHeterogeneousCandidates(
-  bracketPlayers,
-  incomingMDPs,
-  roundNumber,
-  totalRounds
-) {
-  // FIX 1: Raised from 200 to 800.
-  const MAX_CANDIDATES = 800;
-
-  const incomingIds = new Set(incomingMDPs.map(p => p.id));
-  const mdps = [...incomingMDPs].sort(comparePlayerRank);
-  const residents = bracketPlayers
-    .filter(p => !incomingIds.has(p.id))
-    .sort(comparePlayerRank);
-
-  const candidates = [];
-  const signatures = new Set();
-  let generationOrder = 0;
-  const isOddBracket = bracketPlayers.length % 2 !== 0;
-
-  const maximumMdpPairs = Math.min(mdps.length, residents.length);
-
-  for (
-    let mdpPairCount = maximumMdpPairs;
-    mdpPairCount >= 0;
-    mdpPairCount--
-  ) {
-    let foundPerfect = false;
-
-    forEachCombination(mdps, mdpPairCount, selectedMDPs => {
-      if (foundPerfect) return;
-      if (candidates.length >= MAX_CANDIDATES) return;
-
-      const selectedIds = new Set(selectedMDPs.map(p => p.id));
-      const limbo = mdps.filter(p => !selectedIds.has(p.id));
-
-      const transpositions = findTranspositions(
-        selectedMDPs,
-        residents,
-        mdpPairCount,
-        roundNumber,
-        totalRounds,
-        // FIX 3: Raised from 25 to 150.
-        150
+      const outgoingIds = new Set(
+        outgoingFromS1.map(player => player.id)
       );
 
-      for (const tr of transpositions) {
-        if (foundPerfect) return;
-        if (candidates.length >= MAX_CANDIDATES) return;
+      const incomingIds = new Set(
+        incomingFromS2.map(player => player.id)
+      );
 
-        const assignedResidentIds = new Set(tr.pairs.map(pair => pair[1].id));
-        const remainingResidents = residents.filter(p => !assignedResidentIds.has(p.id));
+      const newS1 = [
+        ...originalS1.filter(
+          player => !outgoingIds.has(player.id)
+        ),
+        ...incomingFromS2
+      ].sort(comparePlayerRank);
 
-        const remainderCandidates = generateHomogeneousCandidates(
-          remainingResidents,
-          roundNumber,
-          totalRounds
-        );
+      const newS2 = [
+        ...originalS2.filter(
+          player => !incomingIds.has(player.id)
+        ),
+        ...outgoingFromS1
+      ].sort(comparePlayerRank);
 
-        for (const remainder of remainderCandidates) {
-          const pairs = [...tr.pairs, ...remainder.pairs];
-          const downfloaters = [...limbo, ...remainder.downfloaters].sort(comparePlayerRank);
+      const signature =
+        newS1
+          .map(player => player.id)
+          .sort()
+          .join("|") +
+        "//" +
+        newS2
+          .map(player => player.id)
+          .sort()
+          .join("|");
 
-          const signature = canonicalCandidateSignature(pairs, downfloaters);
-          if (signatures.has(signature)) continue;
-          signatures.add(signature);
+      if (signatures.has(signature)) {
+        continue;
+      }
 
-          candidates.push({
-            pairs,
-            downfloaters,
-            order: generationOrder++,
-            remainderOrder: remainder.order
-          });
+      signatures.add(signature);
 
-          if (candidates.length >= MAX_CANDIDATES) {
-            return;
-          }
+      let totalDistance = 0;
 
-          if (isCandidatePerfect(pairs, downfloaters, roundNumber, totalRounds, isOddBracket)) {
-            foundPerfect = true;
-            return;
-          }
+      for (const outgoing of outgoingFromS1) {
+        for (const incoming of incomingFromS2) {
+          totalDistance += Math.abs(
+            rankPosition.get(outgoing.id) -
+            rankPosition.get(incoming.id)
+          );
         }
       }
-    });
 
-    if (candidates.length > 0) {
-      break;
+      configurations.push({
+        s1:newS1,
+        s2:newS2,
+        exchangeSize,
+        totalDistance,
+
+        outgoingPositions:outgoingFromS1
+          .map(player => rankPosition.get(player.id))
+          .sort((a, b) => b - a),
+
+        incomingPositions:incomingFromS2
+          .map(player => rankPosition.get(player.id))
+          .sort((a, b) => a - b)
+      });
     }
   }
 
-  return candidates;
-}
+  configurations.sort((a, b) => {
+    if (a.exchangeSize !== b.exchangeSize) {
+      return a.exchangeSize - b.exchangeSize;
+    }
 
-function generateBracketCandidates(
-  bracketPlayers,
-  incomingMDPs,
-  roundNumber,
-  totalRounds
-) {
-  if (incomingMDPs.length === 0) {
-    return generateHomogeneousCandidates(
-      bracketPlayers,
-      roundNumber,
-      totalRounds
+    if (a.totalDistance !== b.totalDistance) {
+      return a.totalDistance - b.totalDistance;
+    }
+
+    const outgoingComparison =
+      compareNumberArrays(
+        b.outgoingPositions,
+        a.outgoingPositions
+      );
+
+    if (outgoingComparison !== 0) {
+      return outgoingComparison;
+    }
+
+    return compareNumberArrays(
+      a.incomingPositions,
+      b.incomingPositions
     );
-  }
+  });
 
-  return generateHeterogeneousCandidates(
-    bracketPlayers,
-    incomingMDPs,
-    roundNumber,
-    totalRounds
+  return configurations.slice(
+    0,
+    SEARCH_LIMITS.MAX_EXCHANGE_CONFIGURATIONS
   );
 }
 
 /* ========================================================================== */
-/* CRITERIA EVALUATION (C10-C21)                                              */
+/* CRITERIA C10-C21                                                           */
 /* ========================================================================== */
 
 function previousFloat(player, roundsBack) {
-  const index = player.floats.length - roundsBack;
+  const index =
+    player.floats.length - roundsBack;
 
   if (index < 0) {
     return "-";
@@ -2779,18 +3121,18 @@ function evaluateCandidateCriteria(
   totalRounds
 ) {
   const evaluation = {
-    c10: 0,
-    c11: 0,
-    c12: 0,
-    c13: 0,
-    c14: 0,
-    c15: 0,
-    c16: 0,
-    c17: 0,
-    c18: [],
-    c19: [],
-    c20: [],
-    c21: []
+    c10:0,
+    c11:0,
+    c12:0,
+    c13:0,
+    c14:0,
+    c15:0,
+    c16:0,
+    c17:0,
+    c18:[],
+    c19:[],
+    c20:[],
+    c21:[]
   };
 
   function registerCurrentDownfloat(player, gap) {
@@ -2821,12 +3163,17 @@ function evaluateCandidateCriteria(
     const first = pair[0];
     const second = pair[1];
 
-    const colors = allocateColors(first, second);
+    const colors =
+      allocateColors(first, second);
+
     const white = colors.white;
     const black = colors.black;
 
-    const whitePreference = getColorPreference(white);
-    const blackPreference = getColorPreference(black);
+    const whitePreference =
+      getColorPreference(white);
+
+    const blackPreference =
+      getColorPreference(black);
 
     if (
       whitePreference.color &&
@@ -2851,8 +3198,16 @@ function evaluateCandidateCriteria(
     }
 
     const involvesTopscorer =
-      isTopscorer(white, roundNumber, totalRounds) ||
-      isTopscorer(black, roundNumber, totalRounds);
+      isTopscorer(
+        white,
+        roundNumber,
+        totalRounds
+      ) ||
+      isTopscorer(
+        black,
+        roundNumber,
+        totalRounds
+      );
 
     if (involvesTopscorer) {
       for (const player of [white, black]) {
@@ -2871,21 +3226,31 @@ function evaluateCandidateCriteria(
 
         if (
           history.length >= 2 &&
-          history[history.length - 1] === assignedColor &&
-          history[history.length - 2] === assignedColor
+          history[history.length - 1] ===
+            assignedColor &&
+          history[history.length - 2] ===
+            assignedColor
         ) {
           evaluation.c11++;
         }
       }
     }
 
-    const firstScore = finiteNumber(first.score, 0);
-    const secondScore = finiteNumber(second.score, 0);
+    const firstScore =
+      finiteNumber(first.score, 0);
+
+    const secondScore =
+      finiteNumber(second.score, 0);
 
     if (firstScore !== secondScore) {
-      const higher = getHigherRanked(first, second);
-      const lower = higher.id === first.id ? second : first;
-      const gap = Math.abs(firstScore - secondScore);
+      const higher =
+        getHigherRanked(first, second);
+
+      const lower =
+        higher.id === first.id ? second : first;
+
+      const gap =
+        Math.abs(firstScore - secondScore);
 
       registerCurrentDownfloat(higher, gap);
       registerCurrentUpfloat(lower, gap);
@@ -2904,8 +3269,550 @@ function evaluateCandidateCriteria(
   return evaluation;
 }
 
+function isCandidatePerfect(
+  pairs,
+  downfloaters,
+  roundNumber,
+  totalRounds,
+  isOddBracket = false
+) {
+  if (isOddBracket) {
+    if (downfloaters.length > 1) {
+      return false;
+    }
+  } else if (downfloaters.length > 0) {
+    return false;
+  }
+
+  const evaluation = evaluateCandidateCriteria(
+    pairs,
+    null,
+    roundNumber,
+    totalRounds
+  );
+
+  return (
+    evaluation.c10 === 0 &&
+    evaluation.c11 === 0 &&
+    evaluation.c12 === 0 &&
+    evaluation.c13 === 0 &&
+    evaluation.c14 === 0 &&
+    evaluation.c15 === 0 &&
+    evaluation.c16 === 0 &&
+    evaluation.c17 === 0 &&
+    evaluation.c18.length === 0 &&
+    evaluation.c19.length === 0 &&
+    evaluation.c20.length === 0 &&
+    evaluation.c21.length === 0
+  );
+}
+
+function compareLocalBracketCandidates(
+  first,
+  second,
+  roundNumber,
+  totalRounds
+) {
+  if (
+    first.downfloaters.length !==
+    second.downfloaters.length
+  ) {
+    return (
+      first.downfloaters.length -
+      second.downfloaters.length
+    );
+  }
+
+  const firstDownScores = first.downfloaters
+    .map(player => finiteNumber(player.score, 0))
+    .sort((a, b) => b - a);
+
+  const secondDownScores = second.downfloaters
+    .map(player => finiteNumber(player.score, 0))
+    .sort((a, b) => b - a);
+
+  const downComparison =
+    compareNumberArrays(
+      firstDownScores,
+      secondDownScores
+    );
+
+  if (downComparison !== 0) {
+    return downComparison;
+  }
+
+  const evaluationA =
+    first.localEvaluation ||
+    evaluateCandidateCriteria(
+      first.pairs,
+      null,
+      roundNumber,
+      totalRounds
+    );
+
+  const evaluationB =
+    second.localEvaluation ||
+    evaluateCandidateCriteria(
+      second.pairs,
+      null,
+      roundNumber,
+      totalRounds
+    );
+
+  first.localEvaluation = evaluationA;
+  second.localEvaluation = evaluationB;
+
+  for (const criterion of [
+    "c10",
+    "c11",
+    "c12",
+    "c13",
+    "c14",
+    "c15",
+    "c16",
+    "c17"
+  ]) {
+    if (
+      evaluationA[criterion] !==
+      evaluationB[criterion]
+    ) {
+      return (
+        evaluationA[criterion] -
+        evaluationB[criterion]
+      );
+    }
+  }
+
+  for (const criterion of [
+    "c18",
+    "c19",
+    "c20",
+    "c21"
+  ]) {
+    const comparison =
+      compareNumberArrays(
+        evaluationA[criterion],
+        evaluationB[criterion]
+      );
+
+    if (comparison !== 0) {
+      return comparison;
+    }
+  }
+
+  return first.order - second.order;
+}
+
 /* ========================================================================== */
-/* TOTAL ROUND QUALITY (C5-C21)                                               */
+/* HOMOGENEOUS BRACKETS                                                       */
+/* ========================================================================== */
+
+function generateHomogeneousCandidates(
+  players,
+  roundNumber,
+  totalRounds
+) {
+  const ranked =
+    [...players].sort(comparePlayerRank);
+
+  const candidates = [];
+  const signatures = new Set();
+  const rankPosition = new Map();
+
+  ranked.forEach((player, index) => {
+    rankPosition.set(player.id, index);
+  });
+
+  let generationOrder = 0;
+
+  const maximumPossiblePairs =
+    Math.floor(ranked.length / 2);
+
+  const isOddBracket =
+    ranked.length % 2 !== 0;
+
+  for (
+    let pairCount = maximumPossiblePairs;
+    pairCount >= 0;
+    pairCount--
+  ) {
+    if (
+      candidates.length >=
+        SEARCH_LIMITS.MAX_BRACKET_CANDIDATES ||
+      searchBudgetExpired()
+    ) {
+      break;
+    }
+
+    if (pairCount === 0) {
+      const signature =
+        canonicalCandidateSignature([], ranked);
+
+      if (!signatures.has(signature)) {
+        signatures.add(signature);
+
+        candidates.push({
+          pairs:[],
+          downfloaters:[...ranked],
+          order:generationOrder++
+        });
+      }
+
+      break;
+    }
+
+    const originalS1 =
+      ranked.slice(0, pairCount);
+
+    const originalS2 =
+      ranked.slice(pairCount);
+
+    const maximumExchangeSize = Math.min(
+      originalS1.length,
+      originalS2.length,
+      SEARCH_LIMITS.MAX_EXCHANGE_SIZE
+    );
+
+    let foundPerfect = false;
+
+    for (
+      let exchangeSize = 0;
+      exchangeSize <= maximumExchangeSize;
+      exchangeSize++
+    ) {
+      if (
+        foundPerfect ||
+        searchBudgetExpired() ||
+        candidates.length >=
+          SEARCH_LIMITS.MAX_BRACKET_CANDIDATES
+      ) {
+        break;
+      }
+
+      const configurations =
+        buildLimitedExchangeConfigurations(
+          originalS1,
+          originalS2,
+          exchangeSize,
+          rankPosition
+        );
+
+      for (const configuration of configurations) {
+        if (
+          foundPerfect ||
+          searchBudgetExpired() ||
+          candidates.length >=
+            SEARCH_LIMITS.MAX_BRACKET_CANDIDATES
+        ) {
+          break;
+        }
+
+        const remainingCapacity =
+          SEARCH_LIMITS.MAX_BRACKET_CANDIDATES -
+          candidates.length;
+
+        const transpositions =
+          findTranspositions(
+            configuration.s1,
+            configuration.s2,
+            pairCount,
+            roundNumber,
+            totalRounds,
+            Math.min(
+              SEARCH_LIMITS
+                .MAX_TRANSPOSITIONS_PER_CONFIGURATION,
+              remainingCapacity
+            )
+          );
+
+        for (const transposition of transpositions) {
+          const signature =
+            canonicalCandidateSignature(
+              transposition.pairs,
+              transposition.downfloaters
+            );
+
+          if (signatures.has(signature)) {
+            continue;
+          }
+
+          signatures.add(signature);
+
+          const candidate = {
+            pairs:transposition.pairs,
+            downfloaters:transposition.downfloaters,
+            order:generationOrder++
+          };
+
+          candidates.push(candidate);
+
+          if (
+            isCandidatePerfect(
+              candidate.pairs,
+              candidate.downfloaters,
+              roundNumber,
+              totalRounds,
+              isOddBracket
+            )
+          ) {
+            foundPerfect = true;
+            break;
+          }
+
+          if (
+            candidates.length >=
+            SEARCH_LIMITS.MAX_BRACKET_CANDIDATES
+          ) {
+            break;
+          }
+        }
+      }
+    }
+
+    if (candidates.length > 0) {
+      break;
+    }
+  }
+
+  candidates.sort((a, b) =>
+    compareLocalBracketCandidates(
+      a,
+      b,
+      roundNumber,
+      totalRounds
+    )
+  );
+
+  return candidates.slice(
+    0,
+    SEARCH_LIMITS.MAX_BRACKET_CANDIDATES
+  );
+}
+
+/* ========================================================================== */
+/* HETEROGENEOUS BRACKETS                                                     */
+/* ========================================================================== */
+
+function generateHeterogeneousCandidates(
+  bracketPlayers,
+  incomingMDPs,
+  roundNumber,
+  totalRounds
+) {
+  const incomingIds = new Set(
+    incomingMDPs.map(player => player.id)
+  );
+
+  const mdps =
+    [...incomingMDPs].sort(comparePlayerRank);
+
+  const residents = bracketPlayers
+    .filter(player => !incomingIds.has(player.id))
+    .sort(comparePlayerRank);
+
+  const candidates = [];
+  const signatures = new Set();
+  const remainderCache = new Map();
+
+  let generationOrder = 0;
+
+  const isOddBracket =
+    bracketPlayers.length % 2 !== 0;
+
+  const maximumMdpPairs =
+    Math.min(mdps.length, residents.length);
+
+  for (
+    let mdpPairCount = maximumMdpPairs;
+    mdpPairCount >= 0;
+    mdpPairCount--
+  ) {
+    if (
+      searchBudgetExpired() ||
+      candidates.length >=
+        SEARCH_LIMITS.MAX_BRACKET_CANDIDATES
+    ) {
+      break;
+    }
+
+    let foundPerfect = false;
+
+    const selectedCombinations =
+      collectLimitedCombinations(
+        mdps,
+        mdpPairCount,
+        SEARCH_LIMITS.MAX_SIDE_COMBINATIONS,
+        false
+      );
+
+    for (const selectedMDPs of selectedCombinations) {
+      if (
+        foundPerfect ||
+        searchBudgetExpired() ||
+        candidates.length >=
+          SEARCH_LIMITS.MAX_BRACKET_CANDIDATES
+      ) {
+        break;
+      }
+
+      const selectedIds = new Set(
+        selectedMDPs.map(player => player.id)
+      );
+
+      const limbo = mdps.filter(
+        player => !selectedIds.has(player.id)
+      );
+
+      const transpositions =
+        findTranspositions(
+          selectedMDPs,
+          residents,
+          mdpPairCount,
+          roundNumber,
+          totalRounds
+        );
+
+      for (const transposition of transpositions) {
+        if (
+          foundPerfect ||
+          searchBudgetExpired() ||
+          candidates.length >=
+            SEARCH_LIMITS.MAX_BRACKET_CANDIDATES
+        ) {
+          break;
+        }
+
+        const assignedResidentIds = new Set(
+          transposition.pairs.map(pair => pair[1].id)
+        );
+
+        const remainingResidents = residents.filter(
+          player =>
+            !assignedResidentIds.has(player.id)
+        );
+
+        const remainderKey = remainingResidents
+          .map(player => player.id)
+          .sort()
+          .join("|");
+
+        let remainderCandidates =
+          remainderCache.get(remainderKey);
+
+        if (!remainderCandidates) {
+          remainderCandidates =
+            generateHomogeneousCandidates(
+              remainingResidents,
+              roundNumber,
+              totalRounds
+            );
+
+          remainderCache.set(
+            remainderKey,
+            remainderCandidates
+          );
+        }
+
+        for (const remainder of remainderCandidates) {
+          if (
+            searchBudgetExpired() ||
+            candidates.length >=
+              SEARCH_LIMITS.MAX_BRACKET_CANDIDATES
+          ) {
+            break;
+          }
+
+          const pairs = [
+            ...transposition.pairs,
+            ...remainder.pairs
+          ];
+
+          const downfloaters = [
+            ...limbo,
+            ...remainder.downfloaters
+          ].sort(comparePlayerRank);
+
+          const signature =
+            canonicalCandidateSignature(
+              pairs,
+              downfloaters
+            );
+
+          if (signatures.has(signature)) {
+            continue;
+          }
+
+          signatures.add(signature);
+
+          const candidate = {
+            pairs,
+            downfloaters,
+            order:generationOrder++,
+            remainderOrder:remainder.order
+          };
+
+          candidates.push(candidate);
+
+          if (
+            isCandidatePerfect(
+              pairs,
+              downfloaters,
+              roundNumber,
+              totalRounds,
+              isOddBracket
+            )
+          ) {
+            foundPerfect = true;
+            break;
+          }
+        }
+      }
+    }
+
+    if (candidates.length > 0) {
+      break;
+    }
+  }
+
+  candidates.sort((a, b) =>
+    compareLocalBracketCandidates(
+      a,
+      b,
+      roundNumber,
+      totalRounds
+    )
+  );
+
+  return candidates.slice(
+    0,
+    SEARCH_LIMITS.MAX_BRACKET_CANDIDATES
+  );
+}
+
+function generateBracketCandidates(
+  bracketPlayers,
+  incomingMDPs,
+  roundNumber,
+  totalRounds
+) {
+  if (incomingMDPs.length === 0) {
+    return generateHomogeneousCandidates(
+      bracketPlayers,
+      roundNumber,
+      totalRounds
+    );
+  }
+
+  return generateHeterogeneousCandidates(
+    bracketPlayers,
+    incomingMDPs,
+    roundNumber,
+    totalRounds
+  );
+}
+
+/* ========================================================================== */
+/* TOTAL ROUND QUALITY                                                        */
 /* ========================================================================== */
 
 function buildRoundEvaluation(
@@ -2925,26 +3832,29 @@ function buildRoundEvaluation(
     );
 
   return {
-    c5: pabPlayer
+    c5:pabPlayer
       ? finiteNumber(pabPlayer.score, 0)
       : 0,
 
-    brackets: bracketRecords.map(record => ({
-      score: record.score,
-      c6: record.downfloaters.length,
-      c7: record.downfloaters
-        .map(player => finiteNumber(player.score, 0))
+    brackets:bracketRecords.map(record => ({
+      score:record.score,
+      c6:record.downfloaters.length,
+
+      c7:record.downfloaters
+        .map(player =>
+          finiteNumber(player.score, 0)
+        )
         .sort((a, b) => b - a),
-      pairCount: record.pairs.length
+
+      pairCount:record.pairs.length
     })),
 
-    c9: pabPlayer
+    c9:pabPlayer
       ? Math.max(0, pabPlayer.unplayedCount || 0)
       : 0,
 
     ...lowerCriteria,
-
-    generationOrder: [...generationOrder]
+    generationOrder:[...generationOrder]
   };
 }
 
@@ -2954,23 +3864,36 @@ function compareRoundEvaluations(a, b) {
   }
 
   const bracketCount =
-    Math.max(a.brackets.length, b.brackets.length);
+    Math.max(
+      a.brackets.length,
+      b.brackets.length
+    );
 
   const emptyBracket = {
-    c6: 0,
-    c7: []
+    c6:0,
+    c7:[]
   };
 
-  for (let index = 0; index < bracketCount; index++) {
-    const bracketA = a.brackets[index] || emptyBracket;
-    const bracketB = b.brackets[index] || emptyBracket;
+  for (
+    let index = 0;
+    index < bracketCount;
+    index++
+  ) {
+    const bracketA =
+      a.brackets[index] || emptyBracket;
+
+    const bracketB =
+      b.brackets[index] || emptyBracket;
 
     if (bracketA.c6 !== bracketB.c6) {
       return bracketA.c6 - bracketB.c6;
     }
 
     const c7Comparison =
-      compareNumberArrays(bracketA.c7, bracketB.c7);
+      compareNumberArrays(
+        bracketA.c7,
+        bracketB.c7
+      );
 
     if (c7Comparison !== 0) {
       return c7Comparison;
@@ -2986,11 +3909,14 @@ function compareRoundEvaluations(a, b) {
       return nextA.c6 - nextB.c6;
     }
 
-    const c8ScoreComparison =
-      compareNumberArrays(nextA.c7, nextB.c7);
+    const c8Comparison =
+      compareNumberArrays(
+        nextA.c7,
+        nextB.c7
+      );
 
-    if (c8ScoreComparison !== 0) {
-      return c8ScoreComparison;
+    if (c8Comparison !== 0) {
+      return c8Comparison;
     }
   }
 
@@ -2998,7 +3924,7 @@ function compareRoundEvaluations(a, b) {
     return a.c9 - b.c9;
   }
 
-  const scalarCriteria = [
+  for (const criterion of [
     "c10",
     "c11",
     "c12",
@@ -3007,9 +3933,7 @@ function compareRoundEvaluations(a, b) {
     "c15",
     "c16",
     "c17"
-  ];
-
-  for (const criterion of scalarCriteria) {
+  ]) {
     if (a[criterion] !== b[criterion]) {
       return a[criterion] - b[criterion];
     }
@@ -3022,7 +3946,10 @@ function compareRoundEvaluations(a, b) {
     "c21"
   ]) {
     const comparison =
-      compareNumberArrays(a[criterion], b[criterion]);
+      compareNumberArrays(
+        a[criterion],
+        b[criterion]
+      );
 
     if (comparison !== 0) {
       return comparison;
@@ -3036,7 +3963,7 @@ function compareRoundEvaluations(a, b) {
 }
 
 /* ========================================================================== */
-/* BRACKET SOLVER                                                             */
+/* BOUNDED BRACKET SOLVER                                                     */
 /* ========================================================================== */
 
 function solveAllBrackets(
@@ -3060,9 +3987,9 @@ function solveAllBrackets(
     );
 
     return {
-      pairs: [],
-      pab: pabPlayer,
-      records: [],
+      pairs:[],
+      pab:pabPlayer,
+      records:[],
       evaluation
     };
   }
@@ -3070,7 +3997,8 @@ function solveAllBrackets(
   const scoregroupMap = new Map();
 
   for (const player of rankedPlayers) {
-    const score = finiteNumber(player.score, 0);
+    const score =
+      finiteNumber(player.score, 0);
 
     if (!scoregroupMap.has(score)) {
       scoregroupMap.set(score, []);
@@ -3087,9 +4015,44 @@ function solveAllBrackets(
     .sort((a, b) => b - a);
 
   const canComplete =
-    createCompletionChecker(roundNumber, totalRounds);
+    createCompletionChecker(
+      roundNumber,
+      totalRounds
+    );
+
+  const candidateCache = new Map();
 
   let bestSolution = null;
+  let completeSolutionCount = 0;
+
+  function getCandidates(
+    scoreIndex,
+    bracketPlayers,
+    incomingMDPs
+  ) {
+    const key =
+      scoreIndex +
+      "::" +
+      incomingMDPs
+        .map(player => player.id)
+        .sort()
+        .join("|");
+
+    if (candidateCache.has(key)) {
+      return candidateCache.get(key);
+    }
+
+    const generated =
+      generateBracketCandidates(
+        bracketPlayers,
+        incomingMDPs,
+        roundNumber,
+        totalRounds
+      );
+
+    candidateCache.set(key, generated);
+    return generated;
+  }
 
   function search(
     scoreIndex,
@@ -3113,11 +4076,13 @@ function solveAllBrackets(
       );
 
       const solution = {
-        pairs: [...accumulatedPairs],
-        pab: pabPlayer,
-        records: [...bracketRecords],
+        pairs:[...accumulatedPairs],
+        pab:pabPlayer,
+        records:[...bracketRecords],
         evaluation
       };
+
+      completeSolutionCount++;
 
       if (
         !bestSolution ||
@@ -3132,7 +4097,20 @@ function solveAllBrackets(
       return;
     }
 
+    if (
+      searchBudgetExpired() ||
+      completeSolutionCount >=
+        SEARCH_LIMITS.MAX_COMPLETE_SOLUTIONS
+    ) {
+      return;
+    }
+
+    if (!consumeSearchNode()) {
+      return;
+    }
+
     const score = scores[scoreIndex];
+
     const residents =
       scoregroupMap.get(score) || [];
 
@@ -3141,18 +4119,27 @@ function solveAllBrackets(
       ...residents
     ].sort(comparePlayerRank);
 
-    const candidates =
-      generateBracketCandidates(
-        bracketPlayers,
-        incomingMDPs,
-        roundNumber,
-        totalRounds
-      );
+    const candidates = getCandidates(
+      scoreIndex,
+      bracketPlayers,
+      incomingMDPs
+    ).slice(
+      0,
+      SEARCH_LIMITS.MAX_EXPLORED_CANDIDATES
+    );
 
     const lastBracket =
       scoreIndex === scores.length - 1;
 
     for (const candidate of candidates) {
+      if (
+        searchBudgetExpired() ||
+        completeSolutionCount >=
+          SEARCH_LIMITS.MAX_COMPLETE_SOLUTIONS
+      ) {
+        break;
+      }
+
       if (
         lastBracket &&
         candidate.downfloaters.length > 0
@@ -3180,18 +4167,27 @@ function solveAllBrackets(
 
       const record = {
         score,
-        players: bracketPlayers,
-        pairs: candidate.pairs,
-        downfloaters: candidate.downfloaters,
-        generationOrder: candidate.order
+        players:bracketPlayers,
+        pairs:candidate.pairs,
+        downfloaters:candidate.downfloaters,
+        generationOrder:candidate.order
       };
 
       search(
         scoreIndex + 1,
         candidate.downfloaters,
-        [...accumulatedPairs, ...candidate.pairs],
-        [...bracketRecords, record],
-        [...generationPath, candidate.order]
+        [
+          ...accumulatedPairs,
+          ...candidate.pairs
+        ],
+        [
+          ...bracketRecords,
+          record
+        ],
+        [
+          ...generationPath,
+          candidate.order
+        ]
       );
     }
   }
@@ -3211,18 +4207,29 @@ function createFirstRoundSolution(
   roundNumber,
   totalRounds
 ) {
-  const ranked = [...players].sort(comparePlayerRank);
+  const ranked =
+    [...players].sort(comparePlayerRank);
 
   if (ranked.length % 2 !== 0) {
     return null;
   }
 
-  const pairCount = ranked.length / 2;
-  const s1 = ranked.slice(0, pairCount);
-  const s2 = ranked.slice(pairCount);
+  const pairCount =
+    ranked.length / 2;
+
+  const s1 =
+    ranked.slice(0, pairCount);
+
+  const s2 =
+    ranked.slice(pairCount);
+
   const pairs = [];
 
-  for (let index = 0; index < pairCount; index++) {
+  for (
+    let index = 0;
+    index < pairCount;
+    index++
+  ) {
     if (
       !isPairLegal(
         s1[index],
@@ -3234,45 +4241,46 @@ function createFirstRoundSolution(
       return null;
     }
 
-    pairs.push([s1[index], s2[index]]);
+    pairs.push([
+      s1[index],
+      s2[index]
+    ]);
   }
 
   const records =
     ranked.length === 0
       ? []
       : [{
-          score: finiteNumber(ranked[0].score, 0),
-          players: ranked,
+          score:finiteNumber(ranked[0].score, 0),
+          players:ranked,
           pairs,
-          downfloaters: [],
-          generationOrder: 0
+          downfloaters:[],
+          generationOrder:0
         }];
 
-  const evaluation = buildRoundEvaluation(
-    pairs,
-    pabPlayer,
-    records,
-    [pabOrder, 0],
-    roundNumber,
-    totalRounds
-  );
+  const evaluation =
+    buildRoundEvaluation(
+      pairs,
+      pabPlayer,
+      records,
+      [pabOrder, 0],
+      roundNumber,
+      totalRounds
+    );
 
   return {
     pairs,
-    pab: pabPlayer,
+    pab:pabPlayer,
     records,
     evaluation
   };
 }
 
 /* ========================================================================== */
-/* DUTCH MAIN SOLVER                                                          */
+/* BOUNDED DUTCH SEARCH                                                       */
 /* ========================================================================== */
 
-// FIX 5: New helper that runs the actual search. Called first with
-// RELAX_COLOR_RULES = false, then optionally a second time with
-// RELAX_COLOR_RULES = true as a fallback.
-function tryGenerateSolution(
+function tryGenerateDutchSolution(
   players,
   pabCandidates,
   roundNumber,
@@ -3285,14 +4293,33 @@ function tryGenerateSolution(
     pabOrder < pabCandidates.length;
     pabOrder++
   ) {
-    const pabPlayer = pabCandidates[pabOrder];
+    if (searchBudgetExpired()) {
+      break;
+    }
+
+    const pabPlayer =
+      pabCandidates[pabOrder];
+
+    if (
+      bestSolution &&
+      pabPlayer &&
+      finiteNumber(pabPlayer.score, 0) >
+        bestSolution.evaluation.c5
+    ) {
+      break;
+    }
 
     const playersToPair = pabPlayer
-      ? players.filter(player => player.id !== pabPlayer.id)
+      ? players.filter(
+          player => player.id !== pabPlayer.id
+        )
       : [...players];
 
     const canComplete =
-      createCompletionChecker(roundNumber, totalRounds);
+      createCompletionChecker(
+        roundNumber,
+        totalRounds
+      );
 
     if (!canComplete(playersToPair)) {
       continue;
@@ -3336,6 +4363,342 @@ function tryGenerateSolution(
   return bestSolution;
 }
 
+/* ========================================================================== */
+/* FAST FALLBACK MATCHING                                                     */
+/* ========================================================================== */
+
+function fastPairCostVector(
+  first,
+  second,
+  roundNumber,
+  totalRounds
+) {
+  const scoreGap = Math.abs(
+    finiteNumber(first.score, 0) -
+    finiteNumber(second.score, 0)
+  );
+
+  const evaluation =
+    evaluateCandidateCriteria(
+      [[first, second]],
+      null,
+      roundNumber,
+      totalRounds
+    );
+
+  const repeatedFloatPenalty =
+    evaluation.c14 +
+    evaluation.c15 +
+    evaluation.c16 +
+    evaluation.c17;
+
+  const rankGap =
+    Math.abs(first.tpn - second.tpn);
+
+  return [
+    scoreGap,
+    repeatedFloatPenalty,
+    evaluation.c10,
+    evaluation.c11,
+    evaluation.c12,
+    evaluation.c13,
+    rankGap
+  ];
+}
+
+function hasNoIsolatedPlayers(
+  players,
+  roundNumber,
+  totalRounds
+) {
+  if (players.length === 0) {
+    return true;
+  }
+
+  for (
+    let index = 0;
+    index < players.length;
+    index++
+  ) {
+    let found = false;
+
+    for (
+      let other = 0;
+      other < players.length;
+      other++
+    ) {
+      if (
+        index !== other &&
+        isPairLegal(
+          players[index],
+          players[other],
+          roundNumber,
+          totalRounds
+        )
+      ) {
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function fastMatchPlayers(
+  players,
+  roundNumber,
+  totalRounds,
+  state
+) {
+  const failedStates = new Set();
+
+  function expired() {
+    return (
+      state.nodes >= state.maxNodes ||
+      monotonicNow() >= state.deadline
+    );
+  }
+
+  function search(remaining) {
+    if (remaining.length === 0) {
+      return [];
+    }
+
+    if (
+      remaining.length % 2 !== 0 ||
+      expired()
+    ) {
+      return null;
+    }
+
+    state.nodes++;
+
+    const stateKey = remaining
+      .map(player => player.id)
+      .sort()
+      .join("|");
+
+    if (failedStates.has(stateKey)) {
+      return null;
+    }
+
+    let chosen = null;
+    let chosenOpponents = null;
+
+    for (const player of remaining) {
+      if (expired()) {
+        return null;
+      }
+
+      const opponents = remaining.filter(
+        opponent =>
+          opponent.id !== player.id &&
+          isPairLegal(
+            player,
+            opponent,
+            roundNumber,
+            totalRounds
+          )
+      );
+
+      if (opponents.length === 0) {
+        failedStates.add(stateKey);
+        return null;
+      }
+
+      if (
+        chosenOpponents === null ||
+        opponents.length <
+          chosenOpponents.length ||
+        (
+          opponents.length ===
+            chosenOpponents.length &&
+          comparePlayerRank(player, chosen) < 0
+        )
+      ) {
+        chosen = player;
+        chosenOpponents = opponents;
+      }
+    }
+
+    chosenOpponents.sort((a, b) =>
+      compareNumberArrays(
+        fastPairCostVector(
+          chosen,
+          a,
+          roundNumber,
+          totalRounds
+        ),
+        fastPairCostVector(
+          chosen,
+          b,
+          roundNumber,
+          totalRounds
+        )
+      )
+    );
+
+    for (const opponent of chosenOpponents) {
+      if (expired()) {
+        return null;
+      }
+
+      const nextRemaining = remaining.filter(
+        player =>
+          player.id !== chosen.id &&
+          player.id !== opponent.id
+      );
+
+      if (
+        nextRemaining.length > 0 &&
+        !hasNoIsolatedPlayers(
+          nextRemaining,
+          roundNumber,
+          totalRounds
+        )
+      ) {
+        continue;
+      }
+
+      const rest = search(nextRemaining);
+
+      if (rest) {
+        return [
+          [chosen, opponent],
+          ...rest
+        ];
+      }
+    }
+
+    if (!expired()) {
+      failedStates.add(stateKey);
+    }
+
+    return null;
+  }
+
+  return search(
+    [...players].sort(comparePlayerRank)
+  );
+}
+
+function createFastFallbackSolution(
+  players,
+  pabCandidates,
+  roundNumber,
+  totalRounds
+) {
+  const state = {
+    deadline:
+      monotonicNow() +
+      SEARCH_LIMITS.FAST_FALLBACK_TIME_MS,
+
+    nodes:0,
+
+    maxNodes:
+      SEARCH_LIMITS.FAST_FALLBACK_MAX_NODES
+  };
+
+  for (
+    let pabOrder = 0;
+    pabOrder < pabCandidates.length;
+    pabOrder++
+  ) {
+    if (
+      monotonicNow() >= state.deadline ||
+      state.nodes >= state.maxNodes
+    ) {
+      break;
+    }
+
+    const pabPlayer =
+      pabCandidates[pabOrder];
+
+    const playersToPair = pabPlayer
+      ? players.filter(
+          player => player.id !== pabPlayer.id
+        )
+      : [...players];
+
+    const pairs = fastMatchPlayers(
+      playersToPair,
+      roundNumber,
+      totalRounds,
+      state
+    );
+
+    if (!pairs) {
+      continue;
+    }
+
+    const evaluation =
+      buildRoundEvaluation(
+        pairs,
+        pabPlayer,
+        [],
+        [
+          pabOrder,
+          Number.MAX_SAFE_INTEGER
+        ],
+        roundNumber,
+        totalRounds
+      );
+
+    return {
+      pairs,
+      pab:pabPlayer,
+      records:[],
+      evaluation
+    };
+  }
+
+  return null;
+}
+
+/* ========================================================================== */
+/* MAIN PAIRING SOLVER                                                        */
+/* ========================================================================== */
+
+function buildPabCandidates(players) {
+  if (players.length % 2 === 0) {
+    return [null];
+  }
+
+  const candidates = players
+    .filter(isPabEligible)
+    .sort((a, b) => {
+      const scoreDifference =
+        finiteNumber(a.score, 0) -
+        finiteNumber(b.score, 0);
+
+      if (scoreDifference !== 0) {
+        return scoreDifference;
+      }
+
+      if (a.unplayedCount !== b.unplayedCount) {
+        return (
+          a.unplayedCount -
+          b.unplayedCount
+        );
+      }
+
+      return b.tpn - a.tpn;
+    });
+
+  if (candidates.length === 0) {
+    throw new Error(
+      "No player is eligible for a Pairing-Allocated Bye. Arbiter intervention is required."
+    );
+  }
+
+  return candidates;
+}
+
 function generateDutchPairings(
   activePlayers,
   roundNumber,
@@ -3344,53 +4707,58 @@ function generateDutchPairings(
   const players =
     [...activePlayers].sort(comparePlayerRank);
 
-  const requiresPAB = players.length % 2 !== 0;
+  const pabCandidates =
+    buildPabCandidates(players);
 
-  let pabCandidates;
+  let bestSolution = null;
+  let searchMode = "bounded-dutch";
 
-  if (requiresPAB) {
-    pabCandidates = players
-      .filter(isPabEligible)
-      .sort((a, b) => {
-        const scoreDifference =
-          finiteNumber(a.score, 0) -
-          finiteNumber(b.score, 0);
-
-        if (scoreDifference !== 0) {
-          return scoreDifference;
-        }
-
-        return b.tpn - a.tpn;
-      });
-
-    if (pabCandidates.length === 0) {
-      throw new Error(
-        "No player is eligible for a pairing-allocated bye (PAB). Arbiter intervention required."
-      );
-    }
-  } else {
-    pabCandidates = [null];
-  }
-
-  // First attempt: strict pairing.
   RELAX_COLOR_RULES = false;
-  let bestSolution = tryGenerateSolution(
-    players,
-    pabCandidates,
-    roundNumber,
-    totalRounds
+
+  ACTIVE_SEARCH_BUDGET = createSearchBudget(
+    SEARCH_LIMITS.DUTCH_TIME_MS,
+    SEARCH_LIMITS.DUTCH_MAX_NODES
   );
 
-  // FIX 5: Fallback. If no strict pairing exists, relax the
-  // color criteria. The C12/C13 scores capture the deviations.
+  try {
+    bestSolution = tryGenerateDutchSolution(
+      players,
+      pabCandidates,
+      roundNumber,
+      totalRounds
+    );
+  } finally {
+    ACTIVE_SEARCH_BUDGET = null;
+  }
+
   if (!bestSolution) {
     console.warn(
-      "Strict pairing failed – trying with relaxed color criteria (fallback)."
+      "The bounded Dutch search reached its limit. " +
+      "Trying fast strict complete matching."
+    );
+
+    RELAX_COLOR_RULES = false;
+
+    bestSolution = createFastFallbackSolution(
+      players,
+      pabCandidates,
+      roundNumber,
+      totalRounds
+    );
+
+    searchMode = "fast-strict";
+  }
+
+  if (!bestSolution) {
+    console.warn(
+      "Strict complete matching failed. " +
+      "Trying relaxed color criteria."
     );
 
     RELAX_COLOR_RULES = true;
+
     try {
-      bestSolution = tryGenerateSolution(
+      bestSolution = createFastFallbackSolution(
         players,
         pabCandidates,
         roundNumber,
@@ -3399,34 +4767,40 @@ function generateDutchPairings(
     } finally {
       RELAX_COLOR_RULES = false;
     }
+
+    searchMode = "fast-relaxed";
   }
+
+  RELAX_COLOR_RULES = false;
 
   if (!bestSolution) {
     throw new Error(
-      "No complete pairing could be found even with relaxed color criteria. Arbiter intervention required."
+      "No complete pairing could be found within the search limits. Arbiter intervention is required."
     );
   }
 
   const coloredPairs =
     bestSolution.pairs.map(pair => {
-      const colors = allocateColors(pair[0], pair[1]);
+      const colors =
+        allocateColors(pair[0], pair[1]);
 
       return {
-        white: colors.white,
-        black: colors.black
+        white:colors.white,
+        black:colors.black
       };
     });
 
   return {
-    pairs: coloredPairs,
-    pab: bestSolution.pab,
-    evaluation: bestSolution.evaluation,
-    bracketRecords: bestSolution.records
+    pairs:coloredPairs,
+    pab:bestSolution.pab,
+    evaluation:bestSolution.evaluation,
+    bracketRecords:bestSolution.records,
+    searchMode
   };
 }
 
 /* ========================================================================== */
-/* ROUND MANAGEMENT AND WORKFLOW                                              */
+/* ROUND MANAGEMENT                                                          */
 /* ========================================================================== */
 
 function getScheduledUnplayedPlayers() {
@@ -3441,45 +4815,53 @@ function getUnplayedStatusDetails(player) {
   switch (player.nextRoundStatus) {
     case "unplayed-draw":
       return {
-        awardedPoints: tournament.drawPoints,
-        label: "Requested unplayed round with draw value (½ pt)"
+        awardedPoints:tournament.drawPoints,
+        label:"Requested unplayed round with draw value"
       };
 
     case "unplayed-win":
       return {
-        awardedPoints: tournament.winPoints,
-        label: "Administrative bye with win value (1 pt)"
+        awardedPoints:tournament.winPoints,
+        label:"Administrative bye with win value"
       };
 
     case "unplayed-zero":
     default:
       return {
-        awardedPoints: tournament.lossPoints,
-        label: "Unplayed round with zero points (0 pts)"
+        awardedPoints:tournament.lossPoints,
+        label:"Unplayed round with zero points"
       };
   }
 }
 
-function generateNextRoundPairings() {
+async function generateNextRoundPairings() {
+  if (pairingInProgress) {
+    return;
+  }
+
   if (tournament.activePairings.length > 0) {
-    alert("The current round is already paired.");
+    alert("The current round has already been paired.");
     return;
   }
 
   applyEditableSettings();
 
-  const nextRound = tournament.rounds.length + 1;
+  const nextRound =
+    tournament.rounds.length + 1;
 
   if (nextRound > tournament.totalRounds) {
-    alert("The tournament has reached its planned number of rounds.");
+    alert(
+      "The tournament has reached its planned number of rounds."
+    );
     return;
   }
 
-  const playersToPair = tournament.players.filter(
-    player =>
-      player.active &&
-      player.nextRoundStatus === "pair"
-  );
+  const playersToPair =
+    tournament.players.filter(
+      player =>
+        player.active &&
+        player.nextRoundStatus === "pair"
+    );
 
   const scheduledUnplayed =
     getScheduledUnplayedPlayers();
@@ -3488,17 +4870,35 @@ function generateNextRoundPairings() {
     playersToPair.length === 0 &&
     scheduledUnplayed.length === 0
   ) {
-    alert("No active players are registered for this round.");
+    alert(
+      "No active players are registered for this round."
+    );
     return;
   }
+
+  pairingInProgress = true;
+  updateUI();
+
+  const notes =
+    document.getElementById("pairingNotes");
+
+  notes.className =
+    "alert alert-info no-print";
+
+  notes.textContent =
+    `Pairing round ${nextRound}… ` +
+    "The search will stop automatically if it becomes too extensive.";
+
+  await waitForBrowserPaint();
 
   try {
     const result =
       playersToPair.length === 0
         ? {
-            pairs: [],
-            pab: null,
-            evaluation: null
+            pairs:[],
+            pab:null,
+            evaluation:null,
+            searchMode:"no-games"
           }
         : generateDutchPairings(
             playersToPair,
@@ -3509,8 +4909,11 @@ function generateNextRoundPairings() {
     tournament.activePairings = [];
 
     result.pairs.sort((a, b) => {
-      const higherA = getHigherRanked(a.white, a.black);
-      const higherB = getHigherRanked(b.white, b.black);
+      const higherA =
+        getHigherRanked(a.white, a.black);
+
+      const higherB =
+        getHigherRanked(b.white, b.black);
 
       const scoreDifference =
         finiteNumber(higherB.score, 0) -
@@ -3537,42 +4940,43 @@ function generateNextRoundPairings() {
 
     result.pairs.forEach((pair, index) => {
       tournament.activePairings.push({
-        kind: "game",
-        board: index + 1,
-        whiteId: pair.white.id,
-        blackId: pair.black.id,
-        result: "*",
-        pabId: null,
-        unplayedId: null
+        kind:"game",
+        board:index + 1,
+        whiteId:pair.white.id,
+        blackId:pair.black.id,
+        result:"*",
+        pabId:null,
+        unplayedId:null
       });
     });
 
     if (result.pab) {
       tournament.activePairings.push({
-        kind: "pab",
-        board: null,
-        whiteId: null,
-        blackId: null,
-        result: "AUTO",
-        pabId: result.pab.id,
-        unplayedId: null,
-        awardedPoints: tournament.pabPoints
+        kind:"pab",
+        board:null,
+        whiteId:null,
+        blackId:null,
+        result:"AUTO",
+        pabId:result.pab.id,
+        unplayedId:null,
+        awardedPoints:tournament.pabPoints
       });
     }
 
     for (const player of scheduledUnplayed) {
-      const details = getUnplayedStatusDetails(player);
+      const details =
+        getUnplayedStatusDetails(player);
 
       tournament.activePairings.push({
-        kind: "unplayed",
-        board: null,
-        whiteId: null,
-        blackId: null,
-        result: "AUTO",
-        pabId: null,
-        unplayedId: player.id,
-        awardedPoints: details.awardedPoints,
-        label: details.label
+        kind:"unplayed",
+        board:null,
+        whiteId:null,
+        blackId:null,
+        result:"AUTO",
+        pabId:null,
+        unplayedId:player.id,
+        awardedPoints:details.awardedPoints,
+        label:details.label
       });
     }
 
@@ -3580,24 +4984,67 @@ function generateNextRoundPairings() {
     tournament.tpnFrozen = true;
     tournament.settingsFrozen = true;
 
+    if (result.searchMode === "bounded-dutch") {
+      notes.className =
+        "alert alert-success no-print";
+
+      notes.textContent =
+        "The pairings were created using the bounded Dutch search.";
+    } else if (
+      result.searchMode === "fast-strict"
+    ) {
+      notes.className =
+        "alert alert-warning no-print";
+
+      notes.textContent =
+        "The Dutch search reached its time limit. " +
+        "A complete strict fallback pairing was created without repeat pairings.";
+    } else if (
+      result.searchMode === "fast-relaxed"
+    ) {
+      notes.className =
+        "alert alert-warning no-print";
+
+      notes.textContent =
+        "A complete fallback pairing was created without repeat pairings, " +
+        "but the color criteria had to be relaxed.";
+    } else {
+      notes.className =
+        "alert alert-info no-print";
+
+      notes.textContent =
+        "The round contains no played games.";
+    }
+
     renderPairings();
     renderPlayersTable();
-    updateUI();
     autoSave();
   } catch (error) {
     console.error(error);
+
+    notes.className =
+      "alert alert-danger no-print";
+
+    notes.textContent =
+      "Pairing failed: " + error.message;
+
     alert("Pairing error: " + error.message);
+  } finally {
+    pairingInProgress = false;
+    updateUI();
   }
 }
 
 function updateBoardResult(index, value) {
-  const record = tournament.activePairings[index];
+  const record =
+    tournament.activePairings[index];
 
   if (!record || record.kind !== "game") {
     return;
   }
 
   record.result = value;
+
   autoSave();
   checkIfRoundComplete();
 }
@@ -3608,8 +5055,10 @@ function checkIfRoundComplete() {
 
   const allEntered =
     hasRound &&
-    tournament.activePairings.every(record =>
-      record.kind !== "game" || record.result !== "*"
+    tournament.activePairings.every(
+      record =>
+        record.kind !== "game" ||
+        record.result !== "*"
     );
 
   const button =
@@ -3618,6 +5067,14 @@ function checkIfRoundComplete() {
   const badge =
     document.getElementById("roundStatusBadge");
 
+  if (pairingInProgress) {
+    button.style.display = "none";
+    badge.innerText = "Pairing…";
+    badge.style.background = "#bee3f8";
+    badge.style.color = "#2b6cb0";
+    return;
+  }
+
   if (allEntered) {
     button.style.display = "inline-flex";
     badge.innerText = "All results entered";
@@ -3625,13 +5082,20 @@ function checkIfRoundComplete() {
     badge.style.color = "#22543d";
   } else {
     button.style.display = "none";
-    badge.innerText = hasRound ? "In progress" : "Waiting";
+
+    badge.innerText =
+      hasRound ? "In progress" : "Waiting";
+
     badge.style.background = "#feebc8";
     badge.style.color = "#7b341e";
   }
 }
 
 function confirmCurrentRoundResults() {
+  if (pairingInProgress) {
+    return;
+  }
+
   if (tournament.activePairings.length === 0) {
     return;
   }
@@ -3643,13 +5107,16 @@ function confirmCurrentRoundResults() {
         record.result === "*"
     )
   ) {
-    alert("Enter a result for every played board before confirming the round.");
+    alert(
+      "Enter a result for every played board before confirming the round."
+    );
     return;
   }
 
   tournament.rounds.push({
-    roundNumber: tournament.currentRound,
-    pairings: JSON.parse(
+    roundNumber:tournament.currentRound,
+
+    pairings:JSON.parse(
       JSON.stringify(tournament.activePairings)
     )
   });
@@ -3664,13 +5131,19 @@ function confirmCurrentRoundResults() {
 
   rebuildPlayerStateFromRounds();
 
-  if (tournament.rounds.length >= tournament.totalRounds) {
+  if (
+    tournament.rounds.length >=
+    tournament.totalRounds
+  ) {
     tournament.isFinished = true;
+
     alert(
-      `The tournament is finished after ${tournament.totalRounds} rounds.`
+      `The tournament is complete after ` +
+      `${tournament.totalRounds} rounds.`
     );
   } else {
     tournament.isFinished = false;
+
     alert(
       `Round ${tournament.rounds.length} has been confirmed.`
     );
@@ -3687,7 +5160,7 @@ function confirmCurrentRoundResults() {
 }
 
 /* ========================================================================== */
-/* REBUILD HISTORY AND PLAYER STATE                                           */
+/* REBUILD PLAYER STATE                                                       */
 /* ========================================================================== */
 
 function resultPoints(result) {
@@ -3695,49 +5168,54 @@ function resultPoints(result) {
     case "1-0":
     case "1-0F":
       return {
-        white: tournament.winPoints,
-        black: tournament.lossPoints
+        white:tournament.winPoints,
+        black:tournament.lossPoints
       };
 
     case "0.5-0.5":
       return {
-        white: tournament.drawPoints,
-        black: tournament.drawPoints
+        white:tournament.drawPoints,
+        black:tournament.drawPoints
       };
 
     case "0-1":
     case "0-1F":
       return {
-        white: tournament.lossPoints,
-        black: tournament.winPoints
+        white:tournament.lossPoints,
+        black:tournament.winPoints
       };
 
     case "0-0F":
       return {
-        white: tournament.lossPoints,
-        black: tournament.lossPoints
+        white:tournament.lossPoints,
+        black:tournament.lossPoints
       };
 
     default:
       return {
-        white: 0,
-        black: 0
+        white:0,
+        black:0
       };
   }
 }
 
 function rebuildPlayerStateFromRounds() {
-  const completedRoundCount = tournament.rounds.length;
+  const completedRoundCount =
+    tournament.rounds.length;
+
   const playerMap = new Map();
 
   for (const player of tournament.players) {
     player.score = 0;
     player.opponents = [];
     player.playedColors = [];
+
     player.roundColors =
       new Array(completedRoundCount).fill("-");
+
     player.floats =
       new Array(completedRoundCount).fill("-");
+
     player.scoreGaps =
       new Array(completedRoundCount).fill(0);
 
@@ -3748,135 +5226,150 @@ function rebuildPlayerStateFromRounds() {
     playerMap.set(player.id, player);
   }
 
-  tournament.rounds.forEach((round, roundIndex) => {
-    for (const rawRecord of round.pairings) {
-      const record = rawRecord;
-      normalizePairingRecord(record);
+  tournament.rounds.forEach(
+    (round, roundIndex) => {
+      for (const rawRecord of round.pairings) {
+        const record = rawRecord;
 
-      if (record.kind === "pab") {
-        const player = playerMap.get(record.pabId);
+        normalizePairingRecord(record);
 
-        if (!player) {
+        if (record.kind === "pab") {
+          const player =
+            playerMap.get(record.pabId);
+
+          if (!player) {
+            continue;
+          }
+
+          const points = finiteNumber(
+            record.awardedPoints,
+            tournament.pabPoints
+          );
+
+          player.score += points;
+          player.hadPAB = true;
+          player.unplayedCount++;
+          player.roundColors[roundIndex] = "-";
+          player.floats[roundIndex] = "D";
+          player.scoreGaps[roundIndex] = 0;
+
           continue;
         }
 
-        const points = finiteNumber(
-          record.awardedPoints,
-          tournament.pabPoints
-        );
+        if (record.kind === "unplayed") {
+          const player =
+            playerMap.get(record.unplayedId);
 
-        player.score += points;
-        player.hadPAB = true;
-        player.unplayedCount++;
-        player.roundColors[roundIndex] = "-";
-        player.floats[roundIndex] = "D";
-        player.scoreGaps[roundIndex] = 0;
-        continue;
-      }
+          if (!player) {
+            continue;
+          }
 
-      if (record.kind === "unplayed") {
-        const player =
-          playerMap.get(record.unplayedId);
+          const points =
+            finiteNumber(record.awardedPoints, 0);
 
-        if (!player) {
+          player.score += points;
+          player.unplayedCount++;
+          player.roundColors[roundIndex] = "-";
+          player.scoreGaps[roundIndex] = 0;
+
+          if (points >= tournament.winPoints) {
+            player.hadUnplayedWin = true;
+          }
+
+          player.floats[roundIndex] =
+            points > tournament.lossPoints
+              ? "D"
+              : "-";
+
           continue;
         }
+
+        const white =
+          playerMap.get(record.whiteId);
+
+        const black =
+          playerMap.get(record.blackId);
+
+        if (!white || !black) {
+          continue;
+        }
+
+        const whiteScoreBefore =
+          finiteNumber(white.score, 0);
+
+        const blackScoreBefore =
+          finiteNumber(black.score, 0);
 
         const points =
-          finiteNumber(record.awardedPoints, 0);
+          resultPoints(record.result);
 
-        player.score += points;
-        player.unplayedCount++;
-        player.roundColors[roundIndex] = "-";
-        player.scoreGaps[roundIndex] = 0;
+        const isForfeit =
+          record.result === "1-0F" ||
+          record.result === "0-1F" ||
+          record.result === "0-0F";
 
-        if (points >= tournament.winPoints) {
-          player.hadUnplayedWin = true;
+        if (!isForfeit) {
+          white.opponents.push(black.id);
+          black.opponents.push(white.id);
+
+          white.playedColors.push("W");
+          black.playedColors.push("B");
+
+          white.roundColors[roundIndex] = "W";
+          black.roundColors[roundIndex] = "B";
+
+          if (whiteScoreBefore > blackScoreBefore) {
+            const gap =
+              whiteScoreBefore - blackScoreBefore;
+
+            white.floats[roundIndex] = "D";
+            black.floats[roundIndex] = "U";
+
+            white.scoreGaps[roundIndex] = gap;
+            black.scoreGaps[roundIndex] = gap;
+          } else if (
+            blackScoreBefore > whiteScoreBefore
+          ) {
+            const gap =
+              blackScoreBefore - whiteScoreBefore;
+
+            black.floats[roundIndex] = "D";
+            white.floats[roundIndex] = "U";
+
+            black.scoreGaps[roundIndex] = gap;
+            white.scoreGaps[roundIndex] = gap;
+          }
+        } else {
+          white.unplayedCount++;
+          black.unplayedCount++;
+
+          white.roundColors[roundIndex] = "-";
+          black.roundColors[roundIndex] = "-";
+
+          white.floats[roundIndex] =
+            points.white > tournament.lossPoints
+              ? "D"
+              : "-";
+
+          black.floats[roundIndex] =
+            points.black > tournament.lossPoints
+              ? "D"
+              : "-";
+
+          if (points.white >= tournament.winPoints) {
+            white.hadUnplayedWin = true;
+          }
+
+          if (points.black >= tournament.winPoints) {
+            black.hadUnplayedWin = true;
+          }
         }
 
-        player.floats[roundIndex] =
-          points > tournament.lossPoints ? "D" : "-";
-
-        continue;
+        white.score += points.white;
+        black.score += points.black;
       }
-
-      const white = playerMap.get(record.whiteId);
-      const black = playerMap.get(record.blackId);
-
-      if (!white || !black) {
-        continue;
-      }
-
-      const whiteScoreBefore =
-        finiteNumber(white.score, 0);
-
-      const blackScoreBefore =
-        finiteNumber(black.score, 0);
-
-      const points = resultPoints(record.result);
-
-      const isForfeit =
-        record.result === "1-0F" ||
-        record.result === "0-1F" ||
-        record.result === "0-0F";
-
-      if (!isForfeit) {
-        white.opponents.push(black.id);
-        black.opponents.push(white.id);
-
-        white.playedColors.push("W");
-        black.playedColors.push("B");
-
-        white.roundColors[roundIndex] = "W";
-        black.roundColors[roundIndex] = "B";
-
-        if (whiteScoreBefore > blackScoreBefore) {
-          const gap =
-            whiteScoreBefore - blackScoreBefore;
-
-          white.floats[roundIndex] = "D";
-          black.floats[roundIndex] = "U";
-          white.scoreGaps[roundIndex] = gap;
-          black.scoreGaps[roundIndex] = gap;
-        } else if (blackScoreBefore > whiteScoreBefore) {
-          const gap =
-            blackScoreBefore - whiteScoreBefore;
-
-          black.floats[roundIndex] = "D";
-          white.floats[roundIndex] = "U";
-          black.scoreGaps[roundIndex] = gap;
-          white.scoreGaps[roundIndex] = gap;
-        }
-      } else {
-        white.unplayedCount++;
-        black.unplayedCount++;
-
-        white.roundColors[roundIndex] = "-";
-        black.roundColors[roundIndex] = "-";
-
-        white.floats[roundIndex] =
-          points.white > tournament.lossPoints
-            ? "D"
-            : "-";
-
-        black.floats[roundIndex] =
-          points.black > tournament.lossPoints
-            ? "D"
-            : "-";
-
-        if (points.white >= tournament.winPoints) {
-          white.hadUnplayedWin = true;
-        }
-
-        if (points.black >= tournament.winPoints) {
-          black.hadUnplayedWin = true;
-        }
-      }
-
-      white.score += points.white;
-      black.score += points.black;
     }
-  });
+  );
 }
 
 /* ========================================================================== */
@@ -3900,10 +5393,11 @@ function renderPlayersTable() {
           class="text-center"
           style="padding:1.5rem;color:#a0aec0;"
         >
-          No participants registered yet.
+          No players have been registered yet.
         </td>
       </tr>
     `;
+
     return;
   }
 
@@ -3917,12 +5411,17 @@ function renderPlayersTable() {
 
     const statusDisabled =
       !player.active ||
-      tournament.activePairings.length > 0;
+      tournament.activePairings.length > 0 ||
+      pairingInProgress;
 
     row.innerHTML = `
-      <td><strong>${player.tpn}</strong></td>
+      <td>
+        <strong>${player.tpn}</strong>
+      </td>
 
-      <td><strong>${escapeHtml(player.name)}</strong></td>
+      <td>
+        <strong>${escapeHtml(player.name)}</strong>
+      </td>
 
       <td>${player.rating}</td>
 
@@ -3975,34 +5474,37 @@ function renderPlayersTable() {
           <option
             value="unplayed-zero"
             ${
-              player.nextRoundStatus === "unplayed-zero"
+              player.nextRoundStatus ===
+                "unplayed-zero"
                 ? "selected"
                 : ""
             }
           >
-            Unplayed – 0 pts
+            Unplayed – 0 points
           </option>
 
           <option
             value="unplayed-draw"
             ${
-              player.nextRoundStatus === "unplayed-draw"
+              player.nextRoundStatus ===
+                "unplayed-draw"
                 ? "selected"
                 : ""
             }
           >
-            Unplayed – ½ pt (draw)
+            Unplayed – draw value
           </option>
 
           <option
             value="unplayed-win"
             ${
-              player.nextRoundStatus === "unplayed-win"
+              player.nextRoundStatus ===
+                "unplayed-win"
                 ? "selected"
                 : ""
             }
           >
-            Unplayed – 1 pt (win)
+            Unplayed – win value
           </option>
         </select>
       </td>
@@ -4010,16 +5512,18 @@ function renderPlayersTable() {
       <td class="text-center no-print">
         <button
           class="btn btn-secondary"
-          style="padding:2px 6px;font-size:0.75rem;"
+          style="padding:2px 6px;font-size:.75rem;"
           onclick="togglePlayerActive('${player.id}')"
+          ${pairingInProgress ? "disabled" : ""}
         >
           ${player.active ? "Withdraw" : "Reinstate"}
         </button>
 
         <button
           class="btn btn-danger"
-          style="padding:2px 6px;font-size:0.75rem;"
+          style="padding:2px 6px;font-size:.75rem;"
           onclick="removePlayer('${player.id}')"
+          ${pairingInProgress ? "disabled" : ""}
         >
           ✕
         </button>
@@ -4033,6 +5537,31 @@ function renderPlayersTable() {
 /* ========================================================================== */
 /* RENDER PAIRINGS                                                            */
 /* ========================================================================== */
+
+function formatResultForPrint(result) {
+  switch (result) {
+    case "0.5-0.5":
+      return "½ – ½";
+
+    case "1-0":
+      return "1 – 0";
+
+    case "0-1":
+      return "0 – 1";
+
+    case "1-0F":
+      return "1 – 0 F";
+
+    case "0-1F":
+      return "0 – 1 F";
+
+    case "0-0F":
+      return "0 – 0 F";
+
+    default:
+      return "–";
+  }
+}
 
 function renderPairings() {
   const body =
@@ -4053,11 +5582,13 @@ function renderPairings() {
       ? tournament.currentRound
       : tournament.rounds.length + 1;
 
-  document.getElementById("currentRoundTitle").innerText =
+  document.getElementById(
+    "currentRoundTitle"
+  ).innerText =
     `Pairings – Round ${roundNumber}`;
 
   document.getElementById("printTitle").innerText =
-    `${tournament.name} – Pairings round ${roundNumber}`;
+    `${tournament.name} – Round ${roundNumber} pairings`;
 
   if (tournament.activePairings.length === 0) {
     body.innerHTML = `
@@ -4067,176 +5598,196 @@ function renderPairings() {
           class="text-center"
           style="padding:2rem;color:#a0aec0;"
         >
-          Click "Generate pairings" to create round
+          Click “Generate pairings” to create round
           ${tournament.rounds.length + 1}.
         </td>
       </tr>
     `;
+
     return;
   }
 
   let gameCount = 0;
   const unplayedLines = [];
 
-  tournament.activePairings.forEach((record, index) => {
-    if (record.kind === "pab") {
-      const player =
-        tournament.players.find(
-          candidate => candidate.id === record.pabId
-        );
+  tournament.activePairings.forEach(
+    (record, index) => {
+      if (record.kind === "pab") {
+        const player =
+          tournament.players.find(
+            candidate =>
+              candidate.id === record.pabId
+          );
 
-      if (player) {
-        pabContainer.style.display = "block";
+        if (player) {
+          pabContainer.style.display = "block";
 
-        document.getElementById("pabDetails").innerHTML = `
-          [Start no. ${player.tpn}]
-          <strong>${escapeHtml(player.name)}</strong>
-          (${player.rating}) is awarded
-          <strong>${formatPoints(record.awardedPoints)}</strong>
-          points (pairing-allocated bye). The round has no color and counts as a downfloat.
-        `;
-      }
-
-      return;
-    }
-
-    if (record.kind === "unplayed") {
-      const player =
-        tournament.players.find(
-          candidate =>
-            candidate.id === record.unplayedId
-        );
-
-      if (player) {
-        unplayedLines.push(`
-          <div style="margin-bottom:0.35rem;">
-            [Start no. ${player.tpn}]
-            <strong>${escapeHtml(player.name)}</strong> –
-            ${escapeHtml(record.label)}:
+          document.getElementById(
+            "pabDetails"
+          ).innerHTML = `
+            [Pairing no. ${player.tpn}]
+            <strong>${escapeHtml(player.name)}</strong>
+            (${player.rating}) receives
             <strong>
               ${formatPoints(record.awardedPoints)}
             </strong>
-            pts
-          </div>
-        `);
+            points. The round has no color allocation.
+          `;
+        }
+
+        return;
       }
 
-      return;
+      if (record.kind === "unplayed") {
+        const player =
+          tournament.players.find(
+            candidate =>
+              candidate.id === record.unplayedId
+          );
+
+        if (player) {
+          unplayedLines.push(`
+            <div style="margin-bottom:.35rem;">
+              [Pairing no. ${player.tpn}]
+              <strong>
+                ${escapeHtml(player.name)}
+              </strong>
+              –
+              ${escapeHtml(record.label)}:
+              <strong>
+                ${formatPoints(record.awardedPoints)}
+              </strong>
+              points
+            </div>
+          `);
+        }
+
+        return;
+      }
+
+      gameCount++;
+
+      const white =
+        tournament.players.find(
+          player => player.id === record.whiteId
+        );
+
+      const black =
+        tournament.players.find(
+          player => player.id === record.blackId
+        );
+
+      if (!white || !black) {
+        return;
+      }
+
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td>
+          <strong>${record.board}</strong>
+        </td>
+
+        <td>
+          <span class="badge badge-white">W</span>
+          [${white.tpn}]
+          <strong>${escapeHtml(white.name)}</strong>
+          (${white.rating})
+
+          <span class="badge badge-float">
+            ${formatPoints(white.score)} pts
+          </span>
+        </td>
+
+        <td class="text-center">
+          <select
+            class="result-select no-print"
+            onchange="updateBoardResult(
+              ${index},
+              this.value
+            )"
+          >
+            <option
+              value="*"
+              ${record.result === "*" ? "selected" : ""}
+            >
+              &nbsp;&nbsp;&nbsp;*
+            </option>
+
+            <option
+              value="1-0"
+              ${record.result === "1-0" ? "selected" : ""}
+            >
+              1 – 0
+            </option>
+
+            <option
+              value="0.5-0.5"
+              ${
+                record.result === "0.5-0.5"
+                  ? "selected"
+                  : ""
+              }
+            >
+              ½ – ½
+            </option>
+
+            <option
+              value="0-1"
+              ${record.result === "0-1" ? "selected" : ""}
+            >
+              0 – 1
+            </option>
+
+            <option
+              value="1-0F"
+              ${record.result === "1-0F" ? "selected" : ""}
+            >
+              1 – 0 (Forfeit)
+            </option>
+
+            <option
+              value="0-1F"
+              ${record.result === "0-1F" ? "selected" : ""}
+            >
+              0 – 1 (Forfeit)
+            </option>
+
+            <option
+              value="0-0F"
+              ${record.result === "0-0F" ? "selected" : ""}
+            >
+              0 – 0 (Double forfeit)
+            </option>
+          </select>
+
+          <span class="print-result">
+            ${formatResultForPrint(record.result)}
+          </span>
+        </td>
+
+        <td>
+          <span class="badge badge-black">B</span>
+          [${black.tpn}]
+          <strong>${escapeHtml(black.name)}</strong>
+          (${black.rating})
+
+          <span class="badge badge-float">
+            ${formatPoints(black.score)} pts
+          </span>
+        </td>
+      `;
+
+      body.appendChild(row);
     }
-
-    gameCount++;
-
-    const white =
-      tournament.players.find(
-        player => player.id === record.whiteId
-      );
-
-    const black =
-      tournament.players.find(
-        player => player.id === record.blackId
-      );
-
-    if (!white || !black) {
-      return;
-    }
-
-    const row = document.createElement("tr");
-
-    row.innerHTML = `
-      <td><strong>${record.board}</strong></td>
-
-      <td>
-        <span class="badge badge-white">W</span>
-        [${white.tpn}]
-        <strong>${escapeHtml(white.name)}</strong>
-        (${white.rating})
-        <span class="badge badge-float">
-          ${formatPoints(white.score)} pts
-        </span>
-      </td>
-
-      <td class="text-center">
-        <select
-          class="result-select no-print"
-          onchange="updateBoardResult(
-            ${index},
-            this.value
-          )"
-        >
-          <option
-            value="*"
-            ${record.result === "*" ? "selected" : ""}
-          >
-            &nbsp;&nbsp;&nbsp;*
-          </option>
-
-          <option
-            value="1-0"
-            ${record.result === "1-0" ? "selected" : ""}
-          >
-            1 – 0
-          </option>
-
-          <option
-            value="0.5-0.5"
-            ${
-              record.result === "0.5-0.5"
-                ? "selected"
-                : ""
-            }
-          >
-            ½ – ½
-          </option>
-
-          <option
-            value="0-1"
-            ${record.result === "0-1" ? "selected" : ""}
-          >
-            0 – 1
-          </option>
-
-          <option
-            value="1-0F"
-            ${record.result === "1-0F" ? "selected" : ""}
-          >
-            1 – 0 (forfeit)
-          </option>
-
-          <option
-            value="0-1F"
-            ${record.result === "0-1F" ? "selected" : ""}
-          >
-            0 – 1 (forfeit)
-          </option>
-
-          <option
-            value="0-0F"
-            ${record.result === "0-0F" ? "selected" : ""}
-          >
-            0 – 0 (double forfeit)
-          </option>
-        </select>
-
-        <span class="print-result">–</span>
-      </td>
-
-      <td>
-        <span class="badge badge-black">B</span>
-        [${black.tpn}]
-        <strong>${escapeHtml(black.name)}</strong>
-        (${black.rating})
-        <span class="badge badge-float">
-          ${formatPoints(black.score)} pts
-        </span>
-      </td>
-    `;
-
-    body.appendChild(row);
-  });
+  );
 
   if (unplayedLines.length > 0) {
     unplayedContainer.style.display = "block";
-    document.getElementById("unplayedDetails").innerHTML =
+
+    document.getElementById(
+      "unplayedDetails"
+    ).innerHTML =
       unplayedLines.join("");
   }
 
@@ -4248,7 +5799,7 @@ function renderPairings() {
           class="text-center"
           style="padding:1.5rem;color:#718096;"
         >
-          No games are being played on the boards this round.
+          No games are being played on boards this round.
         </td>
       </tr>
     `;
@@ -4256,7 +5807,7 @@ function renderPairings() {
 }
 
 /* ========================================================================== */
-/* CROSSTABLE AND TIEBREAKS                                                   */
+/* STANDINGS AND TIEBREAKS                                                    */
 /* ========================================================================== */
 
 function calculateTiebreaks() {
@@ -4272,7 +5823,8 @@ function calculateTiebreaks() {
     let sonnebornBerger = 0;
 
     for (const opponentId of player.opponents) {
-      const opponent = playerMap.get(opponentId);
+      const opponent =
+        playerMap.get(opponentId);
 
       if (opponent) {
         opponentScores.push(
@@ -4282,12 +5834,13 @@ function calculateTiebreaks() {
     }
 
     for (const round of tournament.rounds) {
-      const record = round.pairings.find(candidate =>
-        candidate.kind === "game" &&
-        (
-          candidate.whiteId === player.id ||
-          candidate.blackId === player.id
-        )
+      const record = round.pairings.find(
+        candidate =>
+          candidate.kind === "game" &&
+          (
+            candidate.whiteId === player.id ||
+            candidate.blackId === player.id
+          )
       );
 
       if (!record) {
@@ -4305,11 +5858,13 @@ function calculateTiebreaks() {
       const isWhite =
         record.whiteId === player.id;
 
-      const opponentId = isWhite
-        ? record.blackId
-        : record.whiteId;
+      const opponentId =
+        isWhite
+          ? record.blackId
+          : record.whiteId;
 
-      const opponent = playerMap.get(opponentId);
+      const opponent =
+        playerMap.get(opponentId);
 
       if (!opponent) {
         continue;
@@ -4324,8 +5879,10 @@ function calculateTiebreaks() {
 
       if (won) {
         sonnebornBerger += opponentScore;
-      } else if (record.result === "0.5-0.5") {
-        sonnebornBerger += opponentScore * 0.5;
+      } else if (
+        record.result === "0.5-0.5"
+      ) {
+        sonnebornBerger += opponentScore * .5;
       }
     }
 
@@ -4347,35 +5904,55 @@ function calculateTiebreaks() {
             )
         : player.buchholzTotal;
 
-    player.sonnebornBerger = sonnebornBerger;
+    player.sonnebornBerger =
+      sonnebornBerger;
   }
 }
 
 function renderStandings() {
   calculateTiebreaks();
 
-  const sorted = [...tournament.players].sort((a, b) => {
-    if (b.score !== a.score) {
-      return b.score - a.score;
-    }
+  const sorted =
+    [...tournament.players].sort((a, b) => {
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
 
-    if (b.buchholzCut1 !== a.buchholzCut1) {
-      return b.buchholzCut1 - a.buchholzCut1;
-    }
+      if (
+        b.buchholzCut1 !== a.buchholzCut1
+      ) {
+        return (
+          b.buchholzCut1 -
+          a.buchholzCut1
+        );
+      }
 
-    if (b.buchholzTotal !== a.buchholzTotal) {
-      return b.buchholzTotal - a.buchholzTotal;
-    }
+      if (
+        b.buchholzTotal !== a.buchholzTotal
+      ) {
+        return (
+          b.buchholzTotal -
+          a.buchholzTotal
+        );
+      }
 
-    if (b.sonnebornBerger !== a.sonnebornBerger) {
-      return b.sonnebornBerger - a.sonnebornBerger;
-    }
+      if (
+        b.sonnebornBerger !==
+        a.sonnebornBerger
+      ) {
+        return (
+          b.sonnebornBerger -
+          a.sonnebornBerger
+        );
+      }
 
-    return a.tpn - b.tpn;
-  });
+      return a.tpn - b.tpn;
+    });
 
   const body =
-    document.getElementById("standingsTableBody");
+    document.getElementById(
+      "standingsTableBody"
+    );
 
   body.innerHTML = "";
 
@@ -4387,8 +5964,12 @@ function renderStandings() {
       tournament.rounds.length > 0
     );
 
-  document.getElementById("standingsTitle").innerText =
-    final ? "Final standings" : "Current standings";
+  document.getElementById(
+    "standingsTitle"
+  ).innerText =
+    final
+      ? "Final standings"
+      : "Current standings";
 
   document.getElementById("printTitle").innerText =
     final
@@ -4398,11 +5979,15 @@ function renderStandings() {
 
   sorted.forEach((player, index) => {
     const row = document.createElement("tr");
+
     const colorDifference =
       getColorDifference(player);
 
     row.innerHTML = `
-      <td><strong>${index + 1}</strong></td>
+      <td>
+        <strong>${index + 1}</strong>
+      </td>
+
       <td>${player.tpn}</td>
 
       <td>
@@ -4417,11 +6002,12 @@ function renderStandings() {
 
       <td>
         <strong>${escapeHtml(player.name)}</strong>
+
         ${
           !player.active
             ? `<span
                  class="badge badge-withdrawn"
-                 style="font-size:0.65rem;"
+                 style="font-size:.65rem;"
                >
                  Withdrawn
                </span>`
@@ -4432,7 +6018,9 @@ function renderStandings() {
       <td>${player.rating}</td>
 
       <td class="text-center">
-        <strong>${formatPoints(player.score)}</strong>
+        <strong>
+          ${formatPoints(player.score)}
+        </strong>
       </td>
 
       <td class="text-center">
@@ -4473,47 +6061,65 @@ function renderStandings() {
 }
 
 /* ========================================================================== */
-/* HISTORY                                                                    */
+/* ROUND HISTORY                                                              */
 /* ========================================================================== */
 
 function renderHistory() {
   const container =
-    document.getElementById("roundsHistoryContainer");
+    document.getElementById(
+      "roundsHistoryContainer"
+    );
 
   if (tournament.rounds.length === 0) {
-    container.innerHTML =
-      `<p style="color:#718096;">` +
-      `No completed rounds yet.</p>`;
+    container.innerHTML = `
+      <p style="color:#718096;">
+        No completed rounds yet.
+      </p>
+    `;
+
     return;
   }
 
   container.innerHTML = "";
 
   for (const round of tournament.rounds) {
-    const card = document.createElement("div");
+    const card =
+      document.createElement("div");
 
     card.className = "card";
     card.style.marginBottom = "1rem";
 
     const rows = round.pairings.map(record => {
+      normalizePairingRecord(record);
+
       if (record.kind === "pab") {
         const player =
           tournament.players.find(
-            candidate => candidate.id === record.pabId
+            candidate =>
+              candidate.id === record.pabId
           );
 
         return `
           <tr>
             <td>–</td>
+
             <td colspan="3">
-              <span class="badge badge-bye">Bye (PAB)</span>
+              <span class="badge badge-bye">
+                PAB
+              </span>
+
               ${
                 player
-                  ? `[Start no. ${player.tpn}] ` +
-                    `<strong>${escapeHtml(player.name)}</strong>`
+                  ? `[Pairing no. ${player.tpn}] ` +
+                    `<strong>` +
+                    `${escapeHtml(player.name)}` +
+                    `</strong>`
                   : "Unknown player"
               }
-              – ${formatPoints(record.awardedPoints)} points
+
+              –
+              ${formatPoints(record.awardedPoints)}
+              points
             </td>
           </tr>
         `;
@@ -4529,16 +6135,26 @@ function renderHistory() {
         return `
           <tr>
             <td>–</td>
+
             <td colspan="3">
-              <span class="badge badge-float">Unplayed</span>
+              <span class="badge badge-float">
+                Unplayed
+              </span>
+
               ${
                 player
-                  ? `[Start no. ${player.tpn}] ` +
-                    `<strong>${escapeHtml(player.name)}</strong>`
+                  ? `[Pairing no. ${player.tpn}] ` +
+                    `<strong>` +
+                    `${escapeHtml(player.name)}` +
+                    `</strong>`
                   : "Unknown player"
               }
-              – ${escapeHtml(record.label)} –
-              ${formatPoints(record.awardedPoints)} points
+
+              –
+              ${escapeHtml(record.label)}
+              –
+              ${formatPoints(record.awardedPoints)}
+              points
             </td>
           </tr>
         `;
@@ -4546,12 +6162,14 @@ function renderHistory() {
 
       const white =
         tournament.players.find(
-          player => player.id === record.whiteId
+          player =>
+            player.id === record.whiteId
         );
 
       const black =
         tournament.players.find(
-          player => player.id === record.blackId
+          player =>
+            player.id === record.blackId
         );
 
       return `
@@ -4569,7 +6187,9 @@ function renderHistory() {
           </td>
 
           <td class="text-center">
-            <strong>${escapeHtml(record.result)}</strong>
+            <strong>
+              ${escapeHtml(record.result)}
+            </strong>
           </td>
 
           <td>
@@ -4589,21 +6209,29 @@ function renderHistory() {
       <h4
         style="
           color:var(--primary);
-          margin-bottom:0.5rem;
+          margin-bottom:.5rem;
         "
       >
         Round ${round.roundNumber}
       </h4>
 
-      <table style="font-size:0.85rem;">
+      <table style="font-size:.85rem;">
         <thead>
           <tr>
-            <th style="width:50px;">Board</th>
-            <th>White player</th>
-            <th class="text-center" style="width:130px;">
+            <th style="width:50px;">
+              Board
+            </th>
+
+            <th>White</th>
+
+            <th
+              class="text-center"
+              style="width:130px;"
+            >
               Result
             </th>
-            <th>Black player</th>
+
+            <th>Black</th>
           </tr>
         </thead>
 
@@ -4632,12 +6260,16 @@ function switchTab(tabId) {
       element.classList.remove("active");
     });
 
-  document.getElementById(tabId).style.display = "block";
+  document.getElementById(tabId).style.display =
+    "block";
 
-  const selectedTab = [...document.querySelectorAll(".nav-tab")]
-    .find(element =>
-      String(element.getAttribute("onclick")).includes(tabId)
-    );
+  const selectedTab = [
+    ...document.querySelectorAll(".nav-tab")
+  ].find(element =>
+    String(
+      element.getAttribute("onclick")
+    ).includes(tabId)
+  );
 
   if (selectedTab) {
     selectedTab.classList.add("active");
@@ -4660,18 +6292,26 @@ function updateUI() {
   const pairButton =
     document.getElementById("btnPairNext");
 
-  if (
+  if (pairingInProgress) {
+    pairButton.disabled = true;
+    pairButton.innerText = "⏳ Pairing…";
+  } else if (
     tournament.rounds.length >=
     tournament.totalRounds
   ) {
     pairButton.disabled = true;
-    pairButton.innerText = "Tournament finished";
-  } else if (tournament.activePairings.length > 0) {
+    pairButton.innerText =
+      "Tournament complete";
+  } else if (
+    tournament.activePairings.length > 0
+  ) {
     pairButton.disabled = true;
+
     pairButton.innerText =
       `Round ${tournament.currentRound} in progress`;
   } else {
     pairButton.disabled = false;
+
     pairButton.innerText =
       `🎲 Pair round ${tournament.rounds.length + 1}`;
   }
@@ -4681,37 +6321,52 @@ function updateUI() {
 }
 
 /* ========================================================================== */
-/* INTERNAL TESTS                                                             */
+/* INTERNAL SELF-CHECKS                                                       */
 /* ========================================================================== */
 
 function runInternalSelfChecks() {
   try {
     const testPlayer = {
-      score: 2.5,
-      playedColors: [],
-      roundColors: [],
-      opponents: [],
-      floats: [],
-      tpn: 1,
-      id: "SELF_TEST"
+      score:2.5,
+      playedColors:[],
+      roundColors:[],
+      opponents:[],
+      floats:[],
+      tpn:1,
+      id:"SELF_TEST"
     };
 
     console.assert(
       isTopscorer(testPlayer, 5, 5) === true,
-      "Self-check: Top scorer failed."
+      "Self-check: topscorer test failed."
     );
 
     console.assert(
       isTopscorer(testPlayer, 4, 5) === false,
-      "Self-check: Top scorer block for last round failed."
+      "Self-check: final-round topscorer restriction failed."
     );
 
     console.assert(
-      compareNumberArrays([3.5, 3], [4, 1]) < 0,
-      "Self-check: C7 descending score vector failed."
+      compareNumberArrays(
+        [3.5, 3],
+        [4, 1]
+      ) < 0,
+      "Self-check: vector comparison failed."
+    );
+
+    console.assert(
+      collectLimitedCombinations(
+        [1, 2, 3, 4],
+        2,
+        3
+      ).length === 3,
+      "Self-check: combination limit failed."
     );
   } catch (error) {
-    console.error("Internal test error:", error);
+    console.error(
+      "Internal self-check error:",
+      error
+    );
   }
 }
 
@@ -4720,14 +6375,17 @@ function runInternalSelfChecks() {
 /* ========================================================================== */
 
 function formatPoints(value) {
-  const number = finiteNumber(value, 0);
+  const number =
+    finiteNumber(value, 0);
 
   if (Number.isInteger(number)) {
     return String(number);
   }
 
   return String(
-    Math.round((number + Number.EPSILON) * 1000) / 1000
+    Math.round(
+      (number + Number.EPSILON) * 1000
+    ) / 1000
   );
 }
 
@@ -4739,19 +6397,22 @@ function escapeHtml(value) {
   return String(value || "").replace(
     /[&<>'"]/g,
     character => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      "'": "&#39;",
-      '"': "&quot;"
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      "'":"&#39;",
+      '"':"&quot;"
     })[character]
   );
 }
 
 function openNewWindow() {
-   window.open("https://mats-winther.github.io/bg/schacklottning.htm", "_blank");
+  window.open(
+    "https://mats-winther.github.io/bg/schacklottning.htm",
+    "_blank",
+    "noopener"
+  );
 }
-
 </script>
 
 </body>
