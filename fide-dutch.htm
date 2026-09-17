@@ -475,11 +475,6 @@ a { color:var(--blue); }
         </button>
       </div>
 
-      <p class="muted no-print">
-        Pairing searches use fixed limits of 30 seconds and 2,000,000
-        work units. An interrupted calculation does not create a round.
-      </p>
-
       <div id="roundProvenance" class="notice warning"></div>
 
       <div class="table-wrap">
@@ -4037,8 +4032,7 @@ function commitRound(result,plan) {
 
   message(
     "Round " + plan.roundNumber + " created. " +
-    (plan.roundNumber === 1 ? "Registration is now closed. " : "") +
-    "No relaxed or provisional fallback was used. ",
+    (plan.roundNumber === 1 ? "Registration is now closed. " : ""),
     "success"
   );
 }

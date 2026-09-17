@@ -475,11 +475,6 @@ a { color:var(--blue); }
         </button>
       </div>
 
-      <p class="muted no-print">
-        Lottningssökningar använder fasta gränser på 30 sekunder och 2 000 000
-        arbetsenheter. En avbruten beräkning skapar ingen rond.
-      </p>
-
       <div id="roundProvenance" class="notice warning"></div>
 
       <div class="table-wrap">
@@ -4037,8 +4032,7 @@ function commitRound(result,plan) {
 
   message(
     "Rond " + plan.roundNumber + " skapad. " +
-    (plan.roundNumber === 1 ? "Anmälan är nu stängd. " : "") +
-    "Ingen uppmjukad eller preliminär reservlösning användes. ",
+    (plan.roundNumber === 1 ? "Anmälan är nu stängd. " : ""),
     "success"
   );
 }
@@ -4352,7 +4346,7 @@ function renderStandings() {
           : `<th>Spelade</th><th>Ospelade</th>`
       }
       <th>Färger per rond</th>
-      <th>FD</th>
+      <th>FS</th>
       <th>Flytningar per rond</th>
     </tr>
   `;
