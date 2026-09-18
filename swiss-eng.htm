@@ -167,6 +167,7 @@
           <th>Score</th>
           <th>Buchholz</th>
           <th>S-B</th>
+	  <th>Colors</th>
         </tr>
       </thead>
       <tbody id="final-table-body"></tbody>
@@ -855,6 +856,11 @@ function showFinalStandings() {
 
   const standings = getSortedStandings();
   standings.forEach((p, idx) => {
+    // Collect the sequence of colors ('W', 'B', or '-' for byes)
+    const colorHistory = (p.history || [])
+      .map(h => (h.color && h.color !== '-') ? h.color : '-')
+      .join('');
+
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${idx + 1}</td>
@@ -864,6 +870,7 @@ function showFinalStandings() {
       <td><strong>${p.score}</strong></td>
       <td>${p.buchholz}</td>
       <td>${p.sonneborn}</td>
+      <td style="font-family: monospace; letter-spacing: 1px;">${colorHistory}</td>
     `;
     tbody.appendChild(tr);
   });
