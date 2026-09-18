@@ -316,6 +316,7 @@ a { color:var(--accent); }
 
 <main>
   <div id="printHeading" class="print-only">
+    <h2 id="printTitle"></h2>
     <p>Dubov schweiziskt lottningssystem</p>
   </div>
 
@@ -436,8 +437,10 @@ a { color:var(--accent); }
                   onclick="resetTournament()">
             Återställ
           </button>
+
         </div>
       </div>
+
 
       <input id="playersFile"
              type="file"
@@ -576,7 +579,7 @@ a { color:var(--accent); }
 
   <section id="standings" class="tab">
     <div class="card">
-     <!-- <h2 id="scoreTournamentName"></h2> -->
+      <h2 id="scoreTournamentName"></h2>
       <h3 id="scoreTitle">Tabell &amp; resultat</h3>
 
       <div id="standingsNotice" class="notice no-print"></div>
