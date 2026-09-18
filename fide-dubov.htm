@@ -1,0 +1,6595 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta name="description"
+      content="Dubov lottningssystem enligt FIDE Handbook C.04.4.1, med ARO-utjämning och särskiljning i tabellen.">
+<title>FIDE Dubov lottningssystem</title>
+
+<style>
+:root {
+  --primary:#064e3b;
+  --primary-hover:#022c22;
+  --accent:#059669;
+  --accent-light:#10b981;
+  --bg:#f8fafc;
+  --card:#ffffff;
+  --text:#1e293b;
+  --muted:#64748b;
+  --border:#cbd5e1;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+  line-height:1.5;
+}
+header {
+  background:var(--primary);
+  color:white;
+  padding:1rem 1.5rem;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:1rem;
+}
+h1 { font-size:1.35rem; margin:0; }
+h2 { font-size:1.15rem; margin:0 0 1rem; }
+h3 { font-size:1rem; margin:.2rem 0 .7rem; }
+p { margin:.6rem 0; }
+.subtitle { color:#a7f3d0; font-size:.83rem; }
+main {
+  max-width:1280px;
+  margin:1rem auto;
+  padding:0 1rem 3rem;
+}
+.card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:1rem;
+  margin:1rem 0;
+}
+.row {
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:.6rem;
+}
+.between { justify-content:space-between; }
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:.8rem;
+}
+label {
+  display:block;
+  font-size:.84rem;
+  font-weight:600;
+}
+input,select,textarea,button { font:inherit; }
+input,select,textarea {
+  width:100%;
+  margin-top:.25rem;
+  padding:.48rem .6rem;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:white;
+  color:var(--text);
+}
+textarea {
+  min-height:200px;
+  font-family:monospace;
+}
+input:disabled,select:disabled { background:#edf2f7; }
+button {
+  border:1px solid var(--border);
+  border-radius:5px;
+  padding:.48rem .75rem;
+  cursor:pointer;
+  background:#edf2f7;
+  color:var(--text);
+}
+button.primary {
+  background:var(--accent);
+  color:white;
+  border-color:var(--accent);
+}
+button.primary:hover:not(:disabled) {
+  background:var(--primary);
+}
+button.success {
+  background:#15803d;
+  color:white;
+  border-color:#15803d;
+}
+button.danger {
+  background:#b91c1c;
+  color:white;
+  border-color:#b91c1c;
+}
+button:disabled {
+  opacity:.5;
+  cursor:not-allowed;
+}
+button.small {
+  font-size:.77rem;
+  padding:.25rem .45rem;
+}
+.tabs {
+  display:flex;
+  gap:.35rem;
+  overflow:auto;
+  border-bottom:2px solid var(--border);
+  padding-bottom:.5rem;
+}
+.tabs button { white-space:nowrap; }
+.tabs button.active {
+  background:var(--primary);
+  color:white;
+}
+.tab { display:none; }
+.tab.active { display:block; }
+.notice {
+  padding:.75rem 1rem;
+  border-radius:6px;
+  border:1px solid #bfdbfe;
+  background:#eff6ff;
+  margin:1rem 0;
+  white-space:pre-wrap;
+}
+.notice.warning {
+  background:#fffbeb;
+  border-color:#fcd34d;
+  color:#854d0e;
+}
+.notice.error {
+  background:#fff1f2;
+  border-color:#fda4af;
+  color:#9f1239;
+}
+.notice.success {
+  background:#f0fdf4;
+  border-color:#86efac;
+  color:#166534;
+}
+.muted {
+  color:var(--muted);
+  font-size:.84rem;
+}
+.table-wrap { overflow:auto; }
+table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:.87rem;
+}
+th,td {
+  padding:.55rem .65rem;
+  border-bottom:1px solid var(--border);
+  text-align:left;
+}
+th { background:#f1f5f9; }
+.center { text-align:center; }
+.mono {
+  font-family:monospace;
+  letter-spacing:1px;
+}
+.badge {
+  display:inline-block;
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:.1rem .35rem;
+  font-size:.75rem;
+}
+.badge.white { background:white; color:#111; }
+.badge.black { background:#111; color:white; }
+.badge.bye { background:#fef3c7; }
+.badge.up {
+  background:#dcfce7;
+  color:#166534;
+  font-weight:bold;
+}
+.result { min-width:145px; }
+.print-result,.print-only { display:none; }
+details { margin-top:.7rem; }
+pre {
+  overflow:auto;
+  font-size:.78rem;
+  background:#f8fafc;
+  border:1px solid var(--border);
+  padding:.7rem;
+}
+dialog {
+  border:1px solid var(--border);
+  border-radius:8px;
+  width:min(720px,92vw);
+  max-height:88vh;
+  overflow:auto;
+  padding:1.2rem;
+}
+dialog::backdrop { background:rgba(0,0,0,.45); }
+a { color:var(--accent); }
+#scoreTournamentName {
+  margin-bottom:.3rem;
+  font-size:1.4rem;
+  color:var(--primary);
+}
+#scoreTitle {
+  margin-top:0;
+  margin-bottom:1rem;
+  font-size:1.15rem;
+}
+
+@media print {
+  header, .tabs, .no-print, button, .result-select {
+    display:none !important;
+  }
+  body {
+    background:white;
+    color:black;
+    font-size:10pt;
+  }
+  main {
+    max-width:none;
+    margin:0;
+    padding:0;
+  }
+  .card {
+    border:none;
+    padding:0;
+    box-shadow:none;
+  }
+  .print-only { display:block !important; }
+  .print-result {
+    display:inline-block !important;
+    text-align:center;
+    width:100%;
+    font-weight:bold;
+    font-size:11pt;
+  }
+  th,td {
+    border:1px solid #444;
+    padding:5px 8px;
+  }
+  table {
+    font-size:9.5pt;
+    width:100%;
+  }
+  th {
+    background:#eee !important;
+    color:black;
+  }
+  .tab:not(.active) { display:none !important; }
+  details.audit { display:none !important; }
+  .notice {
+    border:1px solid #777;
+    background:white;
+    color:black;
+  }
+  body[data-tab="standings"] #printHeading {
+    display:none !important;
+  }
+  #scoreTournamentName { color:black; }
+}
+</style>
+</head>
+
+<body data-tab="setup">
+
+<header>
+  <div>
+    <h1>FIDE Dubov lottningssystem</h1>
+    <div class="subtitle">
+      FIDE C.04.4.1 (2026 års regler) · ARO-utjämning · Endast uppflyttningar (upfloaters)
+    </div>
+  </div>
+
+  <div class="row">
+    <button id="saveButton" onclick="saveTournament()">
+      Spara turnering
+    </button>
+
+    <button id="openButton"
+            onclick="document.getElementById('tournamentFile').click()">
+      Öppna turnering
+    </button>
+
+    <button onclick="printPage()">Skriv ut</button>
+
+    <button onclick="document.getElementById('aboutDialog').showModal()">
+      Om Dubov
+    </button>
+  </div>
+</header>
+
+<input id="tournamentFile"
+       type="file"
+       accept=".json"
+       hidden
+       onchange="loadTournamentFile(event)">
+
+<main>
+  <div id="printHeading" class="print-only">
+    <h2 id="printTitle"></h2>
+    <p>Dubov schweiziskt lottningssystem</p>
+  </div>
+
+  <div id="message"
+       class="notice no-print"
+       role="status"
+       aria-live="polite">
+    Registrera spelare och kontrollera den initiala färgfördelningen och TPN-listan.
+    Inställningarna sparas automatiskt.
+  </div>
+
+  <nav class="tabs no-print">
+    <button id="tabButton-setup"
+            class="active"
+            onclick="showTab('setup')">
+      Inställningar &amp; anmälan
+    </button>
+
+    <button id="tabButton-pairings"
+            onclick="showTab('pairings')">
+      Rondlottning
+    </button>
+
+    <button id="tabButton-standings"
+            onclick="showTab('standings')">
+      Tabell &amp; resultat
+    </button>
+
+    <button id="tabButton-history"
+            onclick="showTab('history')">
+      Rondhistorik
+    </button>
+  </nav>
+
+  <section id="setup" class="tab active">
+    <div class="card no-print">
+      <h2>Turneringsinställningar</h2>
+
+      <div class="grid">
+        <label>
+          Turneringens namn
+          <input id="tName" value="FIDE Dubov Open 2026">
+        </label>
+
+        <label>
+          Antal ronder
+          <input id="tRounds"
+                 type="number"
+                 min="1"
+                 max="30"
+                 value="5">
+        </label>
+
+        <label>
+          Färgfördelning (rond 1)
+          <select id="tColor">
+            <option value="W" selected>1:a spelare Vit</option>
+            <option value="B">1:a spelare Svart</option>
+          </select>
+        </label>
+
+        <label>
+          Poäng: vinst / remi / förlust
+          <select id="tPoints">
+            <option value="1,0.5,0">1 / ½ / 0</option>
+            <option value="3,1,0">3 / 1 / 0</option>
+          </select>
+        </label>
+
+        <label>
+          Poäng vid frirond (PAB)
+          <input id="tPab"
+                 type="number"
+                 min="0"
+                 step="0.5"
+                 value="1">
+        </label>
+      </div>
+
+      <p id="listStatus" class="muted"></p>
+
+      <p class="muted">
+        Inställningarna sparas automatiskt. Anmälan stängs när den
+        första ronden lottas.
+      </p>
+
+      <p class="muted">
+        Slutställning: <strong>Poäng</strong> &rarr;
+        <strong>Buchholz Cut 1 (BH-1)</strong> &rarr;
+        <strong>Sonneborn-Berger (SB)</strong> &rarr;
+        <strong>Buchholz (BH)</strong> &rarr;
+        <strong>TPN</strong>.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="row between">
+        <h2>Spelare (<span id="playerCount">0</span>)</h2>
+
+        <div class="row no-print">
+          <button id="importButton"
+                  onclick="document.getElementById('playersFile').click()">
+            Importera spelare
+          </button>
+
+          <button id="pasteButton"
+                  onclick="document.getElementById('pasteDialog').showModal()">
+            Klistra in spelare
+          </button>
+
+          <button id="sampleButton"
+                  onclick="loadSamplePlayers()">
+            32 exempelspelare
+          </button>
+
+          <button id="resetButton"
+                  class="danger"
+                  onclick="resetTournament()">
+            Återställ
+          </button>
+        </div>
+      </div>
+
+      <input id="playersFile"
+             type="file"
+             accept=".txt,.csv,.trf"
+             hidden
+             onchange="loadPlayersFile(event)">
+
+      <div class="grid no-print" style="margin-bottom:1rem">
+        <label>
+          Namn
+          <input id="pName" placeholder="Efternamn, Förnamn">
+        </label>
+
+        <label>
+          Rating / uppskattad spelstyrka
+          <input id="pRating"
+                 type="number"
+                 min="1"
+                 max="9999"
+                 value="1500">
+        </label>
+
+        <label>
+          FIDE-titel
+          <select id="pTitle">
+            <option value="">Ingen</option>
+            <option>GM</option>
+            <option>IM</option>
+            <option>WGM</option>
+            <option>FM</option>
+            <option>WIM</option>
+            <option>CM</option>
+            <option>WFM</option>
+            <option>WCM</option>
+          </select>
+        </label>
+
+        <div style="align-self:end">
+          <button id="addButton"
+                  class="success"
+                  onclick="addPlayer()">
+            Lägg till spelare
+          </button>
+        </div>
+      </div>
+
+      <p id="registrationHint" class="muted no-print"></p>
+
+      <p class="muted no-print">
+        I Dubov-systemet måste varje spelare ha ett ratingtal
+        (provisoriskt om orankad). Turneringslottningsnummer (TPN)
+        tilldelas efter Rating &rarr; Titel &rarr; Namn.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>TPN</th>
+              <th>Namn</th>
+              <th>Rating</th>
+              <th>Titel</th>
+              <th>Status</th>
+              <th class="no-print">Nästa rond</th>
+              <th class="no-print">Åtgärder</th>
+            </tr>
+          </thead>
+          <tbody id="playersBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="pairings" class="tab">
+    <div class="card">
+      <div class="row between">
+        <h2 id="roundTitle">Rondlottning</h2>
+
+        <div class="row no-print">
+          <button id="pairButton"
+                  class="primary"
+                  onclick="generateRound()">
+            Lotta rond
+          </button>
+
+          <button id="cancelButton"
+                  class="danger"
+                  onclick="cancelSearch()"
+                  disabled>
+            Avbryt sökning
+          </button>
+
+          <button id="confirmButton"
+                  class="success"
+                  onclick="confirmRound()"
+                  disabled>
+            Bekräfta rond
+          </button>
+        </div>
+      </div>
+
+      <div class="row no-print" style="margin-bottom:.8rem">
+        <button id="testButton" onclick="runRegressionTests()">
+          Kör Dubov-regressionstester
+        </button>
+
+        <button onclick="printPage()">
+          Skriv ut lottningsprotokoll
+        </button>
+      </div>
+
+      <div id="roundProvenance" class="notice warning"></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Bord</th>
+              <th>Vit</th>
+              <th class="center result">Resultat</th>
+              <th>Svart</th>
+            </tr>
+          </thead>
+          <tbody id="pairingsBody"></tbody>
+        </table>
+      </div>
+
+      <div id="unplayedView" style="margin-top:1rem"></div>
+
+      <details class="audit no-print">
+        <summary>Dubov-motorns spårning &amp; grupper</summary>
+        <pre id="activeAudit">Ingen spårningsdata.</pre>
+      </details>
+    </div>
+  </section>
+
+  <section id="standings" class="tab">
+    <div class="card">
+      <h2 id="scoreTournamentName"></h2>
+      <h3 id="scoreTitle">Tabell &amp; resultat</h3>
+
+      <div id="standingsNotice" class="notice no-print"></div>
+
+      <div class="row no-print" style="margin-bottom:1rem">
+        <button onclick="printPage()">Skriv ut tabell</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead id="standingsHead"></thead>
+          <tbody id="standingsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="history" class="tab">
+    <div class="card">
+      <div class="row between">
+        <h2>Spelade ronder</h2>
+      </div>
+
+      <p class="muted no-print">
+        Lottningsprotokoll för valfri rond kan skrivas ut. I alla utskrifter
+        visas ett minustecken i mitten av resultatfältet.
+      </p>
+
+      <div id="historyBody"></div>
+    </div>
+  </section>
+</main>
+
+<dialog id="pasteDialog">
+  <h2>Klistra in deltagarlista</h2>
+
+  <p class="muted">
+    CSV, tab-avgränsad eller semikolonavgränsad:
+    <code>Namn, Rating, Titel</code>.
+    TRF06-rader som börjar med <code>001 </code> stöds också.
+  </p>
+
+  <textarea id="pasteText"
+            placeholder='"Carlsen, Magnus", 2832, GM'></textarea>
+
+  <div class="row" style="justify-content:flex-end;margin-top:.8rem">
+    <button onclick="document.getElementById('pasteDialog').close()">
+      Avbryt
+    </button>
+
+    <button class="success" onclick="importPastedPlayers()">
+      Importera
+    </button>
+  </div>
+</dialog>
+
+<dialog id="aboutDialog">
+  <h2>Om FIDE Dubov-systemet</h2>
+
+  <p>
+    <strong>Dubovs schweiziska lottningssystem</strong>
+    (FIDE Handbook C.04.4.1, gällande från februari 2026)
+    är utformat för att skapa så rättvist motstånd som möjligt genom att utjämna
+    <strong>motståndarnas genomsnittliga rating (ARO)</strong>
+    för alla spelare i varje poänggrupp.
+  </p>
+
+  <p><strong>Grundläggande principer i Dubov-systemet:</strong></p>
+
+  <ul>
+    <li>
+      <strong>Endast uppflyttningar (Upfloaters):</strong> Till skillnad från det holländska systemet
+      förekommer inga nedflyttningar. Poänggrupper som behöver fler spelare tar upp
+      spelare från lägre poänggrupper.
+    </li>
+
+    <li>
+      <strong>ARO-utjämning:</strong> Spelare med lägre ARO lottas mot
+      högre rankade motståndare.
+    </li>
+
+    <li>
+      <strong>Undergrupper G1 och G2:</strong> G1 innehåller spelare som söker vit
+      (sorterade efter stigande ARO); G2 innehåller spelare som söker svart
+      (sorterade efter stigande TPN).
+    </li>
+
+    <li>
+      <strong>Regeln för mittenförskjutning (Art. 4.3.3):</strong>
+      När undergruppernas storlek måste utjämnas flyttas kandidater
+      från mitten av spektret och utåt.
+    </li>
+
+    <li>
+      <strong>Strikta färgregler ([C3]):</strong> Två spelare med samma
+      absoluta färgpreferens kan aldrig mötas.
+    </li>
+
+    <li>
+      <strong>Särskiljningskriterier:</strong>
+      Denna konfiguration rangordnar spelare efter Poäng,
+      Buchholz Cut 1, Sonneborn-Berger, Buchholz och TPN.
+      Särskiljningsordningen är en tävlingsbestämmelse och inte en del
+      av själva lottningsalgoritmen.
+    </li>
+  </ul>
+
+  <button onclick="document.getElementById('aboutDialog').close()">
+    Stäng
+  </button>
+</dialog>
+
+<script>
+"use strict";
+
+/* ========================================================================== */
+/* DUBOV PAIRING CORE                                                         */
+/* ========================================================================== */
+
+function Dubov2026Core() {
+  const VERSION = "2026-dubov-v3-corrected";
+
+  function fault(code, message) {
+    const error = new Error(message);
+    error.code = code;
+    return error;
+  }
+
+  function compareArrays(a, b) {
+    for (
+      let index = 0;
+      index < Math.min(a.length, b.length);
+      index++
+    ) {
+      if (a[index] !== b[index]) {
+        return a[index] < b[index] ? -1 : 1;
+      }
+    }
+
+    return Math.sign(a.length - b.length);
+  }
+
+  function rank(a, b) {
+    return b.score - a.score || a.tpn - b.tpn;
+  }
+
+  function colorDifference(player) {
+    return (player.playedColors || []).reduce(
+      (sum, color) =>
+        sum +
+        (
+          color.toUpperCase() === "W"
+            ? 1
+            : -1
+        ),
+      0
+    );
+  }
+
+  function preference(player) {
+    const history =
+      player.playedColors || [];
+
+    if (!history.length) {
+      return {
+        color:"B",
+        strength:1,
+        type:"mild"
+      };
+    }
+
+    const difference =
+      colorDifference(player);
+
+    const last =
+      history[
+        history.length - 1
+      ].toUpperCase();
+
+    const two =
+      history.length >= 2 &&
+      last ===
+        history[
+          history.length - 2
+        ].toUpperCase();
+
+    const absoluteWhite =
+      difference < -1 ||
+      (
+        two &&
+        last === "B"
+      );
+
+    const absoluteBlack =
+      difference > 1 ||
+      (
+        two &&
+        last === "W"
+      );
+
+    if (
+      absoluteWhite &&
+      absoluteBlack
+    ) {
+      throw fault(
+        "INPUT",
+        "Motstridiga absoluta färgkrav för TPN " +
+        player.tpn
+      );
+    }
+
+    if (absoluteWhite) {
+      return {
+        color:"W",
+        strength:3,
+        type:"absolute"
+      };
+    }
+
+    if (absoluteBlack) {
+      return {
+        color:"B",
+        strength:3,
+        type:"absolute"
+      };
+    }
+
+    if (difference === 1) {
+      return {
+        color:"B",
+        strength:2,
+        type:"strong"
+      };
+    }
+
+    if (difference === -1) {
+      return {
+        color:"W",
+        strength:2,
+        type:"strong"
+      };
+    }
+
+    return {
+      color:
+        last === "W"
+          ? "B"
+          : "W",
+      strength:1,
+      type:"mild"
+    };
+  }
+
+  function calculateARO(
+    player,
+    playersMap
+  ) {
+    let sum = 0;
+    let count = 0;
+
+    for (
+      const opponentId of
+      player.playedOpponents || []
+    ) {
+      const opponent =
+        playersMap.get(opponentId);
+
+      if (
+        opponent &&
+        Number.isFinite(
+          opponent.rating
+        )
+      ) {
+        sum += opponent.rating;
+        count++;
+      }
+    }
+
+    if (count === 0) {
+      return 0;
+    }
+
+    return Math.floor(
+      sum / count + 0.5
+    );
+  }
+
+  function compatible(a, b) {
+    if (
+      !a ||
+      !b ||
+      a.id === b.id
+    ) {
+      return false;
+    }
+
+    const aOpponents =
+      a.opponents || [];
+
+    const bOpponents =
+      b.opponents || [];
+
+    if (
+      aOpponents.includes(b.id) ||
+      bOpponents.includes(a.id)
+    ) {
+      return false;
+    }
+
+    const aPreference =
+      a.pref || preference(a);
+
+    const bPreference =
+      b.pref || preference(b);
+
+    return !(
+      aPreference.strength === 3 &&
+      bPreference.strength === 3 &&
+      aPreference.color ===
+        bPreference.color
+    );
+  }
+
+  function allocate(
+    a,
+    b,
+    initialColor
+  ) {
+    const high =
+      rank(a, b) <= 0
+        ? a
+        : b;
+
+    const low =
+      high === a
+        ? b
+        : a;
+
+    const highPreference =
+      high.pref ||
+      preference(high);
+
+    const lowPreference =
+      low.pref ||
+      preference(low);
+
+    function give(player, color) {
+      const other =
+        player === high
+          ? low
+          : high;
+
+      return color === "W"
+        ? {
+            white:player,
+            black:other
+          }
+        : {
+            white:other,
+            black:player
+          };
+    }
+
+    if (
+      !(high.playedColors || []).length &&
+      !(low.playedColors || []).length
+    ) {
+      const color =
+        high.tpn % 2
+          ? initialColor
+          : (
+              initialColor === "W"
+                ? "B"
+                : "W"
+            );
+
+      return give(high, color);
+    }
+
+    if (
+      highPreference.color &&
+      lowPreference.color &&
+      highPreference.color !==
+        lowPreference.color
+    ) {
+      return give(
+        high,
+        highPreference.color
+      );
+    }
+
+    if (
+      highPreference.strength >
+      lowPreference.strength
+    ) {
+      return give(
+        high,
+        highPreference.color
+      );
+    }
+
+    if (
+      lowPreference.strength >
+      highPreference.strength
+    ) {
+      return give(
+        low,
+        lowPreference.color
+      );
+    }
+
+    const highHistory =
+      high.playedColors || [];
+
+    const lowHistory =
+      low.playedColors || [];
+
+    for (
+      let back = 1;
+      back <= Math.min(
+        highHistory.length,
+        lowHistory.length
+      );
+      back++
+    ) {
+      const highColor =
+        highHistory[
+          highHistory.length - back
+        ].toUpperCase();
+
+      const lowColor =
+        lowHistory[
+          lowHistory.length - back
+        ].toUpperCase();
+
+      if (highColor !== lowColor) {
+        return give(
+          high,
+          highColor === "W"
+            ? "B"
+            : "W"
+        );
+      }
+    }
+
+    if (highPreference.color) {
+      return give(
+        high,
+        highPreference.color
+      );
+    }
+
+    if (lowPreference.color) {
+      return give(
+        low,
+        lowPreference.color
+      );
+    }
+
+    const color =
+      high.tpn % 2
+        ? initialColor
+        : (
+            initialColor === "W"
+              ? "B"
+              : "W"
+          );
+
+    return give(high, color);
+  }
+
+  function middleOutOrder(list) {
+    const length = list.length;
+
+    if (!length) {
+      return [];
+    }
+
+    const result = [];
+
+    const middle =
+      Math.floor(
+        (length - 1) / 2
+      );
+
+    let left = middle - 1;
+    let right = middle + 1;
+    let takeLeft =
+      length % 2 === 1;
+
+    result.push(list[middle]);
+
+    while (
+      left >= 0 ||
+      right < length
+    ) {
+      if (
+        takeLeft &&
+        left >= 0
+      ) {
+        result.push(
+          list[left--]
+        );
+      } else if (
+        !takeLeft &&
+        right < length
+      ) {
+        result.push(
+          list[right++]
+        );
+      } else if (left >= 0) {
+        result.push(
+          list[left--]
+        );
+      } else {
+        result.push(
+          list[right++]
+        );
+      }
+
+      takeLeft = !takeLeft;
+    }
+
+    return result;
+  }
+
+  function* combinations(
+    items,
+    count,
+    start = 0,
+    chosen = []
+  ) {
+    if (count === 0) {
+      yield [...chosen];
+      return;
+    }
+
+    for (
+      let index = start;
+      index <= items.length - count;
+      index++
+    ) {
+      chosen.push(items[index]);
+
+      yield* combinations(
+        items,
+        count - 1,
+        index + 1,
+        chosen
+      );
+
+      chosen.pop();
+    }
+  }
+
+  function perfectMatching(
+    vertices,
+    edge
+  ) {
+    const length =
+      vertices.length;
+
+    if (length === 0) {
+      return true;
+    }
+
+    if (length % 2 !== 0) {
+      return false;
+    }
+
+    const graph =
+      Array.from(
+        { length },
+        () => []
+      );
+
+    let completeGraph = true;
+
+    for (
+      let first = 0;
+      first < length;
+      first++
+    ) {
+      for (
+        let second = first + 1;
+        second < length;
+        second++
+      ) {
+        if (
+          edge[
+            vertices[first]
+          ][
+            vertices[second]
+          ]
+        ) {
+          graph[first].push(second);
+          graph[second].push(first);
+        } else {
+          completeGraph = false;
+        }
+      }
+    }
+
+    if (completeGraph) {
+      return true;
+    }
+
+    if (
+      graph.some(
+        neighbours =>
+          neighbours.length === 0
+      )
+    ) {
+      return false;
+    }
+
+    const match =
+      new Int32Array(length);
+
+    const parent =
+      new Int32Array(length);
+
+    const base =
+      new Int32Array(length);
+
+    const queue =
+      new Int32Array(length);
+
+    const used =
+      new Uint8Array(length);
+
+    const blossom =
+      new Uint8Array(length);
+
+    match.fill(-1);
+
+    function lowestCommonAncestor(
+      first,
+      second
+    ) {
+      const seen =
+        new Uint8Array(length);
+
+      while (true) {
+        first = base[first];
+        seen[first] = 1;
+
+        if (match[first] === -1) {
+          break;
+        }
+
+        first =
+          parent[
+            match[first]
+          ];
+      }
+
+      while (true) {
+        second = base[second];
+
+        if (seen[second]) {
+          return second;
+        }
+
+        second =
+          parent[
+            match[second]
+          ];
+      }
+    }
+
+    function markPath(
+      vertex,
+      blossomBase,
+      child
+    ) {
+      while (
+        base[vertex] !==
+        blossomBase
+      ) {
+        blossom[
+          base[vertex]
+        ] = 1;
+
+        blossom[
+          base[
+            match[vertex]
+          ]
+        ] = 1;
+
+        parent[vertex] = child;
+        child = match[vertex];
+
+        vertex =
+          parent[
+            match[vertex]
+          ];
+      }
+    }
+
+    function findAugmentingPath(
+      root
+    ) {
+      used.fill(0);
+      parent.fill(-1);
+
+      for (
+        let index = 0;
+        index < length;
+        index++
+      ) {
+        base[index] = index;
+      }
+
+      let head = 0;
+      let tail = 0;
+
+      queue[tail++] = root;
+      used[root] = 1;
+
+      while (head < tail) {
+        const vertex =
+          queue[head++];
+
+        for (
+          const next of
+          graph[vertex]
+        ) {
+          if (
+            base[vertex] ===
+              base[next] ||
+            match[vertex] === next
+          ) {
+            continue;
+          }
+
+          if (
+            next === root ||
+            (
+              match[next] !== -1 &&
+              parent[
+                match[next]
+              ] !== -1
+            )
+          ) {
+            const currentBase =
+              lowestCommonAncestor(
+                vertex,
+                next
+              );
+
+            blossom.fill(0);
+
+            markPath(
+              vertex,
+              currentBase,
+              next
+            );
+
+            markPath(
+              next,
+              currentBase,
+              vertex
+            );
+
+            for (
+              let index = 0;
+              index < length;
+              index++
+            ) {
+              if (
+                !blossom[
+                  base[index]
+                ]
+              ) {
+                continue;
+              }
+
+              base[index] =
+                currentBase;
+
+              if (!used[index]) {
+                used[index] = 1;
+                queue[tail++] =
+                  index;
+              }
+            }
+          } else if (
+            parent[next] === -1
+          ) {
+            parent[next] =
+              vertex;
+
+            if (
+              match[next] === -1
+            ) {
+              return next;
+            }
+
+            const matchedVertex =
+              match[next];
+
+            used[matchedVertex] = 1;
+
+            queue[tail++] =
+              matchedVertex;
+          }
+        }
+      }
+
+      return -1;
+    }
+
+    function augment(finish) {
+      let vertex = finish;
+
+      while (vertex !== -1) {
+        const previous =
+          parent[vertex];
+
+        const next =
+          previous === -1
+            ? -1
+            : match[previous];
+
+        if (previous !== -1) {
+          match[vertex] =
+            previous;
+
+          match[previous] =
+            vertex;
+        }
+
+        vertex = next;
+      }
+    }
+
+    for (
+      let root = 0;
+      root < length;
+      root++
+    ) {
+      if (match[root] !== -1) {
+        continue;
+      }
+
+      const finish =
+        findAugmentingPath(root);
+
+      if (finish === -1) {
+        return false;
+      }
+
+      augment(finish);
+    }
+
+    return true;
+  }
+
+  const ASSIGNMENT_INF =
+    1_000_000;
+
+  function minimumCostAssignment(
+    cost
+  ) {
+    const length = cost.length;
+
+    if (length === 0) {
+      return {
+        cost:0,
+        assignment:[],
+        u:new Float64Array(1),
+        v:new Float64Array(1)
+      };
+    }
+
+    const u =
+      new Float64Array(
+        length + 1
+      );
+
+    const v =
+      new Float64Array(
+        length + 1
+      );
+
+    const p =
+      new Int32Array(
+        length + 1
+      );
+
+    const way =
+      new Int32Array(
+        length + 1
+      );
+
+    for (
+      let row = 1;
+      row <= length;
+      row++
+    ) {
+      p[0] = row;
+
+      const minValue =
+        new Float64Array(
+          length + 1
+        );
+
+      const used =
+        new Uint8Array(
+          length + 1
+        );
+
+      minValue.fill(
+        ASSIGNMENT_INF
+      );
+
+      let column0 = 0;
+
+      while (true) {
+        used[column0] = 1;
+
+        const row0 =
+          p[column0];
+
+        let delta =
+          ASSIGNMENT_INF;
+
+        let column1 = -1;
+
+        for (
+          let column = 1;
+          column <= length;
+          column++
+        ) {
+          if (used[column]) {
+            continue;
+          }
+
+          const baseCost =
+            cost[
+              row0 - 1
+            ][
+              column - 1
+            ];
+
+          if (
+            baseCost <
+            ASSIGNMENT_INF
+          ) {
+            const reducedCost =
+              baseCost -
+              u[row0] -
+              v[column];
+
+            if (
+              reducedCost <
+              minValue[column]
+            ) {
+              minValue[column] =
+                reducedCost;
+
+              way[column] =
+                column0;
+            }
+          }
+
+          if (
+            minValue[column] <
+            delta
+          ) {
+            delta =
+              minValue[column];
+
+            column1 = column;
+          }
+        }
+
+        if (
+          column1 === -1 ||
+          delta >=
+            ASSIGNMENT_INF
+        ) {
+          return null;
+        }
+
+        for (
+          let column = 0;
+          column <= length;
+          column++
+        ) {
+          if (used[column]) {
+            u[
+              p[column]
+            ] += delta;
+
+            v[column] -= delta;
+          } else if (
+            minValue[column] <
+            ASSIGNMENT_INF
+          ) {
+            minValue[column] -=
+              delta;
+          }
+        }
+
+        column0 = column1;
+
+        if (p[column0] === 0) {
+          break;
+        }
+      }
+
+      while (true) {
+        const previousColumn =
+          way[column0];
+
+        p[column0] =
+          p[previousColumn];
+
+        column0 =
+          previousColumn;
+
+        if (column0 === 0) {
+          break;
+        }
+      }
+    }
+
+    const assignment =
+      new Array(length).fill(-1);
+
+    for (
+      let column = 1;
+      column <= length;
+      column++
+    ) {
+      if (p[column] > 0) {
+        assignment[
+          p[column] - 1
+        ] = column - 1;
+      }
+    }
+
+    let totalCost = 0;
+
+    for (
+      let row = 0;
+      row < length;
+      row++
+    ) {
+      const column =
+        assignment[row];
+
+      if (
+        column < 0 ||
+        cost[row][column] >=
+          ASSIGNMENT_INF
+      ) {
+        return null;
+      }
+
+      totalCost +=
+        cost[row][column];
+    }
+
+    return {
+      cost:totalCost,
+      assignment,
+      u,
+      v
+    };
+  }
+
+  function hasBipartitePerfectMatching(
+    rows,
+    columns,
+    allowed
+  ) {
+    const length =
+      rows.length;
+
+    if (
+      length !==
+      columns.length
+    ) {
+      return false;
+    }
+
+    if (length === 0) {
+      return true;
+    }
+
+    const adjacency =
+      Array.from(
+        { length },
+        () => []
+      );
+
+    for (
+      let localRow = 0;
+      localRow < length;
+      localRow++
+    ) {
+      const originalRow =
+        rows[localRow];
+
+      for (
+        let localColumn = 0;
+        localColumn < length;
+        localColumn++
+      ) {
+        if (
+          allowed[
+            originalRow
+          ][
+            columns[localColumn]
+          ]
+        ) {
+          adjacency[
+            localRow
+          ].push(
+            localColumn
+          );
+        }
+      }
+
+      if (
+        adjacency[
+          localRow
+        ].length === 0
+      ) {
+        return false;
+      }
+    }
+
+    const pairRow =
+      new Int32Array(length);
+
+    const pairColumn =
+      new Int32Array(length);
+
+    const distance =
+      new Int32Array(length);
+
+    const queue =
+      new Int32Array(length);
+
+    pairRow.fill(-1);
+    pairColumn.fill(-1);
+
+    function bfs() {
+      let head = 0;
+      let tail = 0;
+      let found = false;
+
+      for (
+        let row = 0;
+        row < length;
+        row++
+      ) {
+        if (
+          pairRow[row] === -1
+        ) {
+          distance[row] = 0;
+          queue[tail++] = row;
+        } else {
+          distance[row] = -1;
+        }
+      }
+
+      while (head < tail) {
+        const row =
+          queue[head++];
+
+        for (
+          const column of
+          adjacency[row]
+        ) {
+          const otherRow =
+            pairColumn[column];
+
+          if (
+            otherRow === -1
+          ) {
+            found = true;
+          } else if (
+            distance[
+              otherRow
+            ] === -1
+          ) {
+            distance[
+              otherRow
+            ] =
+              distance[row] + 1;
+
+            queue[tail++] =
+              otherRow;
+          }
+        }
+      }
+
+      return found;
+    }
+
+    function dfs(row) {
+      for (
+        const column of
+        adjacency[row]
+      ) {
+        const otherRow =
+          pairColumn[column];
+
+        if (
+          otherRow === -1 ||
+          (
+            distance[
+              otherRow
+            ] ===
+              distance[row] + 1 &&
+            dfs(otherRow)
+          )
+        ) {
+          pairRow[row] =
+            column;
+
+          pairColumn[column] =
+            row;
+
+          return true;
+        }
+      }
+
+      distance[row] = -1;
+      return false;
+    }
+
+    let matchingSize = 0;
+
+    while (bfs()) {
+      for (
+        let row = 0;
+        row < length;
+        row++
+      ) {
+        if (
+          pairRow[row] === -1 &&
+          dfs(row)
+        ) {
+          matchingSize++;
+        }
+      }
+    }
+
+    return (
+      matchingSize === length
+    );
+  }
+
+  function lexicographicallySmallestOptimalAssignment(
+    cost,
+    solution
+  ) {
+    const length =
+      cost.length;
+
+    const equalityGraph =
+      Array.from(
+        { length },
+        () =>
+          new Array(length)
+            .fill(false)
+      );
+
+    for (
+      let row = 0;
+      row < length;
+      row++
+    ) {
+      for (
+        let column = 0;
+        column < length;
+        column++
+      ) {
+        if (
+          cost[row][column] >=
+          ASSIGNMENT_INF
+        ) {
+          continue;
+        }
+
+        const reducedCost =
+          cost[row][column] -
+          solution.u[row + 1] -
+          solution.v[column + 1];
+
+        equalityGraph[
+          row
+        ][
+          column
+        ] =
+          Math.abs(
+            reducedCost
+          ) < 1e-9;
+      }
+    }
+
+    const assignment =
+      new Array(length).fill(-1);
+
+    let remainingColumns =
+      Array.from(
+        { length },
+        (_, index) => index
+      );
+
+    for (
+      let row = 0;
+      row < length;
+      row++
+    ) {
+      let selected = -1;
+
+      for (
+        let position = 0;
+        position <
+          remainingColumns.length;
+        position++
+      ) {
+        const column =
+          remainingColumns[
+            position
+          ];
+
+        if (
+          !equalityGraph[
+            row
+          ][
+            column
+          ]
+        ) {
+          continue;
+        }
+
+        const laterRows = [];
+
+        for (
+          let laterRow = row + 1;
+          laterRow < length;
+          laterRow++
+        ) {
+          laterRows.push(
+            laterRow
+          );
+        }
+
+        const laterColumns =
+          remainingColumns.filter(
+            (_, index) =>
+              index !== position
+          );
+
+        if (
+          hasBipartitePerfectMatching(
+            laterRows,
+            laterColumns,
+            equalityGraph
+          )
+        ) {
+          selected = column;
+          remainingColumns =
+            laterColumns;
+          break;
+        }
+      }
+
+      if (selected === -1) {
+        return solution.assignment;
+      }
+
+      assignment[row] =
+        selected;
+    }
+
+    return assignment;
+  }
+
+  function solve(
+    input,
+    limits = {},
+    progress = () => {}
+  ) {
+    const started =
+      performance.now();
+
+    const seconds =
+      Number(
+        limits.seconds ?? 30
+      );
+
+    const deadline =
+      seconds > 0
+        ? started +
+          seconds * 1000
+        : Infinity;
+
+    let nodes = 0;
+
+    function tick() {
+      nodes++;
+
+      if (
+        (nodes & 255) === 0 &&
+        performance.now() >=
+          deadline
+      ) {
+        throw fault(
+          "LIMIT",
+          "Tidsgränsen för sökningen har överskridits."
+        );
+      }
+    }
+
+    const context = {
+      roundNumber:
+        Number(input.roundNumber),
+      totalRounds:
+        Number(input.totalRounds),
+      winPoints:
+        Number(input.winPoints || 1),
+      initialColor:
+        input.initialColor || "W"
+    };
+
+    const MaxT =
+      2 +
+      Math.floor(
+        context.totalRounds / 5
+      );
+
+    const rawMap = new Map();
+
+    const players =
+      input.players.map(raw => {
+        const rating =
+          Number(raw.rating);
+
+        if (
+          !Number.isFinite(rating) ||
+          rating <= 0
+        ) {
+          throw fault(
+            "INPUT",
+            "Varje spelare måste ha en giltig eller provisorisk rating. " +
+            `Ogiltig rating för TPN ${raw.tpn}.`
+          );
+        }
+
+        const player = {
+          id:String(raw.id),
+          tpn:Number(raw.tpn),
+          name:String(raw.name),
+          rating,
+          score:Number(
+            raw.score || 0
+          ),
+          opponents:[
+            ...(raw.opponents || [])
+          ],
+          playedOpponents:[
+            ...(
+              raw.playedOpponents ||
+              raw.opponents ||
+              []
+            )
+          ],
+          playedColors:[
+            ...(
+              raw.playedColors ||
+              []
+            )
+          ],
+          floats:[
+            ...(raw.floats || [])
+          ],
+          hadPAB:
+            Boolean(raw.hadPAB),
+          hadUnplayedWin:
+            Boolean(
+              raw.hadUnplayedWin
+            )
+        };
+
+        player.upfloatCount =
+          player.floats.filter(
+            value =>
+              value === "U"
+          ).length;
+
+        player.isMaxUpfloater =
+          player.upfloatCount >=
+          MaxT;
+
+        rawMap.set(
+          player.id,
+          player
+        );
+
+        return player;
+      });
+
+    players.forEach(player => {
+      player.aro =
+        calculateARO(
+          player,
+          rawMap
+        );
+
+      player.pref =
+        preference(player);
+
+      player.cd =
+        colorDifference(player);
+    });
+
+    const playerCount =
+      players.length;
+
+    const edge =
+      Array.from(
+        { length:playerCount },
+        () =>
+          new Array(playerCount)
+            .fill(false)
+      );
+
+    for (
+      let first = 0;
+      first < playerCount;
+      first++
+    ) {
+      for (
+        let second = first + 1;
+        second < playerCount;
+        second++
+      ) {
+        edge[first][second] =
+          edge[second][first] =
+            compatible(
+              players[first],
+              players[second]
+            );
+      }
+    }
+
+    const completionCache =
+      new Map();
+
+    function completionKey(
+      indices
+    ) {
+      let key = 0n;
+
+      for (
+        const index of indices
+      ) {
+        key |=
+          1n <<
+          BigInt(index);
+      }
+
+      return key;
+    }
+
+    function canComplete(
+      indices
+    ) {
+      if (
+        indices.length % 2 !== 0
+      ) {
+        return false;
+      }
+
+      const key =
+        completionKey(indices);
+
+      if (
+        completionCache.has(key)
+      ) {
+        return completionCache.get(
+          key
+        );
+      }
+
+      const possible =
+        perfectMatching(
+          indices,
+          edge
+        );
+
+      completionCache.set(
+        key,
+        possible
+      );
+
+      return possible;
+    }
+
+    let pabIndex = null;
+
+    let toPair =
+      players.map(
+        (_, index) => index
+      );
+
+    if (
+      playerCount % 2 !== 0
+    ) {
+      progress({
+        phase:
+          "Tilldelar frirond / PAB (Artikel 3.1)",
+        nodes,
+        elapsedMs:
+          performance.now() -
+          started
+      });
+
+      const eligible =
+        toPair
+          .filter(index =>
+            !players[index].hadPAB &&
+            !players[index]
+              .hadUnplayedWin
+          )
+          .sort((a, b) =>
+            players[a].score -
+              players[b].score ||
+            players[b]
+              .playedColors.length -
+              players[a]
+                .playedColors.length ||
+            players[b].tpn -
+              players[a].tpn
+          );
+
+      for (
+        const candidate of
+        eligible
+      ) {
+        tick();
+
+        const remainder =
+          toPair.filter(
+            index =>
+              index !== candidate
+          );
+
+        if (
+          canComplete(remainder)
+        ) {
+          pabIndex = candidate;
+          break;
+        }
+      }
+
+      if (pabIndex === null) {
+        throw fault(
+          "NO_LEGAL_COMPLETION",
+          "Ingen giltig fullständig lottning som uppfyller C1–C3 existerar."
+        );
+      }
+
+      toPair =
+        toPair.filter(
+          index =>
+            index !== pabIndex
+        );
+    } else if (
+      !canComplete(toPair)
+    ) {
+      throw fault(
+        "NO_LEGAL_COMPLETION",
+        "Ingen giltig fullständig rond som uppfyller C1–C3 existerar."
+      );
+    }
+
+    const pairings = [];
+    const trace = [];
+    const roundUpfloaterIds = [];
+    let pool = [...toPair];
+
+    function getSortedUpfloaterSets(
+      lowersList,
+      count
+    ) {
+      const sortedLowers =
+        [...lowersList].sort(
+          (a, b) =>
+            players[b].score -
+              players[a].score ||
+            players[a].tpn -
+              players[b].tpn
+        );
+
+      const sequenceIndex =
+        new Map(
+          sortedLowers.map(
+            (index, position) =>
+              [index, position]
+          )
+        );
+
+      const sets = [];
+
+      for (
+        const combination of
+        combinations(
+          sortedLowers,
+          count
+        )
+      ) {
+        const scoresAsc =
+          combination
+            .map(index =>
+              players[index].score
+            )
+            .sort(
+              (a, b) => a - b
+            );
+
+        const maximumUpfloaters =
+          combination.filter(
+            index =>
+              players[index]
+                .isMaxUpfloater
+          );
+
+        const maxUCount =
+          maximumUpfloaters.length;
+
+        const maximumUpfloatHistory =
+          maximumUpfloaters.reduce(
+            (sum, index) =>
+              sum +
+              players[index]
+                .upfloatCount,
+            0
+          );
+
+        const previousUpfloaters =
+          combination.filter(index => {
+            const floats =
+              players[index].floats;
+
+            return (
+              floats.length > 0 &&
+              floats[
+                floats.length - 1
+              ] === "U"
+            );
+          }).length;
+
+        const sequenceIndices =
+          combination
+            .map(index =>
+              sequenceIndex.get(index)
+            )
+            .sort(
+              (a, b) => a - b
+            );
+
+        sets.push({
+          combination,
+          scoresAsc,
+          maxUCount,
+          maximumUpfloatHistory,
+          previousUpfloaters,
+          sequenceIndices
+        });
+      }
+
+      sets.sort((a, b) => {
+        for (
+          let index = 0;
+          index <
+            a.scoresAsc.length;
+          index++
+        ) {
+          if (
+            a.scoresAsc[index] !==
+            b.scoresAsc[index]
+          ) {
+            return (
+              b.scoresAsc[index] -
+              a.scoresAsc[index]
+            );
+          }
+        }
+
+        return compareArrays(
+          a.sequenceIndices,
+          b.sequenceIndices
+        );
+      });
+
+      return sets;
+    }
+
+    function pairSingleBracket(
+      bracket
+    ) {
+      if (
+        bracket.length % 2 !== 0
+      ) {
+        return null;
+      }
+
+      const half =
+        bracket.length / 2;
+
+      function allocationC7Cost(
+        allocation
+      ) {
+        const whitePreference =
+          allocation.white.pref ||
+          preference(
+            allocation.white
+          );
+
+        const blackPreference =
+          allocation.black.pref ||
+          preference(
+            allocation.black
+          );
+
+        let cost = 0;
+
+        if (
+          whitePreference.color &&
+          whitePreference.color !==
+            "W"
+        ) {
+          cost++;
+        }
+
+        if (
+          blackPreference.color &&
+          blackPreference.color !==
+            "B"
+        ) {
+          cost++;
+        }
+
+        return cost;
+      }
+
+      const pristine =
+        bracket.every(index =>
+          players[index]
+            .playedColors.length === 0 &&
+          players[index]
+            .opponents.length === 0
+        );
+
+      if (pristine) {
+        const sortedByTpn =
+          [...bracket].sort(
+            (a, b) =>
+              players[a].tpn -
+              players[b].tpn
+          );
+
+        const subgroupOne =
+          sortedByTpn.slice(
+            0,
+            half
+          );
+
+        const subgroupTwo =
+          sortedByTpn.slice(
+            half
+          );
+
+        const pairs = [];
+        let c7Cost = 0;
+
+        for (
+          let index = 0;
+          index < half;
+          index++
+        ) {
+          if (
+            !edge[
+              subgroupOne[index]
+            ][
+              subgroupTwo[index]
+            ]
+          ) {
+            return pairNonPristineBracket(
+              bracket,
+              subgroupOne,
+              subgroupTwo
+            );
+          }
+
+          const allocation =
+            allocate(
+              players[
+                subgroupOne[index]
+              ],
+              players[
+                subgroupTwo[index]
+              ],
+              context.initialColor
+            );
+
+          c7Cost +=
+            allocationC7Cost(
+              allocation
+            );
+
+          pairs.push({
+            whiteId:
+              allocation.white.id,
+            blackId:
+              allocation.black.id
+          });
+        }
+
+        return {
+          pairs,
+          c7Cost,
+          bracket,
+          shifters:[]
+        };
+      }
+
+      return pairNonPristineBracket(
+        bracket
+      );
+
+      function pairNonPristineBracket(
+        bracketIndices,
+        predeterminedG1 = null,
+        predeterminedG2 = null
+      ) {
+        let initialG1;
+        let initialG2;
+
+        if (
+          predeterminedG1 &&
+          predeterminedG2
+        ) {
+          initialG1 = [
+            ...predeterminedG1
+          ];
+
+          initialG2 = [
+            ...predeterminedG2
+          ];
+        } else if (
+          context.roundNumber === 1 ||
+          bracketIndices.every(
+            index =>
+              players[index]
+                .playedColors
+                .length === 0
+          )
+        ) {
+          const sortedByTpn =
+            [...bracketIndices].sort(
+              (a, b) =>
+                players[a].tpn -
+                players[b].tpn
+            );
+
+          initialG1 =
+            sortedByTpn.slice(
+              0,
+              half
+            );
+
+          initialG2 =
+            sortedByTpn.slice(
+              half
+            );
+        } else {
+          initialG1 =
+            bracketIndices.filter(
+              index =>
+                players[index]
+                  .pref.color === "W"
+            );
+
+          initialG2 =
+            bracketIndices.filter(
+              index =>
+                players[index]
+                  .pref.color === "B"
+            );
+        }
+
+        function orderedShifters(
+          indices,
+          color
+        ) {
+          const sorted =
+            [...indices].sort(
+              color === "W"
+                ? (a, b) =>
+                    players[a].aro -
+                      players[b].aro ||
+                    players[a].tpn -
+                      players[b].tpn
+                : (a, b) =>
+                    players[a].tpn -
+                    players[b].tpn
+            );
+
+          return middleOutOrder(
+            sorted
+          );
+        }
+
+        function movePlayers(
+          G1,
+          G2,
+          sourceName,
+          shifted
+        ) {
+          const shiftedSet =
+            new Set(shifted);
+
+          if (
+            sourceName === "G1"
+          ) {
+            return {
+              G1:G1.filter(
+                index =>
+                  !shiftedSet.has(index)
+              ),
+              G2:[
+                ...G2,
+                ...shifted
+              ]
+            };
+          }
+
+          return {
+            G1:[
+              ...G1,
+              ...shifted
+            ],
+            G2:G2.filter(
+              index =>
+                !shiftedSet.has(index)
+            )
+          };
+        }
+
+        function* configurations(
+          unavoidablePairCount
+        ) {
+          const firstSourceName =
+            initialG1.length <=
+            initialG2.length
+              ? "G1"
+              : "G2";
+
+          const firstSource =
+            firstSourceName === "G1"
+              ? initialG1
+              : initialG2;
+
+          const firstColor =
+            firstSourceName === "G1"
+              ? "W"
+              : "B";
+
+          const firstSequence =
+            orderedShifters(
+              firstSource,
+              firstColor
+            );
+
+          for (
+            const firstShift of
+            combinations(
+              firstSequence,
+              unavoidablePairCount
+            )
+          ) {
+            const afterFirst =
+              movePlayers(
+                initialG1,
+                initialG2,
+                firstSourceName,
+                firstShift
+              );
+
+            const difference =
+              afterFirst.G1.length -
+              afterFirst.G2.length;
+
+            if (
+              difference === 0
+            ) {
+              yield {
+                G1:afterFirst.G1,
+                G2:afterFirst.G2,
+                shifters:[
+                  ...firstShift
+                ]
+              };
+
+              continue;
+            }
+
+            if (
+              difference % 2 !== 0
+            ) {
+              continue;
+            }
+
+            const secondSourceName =
+              difference > 0
+                ? "G1"
+                : "G2";
+
+            const secondColor =
+              secondSourceName === "G1"
+                ? "W"
+                : "B";
+
+            const secondSource =
+              secondSourceName === "G1"
+                ? afterFirst.G1
+                : afterFirst.G2;
+
+            const secondCount =
+              Math.abs(
+                difference
+              ) / 2;
+
+            let secondCandidates =
+              secondSource.filter(
+                index =>
+                  players[index]
+                    .pref.color ===
+                  secondColor
+              );
+
+            if (
+              secondCandidates.length <
+              secondCount
+            ) {
+              const firstShiftSet =
+                new Set(firstShift);
+
+              secondCandidates =
+                secondSource.filter(
+                  index =>
+                    !firstShiftSet.has(
+                      index
+                    )
+                );
+            }
+
+            const secondSequence =
+              orderedShifters(
+                secondCandidates,
+                secondColor
+              );
+
+            for (
+              const secondShift of
+              combinations(
+                secondSequence,
+                secondCount
+              )
+            ) {
+              const balanced =
+                movePlayers(
+                  afterFirst.G1,
+                  afterFirst.G2,
+                  secondSourceName,
+                  secondShift
+                );
+
+              if (
+                balanced.G1.length !==
+                  half ||
+                balanced.G2.length !==
+                  half
+              ) {
+                continue;
+              }
+
+              yield {
+                G1:balanced.G1,
+                G2:balanced.G2,
+                shifters:[
+                  ...firstShift,
+                  ...secondShift
+                ]
+              };
+            }
+          }
+        }
+
+        function materialize(
+          candidate
+        ) {
+          const assignment =
+            lexicographicallySmallestOptimalAssignment(
+              candidate.costs,
+              candidate.solution
+            );
+
+          const pairs = [];
+
+          for (
+            let row = 0;
+            row < half;
+            row++
+          ) {
+            const column =
+              assignment[row];
+
+            const allocation =
+              candidate
+                .allocations[
+                  row
+                ][
+                  column
+                ];
+
+            if (!allocation) {
+              return null;
+            }
+
+            pairs.push({
+              whiteId:
+                allocation.white.id,
+              blackId:
+                allocation.black.id
+            });
+          }
+
+          return {
+            pairs,
+            c7Cost:
+              candidate.solution.cost,
+            bracket:
+              bracketIndices,
+            shifters:[
+              ...candidate.shifters
+            ]
+          };
+        }
+
+        function evaluateConfiguration(
+          configuration
+        ) {
+          if (
+            configuration.G1.length !==
+              half ||
+            configuration.G2.length !==
+              half
+          ) {
+            return null;
+          }
+
+          const subgroupOne =
+            [...configuration.G1]
+              .sort(
+                (a, b) =>
+                  players[a].aro -
+                    players[b].aro ||
+                  players[a].tpn -
+                    players[b].tpn
+              );
+
+          const subgroupTwo =
+            [...configuration.G2]
+              .sort(
+                (a, b) =>
+                  players[a].tpn -
+                  players[b].tpn
+              );
+
+          const costs =
+            Array.from(
+              { length:half },
+              () =>
+                new Array(half)
+                  .fill(
+                    ASSIGNMENT_INF
+                  )
+            );
+
+          const allocations =
+            Array.from(
+              { length:half },
+              () =>
+                new Array(half)
+                  .fill(null)
+            );
+
+          for (
+            let row = 0;
+            row < half;
+            row++
+          ) {
+            const leftIndex =
+              subgroupOne[row];
+
+            for (
+              let column = 0;
+              column < half;
+              column++
+            ) {
+              const rightIndex =
+                subgroupTwo[column];
+
+              if (
+                !edge[
+                  leftIndex
+                ][
+                  rightIndex
+                ]
+              ) {
+                continue;
+              }
+
+              const allocation =
+                allocate(
+                  players[leftIndex],
+                  players[rightIndex],
+                  context.initialColor
+                );
+
+              allocations[
+                row
+              ][
+                column
+              ] = allocation;
+
+              costs[
+                row
+              ][
+                column
+              ] =
+                allocationC7Cost(
+                  allocation
+                );
+            }
+          }
+
+          const solution =
+            minimumCostAssignment(
+              costs
+            );
+
+          if (!solution) {
+            return null;
+          }
+
+          return {
+            costs,
+            allocations,
+            solution,
+            shifters:[
+              ...configuration.shifters
+            ]
+          };
+        }
+
+        const firstSourceSize =
+          Math.min(
+            initialG1.length,
+            initialG2.length
+          );
+
+        const maximumUnavoidable =
+          Math.floor(
+            firstSourceSize / 2
+          );
+
+        for (
+          let unavoidablePairCount = 0;
+          unavoidablePairCount <=
+            maximumUnavoidable;
+          unavoidablePairCount++
+        ) {
+          let bestForCount = null;
+
+          for (
+            const configuration of
+            configurations(
+              unavoidablePairCount
+            )
+          ) {
+            tick();
+
+            const candidate =
+              evaluateConfiguration(
+                configuration
+              );
+
+            if (!candidate) {
+              continue;
+            }
+
+            if (
+              !bestForCount ||
+              candidate.solution.cost <
+                bestForCount
+                  .solution.cost
+            ) {
+              bestForCount =
+                candidate;
+
+              if (
+                candidate
+                  .solution.cost === 0
+              ) {
+                return materialize(
+                  candidate
+                );
+              }
+            }
+          }
+
+          if (bestForCount) {
+            return materialize(
+              bestForCount
+            );
+          }
+        }
+
+        return null;
+      }
+    }
+
+    while (pool.length > 0) {
+      tick();
+
+      const maxScore =
+        Math.max(
+          ...pool.map(
+            index =>
+              players[index].score
+          )
+        );
+
+      const residents =
+        pool.filter(
+          index =>
+            players[index].score ===
+            maxScore
+        );
+
+      const lowers =
+        pool.filter(
+          index =>
+            players[index].score <
+            maxScore
+        );
+
+      progress({
+        phase:
+          `Lottar grupp vid poäng ${maxScore} ` +
+          `(${residents.length} ordinarie spelare)`,
+        nodes,
+        elapsedMs:
+          performance.now() -
+          started
+      });
+
+      let bracketPairing = null;
+      let chosenUpfloaters = [];
+
+      const minimumUpfloaters =
+        residents.length % 2 === 1
+          ? 1
+          : 0;
+
+      for (
+        let upfloaterCount =
+          minimumUpfloaters;
+        upfloaterCount <=
+          lowers.length;
+        upfloaterCount += 2
+      ) {
+        tick();
+
+        if (
+          upfloaterCount === 0
+        ) {
+          const residentSet =
+            new Set(residents);
+
+          const remaining =
+            pool.filter(
+              index =>
+                !residentSet.has(index)
+            );
+
+          if (
+            !canComplete(remaining)
+          ) {
+            continue;
+          }
+
+          const result =
+            pairSingleBracket(
+              residents
+            );
+
+          if (result) {
+            bracketPairing =
+              result;
+
+            chosenUpfloaters = [];
+            break;
+          }
+
+          continue;
+        }
+
+        const isLastRound =
+          context.roundNumber ===
+          context.totalRounds;
+
+        const candidates =
+          getSortedUpfloaterSets(
+            lowers,
+            upfloaterCount
+          );
+
+        let position = 0;
+
+        while (
+          position <
+            candidates.length &&
+          !bracketPairing
+        ) {
+          const scoreProfile =
+            candidates[position]
+              .scoresAsc;
+
+          const profileCandidates =
+            [];
+
+          while (
+            position <
+              candidates.length &&
+            compareArrays(
+              candidates[position]
+                .scoresAsc,
+              scoreProfile
+            ) === 0
+          ) {
+            profileCandidates.push(
+              candidates[position]
+            );
+
+            position++;
+          }
+
+          let best = null;
+
+          for (
+            const candidate of
+            profileCandidates
+          ) {
+            tick();
+
+            const upfloaterSet =
+              candidate.combination;
+
+            const bracket = [
+              ...residents,
+              ...upfloaterSet
+            ];
+
+            const bracketSet =
+              new Set(bracket);
+
+            const remaining =
+              pool.filter(
+                index =>
+                  !bracketSet.has(index)
+              );
+
+            if (
+              !canComplete(remaining)
+            ) {
+              continue;
+            }
+
+            const result =
+              pairSingleBracket(
+                bracket
+              );
+
+            if (!result) {
+              continue;
+            }
+
+            const quality = [
+              result.c7Cost
+            ];
+
+            if (!isLastRound) {
+              quality.push(
+                candidate.maxUCount,
+                candidate
+                  .maximumUpfloatHistory,
+                candidate
+                  .previousUpfloaters
+              );
+            }
+
+            quality.push(
+              ...candidate
+                .sequenceIndices
+            );
+
+            if (
+              !best ||
+              compareArrays(
+                quality,
+                best.quality
+              ) < 0
+            ) {
+              best = {
+                result,
+                upfloaterSet,
+                quality
+              };
+            }
+          }
+
+          if (best) {
+            bracketPairing =
+              best.result;
+
+            chosenUpfloaters =
+              best.upfloaterSet;
+          }
+        }
+
+        if (bracketPairing) {
+          break;
+        }
+      }
+
+      if (!bracketPairing) {
+        throw fault(
+          "NO_DUBOV_CANDIDATE",
+          "Ingen giltig Dubov-lottning kunde hittas " +
+          `för poänggrupp ${maxScore}.`
+        );
+      }
+
+      for (
+        const index of
+        chosenUpfloaters
+      ) {
+        roundUpfloaterIds.push(
+          players[index].id
+        );
+      }
+
+      pairings.push(
+        ...bracketPairing.pairs
+      );
+
+      trace.push({
+        score:maxScore,
+        residents:
+          residents.map(
+            index =>
+              players[index].tpn
+          ),
+        upfloaters:
+          chosenUpfloaters.map(
+            index =>
+              players[index].tpn
+          ),
+        shifters:
+          bracketPairing
+            .shifters.map(
+              index =>
+                players[index].tpn
+            ),
+        C7_violations:
+          bracketPairing.c7Cost
+      });
+
+      const pairedIndices =
+        new Set(
+          bracketPairing.bracket
+        );
+
+      pool =
+        pool.filter(
+          index =>
+            !pairedIndices.has(index)
+        );
+    }
+
+    pairings.sort(
+      (first, second) => {
+        const firstWhite =
+          rawMap.get(
+            first.whiteId
+          );
+
+        const firstBlack =
+          rawMap.get(
+            first.blackId
+          );
+
+        const secondWhite =
+          rawMap.get(
+            second.whiteId
+          );
+
+        const secondBlack =
+          rawMap.get(
+            second.blackId
+          );
+
+        const firstHigh =
+          rank(
+            firstWhite,
+            firstBlack
+          ) <= 0
+            ? firstWhite
+            : firstBlack;
+
+        const secondHigh =
+          rank(
+            secondWhite,
+            secondBlack
+          ) <= 0
+            ? secondWhite
+            : secondBlack;
+
+        return (
+          secondHigh.score -
+            firstHigh.score ||
+          (
+            secondWhite.score +
+            secondBlack.score
+          ) -
+          (
+            firstWhite.score +
+            firstBlack.score
+          ) ||
+          firstHigh.tpn -
+            secondHigh.tpn
+        );
+      }
+    );
+
+    return {
+      engineVersion:VERSION,
+      pairs:pairings,
+      pabId:
+        pabIndex !== null
+          ? players[pabIndex].id
+          : null,
+      upfloaterIds:[
+        ...new Set(
+          roundUpfloaterIds
+        )
+      ],
+      trace,
+      stats:{
+        nodes,
+        elapsedMs:
+          performance.now() -
+          started
+      }
+    };
+  }
+
+  function selfTest(
+    progress = () => {}
+  ) {
+    const passed = [];
+
+    function check(
+      condition,
+      message
+    ) {
+      if (!condition) {
+        throw new Error(message);
+      }
+    }
+
+    function test(name, fn) {
+      progress({
+        phase:"Test: " + name,
+        nodes:0,
+        elapsedMs:0
+      });
+
+      fn();
+      passed.push(name);
+    }
+
+    test(
+      "Mittenförskjutningssekvens (Art. 4.3.3)",
+      () => {
+        const sample = [
+          "A","B","C","D",
+          "E","F","G"
+        ];
+
+        const order =
+          middleOutOrder(sample);
+
+        check(
+          JSON.stringify(order) ===
+          JSON.stringify([
+            "D","C","E","B",
+            "F","A","G"
+          ]),
+          "Felaktig mittenordning"
+        );
+      }
+    );
+
+    test(
+      "ARO-beräkning med avrundning till närmaste heltal (Art. 1.7.1)",
+      () => {
+        const playersMap =
+          new Map([
+            [
+              "A",
+              { rating:2400 }
+            ],
+            [
+              "B",
+              { rating:2501 }
+            ]
+          ]);
+
+        const player = {
+          playedOpponents:[
+            "A",
+            "B"
+          ]
+        };
+
+        const aro =
+          calculateARO(
+            player,
+            playersMap
+          );
+
+        check(
+          aro === 2451,
+          "Förväntade 2451, fick " +
+          aro
+        );
+      }
+    );
+
+    test(
+      "Allmän perfekt matchning: blossom-graf",
+      () => {
+        const edge =
+          Array.from(
+            { length:6 },
+            () =>
+              new Array(6)
+                .fill(false)
+          );
+
+        function connect(a, b) {
+          edge[a][b] = true;
+          edge[b][a] = true;
+        }
+
+        connect(0, 1);
+        connect(1, 2);
+        connect(2, 0);
+        connect(2, 3);
+        connect(3, 4);
+        connect(4, 5);
+        connect(5, 3);
+
+        check(
+          perfectMatching(
+            [0,1,2,3,4,5],
+            edge
+          ),
+          "Förväntade en perfekt matchning"
+        );
+      }
+    );
+
+    test(
+      "Ungerska algoritmen: tilldelningsproblem med minsta kostnad",
+      () => {
+        const result =
+          minimumCostAssignment([
+            [4,1,3],
+            [2,0,5],
+            [3,2,2]
+          ]);
+
+        check(
+          result !== null,
+          "Förväntade en tilldelning"
+        );
+
+        check(
+          result.cost === 5,
+          "Förväntade tilldelningskostnad 5, fick " +
+          result.cost
+        );
+      }
+    );
+
+    test(
+      "Dubov rond 1 (15 spelare: P15 frirond/PAB, 1 mot 8, 2 mot 9 osv.)",
+      () => {
+        const input = {
+          roundNumber:1,
+          totalRounds:5,
+          winPoints:1,
+          initialColor:"W",
+          players:
+            Array.from(
+              { length:15 },
+              (_, index) => ({
+                id:
+                  "P" +
+                  (index + 1),
+                tpn:index + 1,
+                name:
+                  "Spelare " +
+                  (index + 1),
+                rating:
+                  2800 -
+                  index * 10,
+                score:0,
+                opponents:[],
+                playedOpponents:[],
+                playedColors:[],
+                floats:[],
+                hadPAB:false,
+                hadUnplayedWin:false
+              })
+            )
+        };
+
+        const result =
+          solve(
+            input,
+            { seconds:5 }
+          );
+
+        check(
+          result.pabId === "P15",
+          "Förväntade att P15 skulle få frirond (PAB)"
+        );
+
+        check(
+          result.pairs.length === 7,
+          "Förväntade 7 bord"
+        );
+
+        check(
+          result.pairs.some(
+            pairing =>
+              pairing.whiteId ===
+                "P1" &&
+              pairing.blackId ===
+                "P8"
+          ),
+          "Förväntade bord 1: P1 Vit mot P8 Svart"
+        );
+
+        check(
+          result.pairs.some(
+            pairing =>
+              pairing.whiteId ===
+                "P9" &&
+              pairing.blackId ===
+                "P2"
+          ),
+          "Förväntade bord 2: P9 Vit mot P2 Svart"
+        );
+      }
+    );
+
+    test(
+      "Dubov rond 1 skalbarhet med 32 spelare",
+      () => {
+        const input = {
+          roundNumber:1,
+          totalRounds:9,
+          winPoints:1,
+          initialColor:"W",
+          players:
+            Array.from(
+              { length:32 },
+              (_, index) => ({
+                id:
+                  "S" +
+                  (index + 1),
+                tpn:index + 1,
+                name:
+                  "Skalningsspelare " +
+                  (index + 1),
+                rating:
+                  2800 -
+                  index * 10,
+                score:0,
+                opponents:[],
+                playedOpponents:[],
+                playedColors:[],
+                floats:[],
+                hadPAB:false,
+                hadUnplayedWin:false
+              })
+            )
+        };
+
+        const result =
+          solve(
+            input,
+            { seconds:5 }
+          );
+
+        check(
+          result.pairs.length === 16,
+          "Förväntade 16 bord"
+        );
+
+        check(
+          result.pabId === null,
+          "Oväntad frirond (PAB)"
+        );
+      }
+    );
+
+    test(
+      "C3 Absolut förbud (inget undantag för ledare i Dubov)",
+      () => {
+        const first = {
+          id:"A",
+          tpn:1,
+          opponents:[],
+          playedColors:["W","W"]
+        };
+
+        const second = {
+          id:"B",
+          tpn:2,
+          opponents:[],
+          playedColors:["W","W"]
+        };
+
+        check(
+          !compatible(
+            first,
+            second
+          ),
+          "Dubov förbjuder strikt möte vid samma absoluta färgpreferens"
+        );
+      }
+    );
+
+    test(
+      "Artikel 3.2.4 tvåstegs omgruppering av G1/G2",
+      () => {
+        const input = {
+          roundNumber:3,
+          totalRounds:5,
+          winPoints:1,
+          initialColor:"W",
+          players:[
+            {
+              id:"A",
+              tpn:1,
+              name:"A",
+              rating:2400,
+              score:1,
+              opponents:["C","D"],
+              playedOpponents:["C","D"],
+              playedColors:["W","B"],
+              floats:["-","-"],
+              hadPAB:false,
+              hadUnplayedWin:false
+            },
+            {
+              id:"B",
+              tpn:2,
+              name:"B",
+              rating:2300,
+              score:1,
+              opponents:["D","C"],
+              playedOpponents:["D","C"],
+              playedColors:["W","B"],
+              floats:["-","-"],
+              hadPAB:false,
+              hadUnplayedWin:false
+            },
+            {
+              id:"C",
+              tpn:3,
+              name:"C",
+              rating:2200,
+              score:1,
+              opponents:["A","B"],
+              playedOpponents:["A","B"],
+              playedColors:["B","W"],
+              floats:["-","-"],
+              hadPAB:false,
+              hadUnplayedWin:false
+            },
+            {
+              id:"D",
+              tpn:4,
+              name:"D",
+              rating:2100,
+              score:1,
+              opponents:["B","A"],
+              playedOpponents:["B","A"],
+              playedColors:["B","W"],
+              floats:["-","-"],
+              hadPAB:false,
+              hadUnplayedWin:false
+            }
+          ]
+        };
+
+        const result =
+          solve(
+            input,
+            { seconds:5 }
+          );
+
+        const pairSets =
+          result.pairs.map(
+            pair =>
+              [
+                pair.whiteId,
+                pair.blackId
+              ]
+                .sort()
+                .join("-")
+          );
+
+        check(
+          pairSets.includes("A-B"),
+          "Förväntade att A och B lottas mot varandra"
+        );
+
+        check(
+          pairSets.includes("C-D"),
+          "Förväntade att C och D lottas mot varandra"
+        );
+      }
+    );
+
+    test(
+      "Motorn returnerar stabila id:n för uppflyttade spelare",
+      () => {
+        const input = {
+          roundNumber:2,
+          totalRounds:5,
+          winPoints:1,
+          initialColor:"W",
+          players:[
+            {
+              id:"A",
+              tpn:1,
+              name:"A",
+              rating:2400,
+              score:1,
+              opponents:["C"],
+              playedOpponents:["C"],
+              playedColors:["W"],
+              floats:["-"],
+              hadPAB:false,
+              hadUnplayedWin:false
+            },
+            {
+              id:"B",
+              tpn:2,
+              name:"B",
+              rating:2300,
+              score:0.5,
+              opponents:["D"],
+              playedOpponents:["D"],
+              playedColors:["B"],
+              floats:["-"],
+              hadPAB:false,
+              hadUnplayedWin:false
+            },
+            {
+              id:"C",
+              tpn:3,
+              name:"C",
+              rating:2200,
+              score:0.5,
+              opponents:["A"],
+              playedOpponents:["A"],
+              playedColors:["B"],
+              floats:["-"],
+              hadPAB:false,
+              hadUnplayedWin:false
+            },
+            {
+              id:"D",
+              tpn:4,
+              name:"D",
+              rating:2100,
+              score:0,
+              opponents:["B"],
+              playedOpponents:["B"],
+              playedColors:["W"],
+              floats:["-"],
+              hadPAB:false,
+              hadUnplayedWin:false
+            }
+          ]
+        };
+
+        const result =
+          solve(
+            input,
+            { seconds:5 }
+          );
+
+        check(
+          Array.isArray(
+            result.upfloaterIds
+          ),
+          "Förväntade en array med uppflyttnings-ID:n"
+        );
+
+        check(
+          result.upfloaterIds.length >
+            0,
+          "Förväntade minst en uppflyttad spelare"
+        );
+      }
+    );
+
+    test(
+      "Noll i rating avvisas",
+      () => {
+        let rejected = false;
+
+        try {
+          solve({
+            roundNumber:1,
+            totalRounds:5,
+            winPoints:1,
+            initialColor:"W",
+            players:[
+              {
+                id:"A",
+                tpn:1,
+                name:"A",
+                rating:0,
+                score:0
+              },
+              {
+                id:"B",
+                tpn:2,
+                name:"B",
+                rating:2000,
+                score:0
+              }
+            ]
+          });
+        } catch (error) {
+          rejected =
+            error.code === "INPUT";
+        }
+
+        check(
+          rejected,
+          "Förväntade att noll i rating skulle avvisas"
+        );
+      }
+    );
+
+    return {
+      passed:passed.length,
+      tests:passed
+    };
+  }
+
+  return {
+    VERSION,
+    solve,
+    selfTest,
+    rank,
+    preference,
+    colorDifference,
+    calculateARO,
+    compatible,
+    allocate
+  };
+}
+
+/* ========================================================================== */
+/* APPLICATION DATA AND STATE                                                 */
+/* ========================================================================== */
+
+const Core =
+  Dubov2026Core();
+
+const STORAGE_KEY =
+  "fide_dubov_2026_tournament_v1";
+
+const TITLE_WEIGHTS = {
+  GM:8,
+  IM:7,
+  WGM:6,
+  FM:5,
+  WIM:4,
+  CM:3,
+  WFM:2,
+  WCM:1,
+  "":0
+};
+
+const STATUSES = [
+  "pair",
+  "unplayed-zero",
+  "unplayed-draw",
+  "unplayed-win"
+];
+
+const RESULTS = [
+  "1-0",
+  "½-½",
+  "0-1",
+  "1-0F",
+  "0-1F",
+  "0-0F"
+];
+
+const PLAYED_RESULTS =
+  new Set([
+    "1-0",
+    "½-½",
+    "0-1"
+  ]);
+
+let tournament =
+  emptyTournament();
+
+let currentTab = "setup";
+let job = null;
+
+function $(id) {
+  return document.getElementById(id);
+}
+
+function emptyTournament() {
+  return {
+    formatVersion:1,
+    engineVersion:Core.VERSION,
+    name:"FIDE Dubov Open 2026",
+    totalRounds:5,
+    initialColor:"W",
+    winPoints:1,
+    drawPoints:0.5,
+    lossPoints:0,
+    pabPoints:1,
+    settingsFrozen:false,
+    listClosed:false,
+    highestPairedRound:0,
+    currentRound:0,
+    players:[],
+    rounds:[],
+    activePairings:[],
+    activeUpfloaterIds:[],
+    activeAudit:null
+  };
+}
+
+function normalizeTournament(data) {
+  if (
+    !data ||
+    !Array.isArray(data.players)
+  ) {
+    throw new Error(
+      "Ogiltig turneringsdata."
+    );
+  }
+
+  const normalized = {
+    ...emptyTournament(),
+    ...data
+  };
+
+  normalized.players =
+    data.players.map(player => {
+      const rating =
+        Number(player.rating);
+
+      if (
+        !Number.isFinite(rating) ||
+        rating <= 0
+      ) {
+        throw new Error(
+          "Varje spelare måste ha en giltig eller provisorisk rating. " +
+          `Ogiltig rating för ${
+            player.name ||
+            "en namnlös spelare"
+          }.`
+        );
+      }
+
+      return {
+        ...player,
+        id:String(
+          player.id || makeId()
+        ),
+        tpn:Number(
+          player.tpn || 0
+        ),
+        name:String(
+          player.name || ""
+        ).trim(),
+        rating,
+        title:String(
+          player.title || ""
+        ).toUpperCase(),
+        active:
+          player.active !== false,
+        nextRoundStatus:
+          STATUSES.includes(
+            player.nextRoundStatus
+          )
+            ? player.nextRoundStatus
+            : "pair"
+      };
+    });
+
+  normalized.rounds =
+    Array.isArray(data.rounds)
+      ? data.rounds
+      : [];
+
+  normalized.activePairings =
+    Array.isArray(
+      data.activePairings
+    )
+      ? data.activePairings
+      : [];
+
+  normalized.activeUpfloaterIds =
+    Array.isArray(
+      data.activeUpfloaterIds
+    )
+      ? data.activeUpfloaterIds
+      : [];
+
+  normalized.engineVersion =
+    Core.VERSION;
+
+  return normalized;
+}
+
+function escapeHtml(value) {
+  return String(
+    value ?? ""
+  ).replace(
+    /[&<>"']/g,
+    character => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#39;"
+    })[character]
+  );
+}
+
+function message(
+  text,
+  type = ""
+) {
+  $("message").className =
+    "notice no-print" +
+    (
+      type
+        ? " " + type
+        : ""
+    );
+
+  $("message").textContent =
+    text;
+}
+
+function guarded(fn) {
+  try {
+    return fn();
+  } catch (error) {
+    console.error(error);
+
+    message(
+      error.message,
+      "error"
+    );
+  }
+}
+
+function requireIdle(
+  requireNoPending = false
+) {
+  if (job) {
+    throw new Error(
+      "En lottningsberäkning pågår redan."
+    );
+  }
+
+  if (
+    requireNoPending &&
+    tournament
+      .activePairings.length
+  ) {
+    throw new Error(
+      "En rond pågår just nu. Bekräfta eller avbryt den innan du ändrar spelarlistan."
+    );
+  }
+}
+
+function numberValue(
+  value,
+  label,
+  min,
+  max,
+  integer = false
+) {
+  const number =
+    Number(value);
+
+  if (
+    !Number.isFinite(number) ||
+    number < min ||
+    number > max ||
+    (
+      integer &&
+      !Number.isSafeInteger(
+        number
+      )
+    )
+  ) {
+    throw new Error(
+      "Ogiltigt värde för: " + label
+    );
+  }
+
+  return number;
+}
+
+function makeId() {
+  return (
+    "P_" +
+    Math.random()
+      .toString(36)
+      .slice(2, 10)
+  );
+}
+
+function makePlayer(
+  name,
+  rating,
+  title = ""
+) {
+  const cleanName =
+    String(name || "").trim();
+
+  if (!cleanName) {
+    throw new Error(
+      "Ett spelarnamn måste anges."
+    );
+  }
+
+  return {
+    id:makeId(),
+    tpn:0,
+    name:cleanName,
+    rating:numberValue(
+      rating,
+      "rating eller provisorisk rating",
+      1,
+      9999,
+      true
+    ),
+    title:String(title || "")
+      .trim()
+      .toUpperCase(),
+    active:true,
+    nextRoundStatus:"pair"
+  };
+}
+
+function assignTPNs(
+  target = tournament
+) {
+  const collator =
+    new Intl.Collator(
+      "sv",
+      { sensitivity:"base" }
+    );
+
+  target.players.sort(
+    (a, b) =>
+      b.rating - a.rating ||
+      (
+        TITLE_WEIGHTS[b.title] ||
+        0
+      ) -
+      (
+        TITLE_WEIGHTS[a.title] ||
+        0
+      ) ||
+      collator.compare(
+        a.name,
+        b.name
+      )
+  );
+
+  target.players.forEach(
+    (player, index) => {
+      player.tpn =
+        index + 1;
+    }
+  );
+}
+
+function tournamentStarted(
+  target = tournament
+) {
+  return (
+    target.highestPairedRound >
+      0 ||
+    target.rounds.length > 0 ||
+    target.activePairings.length >
+      0
+  );
+}
+
+function tournamentComplete(
+  target = tournament
+) {
+  return (
+    target.rounds.length >=
+      target.totalRounds &&
+    target.activePairings.length ===
+      0
+  );
+}
+
+/* ========================================================================== */
+/* RESULTS AND STATE REBUILDING                                               */
+/* ========================================================================== */
+
+function resultPoints(
+  result,
+  target = tournament
+) {
+  if (
+    result === "1-0" ||
+    result === "1-0F"
+  ) {
+    return [
+      target.winPoints,
+      target.lossPoints
+    ];
+  }
+
+  if (
+    result === "0-1" ||
+    result === "0-1F"
+  ) {
+    return [
+      target.lossPoints,
+      target.winPoints
+    ];
+  }
+
+  if (result === "½-½") {
+    return [
+      target.drawPoints,
+      target.drawPoints
+    ];
+  }
+
+  return [
+    target.lossPoints,
+    target.lossPoints
+  ];
+}
+
+function rebuildState(
+  target = tournament
+) {
+  const completedRounds =
+    target.rounds.length;
+
+  const map = new Map();
+
+  for (
+    const player of
+    target.players
+  ) {
+    player.score = 0;
+    player.opponents = [];
+    player.playedOpponents = [];
+    player.playedColors = [];
+
+    player.roundColors =
+      new Array(
+        completedRounds
+      ).fill("-");
+
+    player.floats =
+      new Array(
+        completedRounds
+      ).fill("-");
+
+    player.hadPAB = false;
+    player.hadUnplayedWin =
+      false;
+
+    player.unplayedCount =
+      completedRounds;
+
+    map.set(
+      player.id,
+      player
+    );
+  }
+
+  target.rounds.forEach(
+    (round, roundIndex) => {
+      const hasStoredUpfloaters =
+        Array.isArray(
+          round.upfloaterIds
+        );
+
+      if (hasStoredUpfloaters) {
+        for (
+          const playerId of
+          round.upfloaterIds
+        ) {
+          const upfloater =
+            map.get(playerId);
+
+          if (upfloater) {
+            upfloater.floats[
+              roundIndex
+            ] = "U";
+          }
+        }
+      }
+
+      const before =
+        new Map(
+          target.players.map(
+            player => [
+              player.id,
+              player.score
+            ]
+          )
+        );
+
+      for (
+        const record of
+        round.pairings
+      ) {
+        if (
+          record.kind === "pab"
+        ) {
+          const player =
+            map.get(record.pabId);
+
+          if (player) {
+            player.score +=
+              record.awardedPoints;
+
+            player.hadPAB = true;
+          }
+
+          continue;
+        }
+
+        if (
+          record.kind ===
+          "unplayed"
+        ) {
+          const player =
+            map.get(
+              record.unplayedId
+            );
+
+          if (player) {
+            player.score +=
+              record.awardedPoints;
+
+            if (
+              record.awardedPoints ===
+              target.winPoints
+            ) {
+              player.hadUnplayedWin =
+                true;
+            }
+          }
+
+          continue;
+        }
+
+        const white =
+          map.get(record.whiteId);
+
+        const black =
+          map.get(record.blackId);
+
+        if (!white || !black) {
+          continue;
+        }
+
+        const [
+          whitePoints,
+          blackPoints
+        ] =
+          resultPoints(
+            record.result,
+            target
+          );
+
+        if (
+          PLAYED_RESULTS.has(
+            record.result
+          )
+        ) {
+          white.opponents.push(
+            black.id
+          );
+
+          black.opponents.push(
+            white.id
+          );
+
+          white.playedOpponents
+            .push(black.id);
+
+          black.playedOpponents
+            .push(white.id);
+
+          white.playedColors
+            .push("W");
+
+          black.playedColors
+            .push("B");
+
+          white.roundColors[
+            roundIndex
+          ] = "w";
+
+          black.roundColors[
+            roundIndex
+          ] = "b";
+
+          white.unplayedCount--;
+          black.unplayedCount--;
+
+          if (
+            !hasStoredUpfloaters
+          ) {
+            if (
+              before.get(white.id) >
+              before.get(black.id)
+            ) {
+              black.floats[
+                roundIndex
+              ] = "U";
+            } else if (
+              before.get(black.id) >
+              before.get(white.id)
+            ) {
+              white.floats[
+                roundIndex
+              ] = "U";
+            }
+          }
+        } else {
+          if (
+            whitePoints ===
+            target.winPoints
+          ) {
+            white.hadUnplayedWin =
+              true;
+          }
+
+          if (
+            blackPoints ===
+            target.winPoints
+          ) {
+            black.hadUnplayedWin =
+              true;
+          }
+        }
+
+        white.score +=
+          whitePoints;
+
+        black.score +=
+          blackPoints;
+      }
+    }
+  );
+
+  for (
+    const player of
+    target.players
+  ) {
+    player.aro =
+      Core.calculateARO(
+        player,
+        map
+      );
+  }
+}
+
+/* ========================================================================== */
+/* TIE-BREAKS                                                                 */
+/* ========================================================================== */
+
+function calculateTiebreaks(
+  target = tournament
+) {
+  const completedRounds =
+    target.rounds.length;
+
+  const histories =
+    new Map(
+      target.players.map(
+        player => [
+          player.id,
+          Array.from(
+            {
+              length:
+                completedRounds
+            },
+            () => ({
+              type:"requested",
+              award:
+                target.lossPoints,
+              opponentId:null,
+              vur:true
+            })
+          )
+        ]
+      )
+    );
+
+  function setEntry(
+    id,
+    roundIndex,
+    entry
+  ) {
+    const history =
+      histories.get(id);
+
+    if (history) {
+      history[roundIndex] =
+        entry;
+    }
+  }
+
+  target.rounds.forEach(
+    (round, roundIndex) => {
+      for (
+        const record of
+        round.pairings
+      ) {
+        if (
+          record.kind === "pab"
+        ) {
+          setEntry(
+            record.pabId,
+            roundIndex,
+            {
+              type:"bye",
+              award:
+                record.awardedPoints,
+              opponentId:null,
+              vur:false
+            }
+          );
+
+          continue;
+        }
+
+        if (
+          record.kind ===
+          "unplayed"
+        ) {
+          const full =
+            record.awardedPoints ===
+            target.winPoints;
+
+          setEntry(
+            record.unplayedId,
+            roundIndex,
+            {
+              type:
+                full
+                  ? "bye"
+                  : "requested",
+              award:
+                record.awardedPoints,
+              opponentId:null,
+              vur:!full
+            }
+          );
+
+          continue;
+        }
+
+        const [
+          whiteAward,
+          blackAward
+        ] =
+          resultPoints(
+            record.result,
+            target
+          );
+
+        const played =
+          PLAYED_RESULTS.has(
+            record.result
+          );
+
+        setEntry(
+          record.whiteId,
+          roundIndex,
+          {
+            type:
+              played
+                ? "played"
+                : "forfeit",
+            award:whiteAward,
+            opponentId:
+              record.blackId,
+            vur:
+              !played &&
+              whiteAward ===
+                target.lossPoints
+          }
+        );
+
+        setEntry(
+          record.blackId,
+          roundIndex,
+          {
+            type:
+              played
+                ? "played"
+                : "forfeit",
+            award:blackAward,
+            opponentId:
+              record.whiteId,
+            vur:
+              !played &&
+              blackAward ===
+                target.lossPoints
+          }
+        );
+      }
+    }
+  );
+
+  const actualScores =
+    new Map();
+
+  const adjustedScores =
+    new Map();
+
+  for (
+    const player of
+    target.players
+  ) {
+    const history =
+      histories.get(player.id);
+
+    const actual =
+      history.reduce(
+        (sum, entry) =>
+          sum + entry.award,
+        0
+      );
+
+    actualScores.set(
+      player.id,
+      actual
+    );
+
+    let adjusted = actual;
+    let laterNonVUR = false;
+
+    for (
+      let roundIndex =
+        history.length - 1;
+      roundIndex >= 0;
+      roundIndex--
+    ) {
+      const entry =
+        history[roundIndex];
+
+      if (
+        entry.type ===
+          "requested" &&
+        !laterNonVUR
+      ) {
+        adjusted +=
+          target.drawPoints -
+          entry.award;
+      }
+
+      if (!entry.vur) {
+        laterNonVUR = true;
+      }
+    }
+
+    adjustedScores.set(
+      player.id,
+      adjusted
+    );
+  }
+
+  const dummyCap =
+    target.drawPoints *
+    target.totalRounds;
+
+  const values = new Map();
+
+  for (
+    const player of
+    target.players
+  ) {
+    const history =
+      histories.get(player.id);
+
+    const ownScore =
+      actualScores.get(
+        player.id
+      );
+
+    let buchholz = 0;
+    let sonnebornBerger = 0;
+
+    const contributions = [];
+
+    for (
+      let roundIndex = 0;
+      roundIndex <
+        history.length;
+      roundIndex++
+    ) {
+      const entry =
+        history[roundIndex];
+
+      let opponentScore;
+
+      if (
+        entry.type === "played"
+      ) {
+        opponentScore =
+          adjustedScores.get(
+            entry.opponentId
+          );
+      } else if (
+        entry.type === "forfeit"
+      ) {
+        opponentScore =
+          Math.min(
+            ownScore,
+            adjustedScores.get(
+              entry.opponentId
+            ) || 0
+          );
+      } else {
+        opponentScore =
+          Math.min(
+            ownScore,
+            dummyCap
+          );
+      }
+
+      sonnebornBerger +=
+        opponentScore *
+        entry.award;
+
+      buchholz += opponentScore;
+
+      contributions.push({
+        vur:entry.vur,
+        bh:opponentScore
+      });
+    }
+
+    const voluntary =
+      contributions.filter(
+        contribution =>
+          contribution.vur
+      );
+
+    const cutPool =
+      voluntary.length
+        ? voluntary
+        : contributions;
+
+    const cut =
+      cutPool.length
+        ? cutPool.reduce(
+            (
+              minimum,
+              contribution
+            ) =>
+              Math.min(
+                minimum,
+                contribution.bh
+              ),
+            Infinity
+          )
+        : 0;
+
+    values.set(
+      player.id,
+      {
+        score:ownScore,
+        bh1:
+          buchholz - cut,
+        bh:buchholz,
+        sb:sonnebornBerger
+      }
+    );
+  }
+
+  return values;
+}
+
+function compareFinalStandings(
+  a,
+  b,
+  tiebreaks
+) {
+  const aValues =
+    tiebreaks.get(a.id);
+
+  const bValues =
+    tiebreaks.get(b.id);
+
+  return (
+    bValues.score -
+      aValues.score ||
+    bValues.bh1 -
+      aValues.bh1 ||
+    bValues.sb -
+      aValues.sb ||
+    bValues.bh -
+      aValues.bh ||
+    a.tpn - b.tpn
+  );
+}
+
+/* ========================================================================== */
+/* STORAGE                                                                    */
+/* ========================================================================== */
+
+function autoSave() {
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(tournament)
+    );
+
+    localStorage.setItem(
+      "fide_dubov_tab",
+      currentTab
+    );
+  } catch (error) {
+    console.error(
+      "AutoSave error:",
+      error
+    );
+  }
+}
+
+function saveTournament() {
+  guarded(() => {
+    requireIdle();
+    autoSave();
+
+    const blob =
+      new Blob(
+        [
+          JSON.stringify(
+            tournament,
+            null,
+            2
+          )
+        ],
+        {
+          type:
+            "application/json"
+        }
+      );
+
+    const url =
+      URL.createObjectURL(
+        blob
+      );
+
+    const anchor =
+      document.createElement(
+        "a"
+      );
+
+    const name =
+      tournament.name.replace(
+        /[^\w.-]+/g,
+        "_"
+      ) ||
+      "Dubov_Turnering";
+
+    anchor.href = url;
+
+    anchor.download =
+      `${name}_rond_` +
+      `${tournament.rounds.length}.json`;
+
+    document.body.appendChild(
+      anchor
+    );
+
+    anchor.click();
+    anchor.remove();
+
+    setTimeout(
+      () =>
+        URL.revokeObjectURL(
+          url
+        ),
+      1000
+    );
+
+    message(
+      "Turneringens JSON-fil har sparats.",
+      "success"
+    );
+  });
+}
+
+async function loadTournamentFile(
+  event
+) {
+  const file =
+    event.target.files[0];
+
+  event.target.value = "";
+
+  if (!file) {
+    return;
+  }
+
+  try {
+    requireIdle();
+
+    const text =
+      await file.text();
+
+    const data =
+      JSON.parse(text);
+
+    if (
+      !data ||
+      !Array.isArray(data.players)
+    ) {
+      throw new Error(
+        "Ogiltig JSON-fil för turneringen."
+      );
+    }
+
+    tournament =
+      normalizeTournament(data);
+
+    rebuildState();
+    renderAll();
+    autoSave();
+
+    message(
+      "Turneringsfilen har lästs in.",
+      "success"
+    );
+  } catch (error) {
+    message(
+      "Kunde inte läsa in filen: " +
+      error.message,
+      "error"
+    );
+  }
+}
+
+/* ========================================================================== */
+/* REGISTRATION                                                               */
+/* ========================================================================== */
+
+function admitPlayers(list) {
+  requireIdle(true);
+
+  if (tournamentStarted()) {
+    throw new Error(
+      "Anmälan är stängd eftersom turneringen redan har startat."
+    );
+  }
+
+  tournament.players.push(
+    ...list
+  );
+
+  assignTPNs();
+  rebuildState();
+  renderAll();
+  autoSave();
+
+  message(
+    `${list.length} spelare har lagts till. ` +
+    "Startordningen har uppdaterats."
+  );
+}
+
+function addPlayer() {
+  guarded(() => {
+    const player =
+      makePlayer(
+        $("pName").value,
+        $("pRating").value,
+        $("pTitle").value
+      );
+
+    admitPlayers([player]);
+
+    $("pName").value = "";
+    $("pName").focus();
+  });
+}
+
+function loadSamplePlayers() {
+  guarded(() => {
+    const list = [
+      ["Carl Magnusen", 2448, "IM"],
+      ["Elena Rostova", 2435, "IM"],
+      ["David Lindqvist", 2412, "IM"],
+      ["Sophie van Dijk", 2395, "WIM"],
+      ["Lars-Göran Månsson", 2380, "FM"],
+      ["Adrian Popescu", 2364, "FM"],
+      ["Anna Lindgren", 2345, "WIM"],
+      ["Viktor Horvath", 2330, "FM"],
+      ["Julian Mercier", 2315, "FM"],
+      ["Oskar Bergman", 2298, "FM"],
+      ["Katarina Novak", 2280, "WIM"],
+      ["Lucas Silva", 2265, "FM"],
+      ["Stefan Blomqvist", 2248, "FM"],
+      ["Maria Santos", 2230, "WFM"],
+      ["Alexander Berg", 2215, ""],
+      ["Tariq Al-Mansoor", 2198, ""],
+      ["Jan Jansen", 2182, ""],
+      ["Karin Wallin", 2165, "WFM"],
+      ["Oliver Schmidt", 2148, ""],
+      ["Dmitry Sokolov", 2130, ""],
+      ["Frederik Hansen", 2112, ""],
+      ["Yuki Tanaka", 2095, ""],
+      ["Nathalie Dubois", 2078, ""],
+      ["Mikael Petersson", 2060, ""],
+      ["Gabriel Rossi", 2042, ""],
+      ["Sarah Jenkins", 2025, ""],
+      ["Arno De Smet", 2005, ""],
+      ["Lukas Weber", 1982, ""],
+      ["Hanna Lind", 1955, ""],
+      ["Marco Bellini", 1920, ""],
+      ["Per-Olof Sjöberg", 1885, ""],
+      ["Tobias Holm", 1852, ""]
+    ].map(
+      ([name, rating, title]) =>
+        makePlayer(
+          name,
+          rating,
+          title
+        )
+    );
+
+    admitPlayers(list);
+  });
+}
+
+function parsePlayersText(text) {
+  const lines =
+    text.split(/\r?\n/);
+
+  const list = [];
+
+  for (const line of lines) {
+    if (
+      !line.trim() ||
+      line
+        .trimStart()
+        .startsWith("#")
+    ) {
+      continue;
+    }
+
+    if (/^001 /.test(line)) {
+      const name =
+        line
+          .slice(14, 47)
+          .trim();
+
+      const importedRating =
+        Number(
+          line
+            .slice(48, 52)
+            .trim()
+        );
+
+      const rating =
+        Number.isFinite(
+          importedRating
+        ) &&
+        importedRating > 0
+          ? importedRating
+          : 1500;
+
+      const title =
+        line
+          .slice(10, 13)
+          .trim();
+
+      list.push(
+        makePlayer(
+          name,
+          rating,
+          title
+        )
+      );
+
+      continue;
+    }
+
+    const parts =
+      line
+        .split(/[,;\t]/)
+        .map(part =>
+          part
+            .trim()
+            .replace(
+              /^"|"$/g,
+              ""
+            )
+        );
+
+    if (parts.length >= 2) {
+      list.push(
+        makePlayer(
+          parts[0],
+          String(
+            parts[1] || ""
+          ).trim()
+            ? parts[1]
+            : 1500,
+          parts[2] || ""
+        )
+      );
+    }
+  }
+
+  return list;
+}
+
+async function loadPlayersFile(
+  event
+) {
+  const file =
+    event.target.files[0];
+
+  event.target.value = "";
+
+  if (!file) {
+    return;
+  }
+
+  try {
+    requireIdle(true);
+
+    const text =
+      await file.text();
+
+    const list =
+      parsePlayersText(text);
+
+    if (!list.length) {
+      throw new Error(
+        "Inga giltiga spelarposter hittades."
+      );
+    }
+
+    admitPlayers(list);
+  } catch (error) {
+    message(
+      "Importen misslyckades: " +
+      error.message,
+      "error"
+    );
+  }
+}
+
+function importPastedPlayers() {
+  guarded(() => {
+    const text =
+      $("pasteText")
+        .value
+        .trim();
+
+    if (!text) {
+      return;
+    }
+
+    const list =
+      parsePlayersText(text);
+
+    if (!list.length) {
+      throw new Error(
+        "Inga giltiga spelarposter hittades."
+      );
+    }
+
+    admitPlayers(list);
+
+    $("pasteText").value = "";
+
+    $("pasteDialog").close();
+  });
+}
+
+function toggleActive(index) {
+  guarded(() => {
+    requireIdle(true);
+
+    const player =
+      tournament.players[index];
+
+    if (player) {
+      player.active =
+        !player.active;
+
+      renderAll();
+      autoSave();
+    }
+  });
+}
+
+function removePlayer(index) {
+  guarded(() => {
+    requireIdle(true);
+
+    const player =
+      tournament.players[index];
+
+    if (!player) {
+      return;
+    }
+
+    if (tournamentStarted()) {
+      if (
+        confirm(
+          `Vill du stryka ${player.name} ` +
+          "från framtida ronder?"
+        )
+      ) {
+        player.active = false;
+      }
+    } else {
+      tournament.players.splice(
+        index,
+        1
+      );
+
+      assignTPNs();
+    }
+
+    rebuildState();
+    renderAll();
+    autoSave();
+  });
+}
+
+function resetTournament() {
+  guarded(() => {
+    requireIdle();
+
+    if (
+      confirm(
+        "Vill du återställa hela turneringen? " +
+        "Alla spelare och ronder kommer att raderas."
+      )
+    ) {
+      tournament =
+        emptyTournament();
+
+      renderAll();
+      autoSave();
+      showTab("setup");
+
+      message(
+        "Turneringen har återställts."
+      );
+    }
+  });
+}
+
+/* ========================================================================== */
+/* ROUND GENERATION                                                           */
+/* ========================================================================== */
+
+function generateRound() {
+  guarded(() => {
+    requireIdle(true);
+    rebuildState();
+
+    const roundNumber =
+      tournament.rounds.length +
+      1;
+
+    if (
+      roundNumber >
+      tournament.totalRounds
+    ) {
+      throw new Error(
+        "Turneringen är redan avslutad."
+      );
+    }
+
+    const active =
+      tournament.players.filter(
+        player =>
+          player.active
+      );
+
+    if (!active.length) {
+      throw new Error(
+        "Det finns inga aktiva spelare."
+      );
+    }
+
+    const toPair =
+      active.filter(
+        player =>
+          player.nextRoundStatus ===
+          "pair"
+      );
+
+    const scheduled =
+      active.filter(
+        player =>
+          player.nextRoundStatus !==
+          "pair"
+      );
+
+    if (
+      !toPair.length &&
+      !scheduled.length
+    ) {
+      throw new Error(
+        "Inga spelare är schemalagda för den här ronden."
+      );
+    }
+
+    const input = {
+      roundNumber,
+      totalRounds:
+        tournament.totalRounds,
+      winPoints:
+        tournament.winPoints,
+      initialColor:
+        tournament.initialColor,
+      players:
+        JSON.parse(
+          JSON.stringify(toPair)
+        )
+    };
+
+    showTab("pairings");
+
+    message(
+      "Söker efter Dubov-lottning...",
+      "warning"
+    );
+
+    try {
+      const source = `
+        const core = (${Dubov2026Core.toString()})();
+
+        self.onmessage = function(event) {
+          try {
+            const result =
+              event.data.type === "tests"
+                ? core.selfTest()
+                : core.solve(
+                    event.data.input,
+                    event.data.limits
+                  );
+
+            self.postMessage({
+              type:"done",
+              result
+            });
+          } catch (error) {
+            self.postMessage({
+              type:"error",
+              message:error.message,
+              code:error.code || ""
+            });
+          }
+        };
+      `;
+
+      const blob =
+        new Blob(
+          [source],
+          {
+            type:
+              "application/javascript"
+          }
+        );
+
+      const workerUrl =
+        URL.createObjectURL(blob);
+
+      const worker =
+        new Worker(workerUrl);
+
+      URL.revokeObjectURL(
+        workerUrl
+      );
+
+      job = worker;
+
+      $("cancelButton").disabled =
+        false;
+
+      $("pairButton").disabled =
+        true;
+
+      worker.onmessage =
+        event => {
+          job = null;
+          worker.terminate();
+
+          $("cancelButton").disabled =
+            true;
+
+          if (
+            event.data.type ===
+            "done"
+          ) {
+            commitRound(
+              event.data.result,
+              roundNumber,
+              scheduled
+            );
+          } else {
+            $("pairButton").disabled =
+              false;
+
+            message(
+              "Lottningsfel: " +
+              event.data.message,
+              "error"
+            );
+
+            updateControls();
+          }
+        };
+
+      worker.onerror =
+        event => {
+          job = null;
+          worker.terminate();
+
+          $("cancelButton").disabled =
+            true;
+
+          $("pairButton").disabled =
+            false;
+
+          message(
+            "Fel i lottningsprocessen: " +
+            (
+              event.message ||
+              "Okänt fel."
+            ),
+            "error"
+          );
+
+          updateControls();
+        };
+
+      worker.postMessage({
+        type:"pair",
+        input,
+        limits:{
+          seconds:30
+        }
+      });
+    } catch (error) {
+      job = null;
+
+      const result =
+        Core.solve(
+          input,
+          { seconds:30 }
+        );
+
+      commitRound(
+        result,
+        roundNumber,
+        scheduled
+      );
+    }
+  });
+}
+
+function cancelSearch() {
+  if (job) {
+    job.terminate();
+    job = null;
+
+    $("cancelButton").disabled =
+      true;
+
+    $("pairButton").disabled =
+      false;
+
+    updateControls();
+
+    message(
+      "Sökningen avbröts.",
+      "warning"
+    );
+  }
+}
+
+function commitRound(
+  result,
+  roundNumber,
+  scheduled
+) {
+  const records =
+    result.pairs.map(
+      (pairing, index) => ({
+        kind:"game",
+        board:index + 1,
+        whiteId:
+          pairing.whiteId,
+        blackId:
+          pairing.blackId,
+        result:"*"
+      })
+    );
+
+  if (result.pabId) {
+    records.push({
+      kind:"pab",
+      board:null,
+      pabId:result.pabId,
+      result:"AUTO",
+      awardedPoints:
+        tournament.pabPoints
+    });
+  }
+
+  for (
+    const player of
+    scheduled
+  ) {
+    const points =
+      player.nextRoundStatus ===
+        "unplayed-win"
+        ? tournament.winPoints
+        : player.nextRoundStatus ===
+            "unplayed-draw"
+          ? tournament.drawPoints
+          : tournament.lossPoints;
+
+    records.push({
+      kind:"unplayed",
+      board:null,
+      unplayedId:player.id,
+      result:"AUTO",
+      awardedPoints:points,
+      label:
+        player.nextRoundStatus
+    });
+  }
+
+  tournament.activePairings =
+    records;
+
+  tournament.activeUpfloaterIds =
+    Array.isArray(
+      result.upfloaterIds
+    )
+      ? [...result.upfloaterIds]
+      : [];
+
+  tournament.activeAudit = {
+    engineVersion:
+      result.engineVersion,
+    stats:result.stats,
+    brackets:result.trace
+  };
+
+  tournament.currentRound =
+    roundNumber;
+
+  tournament.highestPairedRound =
+    Math.max(
+      tournament.highestPairedRound,
+      roundNumber
+    );
+
+  tournament.settingsFrozen =
+    true;
+
+  tournament.listClosed =
+    true;
+
+  renderAll();
+  autoSave();
+
+  const elapsed =
+    result.stats &&
+    Number.isFinite(
+      result.stats.elapsedMs
+    )
+      ? ` (${result.stats.elapsedMs.toFixed(1)} ms)`
+      : "";
+
+  message(
+    `Rond ${roundNumber} har lottats${elapsed}. ` +
+    "Mata in resultat och bekräfta.",
+    "success"
+  );
+}
+
+function changeResult(
+  index,
+  value
+) {
+  guarded(() => {
+    requireIdle();
+
+    const record =
+      tournament
+        .activePairings[index];
+
+    if (
+      record &&
+      record.kind === "game"
+    ) {
+      record.result = value;
+
+      renderPairings();
+      updateControls();
+      autoSave();
+    }
+  });
+}
+
+function confirmRound() {
+  guarded(() => {
+    requireIdle();
+
+    if (
+      !tournament
+        .activePairings.length
+    ) {
+      return;
+    }
+
+    if (
+      tournament
+        .activePairings
+        .some(
+          record =>
+            record.kind ===
+              "game" &&
+            record.result === "*"
+        )
+    ) {
+      throw new Error(
+        "Mata in resultat för samtliga partier innan ronden bekräftas."
+      );
+    }
+
+    tournament.rounds.push({
+      roundNumber:
+        tournament.currentRound,
+
+      pairings:
+        JSON.parse(
+          JSON.stringify(
+            tournament
+              .activePairings
+          )
+        ),
+
+      upfloaterIds:[
+        ...(
+          tournament
+            .activeUpfloaterIds ||
+          []
+        )
+      ],
+
+      audit:
+        tournament.activeAudit
+    });
+
+    tournament.activePairings =
+      [];
+
+    tournament.activeUpfloaterIds =
+      [];
+
+    tournament.activeAudit =
+      null;
+
+    tournament.currentRound =
+      tournament.rounds.length;
+
+    tournament.players.forEach(
+      player => {
+        player.nextRoundStatus =
+          "pair";
+      }
+    );
+
+    rebuildState();
+    renderAll();
+    autoSave();
+    showTab("standings");
+
+    message(
+      tournamentComplete()
+        ? "Turneringen är avslutad! Slutställningen har beräknats med Buchholz Cut 1 och Sonneborn-Berger."
+        : `Rond ${tournament.rounds.length} bekräftad. Du kan nu lotta nästa rond.`,
+      "success"
+    );
+  });
+}
+
+function runRegressionTests() {
+  guarded(() => {
+    const started =
+      performance.now();
+
+    const result =
+      Core.selfTest();
+
+    const elapsed =
+      performance.now() -
+      started;
+
+    message(
+      `${result.passed} Dubov-regressionstester slutfördes felfritt ` +
+      `på ${elapsed.toFixed(1)} ms:\n• ` +
+      result.tests.join("\n• "),
+      "success"
+    );
+  });
+}
+
+/* ========================================================================== */
+/* RENDERING                                                                  */
+/* ========================================================================== */
+
+function playerDisplay(
+  id,
+  withScore = false
+) {
+  const player =
+    tournament.players.find(
+      item =>
+        item.id === id
+    );
+
+  if (!player) {
+    return "Okänd";
+  }
+
+  return (
+    `[${player.tpn}] ` +
+    `<strong>${escapeHtml(player.name)}</strong> ` +
+    `(${player.rating})` +
+    (
+      withScore
+        ? ` <span class="badge">${player.score} p</span>`
+        : ""
+    )
+  );
+}
+
+function renderSettings() {
+  $("tName").value =
+    tournament.name;
+
+  $("tRounds").value =
+    tournament.totalRounds;
+
+  $("tColor").value =
+    tournament.initialColor;
+
+  $("tPoints").value =
+    `${tournament.winPoints},` +
+    `${tournament.drawPoints},` +
+    `${tournament.lossPoints}`;
+
+  $("tPab").value =
+    tournament.pabPoints;
+
+  $("listStatus").textContent =
+    tournament.listClosed
+      ? "Anmälan stängd."
+      : "Anmälan öppen tills rond 1 lottas.";
+}
+
+function renderPlayers() {
+  $("playerCount").textContent =
+    tournament.players.length;
+
+  $("playersBody").innerHTML =
+    tournament.players.map(
+      (player, index) => `
+        <tr>
+          <td>
+            <strong>${player.tpn}</strong>
+          </td>
+
+          <td>
+            ${escapeHtml(player.name)}
+          </td>
+
+          <td>${player.rating}</td>
+
+          <td>
+            ${escapeHtml(player.title || "—")}
+          </td>
+
+          <td>
+            ${player.active ? "Aktiv" : "Utgått"}
+          </td>
+
+          <td class="no-print">
+            <select
+              onchange="
+                tournament.players[${index}].nextRoundStatus=this.value;
+                autoSave();
+              "
+              ${
+                !player.active ||
+                tournamentComplete()
+                  ? "disabled"
+                  : ""
+              }>
+              <option
+                value="pair"
+                ${
+                  player.nextRoundStatus === "pair"
+                    ? "selected"
+                    : ""
+                }>
+                Lottas normalt
+              </option>
+
+              <option
+                value="unplayed-draw"
+                ${
+                  player.nextRoundStatus === "unplayed-draw"
+                    ? "selected"
+                    : ""
+                }>
+                Spelfri remi (½)
+              </option>
+
+              <option
+                value="unplayed-zero"
+                ${
+                  player.nextRoundStatus === "unplayed-zero"
+                    ? "selected"
+                    : ""
+                }>
+                Spelfri nolla (0)
+              </option>
+            </select>
+          </td>
+
+          <td class="no-print">
+            <button
+              class="small"
+              onclick="toggleActive(${index})">
+              ${
+                player.active
+                  ? "Stryk"
+                  : "Återinsätt"
+              }
+            </button>
+
+            <button
+              class="small danger"
+              onclick="removePlayer(${index})">
+              Ta bort
+            </button>
+          </td>
+        </tr>
+      `
+    ).join("") ||
+    '<tr><td colspan="7">Inga spelare anmälda.</td></tr>';
+}
+
+function renderPairings() {
+  const active =
+    tournament
+      .activePairings.length >
+    0;
+
+  $("roundTitle").textContent =
+    active
+      ? `Lottning rond ${tournament.currentRound}`
+      : tournamentComplete()
+        ? "Turneringen är avslutad"
+        : `Nästa rond: ${tournament.rounds.length + 1}`;
+
+  $("roundProvenance").textContent =
+    active
+      ? "Lottning genererad enligt FIDE Handbook C.04.4.1."
+      : "Ingen aktiv rond pågår just nu.";
+
+  const games = [];
+  const unplayed = [];
+
+  tournament.activePairings
+    .forEach(
+      (record, index) => {
+        if (
+          record.kind === "pab"
+        ) {
+          unplayed.push(
+            `<p>` +
+            `<span class="badge bye">Frirond (PAB)</span> ` +
+            `${playerDisplay(record.pabId)} ` +
+            `&mdash; ${record.awardedPoints} p ` +
+            `(ingen motståndare, ingen färg)` +
+            `</p>`
+          );
+
+          return;
+        }
+
+        if (
+          record.kind ===
+          "unplayed"
+        ) {
+          unplayed.push(
+            `<p>` +
+            `<span class="badge">Spelfri</span> ` +
+            `${playerDisplay(record.unplayedId)} ` +
+            `&mdash; ${record.awardedPoints} p` +
+            `</p>`
+          );
+
+          return;
+        }
+
+        const options = [
+          "*",
+          ...RESULTS
+        ].map(result =>
+          `<option value="${result}" ` +
+          `${record.result === result ? "selected" : ""}>` +
+          `${result === "*" ? "—" : result}` +
+          `</option>`
+        ).join("");
+
+        games.push(`
+          <tr>
+            <td>${record.board}</td>
+
+            <td>
+              <span class="badge white">V</span>
+              ${playerDisplay(record.whiteId, true)}
+            </td>
+
+            <td class="center result">
+              <select
+                class="result-select"
+                onchange="changeResult(${index}, this.value)">
+                ${options}
+              </select>
+
+              <span class="print-result">
+                &nbsp;&nbsp;–&nbsp;&nbsp;
+              </span>
+            </td>
+
+            <td>
+              <span class="badge black">S</span>
+              ${playerDisplay(record.blackId, true)}
+            </td>
+          </tr>
+        `);
+      }
+    );
+
+  $("pairingsBody").innerHTML =
+    games.join("") ||
+    '<tr><td colspan="4">Ingen aktiv rondlottning.</td></tr>';
+
+  $("unplayedView").innerHTML =
+    unplayed.join("");
+
+  $("activeAudit").textContent =
+    tournament.activeAudit
+      ? JSON.stringify(
+          tournament.activeAudit,
+          null,
+          2
+        )
+      : "Ingen spårningsdata.";
+}
+
+function renderStandings() {
+  const isFinal =
+    tournamentComplete();
+
+  const tiebreaks =
+    calculateTiebreaks();
+
+  $("scoreTournamentName")
+    .textContent =
+      tournament.name;
+
+  $("scoreTitle").textContent =
+    isFinal
+      ? "Slutställning"
+      : `Ställning efter rond ${tournament.rounds.length}`;
+
+  $("standingsNotice")
+    .textContent =
+      isFinal
+        ? "Särskiljning: Poäng → Buchholz Cut 1 (BH-1) → Sonneborn-Berger (SB) → Buchholz (BH) → TPN."
+        : "Aktuell tabell sorterad efter Poäng, därefter BH-1 och SB.";
+
+  $("standingsHead").innerHTML = `
+    <tr>
+      <th>Plac.</th>
+      <th>TPN</th>
+      <th>Namn</th>
+      <th>Rating</th>
+      <th>Poäng</th>
+      <th title="Buchholz Cut 1">BH-1</th>
+      <th title="Sonneborn-Berger">SB</th>
+      <th title="Buchholz">BH</th>
+      <th title="Motståndarnas genomsnittliga rating (Average Rating of Opponents)">ARO</th>
+      <th title="Färgsekvens (v = vit, s = svart)">Färger</th>
+      <th>Flytt</th>
+    </tr>
+  `;
+
+  const sorted =
+    [...tournament.players]
+      .sort(
+        (a, b) =>
+          compareFinalStandings(
+            a,
+            b,
+            tiebreaks
+          )
+      );
+
+  let currentRank = 0;
+
+  $("standingsBody").innerHTML =
+    sorted.map(
+      (player, index) => {
+        const values =
+          tiebreaks.get(
+            player.id
+          );
+
+        if (
+          index === 0 ||
+          compareFinalStandings(
+            sorted[index - 1],
+            player,
+            tiebreaks
+          ) !== 0
+        ) {
+          currentRank =
+            index + 1;
+        }
+
+        const colorsString =
+          player.roundColors &&
+          player.roundColors.length
+            ? player.roundColors
+                .map(color =>
+                  color.toLowerCase() === "w" ? "v" : color.toLowerCase() === "b" ? "s" : color
+                )
+                .join("")
+            : "—";
+
+        const floatString =
+          player.floats &&
+          player.floats.length
+            ? player.floats.join("")
+            : "—";
+
+        return `
+          <tr>
+            <td>
+              <strong>${currentRank}</strong>
+            </td>
+
+            <td>${player.tpn}</td>
+
+            <td>
+              ${escapeHtml(player.name)}
+              ${
+                player.title
+                  ? `(${escapeHtml(player.title)})`
+                  : ""
+              }
+              ${player.active ? "" : "(U)"}
+            </td>
+
+            <td>${player.rating}</td>
+
+            <td>
+              <strong>${values.score}</strong>
+            </td>
+
+            <td>${values.bh1.toFixed(1)}</td>
+            <td>${values.sb.toFixed(2)}</td>
+            <td>${values.bh.toFixed(1)}</td>
+            <td>${player.aro || 0}</td>
+
+            <td class="mono">
+              <strong>${colorsString}</strong>
+            </td>
+
+            <td class="mono">
+              ${floatString}
+            </td>
+          </tr>
+        `;
+      }
+    ).join("") ||
+    '<tr><td colspan="11">Inga spelare.</td></tr>';
+}
+
+function renderHistory() {
+  $("historyBody").innerHTML =
+    tournament.rounds.map(
+      round => {
+        const rows =
+          round.pairings.map(
+            record => {
+              if (
+                record.kind ===
+                "pab"
+              ) {
+                return `
+                  <tr>
+                    <td>—</td>
+                    <td colspan="3">
+                      Frirond (PAB):
+                      ${playerDisplay(record.pabId)}
+                      &mdash;
+                      ${record.awardedPoints} p
+                    </td>
+                  </tr>
+                `;
+              }
+
+              if (
+                record.kind ===
+                "unplayed"
+              ) {
+                const labelText =
+                  record.label === "unplayed-win"
+                    ? "spelfri vinst"
+                    : record.label === "unplayed-draw"
+                      ? "spelfri remi"
+                      : "spelfri nolla";
+
+                return `
+                  <tr>
+                    <td>—</td>
+                    <td colspan="3">
+                      Spelfri
+                      (${labelText}):
+                      ${playerDisplay(record.unplayedId)}
+                      &mdash;
+                      ${record.awardedPoints} p
+                    </td>
+                  </tr>
+                `;
+              }
+
+              return `
+                <tr>
+                  <td>${record.board}</td>
+
+                  <td>
+                    ${playerDisplay(record.whiteId)}
+                  </td>
+
+                  <td class="center result">
+                    <span class="no-print">
+                      <strong>${record.result}</strong>
+                    </span>
+
+                    <span class="print-result">
+                      &nbsp;&nbsp;–&nbsp;&nbsp;
+                    </span>
+                  </td>
+
+                  <td>
+                    ${playerDisplay(record.blackId)}
+                  </td>
+                </tr>
+              `;
+            }
+          ).join("");
+
+        return `
+          <div class="card">
+            <div class="row between">
+              <h3>Rond ${round.roundNumber}</h3>
+
+              <button
+                class="small no-print"
+                onclick="printHistoricalRound(${round.roundNumber})">
+                Skriv ut lottning för rond ${round.roundNumber}
+              </button>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Bord</th>
+                    <th>Vit</th>
+                    <th class="center result">Resultat</th>
+                    <th>Svart</th>
+                  </tr>
+                </thead>
+
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }
+    ).join("") ||
+    "<p>Inga färdigspelade ronder ännu.</p>";
+}
+
+function updateControls() {
+  const pending =
+    tournament
+      .activePairings.length >
+    0;
+
+  const finished =
+    tournamentComplete();
+
+  const busy =
+    Boolean(job);
+
+  $("pairButton").disabled =
+    busy ||
+    pending ||
+    finished;
+
+  $("cancelButton").disabled =
+    !busy;
+
+  $("confirmButton").disabled =
+    busy ||
+    !pending ||
+    tournament
+      .activePairings
+      .some(
+        record =>
+          record.kind ===
+            "game" &&
+          record.result === "*"
+      );
+
+  $("tName").disabled =
+    tournament.settingsFrozen;
+
+  $("tRounds").disabled =
+    tournament.settingsFrozen;
+
+  $("tColor").disabled =
+    tournament.settingsFrozen;
+
+  $("tPoints").disabled =
+    tournament.settingsFrozen;
+
+  $("tPab").disabled =
+    tournament.settingsFrozen;
+
+  $("sampleButton").disabled =
+    tournamentStarted();
+
+  $("importButton").disabled =
+    tournamentStarted();
+
+  $("pasteButton").disabled =
+    tournamentStarted();
+
+  $("addButton").disabled =
+    tournamentStarted();
+
+  renderPlayers();
+}
+
+function updatePrintTitle() {
+  const labels = {
+    setup:
+      "Deltagarlista",
+
+    pairings:
+      tournament
+        .activePairings.length
+        ? `Lottning rond ${tournament.currentRound}`
+        : "Rondlottning",
+
+    standings:
+      tournamentComplete()
+        ? "Slutställning (Buchholz Cut 1 & Sonneborn-Berger)"
+        : `Ställning efter rond ${tournament.rounds.length}`,
+
+    history:
+      "Historik över spelade ronder"
+  };
+
+  $("printTitle").textContent =
+    `${tournament.name} — ` +
+    labels[currentTab];
+}
+
+function showTab(id) {
+  currentTab = id;
+
+  document.body.dataset.tab =
+    id;
+
+  for (
+    const name of [
+      "setup",
+      "pairings",
+      "standings",
+      "history"
+    ]
+  ) {
+    $(name).classList.toggle(
+      "active",
+      name === id
+    );
+
+    $(
+      `tabButton-${name}`
+    ).classList.toggle(
+      "active",
+      name === id
+    );
+  }
+
+  if (id === "pairings") {
+    renderPairings();
+  }
+
+  if (id === "standings") {
+    renderStandings();
+  }
+
+  if (id === "history") {
+    renderHistory();
+  }
+
+  updatePrintTitle();
+  autoSave();
+}
+
+function printPage() {
+  renderStandings();
+  updatePrintTitle();
+  window.print();
+}
+
+function printHistoricalRound(
+  roundNumber
+) {
+  const round =
+    tournament.rounds.find(
+      item =>
+        item.roundNumber ===
+        roundNumber
+    );
+
+  if (!round) {
+    return;
+  }
+
+  const previousTab =
+    currentTab;
+
+  showTab("history");
+
+  $("printTitle").textContent =
+    `${tournament.name} — ` +
+    `Lottning rond ${roundNumber}`;
+
+  window.print();
+
+  showTab(previousTab);
+}
+
+function renderAll() {
+  renderSettings();
+  renderPlayers();
+  renderPairings();
+  renderStandings();
+  renderHistory();
+  updateControls();
+  updatePrintTitle();
+}
+
+/* ========================================================================== */
+/* INITIALIZATION                                                             */
+/* ========================================================================== */
+
+(function initialize() {
+  let restored = false;
+
+  try {
+    const saved =
+      localStorage.getItem(
+        STORAGE_KEY
+      );
+
+    if (saved) {
+      tournament =
+        normalizeTournament(
+          JSON.parse(saved)
+        );
+
+      restored = true;
+    }
+  } catch (error) {
+    console.error(
+      "Storage restore error:",
+      error
+    );
+  }
+
+  $("tName").addEventListener(
+    "change",
+    event => {
+      tournament.name =
+        event.target.value;
+
+      autoSave();
+    }
+  );
+
+  $("tRounds").addEventListener(
+    "change",
+    event => {
+      tournament.totalRounds =
+        numberValue(
+          event.target.value,
+          "antal ronder",
+          1,
+          30,
+          true
+        );
+
+      autoSave();
+    }
+  );
+
+  $("tColor").addEventListener(
+    "change",
+    event => {
+      tournament.initialColor =
+        event.target.value;
+
+      autoSave();
+    }
+  );
+
+  $("tPab").addEventListener(
+    "change",
+    event => {
+      tournament.pabPoints =
+        numberValue(
+          event.target.value,
+          "poäng vid frirond (PAB)",
+          0,
+          100
+        );
+
+      autoSave();
+    }
+  );
+
+  $("tPoints").addEventListener(
+    "change",
+    event => {
+      const [
+        win,
+        draw,
+        loss
+      ] =
+        event.target.value
+          .split(",")
+          .map(Number);
+
+      tournament.winPoints =
+        win;
+
+      tournament.drawPoints =
+        draw;
+
+      tournament.lossPoints =
+        loss;
+
+      tournament.pabPoints =
+        win;
+
+      $("tPab").value =
+        win;
+
+      autoSave();
+    }
+  );
+
+  rebuildState();
+  renderAll();
+
+  const savedTab =
+    localStorage.getItem(
+      "fide_dubov_tab"
+    );
+
+  if (
+    savedTab &&
+    [
+      "setup",
+      "pairings",
+      "standings",
+      "history"
+    ].includes(savedTab)
+  ) {
+    showTab(savedTab);
+  }
+
+  if (restored) {
+    message(
+      "Turneringen har återställts från din tidigare session.",
+      "success"
+    );
+  }
+})();
+</script>
+
+</body>
+</html>
