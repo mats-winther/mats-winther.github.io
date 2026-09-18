@@ -114,6 +114,23 @@
   players with similar opposition should meet, and the colour rule (which guarantees that no one is assigned the same
   colour three times in a row) eliminates one of the most disruptive elements in certain other systems.<br>
   <br>
+  <b>The Dubov Swiss system</b> is an original method developed by the Russian mathematician Eduard&nbsp;Dubov. The
+  system, which is approved by FIDE, actively strives to ensure that all players finishing on the same score have faced
+  opponents with as similar an average rating as possible. The aim is to reduce the risk that a player reaches a
+  prize-winning position thanks to luck in the pairings and thus unusually weak opposition compared with competitors on
+  the same score.<br>
+  <br>
+  However, the method is less intuitive for players and spectators. In a conventional Swiss system, the players ranked
+  first and second will naturally meet as the tournament approaches its end. In the Dubov Swiss, two players in clear
+  shared lead may very well <i>not</i> meet, simply because the system judges that one of them needs to face a
+  higher-rated opponent in order to balance his ARO value (Average Rating of Opponents). FIDE Dutch, by contrast, is
+  designed to produce a clear winner through top-group elimination, whereas the Dubov system is designed as a
+  statistical measurement instrument: its goal is to give the entire field as fair and comparable an assessment of
+  playing strength as possible. The Dubov system is mathematically elegant but has remained a niche option for
+  practical and psychological reasons. It is, however, ideal for tournaments aimed at further qualification, such as
+  the Candidates Tournament. I have created a pairing program that follows FIDE&rsquo;s specifications: <a href=
+  "../fide-dubov-eng.htm">FIDE Dubov Swiss Pairing System</a>.<br>
+  <br>
   <span class="bigger">FIDE Swiss (&ldquo;Dutch&rdquo;)</span><br>
   <br>
   The Dutch system (FIDE Dutch Swiss) is the international gold standard for chess tournaments and the official system
@@ -141,7 +158,7 @@
   As it has not been verified, the program is not valid for Elo tournaments. If the program proves to work, it can
   still be used for blitz and rapid tournaments, but the pairing should then be labelled &ldquo;modified Dutch&rdquo;
   or something similar. The program can be used to test the algorithm, and it probably works broadly correctly (at
-  least GPT-Sol thinks so). The algorithm is heavy, so generating the next round takes a short moment.<br>
+  least GPT-Sol thinks so).<br>
   <br>
   In the Dutch system, having two consecutive black games is normal. Three black games in a row is generally forbidden,
   with rare exceptions in the last round. Four black games in a row is never possible. A player may in some cases
