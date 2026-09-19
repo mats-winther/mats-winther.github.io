@@ -1260,8 +1260,8 @@ function computeFullStandings() {
   const list = Object.values(stats);
   list.sort((p1, p2) => {
     if (p2.points !== p1.points) return p2.points - p1.points;
-    if (p2.sonnebornBerger !== p1.sonnebornBerger) return p2.sonnebornBerger - p1.sonnebornBerger;
     if (p2.koya !== p1.koya) return p2.koya - p1.koya;
+    if (p2.sonnebornBerger !== p1.sonnebornBerger) return p2.sonnebornBerger - p1.sonnebornBerger;
     return p2.rating - p1.rating;
   });
 
