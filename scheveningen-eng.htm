@@ -1176,7 +1176,7 @@ function setResult(boardIndex, resStr) {
 }
 
 /* =====================================================================
-   9. STANDINGS & TIEBREAK CALCULATIONS
+   9. STANDINGS & TIEBREAK CALCULATIONS (KOYA & SONNEBORN-BERGER)
    ===================================================================== */
 function computeFullStandings() {
   const stats = {};
@@ -1196,7 +1196,7 @@ function computeFullStandings() {
       draws: 0,
       losses: 0,
       points: 0.0,
-      buchholz: 0.0,
+      koya: 0.0,
       sonnebornBerger: 0.0,
       opponents: []
     };
@@ -1242,11 +1242,16 @@ function computeFullStandings() {
     });
   });
 
+  // Koya threshold: at least 50% of maximum possible tournament score (total rounds)
+  const halfMaxScore = (tournament.roundsCount || (tournament.rounds ? tournament.rounds.length : 0) || 0) * 0.5;
+
   Object.values(stats).forEach(p => {
     p.opponents.forEach(match => {
       const opp = stats[match.oppKey];
       if (opp) {
-        p.buchholz += opp.points;
+        if (opp.points >= halfMaxScore) {
+          p.koya += match.pts;
+        }
         p.sonnebornBerger += (match.pts * opp.points);
       }
     });
@@ -1256,7 +1261,7 @@ function computeFullStandings() {
   list.sort((p1, p2) => {
     if (p2.points !== p1.points) return p2.points - p1.points;
     if (p2.sonnebornBerger !== p1.sonnebornBerger) return p2.sonnebornBerger - p1.sonnebornBerger;
-    if (p2.buchholz !== p1.buchholz) return p2.buchholz - p1.buchholz;
+    if (p2.koya !== p1.koya) return p2.koya - p1.koya;
     return p2.rating - p1.rating;
   });
 
@@ -1375,7 +1380,7 @@ function openStandingsNewPage() {
         <td style="text-align:center;">${p.rating}</td>
         <td style="text-align:center;">${p.wins} / ${p.draws} / ${p.losses}</td>
         <td style="font-weight:800; color:#2563eb; text-align:center; font-size:1.02rem;">${p.points.toFixed(1)}</td>
-        <td style="text-align:center;">${p.buchholz.toFixed(1)}</td>
+        <td style="text-align:center;">${p.koya.toFixed(1)}</td>
         <td style="text-align:center;">${p.sonnebornBerger.toFixed(2)}</td>
       </tr>
     `;
@@ -1549,7 +1554,7 @@ function openStandingsNewPage() {
               <th style="text-align:center; width: 65px;">Rating</th>
               <th style="text-align:center; width: 90px;">+ / = / −</th>
               <th style="text-align:center; width: 65px;">Points</th>
-              <th style="text-align:center; width: 80px;">Buchholz</th>
+              <th style="text-align:center; width: 80px;">Koya</th>
               <th style="text-align:center; width: 70px;">S-B</th>
             </tr>
           </thead>
