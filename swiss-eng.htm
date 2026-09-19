@@ -442,6 +442,28 @@ function generateRound1() {
 }
 
 function generateRound2() {
+  const activePlayers = state.players.filter(p => !p.withdrawn);
+  let byePlayer = null;
+  const pairings = [];
+  const paired = new Set();
+  let board = 1;
+
+  // 1. If odd number of players: assign bye to an eligible player who has NOT had a bye
+  if (activePlayers.length % 2 !== 0) {
+    const candidates = activePlayers
+      .filter(p => !(p.history || []).some(h => h.opponent === null))
+      .sort((a, b) => {
+        if (a.score !== b.score) return a.score - b.score;
+        if (a.buchholz !== b.buchholz) return a.buchholz - b.buchholz;
+        return b.seed - a.seed; // Lowest ranked first
+      });
+
+    if (candidates.length > 0) {
+      byePlayer = candidates[0];
+      paired.add(byePlayer.id);
+    }
+  }
+
   const r1 = state.rounds[0].pairings;
   const s1 = state.rounds[0].s1 || Math.ceil(r1.filter(p => p.black).length / 2);
 
@@ -459,17 +481,15 @@ function generateRound2() {
     }
   }
 
-  const h1 = state.players.filter(p => half1Ids.has(p.id) && !p.withdrawn);
-  const h2 = state.players.filter(p => half2Ids.has(p.id) && !p.withdrawn);
+  const h1 = state.players.filter(p => half1Ids.has(p.id) && !p.withdrawn && !paired.has(p.id));
+  const h2 = state.players.filter(p => half2Ids.has(p.id) && !p.withdrawn && !paired.has(p.id));
 
   const scoreGroups = [1, 0.5, 0];
-  const pairings = [];
-  const paired = new Set();
-  let board = 1;
 
+  // 2. Cross-pair H1 and H2 by score group
   scoreGroups.forEach(sc => {
-    const groupH1 = h1.filter(p => !paired.has(p.id) && p.score === sc).sort((a,b) => a.seed - b.seed);
-    const groupH2 = h2.filter(p => !paired.has(p.id) && p.score === sc).sort((a,b) => a.seed - b.seed);
+    const groupH1 = h1.filter(p => !paired.has(p.id) && p.score === sc).sort((a, b) => a.seed - b.seed);
+    const groupH2 = h2.filter(p => !paired.has(p.id) && p.score === sc).sort((a, b) => a.seed - b.seed);
     const count = Math.min(groupH1.length, groupH2.length);
 
     for (let i = 0; i < count; i++) {
@@ -487,10 +507,16 @@ function generateRound2() {
     }
   });
 
+  // 3. Remaining player count is now guaranteed to be even
   const remaining = state.players.filter(p => !paired.has(p.id) && !p.withdrawn);
   if (remaining.length > 0) {
     const extra = pairRound3Plus(remaining);
     extra.forEach(p => pairings.push({ ...p, board: board++ }));
+  }
+
+  // 4. Add the bye pairing at the bottom board
+  if (byePlayer) {
+    pairings.push({ board: board++, white: byePlayer, black: null, result: '1-0 (Bye)' });
   }
 
   state.rounds.push({ roundNum: 2, pairings });
