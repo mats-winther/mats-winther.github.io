@@ -6,6 +6,22 @@
   <link href="style4.css" rel="stylesheet" type="text/css">
   <meta name="description" content=
   "A technical overview of pairing methods in chess tournaments, with a focus on Monrad and Swiss. The article critiques Nordic Swiss and presents an alternative Swiss system as a more stable and fair option for open tournaments.">
+
+  <style>
+  table {margin-left: auto;
+  margin-right: auto;
+  font-family: 'Lucida Sans Unicode', 'Lucida Grande', Helvetica, Arial, sans-serif;
+  font-size: 100%;
+  border-collapse: collapse; 
+  border: 1px solid #000;
+  }
+  th,
+  td {
+  font-size:100%;
+  padding: 6px; 
+  border: 1px solid #000; 
+  }
+  </style>
   <meta name="keywords" content=
   "Monrad, Swiss, Berger, Scheveningen, FIDE Swiss Dutch, Dubov, Koya, pairing, chess, software, Solkoff, Winther acceleration">
   <meta name="author" content="Mats Winther">
@@ -137,6 +153,52 @@
   the Candidates Tournament. I have created a pairing program that follows FIDE&rsquo;s specifications: <a href=
   "../fide-dubov-eng.htm">FIDE Dubov Swiss Pairing System</a>.<br>
   <br>
+  <span class="bigger">Overview of Pairing Systems</span></p>
+  <p><br></p>
+  <table>
+    <thead>
+      <tr>
+        <th>System</th>
+        <th>Basic Idea</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Berger</td>
+        <td>Everyone plays everyone else according to a predetermined round schedule (Round Robin).</td>
+      </tr>
+      <tr>
+        <td>Scheveningen</td>
+        <td>Two groups or teams play each other, with every player facing all players in the opposing group.</td>
+      </tr>
+      <tr>
+        <td>Monrad</td>
+        <td>Players with the same or similar scores are paired against each other.</td>
+      </tr>
+      <tr>
+        <td>Dutch</td>
+        <td>Maximizes pairings within score groups according to a strict hierarchy of rules and criteria.</td>
+      </tr>
+      <tr>
+        <td>Accelerated Swiss</td>
+        <td>Modifies pairings in the early rounds to separate stronger and weaker players more quickly.</td>
+      </tr>
+      <tr>
+        <td>Dubov</td>
+        <td>Equalizes the players&rsquo; average opponent ratings within score groups.</td>
+      </tr>
+      <tr>
+        <td>Burstein</td>
+        <td>Equalizes the strength of players&rsquo; opposition based on actual tournament results.</td>
+      </tr>
+      <tr>
+        <td>Lim</td>
+        <td>Optimizes pairings globally according to mathematically defined fairness criteria.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p><br>
+  <br>
   <span class="bigger">FIDE Swiss (&ldquo;Dutch&rdquo;)</span><br>
   <br>
   The Dutch system (FIDE Dutch Swiss) is the international gold standard for chess tournaments and the official system
@@ -232,6 +294,12 @@
   <br>
   Berger Tournament System (Round-Robin).<br>
   <a href="../berger-eng.htm">https://mats-winther.github.io/berger-eng.htm</a><br>
+  <br>
+  Dubov Swiss Pairing System<br>
+  <a href="../fide-dubov-eng.htm">https://mats-winther.github.io/fide-dubov-eng.htm</a><br>
+  <br>
+  Experimental FIDE Dutch Pairing System<br>
+  <a href="../fide-dutch.htm">https://mats-winther.github.io/fide-dutch.htm</a><br>
   <br>
   Scheveningen Chess Manager (two teams in cross-pairing).<br>
   <a href="../scheveningen-eng.htm" title=
