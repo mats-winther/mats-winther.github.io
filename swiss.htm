@@ -882,10 +882,12 @@ function showFinalStandings() {
   tbody.innerHTML = '';
 
   const standings = getSortedStandings();
+  const colorMap = { 'W': 'v', 'B': 's' };
+
   standings.forEach((p, idx) => {
-    // Collect the sequence of colors ('W', 'B', or '-' for byes)
+    // Genererar färgsekvensen på svenska: 'v', 's' eller '-'
     const colorHistory = (p.history || [])
-      .map(h => (h.color && h.color !== '-') ? h.color : '-')
+      .map(h => colorMap[h.color] || '-')
       .join('');
 
     const tr = document.createElement('tr');
