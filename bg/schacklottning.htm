@@ -48,7 +48,7 @@
     Jag har skapat ett program i JavaScript för dansk-svensk monrad här: <a href="../monrad.htm" title=
     "Monrad lottningsprogram">Monrads lottningssystem</a>. Min online-version av det norska systemet finns här:
     <a href="../norsk-monrad.htm" title="Monrad – turneringshanterare (norsk modell)">Turneringshanterare för
-    Monrad</a>. Kvalitetspoäng beräknas enligt Buchholz (Cut 1/2). Båda kan användas online, men själva sidan går också
+    Monrad</a>. Kvalitetspoäng beräknas enligt buchholz (cut 1/2). Båda kan användas online, men själva sidan går också
     att ladda ned och köra lokalt. Den dansk-svenska versionen använder antingen kumulativ (progressiv) poäng eller
     buchholz (motståndarnas sammanlagda poäng) för att särskilja spelare med samma slutresultat. Kumulativ poäng
     fungerar så att tidiga vinster ger ett högre kumulativt tiebreak, vilket gynnar en aggressiv spelstil. (Att börja
@@ -70,14 +70,14 @@
     delas upp i två jämna lag. Det blir då både en individuell turnering och en lagmatch, vilket kan vara
     stimulerande.<br>
     <br>
-    Som särskiljningsmetod använder programmet i första hand Koya och i andra hand Sonneborn-Berger. Koyapoängen utgörs
+    Som särskiljningsmetod använder programmet i första hand koya och i andra hand sonneborn-berger. Koyapoängen utgörs
     av summan av de poäng en spelare tagit mot motståndare som slutade på minst 50 % av maximala poängantalet. Koya
-    mäter därmed hur väl spelaren presterat mot turneringens starkaste motstånd, medan Sonneborn-Berger ger ett mer
+    mäter därmed hur väl spelaren presterat mot turneringens starkaste motstånd, medan sonneborn-berger ger ett mer
     finfördelat och övergripande mått på motståndarnas samlade resultat.<br>
     <br>
     <b>Schweizer-systemet</b> uppstod i Schweiz i slutet av 1800-talet, främst för stora schackturneringar där
     alla-mot-alla var opraktiskt. Tidiga schweizerturneringar var informella och använde enkla regler: spelare med
-    samma poäng möttes, liknande hur dagens Monrad-lottning fungerar. Schweizer-systemen är idag konstruerade på olika
+    samma poäng möttes, liknande hur dagens monrad-lottning fungerar. Schweizer-systemen är idag konstruerade på olika
     sätt. Det finns bland annat dubbelaccelererad schweizer, haldane-accelerering och FIDE-accelerering (numera
     sällsynt). Vissa varianter fungerar dock riktigt dåligt, däribland nordisk schweizer (se <a href=
     "https://www.kristallen.org/ongoingtournaments/nordch.html" title="Nordisk schweizer">här</a>). Ett typiskt problem
@@ -138,8 +138,8 @@
     Metoden är dock mindre intuitiv för spelare och publik. I vanlig schweizerlottning brukar ettan och tvåan mötas
     naturligt när turneringen närmar sig slutet. I Dubov-schweizer kan två spelare i absolut delad ledning mycket väl
     <i>inte</i> mötas, helt enkelt därför att systemet bedömer att den ena behöver möta en högre rankad spelare för att
-    jämna ut sitt ARO-värde (Average Rating of Opponents). FIDE-Dutch är i jämförelse konstruerat för att utse en
-    entydig vinnare genom utslagning i toppen, medan Dubov-lottning är utformat som ett statistiskt mätinstrument:
+    jämna ut sitt ARO-värde (Average Rating of Opponents). FIDE-dutch är i jämförelse konstruerat för att utse en
+    entydig vinnare genom utslagning i toppen, medan dubov-lottning är utformat som ett statistiskt mätinstrument:
     målet är att ge hela fältet en så rättvis och likvärdig bedömning av spelstyrka som möjligt. Dubov-systemet är
     matematiskt elegant men har förblivit ett nischalternativ av praktiska och psykologiska skäl. Däremot är det
     idealiskt för turneringar som syftar till vidare kvalificering, såsom kandidatturneringen. Jag har skapat ett
@@ -157,8 +157,8 @@
     turneringar men aldrig blev global standard. Det är en modern algoritm som FIDE utvecklat för att minska
     färgobalanser, minska float-kaos, öka determinism och reproducerbarhet, och undvika förutsägbarhet i toppstriden.
     Att FIDE kräver att systemet är deterministiskt och reproducerbart betyder att samma indata ger samma parning, inga
-    &ldquo;mänskliga bedömningar&rdquo; får förekomma, och inga subjektiva val är tillåtna. I praktiken är det omöjligt
-    att lotta Dutch för hand då det är ohyggligt omständligt och beräkningsmässigt explosivt.<br>
+    &ldquo;mänskliga bedömningar&rdquo; får förekomma, och inga subjektiva val är tillåtna. I praktiken är det omöjligt att
+	lotta enligt Dutch (2026) för hand, eftersom förfarandet är extremt omständligt och beräkningsintensivt.<br>
     <br>
     Att just det nederländska systemet blivit norm beror på hur det balanserar sportslig rättvisa, färgfördelning och
     en tydlig differentiering av deltagarna. Systemet har de striktaste färgreglerna av alla schweiziska metoder. En
@@ -175,7 +175,7 @@
     &ldquo;modifierad holländsk&rdquo; eller liknande. Programmet kan användas för att testa algoritmen, och troligen
     fungerar den i huvudsak korrekt (åtminstone tror GPT-Sol det).<br>
     <br>
-    I Dutch-systemet är två svarta partier i rad helt normalt. Tre svarta i rad är i regel förbjudet, med sällsynta
+    I det holländska systemet är två svarta partier i rad helt normalt. Tre svarta i rad är i regel förbjudet, med sällsynta
     undantag i sista ronden. Fyra svarta i rad är aldrig möjligt. En spelare kan i vissa fall avsluta turneringen med
     två fler svarta än vita partier. En färgdifferens på -3 eller mer är något systemet aktivt försöker undvika för
     toppspelare och deras motståndare. Spelarna rangordnas efter poäng och därefter TPN (Tournament Pairing Number).
