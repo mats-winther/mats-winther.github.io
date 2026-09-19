@@ -496,11 +496,23 @@ function generateRound2() {
       const pA = groupH1[i];
       const pB = groupH2[i];
       let white, black;
-      if (pA.seed < pB.seed) {
-        black = pA; white = pB;
+
+      const pAColorR1 = (pA.history && pA.history[0]) ? pA.history[0].color : null;
+      const pBColorR1 = (pB.history && pB.history[0]) ? pB.history[0].color : null;
+
+      if (pAColorR1 === 'B' && pBColorR1 === 'W') {
+        white = pA; black = pB; // pA had Black, so give pA White
+      } else if (pAColorR1 === 'W' && pBColorR1 === 'B') {
+        white = pB; black = pA; // pB had Black, so give pB White
       } else {
-        black = pB; white = pA;
+        // If both had the same color in R1, fall back to seed preference
+        if (pA.seed < pB.seed) {
+          black = pA; white = pB;
+        } else {
+          black = pB; white = pA;
+        }
       }
+
       pairings.push({ board: board++, white, black, result: '' });
       paired.add(pA.id);
       paired.add(pB.id);
