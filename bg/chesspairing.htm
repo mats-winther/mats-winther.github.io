@@ -24,7 +24,7 @@
   }
   </style>
   <meta name="keywords" content=
-  "Monrad, Swiss, Berger, Scheveningen, FIDE Swiss Dutch, Dubov, Koya, pairing, chess, software, Solkoff, Winther acceleration">
+  "Monrad, Swiss, Berger, Scheveningen, FIDE Swiss Dutch, Dubov, Burstein, Koya, pairing, chess, software, Solkoff, Winther acceleration">
   <meta name="author" content="Mats Winther">
   <link rel="canonical" href="https://mats-winther.github.io/bg/chesspairing.htm">
   <title>Chess Pairings: A Review of Monrad, Swiss, and Berger</title>
@@ -122,37 +122,24 @@
   view, a good idea&#8239;&mdash;&thinsp;all players will be pleased. From round three onward, players with similar
   ratings meet each other more consistently. Generally, top players prefer Black against weaker opposition and White
   against stronger. The program accommodates this by granting White to the lower-ranked player when the number of White
-  games played is tied. I do not yet know how the overall rating distribution affects the pairings, but that can be
-  investigated using the program.</p>
+  games played is tied. The program minimizes the number of players who receive Black in the first two rounds. Since
+  the higher-seeded player is normally assigned White in the first round, this situation cannot occur for players in
+  the first and third quarters of the initial ranking list. I do not yet know how the overall rating distribution
+  affects the pairings, but that can be investigated using the program.</p>
   <p>The fundamental problem of Swiss pairing is that it attempts to achieve a fair tournament within a limited number
   of rounds, without being able to employ the ideal round-robin format. Therefore, the system must both produce
   high-quality pairings and simultaneously be perceived as fair by the players. Many Swiss variants fall short in this
   respect, especially when the intermediate bracket oscillates between overly strong and overly weak opposition, or
   when the colour allocation becomes unreasonable. Furthermore, FIDE&rsquo;s current rules are complex and convoluted,
-  making them less transparent to participants. The proposed variant is an attempt to combine simplicity with
-  stability: the first two rounds provide a controlled acceleration where elite players meet lower-ranked opponents,
-  while the intermediate bracket avoids the oscillation that otherwise detracts from the joy of playing. From round
-  three onward, players with similar ratings meet each other with increasing frequency, lending the tournament a
-  natural progression. The fact that Buchholz is used as a secondary criterion harmonizes with the objective that
-  players with similar opposition should meet, and the colour rule (which guarantees that no one is assigned the same
-  colour three times in a row) eliminates one of the most disruptive elements in certain other systems.<br>
+  making them less transparent to participants.<br>
   <br>
-  <b>The Dubov Swiss system</b> is an original method developed by the Russian mathematician Eduard&nbsp;Dubov. The
-  system, which is approved by FIDE, actively strives to ensure that all players finishing on the same score have faced
-  opponents with as similar an average rating as possible. The aim is to reduce the risk that a player reaches a
-  prize-winning position thanks to luck in the pairings and thus unusually weak opposition compared with competitors on
-  the same score.<br>
-  <br>
-  However, the method is less intuitive for players and spectators. In a conventional Swiss system, the players ranked
-  first and second will naturally meet as the tournament approaches its end. In the Dubov Swiss, two players in clear
-  shared lead may very well <i>not</i> meet, simply because the system judges that one of them needs to face a
-  higher-rated opponent in order to balance his ARO value (Average Rating of Opponents). FIDE Dutch, by contrast, is
-  designed to produce a clear winner through top-group elimination, whereas the Dubov system is designed as a
-  statistical measurement instrument: its goal is to give the entire field as fair and comparable an assessment of
-  playing strength as possible. The Dubov system is mathematically elegant but has remained a niche option for
-  practical and psychological reasons. It is, however, ideal for tournaments aimed at further qualification, such as
-  the Candidates Tournament. I have created a pairing program that follows FIDE&rsquo;s specifications: <a href=
-  "../fide-dubov-eng.htm">FIDE Dubov Swiss Pairing System</a>.<br>
+  The proposed variant is an attempt to combine simplicity with stability: the first two rounds provide a controlled
+  acceleration where elite players meet lower-ranked opponents, while the intermediate bracket avoids the oscillation
+  that otherwise detracts from the joy of playing. From round three onward, players with similar ratings meet each
+  other with increasing frequency, lending the tournament a natural progression. The fact that Buchholz is used as a
+  secondary criterion harmonizes with the objective that players with similar opposition should meet, and the colour
+  rule (which guarantees that no one is assigned the same colour three times in a row) eliminates one of the most
+  disruptive elements in certain other systems.<br>
   <br>
   <span class="bigger">Overview of Pairing Systems</span></p>
   <table class="c1">
@@ -198,9 +185,7 @@
     </tbody>
   </table>
   <p><br>
-  <span class="bigger">FIDE Swiss (&ldquo;Dutch&rdquo;)</span><br>
-  <br>
-  The Dutch system (FIDE Dutch Swiss) is the international gold standard for chess tournaments and the official system
+  <b>FIDE Swiss (&ldquo;Dutch&rdquo;)</b> is the international gold standard for chess tournaments and the official system
   prescribed by FIDE for most open Elo events as of 1&nbsp;February 2026. Its purpose is to achieve the fairest pairing
   possible. The algorithm, which is highly complex (see <a href="https://handbook.fide.com/chapter/C0403202602" title=
   "C. GENERAL RULES AND TECHNICAL RECOMMENDATIONS FOR TOURNAMENTS / 04. FIDE Swiss Rules / C.04.3 FIDE (Dutch) System / C.04.3 FIDE (Dutch) System (effective from 1 February 2026) /">
@@ -222,11 +207,11 @@
   of sporting integrity: it maximally protects colour allocation and ensures that players with the best results meet
   each other towards the end of the tournament.<br>
   <br>
-  I have created an experimental version here: <a href="../fide-dutch.htm">Experimental FIDE Dutch Pairing System</a>.
+  I have created an experimental version here: <a href="../fide-dutch.htm">Dutch Pairing System</a>.
   As it has not been verified, the program is not valid for Elo tournaments. If the program proves to work, it can
   still be used for blitz and rapid tournaments, but the pairing should then be labelled &ldquo;modified Dutch&rdquo;
-  or something similar. The program can be used to test the algorithm, and it probably works broadly correctly (at
-  least GPT-Sol thinks so).<br>
+  or something similar. The program can be used to test the algorithm, which GPT-Sol (AI) has verified as working
+  correctly.<br>
   <br>
   In the Dutch system, having two consecutive black games is normal. Three black games in a row is generally forbidden,
   with rare exceptions in the last round. Four black games in a row is never possible. A player may in some cases
@@ -239,6 +224,38 @@
   pairing is often impossible to foresee. The algorithm attempts to optimise across 16 different quality criteria.
   Players with the same score do not necessarily meet each other, and one may face someone with a completely different
   TPN than expected. Colour allocation is complex and not intuitive.<br>
+  <br>
+  <b>The Dubov Swiss system</b> is an original method developed by the Russian mathematician Eduard&nbsp;Dubov. The
+  system, which is approved by FIDE, actively strives to ensure that all players finishing on the same score have faced
+  opponents with as similar an average rating as possible. The aim is to reduce the risk that a player reaches a
+  prize-winning position thanks to luck in the pairings and thus unusually weak opposition compared with competitors on
+  the same score.<br>
+  <br>
+  However, the method is less intuitive for players and spectators. In a conventional Swiss system, the players ranked
+  first and second will naturally meet as the tournament approaches its end. In the Dubov Swiss, two players in clear
+  shared lead may very well <i>not</i> meet, simply because the system judges that one of them needs to face a
+  higher-rated opponent in order to balance his ARO value (Average Rating of Opponents). FIDE Dutch, by contrast, is
+  designed to produce a clear winner through top-group elimination, whereas the Dubov system is designed as a
+  statistical measurement instrument: its goal is to give the entire field as fair and comparable an assessment of
+  playing strength as possible. The Dubov system is mathematically elegant but has remained a niche option for
+  practical and psychological reasons. It is, however, ideal for tournaments aimed at further qualification, such as
+  the Candidates Tournament. I have created a pairing program that follows FIDE&rsquo;s specifications: <a href=
+  "../fide-dubov-eng.htm">Dubov Swiss Pairing System</a>.<br>
+  <br>
+  <b>The Burstein Swiss System</b> was developed in 1993 by Almog Burstein (born 1950), an Israeli international arbiter (IA),
+  chess organizer, and long-time FIDE official. The core philosophy is to equalize the strength of opposition among
+  players (or teams) in the same score group. It was famously adopted by FIDE for team competitions and served as the
+  pairing system used in Chess Olympiads from Moscow 1994 through Dresden 2008. It remains one of the officially
+  recognized pairing systems in the FIDE Handbook.<br>
+  <br>
+  The Burstein system uses a hybrid method. It begins with Dutch seeding: the first half of the scheduled rounds,
+  rounded down and capped at four, are paired using the FIDE Dutch system. In subsequent rounds, players are divided
+  into scoregroups and ranked within each bracket by Buchholz, Sonneborn-Berger, and then ascending TPN. Pairings
+  generally match the highest-ranked available player with the lowest-ranked compatible player. Floaters (players
+  paired against an opponent from a different score group) and any pairing-allocated bye (unpaired round) are selected
+  according to prescribed priorities, while avoiding repeat opponents, respecting absolute color restrictions, and
+  minimizing unmet color preferences. My implementation is here: <a href="../fide-burstein.htm">Burstein Pairing
+  System</a>.<br>
   <br>
   &copy; Mats Winther, 2026.</p>
   <p><br>
@@ -274,7 +291,7 @@
   "Wikipedia: Scheveningen system"><br>
   https://en.wikipedia.org/wiki/Scheveningen_system</a><br>
   <br>
-  &lsquo;Sonneborn–Berger score&rsquo;. Wikipedia.<br>
+  &lsquo;Sonneborn-Berger score&rsquo;. Wikipedia.<br>
   <a href="https://en.wikipedia.org/wiki/Sonneborn%E2%80%93Berger_score" title=
   "Wikipedia: Sonneborn–Berger score">https://en.wikipedia.org/wiki/Sonneborn%E2%80%93Berger_score</a><br>
   <br>
@@ -294,10 +311,13 @@
   Berger Tournament System (Round-Robin).<br>
   <a href="../berger-eng.htm">https://mats-winther.github.io/berger-eng.htm</a><br>
   <br>
+  Burstein Pairing System<br>
+  <a href="../fide-burstein-eng.htm">https://mats-winther.github.io/fide-burstein-eng.htm</a><br>
+  <br>
   Dubov Swiss Pairing System<br>
   <a href="../fide-dubov-eng.htm">https://mats-winther.github.io/fide-dubov-eng.htm</a><br>
   <br>
-  Experimental FIDE Dutch Pairing System<br>
+  Dutch Pairing System<br>
   <a href="../fide-dutch.htm">https://mats-winther.github.io/fide-dutch.htm</a><br>
   <br>
   Scheveningen Chess Manager (two teams in cross-pairing).<br>

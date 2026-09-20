@@ -24,7 +24,7 @@
   }
   </style>
   <meta name="keywords" content=
-  "Monrad, Schweizer, Berger, Scheveningen, FIDE Schweizer, Dutch, Dubov, Koya, lottning, schack, program, winther-accelerering">
+  "Monrad, Schweizer, Berger, Scheveningen, FIDE Schweizer, Dutch, Dubov, Burstein, Koya, lottning, schack, program, winther-accelerering">
   <meta name="author" content="Mats Winther">
   <link rel="canonical" href="https://mats-winther.github.io/bg/schacklottning.htm">
   <title>Schacklottning: en genomgång av Monrad, Schweizer och Berger</title>
@@ -64,8 +64,8 @@
     <br>
     Jag har skapat ett program i JavaScript för dansk-svensk monrad här: <a href="../monrad.htm" title=
     "Monrad lottningsprogram">Monrads lottningssystem</a>. Min online-version av det norska systemet finns här:
-    <a href="../norsk-monrad.htm" title="Monrad – turneringshanterare (norsk modell)">Turneringshanterare för
-    Monrad</a>. Kvalitetspoäng beräknas enligt buchholz (cut 1/2). Båda kan användas online, men själva sidan går också
+    <a href="../norsk-monrad.htm" title="Monrad – turneringshanterare (norsk modell)">turneringshanterare för
+    monrad</a>. Kvalitetspoäng beräknas enligt buchholz (cut 1/2). Båda kan användas online, men själva sidan går också
     att ladda ned och köra lokalt. Den dansk-svenska versionen använder antingen kumulativ (progressiv) poäng eller
     buchholz (motståndarnas sammanlagda poäng) för att särskilja spelare med samma slutresultat. Kumulativ poäng
     fungerar så att tidiga vinster ger ett högre kumulativt tiebreak, vilket gynnar en aggressiv spelstil. (Att börja
@@ -76,12 +76,12 @@
     Johann&nbsp;Berger i slutet av 1800-talet. Det är det mest rättvisa av alla lottningssystem, vilket gör det
     idealiskt för kandidat- och elitturneringar. Spelarna alternerar färg automatiskt. Jag har skapat ett berger-system
     för 3-16 spelare enligt FIDE:s specifikationer. Det kan användas direkt i webbläsaren, men går även att ladda ned
-    och köra lokalt: <a href="../berger.htm" title="Berger lottningsprogram">Berger Turneringssystem
+    och köra lokalt: <a href="../berger.htm" title="Berger lottningsprogram">Bergers turneringssystem
     (alla-mot-alla)</a>.<br>
     <br>
     <b>Scheveningen</b> är ett format för lagspel där två lag av samma storlek spelar ett fullständigt korsmöte: alla
     spelare i lag A möter alla spelare i lag B över n ronder: <a href="../scheveningen.htm">Scheveningen
-    Turneringssystem</a>. Det har sitt namn från en turnering i Scheveningen, Nederländerna, 1923, där formatet
+    turneringssystem</a>. Det har sitt namn från en turnering i Scheveningen, Nederländerna, 1923, där formatet
     användes i en lagmatch mellan två grupper av stormästare. Systemet är rättvist och deterministiskt (ingen lottning
     krävs) och systemet fick därför snabb spridning. Denna turneringsform kan även användas inom en klubb, om spelarna
     delas upp i två jämna lag. Det blir då både en individuell turnering och en lagmatch, vilket kan vara
@@ -101,7 +101,7 @@
     för mellanstarka spelare är att de pendlar mellan alltför starkt och alltför svagt motstånd: i en rond möter de en
     betydligt starkare spelare, i nästa en klart svagare, och därefter åter en alltför stark. Denna pendling förtar
     spelglädjen och ger en ojämn turneringsupplevelse. I mitt accelererade schweizer-system inträffar inte detta:
-    <a href="../swiss.htm" title="Program för schweizer-lottning med winther-accelerering">Schweiziskt
+    <a href="../swiss.htm" title="Program för schweizer-lottning med winther-accelerering">schweiziskt
     turneringssystem</a>. Programmet har en spärr som gör att risken att få samma färg tre gånger i rad hålls på ett
     minimum. Det är tydligt bättre än nordisk schweizer, förutsatt att programmet visar sig pålitligt efter noggrann
     testning.<br>
@@ -132,37 +132,26 @@
     Att vinnarna i den andra halvan får vit mot vinnarna i den första halvan i rond två, anser jag är en bra
     idé&nbsp;&ndash; alla spelare blir nöjda. Från och med rond tre möter spelare med liknande rating allt oftare
     varandra. Generellt föredrar toppspelare svart mot svagare motstånd och vit mot starkare. Programmet tillgodoser
-    detta genom att ge vit till den lägre rankade spelaren när antalet spelade vitpartier är lika. Hur
-    ratingfördelningen i stort påverkar lottningen vet jag inte, men det går att undersöka med hjälp av programmet.<br>
+    detta genom att ge vit till den lägre rankade spelaren när antalet spelade vitpartier är lika. Programmet minimerar
+    antalet spelare som får börja med två svartpartier. Normalt har högre seedad vit i första ronden, vilket gör att
+    detta inte kan inträffa för spelare i den första och den tredje fjärdedelen i startlistan. Hur ratingfördelningen i
+    stort påverkar lottningen vet jag inte, men det går att undersöka med hjälp av programmet.<br>
     <br>
     Schweizerlottningens grundproblem är att den försöker åstadkomma en rättvis turnering inom ett begränsat antal
     ronder, utan att kunna använda det idealiska alla-mot-alla-formatet. Därför måste systemet både skapa parningar av
     hög kvalitet och samtidigt upplevas som rättvist av spelarna. Många schweizervarianter misslyckas med detta,
     särskilt när mellanskiktet pendlar mellan alltför starkt och alltför svagt motstånd, eller när färgfördelningen
     blir orimlig. FIDE:s nuvarande regler är dessutom komplexa och svåröverskådliga, vilket gör dem mindre transparenta
-    för deltagarna. Den föreslagna varianten är ett försök att förena enkelhet med stabilitet: de två första ronderna
-    ger en kontrollerad accelerering där elitspelarna möter lägre rankade motståndare, samtidigt som mellanskiktet
-    undviker den pendling som annars förtar spelglädjen. Från rond tre möter spelare med liknande rating allt oftare
-    varandra, vilket ger turneringen en naturlig utveckling. Att buchholz används som sekundärt kriterium harmonierar
-    med målet att spelare med liknande motstånd ska mötas, och färgregeln (som garanterar att ingen får samma färg tre
-    gånger i rad) eliminerar ett av de mest störande inslagen i vissa andra system.<br>
+    för deltagarna.<br>
     <br>
-    <b>Dubov-schweizer</b> är en originell metod utvecklad av den ryske matematikern Eduard&nbsp;Dubov. Systemet, som
-    är godkänt av FIDE, strävar aktivt efter att alla spelare på samma slutpoäng ska ha mött motståndare med så
-    likartad genomsnittlig rating som möjligt. Syftet är att minska risken att någon når en prisplacering tack vare tur
-    i lottningen och därmed ovanligt svagt motstånd jämfört med konkurrenterna på samma poäng.<br>
-    <br>
-    Metoden är dock mindre intuitiv för spelare och publik. I vanlig schweizerlottning brukar ettan och tvåan mötas
-    naturligt när turneringen närmar sig slutet. I Dubov-schweizer kan två spelare i absolut delad ledning mycket väl
-    <i>inte</i> mötas, helt enkelt därför att systemet bedömer att den ena behöver möta en högre rankad spelare för att
-    jämna ut sitt ARO-värde (Average Rating of Opponents). FIDE-dutch är i jämförelse konstruerat för att utse en
-    entydig vinnare genom utslagning i toppen, medan dubov-lottning är utformat som ett statistiskt mätinstrument:
-    målet är att ge hela fältet en så rättvis och likvärdig bedömning av spelstyrka som möjligt. Dubov-systemet är
-    matematiskt elegant men har förblivit ett nischalternativ av praktiska och psykologiska skäl. Däremot är det
-    idealiskt för turneringar som syftar till vidare kvalificering, såsom kandidatturneringen. Jag har skapat ett
-    program för lottning enligt FIDE:s specifikationer: <a href="../fide-dubov.htm">FIDE Dubov lottningssystem</a>.</p>
+    Den föreslagna varianten är ett försök att förena enkelhet med stabilitet: de två första ronderna ger en
+    kontrollerad accelerering där elitspelarna möter lägre rankade motståndare, samtidigt som mellanskiktet undviker
+    den pendling som annars förtar spelglädjen. Från rond tre möter spelare med liknande rating allt oftare varandra,
+    vilket ger turneringen en naturlig utveckling. Att buchholz används som sekundärt kriterium harmonierar med målet
+    att spelare med liknande motstånd ska mötas, och färgregeln (som garanterar att ingen får samma färg tre gånger i
+    rad) eliminerar ett av de mest störande inslagen i vissa andra system.</p>
     <p><span class="bigger">Schematisk översikt</span></p>
-    <table  class="c1">
+    <table class="c1">
       <thead>
         <tr>
           <th>System</th>
@@ -205,11 +194,8 @@
         </tr>
       </tbody>
     </table>
-    <p>
-    <br>
-    <span class="bigger">FIDE Schweizer (&ldquo;Dutch&rdquo;)</span><br>
-    <br>
-    Det holländska systemet (FIDE Dutch Swiss) är den internationella guldstandarden för schackturneringar och det
+    <p><br>
+    <b>Holländsk schweizer</b> (FIDE Dutch Swiss) är den internationella guldstandarden för schackturneringar och det
     officiella system som FIDE föreskriver för merparten av alla öppna elo-tävlingar från och med 1 februari 2026. Det
     syftar till att få en så rättvis lottning som möjligt. Algoritmen, som är mycket komplex (se <a href=
     "https://handbook.fide.com/chapter/C0403202602" title=
@@ -231,11 +217,10 @@
     anses vara att det erbjuder högsta sportsliga integritet: det skyddar färgfördelningen maximalt och ser till att
     spelare med bäst resultat möter varandra mot slutet av turneringen.<br>
     <br>
-    Jag har skapat en experimentell version här: <a href="../fide-hollandskt.htm">Experimentellt FIDE Holländskt
-    Lottningssystem</a>. Programmet är inte giltigt för elo-turneringar eftersom det inte verifierats. Om programmet
-    visar sig fungera kan man ändå använda det för blixt och snabbschack, men då bör lottningen benämnas
-    &ldquo;modifierad holländsk&rdquo; eller liknande. Programmet kan användas för att testa algoritmen, och troligen
-    fungerar den i huvudsak korrekt (åtminstone tror GPT-Sol det).<br>
+    Jag har skapat en experimentell version här: <a href="../fide-hollandskt.htm">holländskt lottningssystem</a>.
+    Programmet är inte giltigt för elo-turneringar eftersom det inte verifierats. Om programmet visar sig fungera kan
+    man ändå använda det för blixt och snabbschack, men då bör lottningen benämnas &ldquo;modifierad holländsk&rdquo;
+    eller liknande. Programmet kan användas för att testa algoritmen, som enligt GPT-Sol (AI) fungerar korrekt.<br>
     <br>
     I det holländska systemet är två svarta partier i rad helt normalt. Tre svarta i rad är i regel förbjudet, med
     sällsynta undantag i sista ronden. Fyra svarta i rad är aldrig möjligt. En spelare kan i vissa fall avsluta
@@ -248,6 +233,36 @@
     ofta omöjlig att förutse. Algoritmen försöker optimera över 16 olika kvalitetskriterier. Spelare med samma poäng
     möter inte nödvändigtvis varandra, och man kan få möta någon med helt annan TPN än väntat. Färgallokeringen är
     komplex och inte intuitiv.<br>
+    <br>
+    <b>Dubov-schweizer</b> är en originell metod utvecklad av den ryske matematikern Eduard&nbsp;Dubov. Systemet, som
+    är godkänt av FIDE, strävar aktivt efter att alla spelare på samma slutpoäng ska ha mött motståndare med så
+    likartad genomsnittlig rating som möjligt. Syftet är att minska risken att någon når en prisplacering tack vare tur
+    i lottningen och därmed ovanligt svagt motstånd jämfört med konkurrenterna på samma poäng.<br>
+    <br>
+    Metoden är dock mindre intuitiv för spelare och publik. I vanlig schweizerlottning brukar ettan och tvåan mötas
+    naturligt när turneringen närmar sig slutet. I Dubov-schweizer kan två spelare i absolut delad ledning mycket väl
+    <i>inte</i> mötas, helt enkelt därför att systemet bedömer att den ena behöver möta en högre rankad spelare för att
+    jämna ut sitt ARO-värde (Average Rating of Opponents). FIDE-dutch är i jämförelse konstruerat för att utse en
+    entydig vinnare genom utslagning i toppen, medan dubov-lottning är utformat som ett statistiskt mätinstrument:
+    målet är att ge hela fältet en så rättvis och likvärdig bedömning av spelstyrka som möjligt. Dubov-systemet är
+    matematiskt elegant men har förblivit ett nischalternativ av praktiska och psykologiska skäl. Däremot är det
+    idealiskt för turneringar som syftar till vidare kvalificering, såsom kandidatturneringen. Jag har skapat ett
+    program för lottning enligt FIDE:s specifikationer: <a href="../fide-dubov.htm">Dubovs lottningssystem</a>.<br>
+    <br>
+    <b>Burstein-schweizer</b> utvecklades 1993 av Almog Burstein (född 1950), en israelisk internationell
+    domare, schackorganisatör och mångårig FIDE-funktionär. Grundtanken är att motståndets styrka ska vara så jämnt
+    fördelad som möjligt mellan spelare (eller lag) inom samma poänggrupp. Systemet antogs av FIDE för lagtävlingar och
+    användes vid schackolympiaderna från Moskva 1994 till Dresden 2008. Det är fortfarande ett av de lottningssystem
+    som erkänns officiellt av FIDE.<br>
+    <br>
+    Burstein-schweizer är ett hybridsystem. Det inleds med holländsk seedning: den första hälften av de planerade
+    ronderna, avrundad nedåt och begränsad till högst fyra, lottas enligt FIDE:s holländska system
+    (&ldquo;Dutch&rdquo;). I de efterföljande ronderna delas spelarna in i poänggrupper och rangordnas inom varje
+    lottningsgrupp efter buchholz, sonneborn-berger och därefter stigande TPN. I regel paras den högst rankade
+    tillgängliga spelaren ihop med den lägst rankade kompatibla spelaren. Flyttare (spelare lottade mot en motståndare
+    från en annan poänggrupp) och en eventuell lottningstilldelad frirond väljs enligt fastställda prioritetsregler,
+    samtidigt som återmöten undviks, absoluta färgkrav respekteras och antalet ouppfyllda färgpreferenser minimeras.
+    Min implementation finns här: <a href="../fide-burstein.htm">Bursteins lottningssystem</a>.<br>
     <br>
     &copy; Mats Winther, 2026.</p>
     <p><br>
@@ -293,25 +308,28 @@
     <br>
     <b>Online lottningsprogram:</b><br>
     <br>
-    Berger Turneringssystem (Alla-mot-alla).<br>
+    Bergers turneringssystem (Alla-mot-alla).<br>
     <a href="../berger.htm" title=
     "Berger Turneringssystem (Alla-mot-alla)">https://mats-winther.github.io/berger.htm</a><br>
     <br>
-    Dubov lottningssystem<br>
+    Bursteins lottningssystem<br>
+    <a href="../fide-burstein.htm">https://mats-winther.github.io/fide-burstein.htm</a><br>
+    <br>
+    Dubovs lottningssystem<br>
     <a href="../fide-dubov.htm">https://mats-winther.github.io/fide-dubov.htm</a><br>
     <br>
-    Experimentellt FIDE Holländskt Lottningssystem<br>
+    Holländskt lottningssystem (&ldquo;Dutch&rdquo;)<br>
     <a href="../fide-hollandskt.htm">https://mats-winther.github.io/fide-hollandskt.htm</a><br>
     <br>
     Monrads lottningssystem (dansk-svensk modell).<br>
     <a href="../monrad.htm" title=
     "Monrads lottningssystem (dansk-svensk modell)">https://mats-winther.github.io/monrad.htm</a><br>
     <br>
-    Turneringshanterare för Monrad (norsk modell).<br>
+    Turneringshanterare för monrad (norsk modell).<br>
     <a href="../norsk-monrad.htm" title=
     "Turneringshanterare för Monrad (norsk modell)">https://mats-winther.github.io/norsk-monrad.htm</a><br>
     <br>
-    Scheveningen Turneringssystem (två lag i korsmöten).<br>
+    Scheveningen turneringssystem (två lag i korsmöten).<br>
     <a href="../scheveningen.htm" title=
     "Scheveningen Turneringssystem (för lagspel)">https://mats-winther.github.io/scheveningen.htm</a><br>
     <br>
