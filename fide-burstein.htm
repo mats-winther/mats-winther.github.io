@@ -1,0 +1,6709 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="author" content="Mats Winther">
+
+<link
+  rel="canonical"
+  href="https://mats-winther.github.io/fide-burstein.htm"
+>
+<meta name="description" content="Smidigt webbverktyg för schackturneringar. Hantera schweizerlottning enligt Burstein, registrera resultat och få automatisk koll på poängställning och färgfördelning.">
+
+<title>Experimentellt FIDE Burstein lottningssystem</title>
+
+<style>
+:root {
+  --primary:#1a365d;
+  --blue:#2b6cb0;
+  --bg:#f7fafc;
+  --card:#fff;
+  --text:#263445;
+  --muted:#64748b;
+  --border:#dbe3ec;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+  line-height:1.5;
+}
+header {
+  background: #ADD8E6;
+  color:darkblue;
+  padding:1rem 1.5rem;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:1rem;
+}
+h1 { font-size:1.35rem; margin:0; }
+h2 { font-size:1.15rem; margin:0 0 1rem; }
+h3 { font-size:1rem; margin:.2rem 0 .7rem; }
+p { margin:.6rem 0; }
+.subtitle { color:#cbd5e1; font-size:.83rem; }
+main {
+  max-width:1280px;
+  margin:1rem auto;
+  padding:0 1rem 3rem;
+}
+.card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:1rem;
+  margin:1rem 0;
+}
+.row {
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:.6rem;
+}
+.between { justify-content:space-between; }
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:.8rem;
+}
+label {
+  display:block;
+  font-size:.84rem;
+  font-weight:600;
+}
+input,select,textarea,button { font:inherit; }
+input,select,textarea {
+  width:100%;
+  margin-top:.25rem;
+  padding:.48rem .6rem;
+  border:1px solid var(--border);
+  border-radius:5px;
+  background:white;
+  color:var(--text);
+}
+textarea {
+  min-height:200px;
+  font-family:monospace;
+}
+input:disabled,select:disabled { background:#edf2f7; }
+button {
+  border:1px solid var(--border);
+  border-radius:5px;
+  padding:.48rem .75rem;
+  cursor:pointer;
+  background:#edf2f7;
+  color:var(--text);
+}
+button.primary {
+  background:var(--blue);
+  color:white;
+  border-color:var(--blue);
+}
+button.success {
+  background:#27834b;
+  color:white;
+  border-color:#27834b;
+}
+button.danger {
+  background:#c53030;
+  color:white;
+  border-color:#c53030;
+}
+button:disabled {
+  opacity:.5;
+  cursor:not-allowed;
+}
+button.small {
+  font-size:.77rem;
+  padding:.25rem .45rem;
+}
+.tabs {
+  display:flex;
+  gap:.35rem;
+  overflow:auto;
+  border-bottom:2px solid var(--border);
+  padding-bottom:.5rem;
+}
+.tabs button { white-space:nowrap; }
+.tabs button.active {
+  background:var(--primary);
+  color:white;
+}
+.tab { display:none; }
+.tab.active { display:block; }
+.notice {
+  padding:.75rem 1rem;
+  border-radius:6px;
+  border:1px solid #bfdbfe;
+  background:#eff6ff;
+  margin:1rem 0;
+  white-space:pre-wrap;
+}
+.notice.warning {
+  background:#fffbeb;
+  border-color:#fcd34d;
+  color:#854d0e;
+}
+.notice.error {
+  background:#fff1f2;
+  border-color:#fda4af;
+  color:#9f1239;
+}
+.notice.success {
+  background:#f0fdf4;
+  border-color:#86efac;
+  color:#166534;
+}
+.muted {
+  color:var(--muted);
+  font-size:.84rem;
+}
+.table-wrap { overflow:auto; }
+table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:.87rem;
+}
+th,td {
+  padding:.55rem .65rem;
+  border-bottom:1px solid var(--border);
+  text-align:left;
+}
+th { background:#f1f5f9; }
+.center { text-align:center; }
+.mono {
+  font-family:monospace;
+  white-space:nowrap;
+}
+.badge {
+  display:inline-block;
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:.1rem .35rem;
+  font-size:.75rem;
+}
+.badge.white { background:white; color:#111; }
+.badge.black { background:#111; color:white; }
+.badge.bye { background:#fef3c7; }
+.result { min-width:145px; }
+.print-result,.print-only { display:none; }
+details { margin-top:.7rem; }
+pre {
+  overflow:auto;
+  font-size:.78rem;
+  background:#f8fafc;
+  border:1px solid var(--border);
+  padding:.7rem;
+}
+dialog {
+  border:1px solid var(--border);
+  border-radius:8px;
+  width:min(720px,92vw);
+  max-height:88vh;
+  overflow:auto;
+  padding:1.2rem;
+}
+dialog::backdrop { background:rgba(0,0,0,.45); }
+a { color:var(--blue); }
+#scoreTournamentName {
+  margin-bottom:.3rem;
+  font-size:1.4rem;
+  color:var(--primary);
+}
+#scoreTitle {
+  margin-top:0;
+  margin-bottom:1rem;
+  font-size:1.15rem;
+}
+
+@media print {
+  header,.tabs,.no-print,button,.result-select {
+    display:none !important;
+  }
+  body {
+    background:white;
+    color:black;
+    font-size:10pt;
+  }
+  main {
+    max-width:none;
+    margin:0;
+    padding:0;
+  }
+  .card {
+    border:none;
+    padding:0;
+    box-shadow:none;
+  }
+  .print-only { display:block; }
+  .print-result {
+    display:inline;
+    font-weight:bold;
+  }
+  th,td {
+    border:1px solid #555;
+    padding:5px;
+  }
+  table { font-size:9pt; }
+  th { background:#eee !important; }
+  .tab:not(.active) { display:none !important; }
+  details.audit { display:none; }
+  .notice {
+    border:1px solid #777;
+    background:white;
+    color:black;
+  }
+  body[data-tab="standings"] #printHeading {
+    display:none !important;
+  }
+  #scoreTournamentName { color:black; }
+
+}
+
+</style>
+</head>
+
+<body data-tab="setup">
+
+<header>
+  <div>
+   <h1>Experimentellt FIDE Burstein lottningssystem</h1>
+   <div class="subtitle">
+     2026 års regler · variabel holländsk seedning · begränsad Burstein-sökning · inte godkänt av FIDE
+   </div>  
+</div>
+
+  <div class="row">
+    <button id="saveButton" onclick="saveTournament()">
+      Spara turnering
+    </button>
+    <button id="openButton"
+            onclick="document.getElementById('tournamentFile').click()">
+      Öppna turnering
+    </button>
+    <button onclick="printPage()">Skriv ut</button>
+    <button onclick="document.getElementById('aboutDialog').showModal()">
+      Om
+    </button>
+  </div>
+</header>
+
+<input id="tournamentFile" type="file" accept=".json"
+       hidden onchange="loadTournamentFile(event)">
+
+<main>
+  <div id="printHeading" class="print-only">
+    <h2 id="printTitle"></h2>
+    <p>Experimentell implementering — verifiera turneringslottningen självständigt.</p>
+  </div>
+
+  <div id="message" class="notice no-print"
+       role="status" aria-live="polite">
+    Registrera spelare och granska inledande färgfördelning och startnummerlista (TPN). Inställningarna sparas automatiskt.
+  </div>
+
+  <nav class="tabs no-print">
+    <button id="tabButton-setup" class="active" onclick="showTab('setup')">
+      Inställningar &amp; registrering
+    </button>
+    <button id="tabButton-pairings" onclick="showTab('pairings')">
+      Rondlottning
+    </button>
+    <button id="tabButton-standings" onclick="showTab('standings')">
+      Poänglista
+    </button>
+    <button id="tabButton-history" onclick="showTab('history')">
+      Rondhistorik
+    </button>
+  </nav>
+
+  <section id="setup" class="tab active">
+    <div class="card no-print">
+      <h2>Turneringsinställningar</h2>
+
+      <div class="grid">
+        <label>Turneringsnamn
+          <input id="tName" value="FIDE Burstein Open 2026">
+        </label>
+
+        <label>Antal ronder
+          <input id="tRounds" type="number" min="1" max="30" value="5">
+        </label>
+
+        <label>Färgfördelning (rond 1)
+          <select id="tColor">
+            <option value="W" selected>Spelare 1 vit</option>
+            <option value="B">Spelare 1 svart</option>
+          </select>
+        </label>
+
+        <label>Poäng för vinst / remi / förlust
+          <select id="tPoints">
+            <option value="1,0.5,0">1 / ½ / 0</option>
+            <option value="3,1,0">3 / 1 / 0</option>
+          </select>
+        </label>
+
+        <label>Poäng för lottad frirond (PAB)
+          <input id="tPab" type="number" min="0" step="0.5" value="1">
+        </label>
+      </div>
+
+      <p id="listStatus" class="muted"></p>
+      <p class="muted">
+        Inställningarna sparas automatiskt. Registreringen stängs när den
+        första ronden har lottats. Poängsystem, inledande färg och antal
+        ronder låses därefter.
+      </p>
+      <p class="muted">
+        Slutställning: poäng, BH-1, BH, därefter SB.
+        Spelare som fortfarande är lika delar placering; TPN styr endast visningsordningen.
+        Icke-standardiserade frirondspoäng måste godkännas i tävlingsbestämmelserna.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="row between">
+        <h2>Spelare (<span id="playerCount">0</span>)</h2>
+
+        <div class="row no-print">
+          <button id="importButton"
+                  onclick="document.getElementById('playersFile').click()">
+            Importera spelare
+          </button>
+          <button id="pasteButton"
+                  onclick="document.getElementById('pasteDialog').showModal()">
+            Klistra in spelare
+          </button>
+          <button id="sampleButton" onclick="loadSamplePlayers()">
+            32 exempelspelare
+          </button>
+          <button id="resetButton" class="danger" onclick="resetTournament()">
+            Återställ
+          </button>
+        </div>
+      </div>
+
+      <input id="playersFile" type="file" accept=".txt,.csv,.trf"
+             hidden onchange="loadPlayersFile(event)">
+
+      <div class="grid no-print" style="margin-bottom:1rem">
+        <label>Namn
+          <input id="pName" placeholder="Efternamn, Förnamn">
+        </label>
+
+        <label>Rating / uppskattad spelstyrka
+          <input id="pRating" type="number" min="0" value="1500">
+        </label>
+
+        <label>FIDE-titel
+          <select id="pTitle">
+            <option value="">Ingen</option>
+            <option>GM</option>
+            <option>IM</option>
+            <option>WGM</option>
+            <option>FM</option>
+            <option>WIM</option>
+            <option>CM</option>
+            <option>WFM</option>
+            <option>WCM</option>
+          </select>
+        </label>
+
+        <div style="align-self:end">
+          <button id="addButton" class="success" onclick="addPlayer()">
+            Lägg till spelare
+          </button>
+        </div>
+      </div>
+
+      <p id="registrationHint" class="muted no-print"></p>
+      <p class="muted no-print">
+        Under de holländska seedningsronderna bestämmer poäng och TPN
+        lottningsordningen. Efter seedningen rangordnas spelarna inom varje
+        Burstein-grupp efter Buchholz, därefter Sonneborn-Berger och stigande
+        TPN. Import av en TRF-fil här importerar endast registreringsuppgifter,
+        inte dess turneringshistorik.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>TPN</th>
+              <th>Namn</th>
+              <th>Rating</th>
+              <th>Titel</th>
+              <th>Status</th>
+              <th class="no-print">Nästa rond</th>
+              <th class="no-print">Åtgärder</th>
+            </tr>
+          </thead>
+          <tbody id="playersBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="pairings" class="tab">
+    <div class="card">
+      <div class="row between">
+        <h2 id="roundTitle">Rondlottning</h2>
+
+        <div class="row no-print">
+          <button id="pairButton" class="primary" onclick="generateRound()">
+            Generera lottning
+          </button>
+          <button id="cancelButton" class="danger"
+                  onclick="cancelSearch()" disabled>
+            Avbryt sökning
+          </button>
+          <button id="confirmButton" class="success"
+                  onclick="confirmRound()" disabled>
+            Bekräfta rond
+          </button>
+        </div>
+      </div>
+
+      <div class="row no-print" style="margin-bottom:.8rem">
+        <button id="testButton" onclick="runRegressionTests()">
+          Kör inbyggda regressionstester
+        </button>
+      </div>
+
+      <div id="roundProvenance" class="notice warning"></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Bord</th>
+              <th>Vit</th>
+              <th class="center">Resultat</th>
+              <th>Svart</th>
+            </tr>
+          </thead>
+          <tbody id="pairingsBody"></tbody>
+        </table>
+      </div>
+
+      <div id="unplayedView" style="margin-top:1rem"></div>
+
+      <details class="audit no-print">
+        <summary>Motorspårning</summary>
+        <pre id="activeAudit">Ingen spårning.</pre>
+      </details>
+    </div>
+  </section>
+
+  <section id="standings" class="tab">
+    <div class="card">
+      <h2 id="scoreTournamentName"></h2>
+      <h3 id="scoreTitle">Poänglista</h3>
+
+      <div id="standingsNotice" class="notice no-print"></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead id="standingsHead"></thead>
+          <tbody id="standingsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="history" class="tab">
+    <div class="card">
+      <h2>Avslutade ronder</h2>
+
+      <p class="muted">
+        Importerade eller tidigare genererade lottningar certifieras inte i
+        efterhand av denna applikation. Arkivet är källan till poäng,
+        spelade färger, motståndare, flythistorik och särskiljningsberäkningar.
+      </p>
+
+      <div id="historyBody"></div>
+    </div>
+  </section>
+</main>
+
+<dialog id="pasteDialog">
+  <h2>Klistra in deltagarlista</h2>
+  <p class="muted">
+    CSV, tab-avgränsad eller semikolonavgränsad:
+    <code>Namn, Rating, Titel</code>.
+    Sätt namn med kommatecken inom citattecken, eller använd
+    <code>Efternamn, Förnamn, Rating, Titel</code>.
+    TRF06-registreringsfält stöds också.
+  </p>
+  <textarea id="pasteText"
+            placeholder='"Svensson, Anna", 1900, WFM'></textarea>
+  <div class="row" style="justify-content:flex-end;margin-top:.8rem">
+    <button onclick="document.getElementById('pasteDialog').close()">
+      Avbryt
+    </button>
+    <button class="success" onclick="importPastedPlayers()">Importera</button>
+  </div>
+</dialog>
+
+<dialog id="aboutDialog">
+  <h2>Om denna implementering</h2>
+
+<p>
+  Experimentell begränsad implementering av FIDE:s Burstein-system
+  med giltighet från 1 februari 2026. Det är inte godkänt av FIDE och
+  får inte betraktas som en certifierad lottningskontrollant.
+</p>
+
+<p>
+  Den första halvan av de planerade ronderna, avrundat nedåt och begränsat
+  till maximalt fyra ronder, lottas med den inbyggda holländska FIDE-motorn.
+  Efterföljande ronder använder Burstein-systemet.
+</p>
+
+<p>
+  Lottningsrangordningen efter seedningen är Buchholz, därefter
+  Sonneborn-Berger och sedan stigande TPN. Spelarnas poäng definierar
+  poänggrupperna men ingår inte i rangordningen inom gruppen.
+</p>
+
+<p>
+  Den lottade frironden (PAB) tilldelas före grupplottningen.
+  Grupperna genomsöks sedan i den kandidatordning som föreskrivs av
+  Burstein-reglerna, varvid kriterierna C1 till C8 tillämpas i prioritetsordning.
+</p>
+
+<p>
+  Beräkningar av lottningsindex behandlar ett ospelat parti som ett
+  parti mot sig själv. Specialregeln för sammanhängande avslutande
+  nollpoängsfrironder tillämpas vid utvärdering av de poäng som används
+  av faktiska motståndare vid brädet.
+</p>
+
+<p>
+  Lottningssökningar använder fasta gränser på 30 sekunder och
+  2 000 000 arbetsenheter. En avbruten sökning publicerar aldrig en
+  preliminär lottning.
+</p>
+
+<p>
+  När rondresultaten har fastställts kan ett felaktigt registrerat 
+  resultat korrigeras via användargränssnittet, förutsatt att en säkerhetskopia
+  av turneringen tidigare har skapats med funktionen "Spara turnering".
+</p>
+
+<p>
+  Ej implementerat: acceleration, godtyckliga ytterligare lottningsrestriktioner,
+  avbrutna partier eller administrativt arbetsflöde för att ändra publicerade
+  lottningar och korrigera arkiverade resultat. De inbyggda testerna är
+  regressionstester för utvecklare, inte FIDE:s officiella testsvit.
+</p>
+
+  <ul>
+  <li>
+    <a href="https://handbook.fide.com/chapter/C040402202602"
+       target="_blank" rel="noopener">
+      Officiella Burstein-systemet
+    </a>
+  </li>
+  <li>
+    <a href="https://handbook.fide.com/chapter/C0403202602"
+       target="_blank" rel="noopener">
+      Officiella holländska systemet för seedning
+    </a>
+  </li>
+  <li>
+    <a href="https://handbook.fide.com/chapter/GeneralHandlingRulesForSwissTournaments202602"
+       target="_blank" rel="noopener">
+      Allmänna hanteringsregler (General Handling Rules)
+    </a>
+  </li>    
+  <li>
+      <a href="https://handbook.fide.com/chapter/TieBreakRegulations032026"
+         target="_blank" rel="noopener">Särspels- och särskiljningsregler (Tie-Break Regulations)</a>
+    </li>
+  </ul>
+
+  <button onclick="document.getElementById('aboutDialog').close()">Stäng</button>
+</dialog>
+
+<script>
+"use strict";
+
+/* ========================================================================== */
+/* PAIRING CORE — DOM-INDEPENDENT                                              */
+/* ========================================================================== */
+
+function Dutch2026Core() {
+  const VERSION = "2026-reference-1";
+
+  function fault(code, message) {
+    const error = new Error(message);
+    error.code = code;
+    return error;
+  }
+
+  function compareArrays(a, b) {
+    for (let i = 0; i < Math.min(a.length, b.length); i++) {
+      if (a[i] !== b[i]) return a[i] < b[i] ? -1 : 1;
+    }
+    return Math.sign(a.length - b.length);
+  }
+
+  function compareQuality(a, b) {
+    for (let i = 0; i < a.length; i++) {
+      const c = Array.isArray(a[i])
+        ? compareArrays(a[i], b[i])
+        : Math.sign(a[i] - b[i]);
+      if (c) return c;
+    }
+    return 0;
+  }
+
+  function rank(a, b) {
+    return b.score - a.score || a.tpn - b.tpn;
+  }
+
+  function colorDifference(player) {
+    return player.playedColors.reduce(
+      (sum, color) => sum + (color === "W" ? 1 : -1), 0
+    );
+  }
+
+  function preference(player) {
+    const h = player.playedColors;
+    if (!h.length) {
+      return { color:null, strength:0, type:"none" };
+    }
+
+    const cd = colorDifference(player);
+    const last = h[h.length - 1];
+    const two = h.length >= 2 && last === h[h.length - 2];
+
+    const absoluteWhite = cd < -1 || (two && last === "B");
+    const absoluteBlack = cd > 1 || (two && last === "W");
+
+    if (absoluteWhite && absoluteBlack) {
+      throw fault(
+        "INPUT",
+        "Motstridiga absoluta färgkrav i historiken för TPN " +
+        player.tpn + ". Åtgärda underliggande turneringsdata."
+      );
+    }
+
+    if (absoluteWhite) {
+      return { color:"W", strength:3, type:"absolute" };
+    }
+    if (absoluteBlack) {
+      return { color:"B", strength:3, type:"absolute" };
+    }
+    if (cd === 1) {
+      return { color:"B", strength:2, type:"strong" };
+    }
+    if (cd === -1) {
+      return { color:"W", strength:2, type:"strong" };
+    }
+
+    return {
+      color:last === "W" ? "B" : "W",
+      strength:1,
+      type:"mild"
+    };
+  }
+
+  function topscorer(player, context) {
+    return context.roundNumber === context.totalRounds &&
+      player.score >
+        ((context.roundNumber - 1) * context.winPoints) / 2;
+  }
+
+  function compatible(a, b, context) {
+    if (!a || !b || a.id === b.id) return false;
+    if (a.opponents.includes(b.id) || b.opponents.includes(a.id)) {
+      return false;
+    }
+
+    const pa = preference(a);
+    const pb = preference(b);
+
+    return !(
+      !topscorer(a, context) &&
+      !topscorer(b, context) &&
+      pa.strength === 3 &&
+      pb.strength === 3 &&
+      pa.color === pb.color
+    );
+  }
+
+  function allocate(a, b, initialColor) {
+    const high = rank(a, b) <= 0 ? a : b;
+    const low = high === a ? b : a;
+    const hp = preference(high);
+    const lp = preference(low);
+
+    function give(player, color) {
+      const other = player === high ? low : high;
+      return color === "W"
+        ? { white:player, black:other }
+        : { white:other, black:player };
+    }
+
+    if (hp.color && lp.color && hp.color !== lp.color) {
+      return give(high, hp.color);
+    }
+
+    if (hp.strength > lp.strength) return give(high, hp.color);
+    if (lp.strength > hp.strength) return give(low, lp.color);
+
+    if (hp.strength === 3 && lp.strength === 3) {
+      const hd = Math.abs(colorDifference(high));
+      const ld = Math.abs(colorDifference(low));
+      if (hd > ld) return give(high, hp.color);
+      if (ld > hd) return give(low, lp.color);
+    }
+
+    const hh = high.playedColors;
+    const lh = low.playedColors;
+
+    for (let back = 1; back <= Math.min(hh.length, lh.length); back++) {
+      const hc = hh[hh.length - back];
+      const lc = lh[lh.length - back];
+      if (hc !== lc) {
+        return give(high, hc === "W" ? "B" : "W");
+      }
+    }
+
+    if (hp.color) return give(high, hp.color);
+    if (lp.color) return give(low, lp.color);
+
+    const color = high.tpn % 2
+      ? initialColor
+      : (initialColor === "W" ? "B" : "W");
+
+    return give(high, color);
+  }
+
+  function solve(input, limits = {}, progress = () => {}) {
+    const started = performance.now();
+    const seconds = Number(limits.seconds ?? 30);
+    const nodeLimit = Number(limits.nodes ?? 2000000);
+    const deadline = seconds > 0
+      ? started + seconds * 1000
+      : Infinity;
+
+    if (
+      !Number.isFinite(seconds) || seconds < 0 ||
+      !Number.isSafeInteger(nodeLimit) || nodeLimit < 0
+    ) {
+      throw fault("INPUT", "Ogiltiga sökgränser.");
+    }
+
+    let nodes = 0;
+    let phase = "Förbereder lottningsdata";
+    let lastProgress = started;
+
+    function tick() {
+      nodes++;
+
+      if (nodeLimit > 0 && nodes > nodeLimit) {
+        throw fault("LIMIT", "Sökgränsen för antal arbetsenheter uppnåddes.");
+      }
+
+      if ((nodes & 255) === 0 || nodes === 1) {
+        const now = performance.now();
+
+        if (now >= deadline) {
+          throw fault("LIMIT", "Sökgränsen för tid uppnåddes.");
+        }
+
+        if (now - lastProgress >= 200) {
+          progress({ phase, nodes, elapsedMs:now - started });
+          lastProgress = now;
+        }
+      }
+    }
+
+    const context = {
+      roundNumber:Number(input.roundNumber),
+      totalRounds:Number(input.totalRounds),
+      winPoints:Number(input.winPoints),
+      initialColor:input.initialColor
+    };
+
+    if (
+      !Number.isInteger(context.roundNumber) ||
+      !Number.isInteger(context.totalRounds) ||
+      context.roundNumber < 1 ||
+      context.roundNumber > context.totalRounds ||
+      ![1,3].includes(context.winPoints) ||
+      !["W","B"].includes(context.initialColor) ||
+      !Array.isArray(input.players)
+    ) {
+      throw fault("INPUT", "Ogiltig lottningskontext.");
+    }
+
+    if (input.acceleration || (input.restrictions || []).length) {
+      throw fault(
+        "INPUT",
+        "Acceleration och extra restriktioner stöds inte."
+      );
+    }
+
+    const completed = context.roundNumber - 1;
+    const seenIds = new Set();
+    const seenTPNs = new Set();
+
+    const players = input.players.map(raw => {
+      tick();
+
+      const p = {
+        id:String(raw.id),
+        tpn:Number(raw.tpn),
+        score:Number(raw.score),
+        opponents:[...(raw.opponents || [])],
+        playedColors:[...(raw.playedColors || [])],
+        floats:[...(raw.floats || [])],
+        hadPAB:Boolean(raw.hadPAB),
+        hadUnplayedWin:Boolean(raw.hadUnplayedWin)
+      };
+
+      if (
+        !p.id || seenIds.has(p.id) ||
+        !Number.isSafeInteger(p.tpn) ||
+        p.tpn < 1 || seenTPNs.has(p.tpn) ||
+        !Number.isFinite(p.score) || p.score < 0 ||
+        !Number.isInteger(p.score * 2) ||
+        p.score > completed * context.winPoints ||
+        p.playedColors.length > completed ||
+        p.playedColors.some(c => c !== "W" && c !== "B") ||
+        p.floats.length !== completed ||
+        p.floats.some(f => !["-","D","U"].includes(f))
+      ) {
+        throw fault(
+          "INPUT",
+          "Ogiltigt tillstånd för en spelare, inklusive TPN " + p.tpn + "."
+        );
+      }
+
+      seenIds.add(p.id);
+      seenTPNs.add(p.tpn);
+      p.unplayedCount = completed - p.playedColors.length;
+      p.pref = preference(p);
+      p.cd = colorDifference(p);
+      p.top = topscorer(p, context);
+
+      return p;
+    }).sort(rank);
+
+    const N = players.length;
+    const ids = players.map((_, i) => i);
+    const eligible = i =>
+      !players[i].hadPAB && !players[i].hadUnplayedWin;
+
+    const numericSort = (a, b) => a - b;
+    const ordered = xs => [...xs].sort(numericSort);
+    const keyOf = xs => ordered(xs).join(",");
+    const scoreList = xs =>
+      xs.map(i => players[i].score).sort((a,b) => b-a);
+    const previous = (i, back) =>
+      players[i].floats[completed - back] || "-";
+
+    const edge = Array.from(
+      {length:N}, () => new Array(N).fill(false)
+    );
+    const colors = Array.from({length:N}, () => new Array(N));
+    const pairCost = Array.from({length:N}, () => new Array(N));
+
+    const allScores = players.map(p => p.score);
+    const REFLOAT = N
+      ? Math.max(...allScores) - Math.min(...allScores) + 1
+      : 1;
+
+    for (let i = 0; i < N; i++) {
+      for (let j = i + 1; j < N; j++) {
+        tick();
+
+        const a = players[i];
+        const b = players[j];
+        edge[i][j] = edge[j][i] = compatible(a, b, context);
+
+        const allocation = allocate(a, b, context.initialColor);
+        const wi = allocation.white === a ? i : j;
+        const bi = wi === i ? j : i;
+        colors[i][j] = colors[j][i] = [wi, bi];
+
+        const cost = [0,0,0,0];
+
+        for (const [pi, color] of [[wi,"W"],[bi,"B"]]) {
+          const p = players[pi];
+
+          if (p.pref.color && p.pref.color !== color) {
+            cost[2]++;
+            if (p.pref.strength === 2) cost[3]++;
+          }
+
+          if (a.top || b.top) {
+            if (Math.abs(p.cd + (color === "W" ? 1 : -1)) > 2) {
+              cost[0]++;
+            }
+
+            const h = p.playedColors;
+            if (
+              h.length >= 2 &&
+              h[h.length-1] === color &&
+              h[h.length-2] === color
+            ) {
+              cost[1]++;
+            }
+          }
+        }
+
+        pairCost[i][j] = pairCost[j][i] = cost;
+      }
+    }
+
+    const matchingMemo = new Map();
+
+    function perfectMatching(list, restricted = new Set()) {
+      function visit(xs) {
+        tick();
+        if (!xs.length) return true;
+        if (xs.length % 2) return false;
+
+        const key = xs.join(",") + "/" +
+          xs.filter(i => restricted.has(i)).join(",");
+
+        if (matchingMemo.has(key)) {
+          return matchingMemo.get(key);
+        }
+
+        let chosen = -1;
+        let opponents = null;
+
+        for (const i of xs) {
+          tick();
+
+          const possible = xs.filter(j =>
+            i !== j &&
+            edge[i][j] &&
+            !(restricted.has(i) && restricted.has(j))
+          );
+
+          if (!possible.length) {
+            matchingMemo.set(key, false);
+            return false;
+          }
+
+          if (
+            opponents === null ||
+            possible.length < opponents.length
+          ) {
+            chosen = i;
+            opponents = possible;
+          }
+        }
+
+        for (const j of opponents) {
+          if (visit(xs.filter(i => i !== chosen && i !== j))) {
+            matchingMemo.set(key, true);
+            return true;
+          }
+        }
+
+        matchingMemo.set(key, false);
+        return false;
+      }
+
+      return visit(ordered(list));
+    }
+
+    phase = "Fastställer C4 och lägsta genomförbara frirondspoäng";
+    let byeScore = null;
+
+    if (N % 2) {
+      const possibleScores = [...new Set(
+        ids.filter(eligible).map(i => players[i].score)
+      )].sort((a,b) => a-b);
+
+      outer:
+      for (const score of possibleScores) {
+        for (const i of ids) {
+          tick();
+
+          if (
+            eligible(i) &&
+            players[i].score === score &&
+            perfectMatching(ids.filter(j => j !== i))
+          ) {
+            byeScore = score;
+            break outer;
+          }
+        }
+      }
+
+      if (byeScore === null) {
+        throw fault(
+          "NO_LEGAL_COMPLETION",
+          "Ingen fullständig rond som uppfyller C1–C3 och frirondsbehörighet existerar."
+        );
+      }
+    } else if (!perfectMatching(ids)) {
+      throw fault(
+        "NO_LEGAL_COMPLETION",
+        "Ingen fullständig rond som uppfyller C1–C3 existerar."
+      );
+    }
+
+    const completionMemo = new Map();
+
+    function canComplete(list) {
+      const xs = ordered(list);
+      const key = xs.join(",");
+
+      if (completionMemo.has(key)) {
+        return completionMemo.get(key);
+      }
+
+      let answer = false;
+
+      if (!(xs.length % 2)) {
+        answer = perfectMatching(xs);
+      } else if (byeScore !== null) {
+        for (const i of xs) {
+          tick();
+
+          if (
+            eligible(i) &&
+            players[i].score === byeScore &&
+            perfectMatching(xs.filter(j => j !== i))
+          ) {
+            answer = true;
+            break;
+          }
+        }
+      }
+
+      completionMemo.set(key, answer);
+      return answer;
+    }
+
+    const groups = [];
+
+    for (const i of ids) {
+      const score = players[i].score;
+      const last = groups[groups.length-1];
+
+      if (!last || last.score !== score) {
+        groups.push({score, ids:[i]});
+      } else {
+        last.ids.push(i);
+      }
+    }
+
+    const tails = new Array(groups.length + 1);
+    tails[groups.length] = [];
+
+    for (let i = groups.length - 1; i >= 0; i--) {
+      tails[i] = [...groups[i].ids, ...tails[i+1]];
+    }
+
+    const contexts = new Map();
+    const highMemo = new Map();
+    const feasibleMemo = new Map();
+
+    function bracketContext(index, incoming) {
+      const mdps = ordered(incoming);
+      const key = index + ":" + mdps.join(",");
+
+      if (contexts.has(key)) return contexts.get(key);
+
+      const residents = groups[index].ids;
+      const value = {
+        key,
+        index,
+        score:groups[index].score,
+        mdps,
+        mdpSet:new Set(mdps),
+        residents,
+        all:ordered([...mdps, ...residents]),
+        lower:tails[index+1],
+        last:index === groups.length - 1
+      };
+
+      contexts.set(key, value);
+      return value;
+    }
+
+    function* combinations(items, count, start = 0, chosen = []) {
+      tick();
+
+      if (count === 0) {
+        yield [...chosen];
+        return;
+      }
+
+      for (let i = start; i <= items.length - count; i++) {
+        chosen.push(items[i]);
+        yield* combinations(items, count-1, i+1, chosen);
+        chosen.pop();
+      }
+    }
+
+    function groupedScores(list) {
+      const result = [];
+
+      for (const i of ordered(list)) {
+        const score = players[i].score;
+        const last = result[result.length-1];
+
+        if (!last || last.score !== score) {
+          result.push({score, ids:[i]});
+        } else {
+          last.ids.push(i);
+        }
+      }
+
+      return result;
+    }
+
+    function* scoreProfiles(list, count) {
+      const gs = groupedScores(list);
+      const remaining = new Array(gs.length + 1).fill(0);
+
+      for (let i = gs.length - 1; i >= 0; i--) {
+        remaining[i] = remaining[i+1] + gs[i].ids.length;
+      }
+
+      function* visit(index, needed, profile) {
+        tick();
+
+        if (index === gs.length) {
+          if (needed === 0) yield profile;
+          return;
+        }
+
+        const minimum = Math.max(0, needed - remaining[index+1]);
+        const maximum = Math.min(needed, gs[index].ids.length);
+
+        for (let take = minimum; take <= maximum; take++) {
+          yield* visit(
+            index+1,
+            needed-take,
+            [...profile, ...new Array(take).fill(gs[index].score)]
+          );
+        }
+      }
+
+      yield* visit(0, count, []);
+    }
+
+    function* setsWithScores(list, profile) {
+      const gs = groupedScores(list);
+      const counts = new Map();
+
+      for (const score of profile) {
+        counts.set(score, (counts.get(score) || 0) + 1);
+      }
+
+      function* visit(index, chosen) {
+        tick();
+
+        if (index === gs.length) {
+          yield chosen;
+          return;
+        }
+
+        const count = counts.get(gs[index].score) || 0;
+
+        for (const part of combinations(gs[index].ids, count)) {
+          yield* visit(index+1, [...chosen, ...part]);
+        }
+      }
+
+      yield* visit(0, []);
+    }
+
+    function futureOK(ctx, down) {
+      if (ctx.last) {
+        if (N % 2) {
+          return down.length === 1 &&
+            eligible(down[0]) &&
+            players[down[0]].score === byeScore;
+        }
+        return down.length === 0;
+      }
+
+      return canComplete([...down, ...ctx.lower]);
+    }
+
+    function feasibleDownset(ctx, down) {
+      const key = ctx.key + "|" + keyOf(down);
+
+      if (feasibleMemo.has(key)) {
+        return feasibleMemo.get(key);
+      }
+
+      const downSet = new Set(down);
+      const paired = ctx.all.filter(i => !downSet.has(i));
+      const answer = futureOK(ctx, down) &&
+        perfectMatching(paired, ctx.mdpSet);
+
+      feasibleMemo.set(key, answer);
+      return answer;
+    }
+
+    function compareHigh(a, b) {
+      return a.count - b.count ||
+        compareArrays(a.scores, b.scores);
+    }
+
+    function theoreticalHigh(ctx) {
+      const pairs = Math.min(
+        Math.floor(ctx.all.length/2),
+        ctx.residents.length
+      );
+      const count = ctx.all.length - 2*pairs;
+      const scores = ctx.all
+        .map(i => players[i].score)
+        .sort((a,b) => a-b)
+        .slice(0,count)
+        .sort((a,b) => b-a);
+
+      return {count, scores};
+    }
+
+    function highFor(index, incoming) {
+      const ctx = bracketContext(index, incoming);
+
+      if (highMemo.has(ctx.key)) return highMemo.get(ctx.key);
+
+      const lowerBound = theoreticalHigh(ctx);
+
+      for (
+        let count = lowerBound.count;
+        count <= ctx.all.length;
+        count += 2
+      ) {
+        if (ctx.last && count !== N % 2) continue;
+
+        for (const profile of scoreProfiles(ctx.all, count)) {
+          for (const down of setsWithScores(ctx.all, profile)) {
+            if (!feasibleDownset(ctx, down)) continue;
+
+            const limboCount = down.filter(
+              i => ctx.mdpSet.has(i)
+            ).length;
+
+            const high = {
+              count,
+              scores:profile,
+              pairs:(ctx.all.length-count)/2,
+              m1:ctx.mdps.length-limboCount,
+              exampleDown:down
+            };
+
+            highMemo.set(ctx.key, high);
+            return high;
+          }
+        }
+      }
+
+      highMemo.set(ctx.key, null);
+      return null;
+    }
+
+    function bestLookAhead(ctx, high) {
+      if (ctx.last) return {count:0, scores:[]};
+
+      const nextBound = theoreticalHigh(
+        bracketContext(ctx.index+1, high.exampleDown)
+      );
+
+      let best = null;
+
+      for (const down of setsWithScores(ctx.all, high.scores)) {
+        if (!feasibleDownset(ctx, down)) continue;
+
+        const next = highFor(ctx.index+1, down);
+        if (!next) continue;
+
+        if (!best || compareHigh(next, best) < 0) {
+          best = {count:next.count, scores:next.scores};
+        }
+
+        if (compareHigh(best, nextBound) === 0) break;
+      }
+
+      if (!best) {
+        throw fault(
+          "NO_DUTCH_CANDIDATE",
+          "Ingen kandidat för nästa grupp kunde fastställas. " +
+          "Ingen lottning returneras."
+        );
+      }
+
+      return best;
+    }
+
+    function matchesLookAhead(ctx, down, lookAhead) {
+      if (ctx.last) return true;
+
+      const next = highFor(ctx.index+1, down);
+      return next !== null && compareHigh(next, lookAhead) === 0;
+    }
+
+    function c9Applies(high) {
+      return byeScore !== null &&
+        high.count === 1 &&
+        high.scores[0] === byeScore;
+    }
+
+    function bestC9(ctx, high, lookAhead) {
+      if (!c9Applies(high)) return 0;
+
+      let best = Infinity;
+
+      for (const down of setsWithScores(ctx.all, high.scores)) {
+        if (
+          feasibleDownset(ctx, down) &&
+          matchesLookAhead(ctx, down, lookAhead)
+        ) {
+          best = Math.min(
+            best,
+            players[down[0]].unplayedCount
+          );
+
+          if (best === 0) break;
+        }
+      }
+
+      if (!Number.isFinite(best)) {
+        throw fault(
+          "NO_DUTCH_CANDIDATE",
+          "Ingen C9-kompatibel kandidat kunde fastställas."
+        );
+      }
+
+      return best;
+    }
+
+    function* sumCombinations(
+      items, count, target, start = 0, chosen = []
+    ) {
+      tick();
+
+      if (count === 0) {
+        if (target === 0) yield [...chosen];
+        return;
+      }
+
+      if (items.length-start < count) return;
+
+      let minimum = 0;
+      let maximum = 0;
+
+      for (let k = 0; k < count; k++) {
+        minimum += items[start+k];
+        maximum += items[items.length-1-k];
+      }
+
+      if (target < minimum || target > maximum) return;
+
+      for (let i = start; i <= items.length-count; i++) {
+        chosen.push(items[i]);
+
+        yield* sumCombinations(
+          items, count-1, target-items[i], i+1, chosen
+        );
+
+        chosen.pop();
+      }
+    }
+
+    function* exchangeConfigurations(list, pairCount) {
+      const n = list.length;
+      const A = Array.from({length:pairCount}, (_,i) => i+1);
+      const B = Array.from(
+        {length:n-pairCount}, (_,i) => pairCount+i+1
+      );
+
+      yield {
+        s1:list.slice(0,pairCount),
+        s2:list.slice(pairCount)
+      };
+
+      for (
+        let size = 1;
+        size <= Math.min(A.length,B.length);
+        size++
+      ) {
+        for (
+          let difference = size*size;
+          difference <= size*(n-size);
+          difference++
+        ) {
+          for (const outgoing of combinations([...A].reverse(), size)) {
+            const sum = outgoing.reduce((a,b) => a+b,0);
+
+            for (const incoming of sumCombinations(B,size,sum+difference)) {
+              tick();
+
+              const outSet = new Set(outgoing);
+              const inSet = new Set(incoming);
+
+              const s1 = [
+                ...A.filter(x => !outSet.has(x)),
+                ...incoming
+              ].sort(numericSort).map(x => list[x-1]);
+
+              const s2 = [
+                ...B.filter(x => !inSet.has(x)),
+                ...outgoing
+              ].sort(numericSort).map(x => list[x-1]);
+
+              yield {s1,s2};
+            }
+          }
+        }
+      }
+    }
+
+    function* prefixPairings(
+      s1, s2, canWin, position = 0, used = new Set(), pairs = []
+    ) {
+      tick();
+      if (!canWin(pairs)) return;
+
+      if (position === s1.length) {
+        yield {
+          pairs:[...pairs],
+          unused:s2.filter(i => !used.has(i))
+        };
+        return;
+      }
+
+      const first = s1[position];
+
+      for (const second of s2) {
+        if (used.has(second) || !edge[first][second]) continue;
+
+        used.add(second);
+        pairs.push([first,second]);
+
+        yield* prefixPairings(
+          s1,s2,canWin,position+1,used,pairs
+        );
+
+        pairs.pop();
+        used.delete(second);
+      }
+    }
+
+    function* homogeneousCandidates(list, pairCount, canWin) {
+      const sorted = ordered(list);
+
+      if (pairCount === 0) {
+        yield {pairs:[], down:sorted};
+        return;
+      }
+
+      for (const config of exchangeConfigurations(sorted,pairCount)) {
+        for (const candidate of prefixPairings(
+          config.s1,config.s2,canWin
+        )) {
+          yield {
+            pairs:candidate.pairs,
+            down:ordered(candidate.unused)
+          };
+        }
+      }
+    }
+
+    function* bracketCandidates(ctx, high, canWin) {
+      if (!ctx.mdps.length) {
+        yield* homogeneousCandidates(
+          ctx.residents,high.pairs,canWin
+        );
+        return;
+      }
+
+      const requiredLimboScores = high.scores.filter(
+        score => score > ctx.score
+      );
+
+      for (const selected of combinations(ctx.mdps, high.m1)) {
+        const selectedSet = new Set(selected);
+        const limbo = ctx.mdps.filter(i => !selectedSet.has(i));
+
+        if (compareArrays(scoreList(limbo),requiredLimboScores)) {
+          continue;
+        }
+
+        for (const mdpPairing of prefixPairings(
+          selected,ctx.residents,canWin
+        )) {
+          const remainderCanWin = pairs =>
+            canWin([...mdpPairing.pairs,...pairs]);
+
+          for (const remainder of homogeneousCandidates(
+            mdpPairing.unused,
+            high.pairs-high.m1,
+            remainderCanWin
+          )) {
+            yield {
+              pairs:[...mdpPairing.pairs,...remainder.pairs],
+              down:ordered([...limbo,...remainder.down])
+            };
+          }
+        }
+      }
+    }
+
+    function quality(ctx, candidate) {
+      const v = [0,0,0,0,0,0,0,0,[],[],[],[]];
+      const mates = new Map();
+
+      for (const [a,b] of candidate.pairs) {
+        const pc = pairCost[a][b];
+
+        for (let k = 0; k < 4; k++) v[k] += pc[k];
+
+        mates.set(a,b);
+        mates.set(b,a);
+
+        let resident = null;
+        let mdp = null;
+
+        if (ctx.mdpSet.has(a)) {
+          mdp = a;
+          resident = b;
+        } else if (ctx.mdpSet.has(b)) {
+          mdp = b;
+          resident = a;
+        }
+
+        if (mdp !== null) {
+          const gap = players[mdp].score-players[resident].score;
+
+          if (previous(resident,1) === "U") {
+            v[5]++;
+            v[9].push(gap);
+          }
+
+          if (previous(resident,2) === "U") {
+            v[7]++;
+            v[11].push(gap);
+          }
+        }
+      }
+
+      for (const i of candidate.down) {
+        if (ctx.mdpSet.has(i)) continue;
+        if (previous(i,1) === "D") v[4]++;
+        if (previous(i,2) === "D") v[6]++;
+      }
+
+      for (const i of ctx.mdps) {
+        const gap = mates.has(i)
+          ? players[i].score-players[mates.get(i)].score
+          : REFLOAT;
+
+        if (previous(i,1) === "D") v[8].push(gap);
+        if (previous(i,2) === "D") v[10].push(gap);
+      }
+
+      for (let k = 8; k < 12; k++) {
+        v[k].sort((a,b) => b-a);
+      }
+
+      return v;
+    }
+
+    function qualityLowerBound(ctx, high) {
+      const pairs = high.pairs;
+      const down = high.count;
+      const r = ctx.residents.length;
+      const limboCount = ctx.mdps.length-high.m1;
+      const residentDown = down-limboCount;
+
+      const countPreference = (color, strongOnly) =>
+        ctx.all.filter(i =>
+          players[i].pref.color === color &&
+          (!strongOnly || players[i].pref.strength === 2)
+        ).length;
+
+      const colorBound = strongOnly =>
+        Math.max(0,countPreference("W",strongOnly)-pairs-down) +
+        Math.max(0,countPreference("B",strongOnly)-pairs-down);
+
+      const residentHistoryCount = (marker, back) =>
+        ctx.residents.filter(
+          i => previous(i,back) === marker
+        ).length;
+
+      const d1 = Math.max(
+        0,residentDown-(r-residentHistoryCount("D",1))
+      );
+      const u1 = Math.max(
+        0,high.m1-(r-residentHistoryCount("U",1))
+      );
+      const d2 = Math.max(
+        0,residentDown-(r-residentHistoryCount("D",2))
+      );
+      const u2 = Math.max(
+        0,high.m1-(r-residentHistoryCount("U",2))
+      );
+
+      const limboByScore = new Map();
+
+      for (const score of high.scores) {
+        if (score > ctx.score) {
+          limboByScore.set(
+            score,(limboByScore.get(score)||0)+1
+          );
+        }
+      }
+
+      function mdpBound(back) {
+        const result = [];
+
+        for (const group of groupedScores(ctx.mdps)) {
+          const protectedCount = group.ids.filter(
+            i => previous(i,back) === "D"
+          ).length;
+
+          const limbo = limboByScore.get(group.score) || 0;
+          const forcedProtectedLimbo = Math.max(
+            0,limbo-(group.ids.length-protectedCount)
+          );
+
+          result.push(
+            ...new Array(forcedProtectedLimbo).fill(REFLOAT)
+          );
+          result.push(
+            ...new Array(protectedCount-forcedProtectedLimbo)
+              .fill(group.score-ctx.score)
+          );
+        }
+
+        return result.sort((a,b) => b-a);
+      }
+
+      const pairedMdpGaps = [];
+
+      for (const group of groupedScores(ctx.mdps)) {
+        const count = group.ids.length -
+          (limboByScore.get(group.score)||0);
+
+        pairedMdpGaps.push(
+          ...new Array(count).fill(group.score-ctx.score)
+        );
+      }
+
+      pairedMdpGaps.sort((a,b) => a-b);
+
+      return [
+        0,0,colorBound(false),colorBound(true),
+        d1,u1,d2,u2,
+        mdpBound(1),
+        pairedMdpGaps.slice(0,u1).sort((a,b) => b-a),
+        mdpBound(2),
+        pairedMdpGaps.slice(0,u2).sort((a,b) => b-a)
+      ];
+    }
+
+    function selectBracket(index, incoming) {
+      const ctx = bracketContext(index,incoming);
+      phase = "Optimerar grupp vid poäng " + ctx.score;
+
+      const high = highFor(index,incoming);
+
+      if (!high) {
+        throw fault(
+          "NO_DUTCH_CANDIDATE",
+          "Ingen gruppkandidat kunde fastställas vid poäng " +
+          ctx.score + "."
+        );
+      }
+
+      const lookAhead = bestLookAhead(ctx,high);
+      const c9 = bestC9(ctx,high,lookAhead);
+      const lowerBound = qualityLowerBound(ctx,high);
+      const acceptableMemo = new Map();
+
+      function acceptableDown(down) {
+        const key = keyOf(down);
+
+        if (acceptableMemo.has(key)) {
+          return acceptableMemo.get(key);
+        }
+
+        const answer =
+          down.length === high.count &&
+          compareArrays(scoreList(down),high.scores) === 0 &&
+          feasibleDownset(ctx,down) &&
+          matchesLookAhead(ctx,down,lookAhead) &&
+          (
+            !c9Applies(high) ||
+            players[down[0]].unplayedCount === c9
+          );
+
+        acceptableMemo.set(key,answer);
+        return answer;
+      }
+
+      let best = null;
+      let ordinal = 0;
+      let proof = "exhausted-with-safe-pruning";
+
+      function canWin(partialPairs) {
+        if (!best) return true;
+
+        const partial = [0,0,0,0];
+
+        for (const [a,b] of partialPairs) {
+          for (let k = 0; k < 4; k++) {
+            partial[k] += pairCost[a][b][k];
+          }
+        }
+
+        return compareArrays(
+          partial,best.value.slice(0,4)
+        ) <= 0;
+      }
+
+      for (const candidate of bracketCandidates(ctx,high,canWin)) {
+        tick();
+        ordinal++;
+
+        if (!acceptableDown(candidate.down)) continue;
+
+        const value = quality(ctx,candidate);
+
+        if (!best || compareQuality(value,best.value) < 0) {
+          best = {...candidate,value,ordinal};
+        }
+
+        if (compareQuality(best.value,lowerBound) === 0) {
+          proof = "lower-bound-attained";
+          break;
+        }
+      }
+
+      if (!best) {
+        throw fault(
+          "NO_DUTCH_CANDIDATE",
+          "Ingen valbar kandidat kunde fastställas vid poäng " +
+          ctx.score + "."
+        );
+      }
+
+      const qualityNames = [
+        "C10","C11","C12","C13","C14","C15","C16","C17",
+        "C18","C19","C20","C21"
+      ];
+
+      const evaluated = {};
+
+      qualityNames.forEach((name,k) => {
+        evaluated[name] = Array.isArray(best.value[k])
+          ? best.value[k].map(x => x === REFLOAT ? "REFLOAT" : x)
+          : best.value[k];
+      });
+
+      return {
+        ...best,
+        trace:{
+          score:ctx.score,
+          incomingMDPs:ctx.mdps.map(i => players[i].tpn),
+          MaxPairs:high.pairs,
+          M0:ctx.mdps.length,
+          M1:high.m1,
+          C5:byeScore,
+          C6:high.count,
+          C7:high.scores,
+          C8:{
+            nextDownfloaters:lookAhead.count,
+            nextDownfloaterScores:lookAhead.scores
+          },
+          C9:c9Applies(high) ? c9 : "inte tillämpligt",
+          ...evaluated,
+          downfloaters:best.down.map(i => players[i].tpn),
+          selectedGeneratedCandidate:best.ordinal,
+          proof
+        }
+      };
+    }
+
+    const allPairs = [];
+    const trace = [];
+    let incoming = [];
+
+    for (let index = 0; index < groups.length; index++) {
+      const selected = selectBracket(index,incoming);
+      allPairs.push(...selected.pairs);
+      trace.push(selected.trace);
+      incoming = selected.down;
+    }
+
+    if (incoming.length !== N % 2) {
+      throw fault("INTERNAL","Slutlig täckningskontroll misslyckades.");
+    }
+
+    const pabIndex = incoming.length ? incoming[0] : null;
+
+    if (
+      pabIndex !== null &&
+      (
+        !eligible(pabIndex) ||
+        players[pabIndex].score !== byeScore
+      )
+    ) {
+      throw fault("INTERNAL","Slutlig frirondskontroll misslyckades.");
+    }
+
+    const covered = new Set();
+    const outputPairs = [];
+
+    for (const [a,b] of allPairs) {
+      if (!edge[a][b] || covered.has(a) || covered.has(b)) {
+        throw fault(
+          "INTERNAL",
+          "Slutlig legalitets- eller entydighetskontroll av par misslyckades."
+        );
+      }
+
+      covered.add(a);
+      covered.add(b);
+
+      const [w,bl] = colors[a][b];
+
+      outputPairs.push({
+        whiteId:players[w].id,
+        blackId:players[bl].id
+      });
+    }
+
+    if (pabIndex !== null) {
+      if (covered.has(pabIndex)) {
+        throw fault("INTERNAL","Duplicerad frirondsmottagare.");
+      }
+      covered.add(pabIndex);
+    }
+
+    if (covered.size !== N) {
+      throw fault("INTERNAL","Ofullständig spelartäckning.");
+    }
+
+    return {
+      engineVersion:VERSION,
+      pairs:outputPairs,
+      pabId:pabIndex === null ? null : players[pabIndex].id,
+      byeScore,
+      trace,
+      stats:{
+        nodes,
+        elapsedMs:performance.now()-started
+      }
+    };
+  }
+
+  function selfTest(progress = () => {}) {
+    const results = [];
+
+    function check(condition,message) {
+      if (!condition) throw new Error(message);
+    }
+
+    function test(name,fn) {
+      progress({phase:"Test: "+name,nodes:0,elapsedMs:0});
+      fn();
+      results.push(name);
+    }
+
+    function fixture(count,roundNumber = 1,totalRounds = 5) {
+      const m = roundNumber-1;
+
+      return {
+        roundNumber,totalRounds,winPoints:1,initialColor:"W",
+        players:Array.from({length:count},(_,i) => ({
+          id:"P"+(i+1),
+          tpn:i+1,
+          score:0,
+          opponents:[],
+          playedColors:Array.from(
+            {length:m},(_,r) => (r+i)%2 ? "B" : "W"
+          ),
+          floats:new Array(m).fill("-"),
+          hadPAB:false,
+          hadUnplayedWin:false
+        }))
+      };
+    }
+
+    function run(input,limits = {seconds:10,nodes:1000000}) {
+      return solve(input,limits);
+    }
+
+    function opponents(result) {
+      return result.pairs.map(p =>
+        [p.whiteId,p.blackId].sort().join("-")
+      ).sort();
+    }
+
+    test("Ordinary odd first round",() => {
+      const result = run(fixture(15));
+
+      check(result.pabId === "P15","Expected TPN 15 to receive the bye.");
+
+      for (let i = 1; i <= 7; i++) {
+        check(
+          result.pairs.some(p =>
+            [p.whiteId,p.blackId].includes("P"+i) &&
+            [p.whiteId,p.blackId].includes("P"+(i+7))
+          ),
+          "Incorrect first-round opponent."
+        );
+      }
+
+      check(
+        result.pairs.some(p =>
+          p.whiteId === "P1" && p.blackId === "P8"
+        ),
+        "Incorrect first-round initial color."
+      );
+
+      check(
+        result.pairs.some(p =>
+          p.whiteId === "P9" && p.blackId === "P2"
+        ),
+        "Incorrect even-TPN initial color."
+      );
+    });
+
+    test("Canonical tie order",() => {
+      const input = fixture(4,3,5);
+
+      input.players.forEach(p => {
+        p.score = 1;
+        p.playedColors = ["W","B"];
+      });
+
+      const result = run(input);
+
+      check(
+        JSON.stringify(opponents(result)) ===
+          JSON.stringify(["P1-P3","P2-P4"]),
+        "Expected the natural top-half/bottom-half candidate."
+      );
+    });
+
+    test("Played histories aligned from the end",() => {
+      const a = {
+        id:"A",tpn:1,score:2,playedColors:["W","W","B"]
+      };
+      const b = {
+        id:"B",tpn:2,score:2,playedColors:["W","B","W"]
+      };
+
+      check(
+        allocate(a,b,"W").white.id === "A",
+        "Color allocation used the wrong historical alignment."
+      );
+    });
+
+    test("C3 is absolute outside the topscorer exception",() => {
+      const input = fixture(2,3,4);
+
+      input.players.forEach(p => {
+        p.score = 2;
+        p.playedColors = ["W","W"];
+      });
+
+      let refused = false;
+
+      try {
+        run(input);
+      } catch (error) {
+        refused = error.code === "NO_LEGAL_COMPLETION";
+      }
+
+      check(
+        refused,
+        "Same absolute preferences should prohibit this pairing."
+      );
+
+      input.totalRounds = 3;
+
+      check(
+        run(input).pairs.length === 1,
+        "Final-round topscorer exception failed."
+      );
+    });
+
+    test("C4 can require extra downfloaters",() => {
+      const input = fixture(4,2,5);
+      input.players[0].score = 1;
+      input.players[1].score = 1;
+      input.players[2].opponents = ["P4"];
+      input.players[3].opponents = ["P3"];
+
+      const result = run(input);
+
+      check(
+        result.trace[0].MaxPairs === 0,
+        "The upper bracket must leave both players available."
+      );
+      check(
+        result.pairs.length === 2,
+        "Expected complete cross-score pairing."
+      );
+    });
+
+    test("C5 chooses the minimum feasible score",() => {
+      const input = fixture(3,2,5);
+      input.players[0].score = 1;
+      input.players[2].score = 1;
+      input.players[0].opponents = ["P3"];
+      input.players[1].opponents = ["P3"];
+      input.players[2].opponents = ["P1","P2"];
+
+      const result = run(input);
+
+      check(
+        result.pabId === "P3" && result.byeScore === 1,
+        "Incorrect feasible bye-score selection."
+      );
+    });
+
+    test("C9 protects a player with fewer played games",() => {
+      const input = fixture(3,2,5);
+      input.players[2].playedColors = [];
+
+      check(
+        run(input).pabId === "P2",
+        "Expected TPN 2, not previously absent TPN 3, to receive the bye."
+      );
+    });
+
+    test("C8 optimizes the next bracket before current colors",() => {
+      const input = fixture(8,3,6);
+
+      input.players.forEach((p,i) => {
+        p.score = i < 3 ? 2 : i < 6 ? 1 : 0;
+        p.playedColors = ["W","B"];
+      });
+
+      input.players[3].opponents = ["P2","P3","P5","P6"];
+
+      for (const i of [1,2,4,5]) {
+        input.players[i].opponents.push("P4");
+      }
+
+      const result = run(input);
+
+      check(
+        JSON.stringify(result.trace[0].downfloaters) ===
+          JSON.stringify([1]),
+        "Expected TPN 1 to solve the next bracket's incompatibility."
+      );
+    });
+
+    test("C18 protects an incoming MDP against Limbo/PAB",() => {
+      const input = fixture(3,3,5);
+      input.players[0].score = input.players[1].score = 2;
+      input.players[0].playedColors = ["B","B"];
+      input.players[1].playedColors = ["B","B"];
+      input.players[1].floats[1] = "D";
+      input.players[2].score = 1;
+      input.players[2].playedColors = [];
+      input.players[2].hadPAB = true;
+
+      check(
+        run(input).pabId === "P1",
+        "The protected MDP should be paired rather than refloated to the bye."
+      );
+    });
+
+    test("Resource interruption returns no provisional solution",() => {
+      let stopped = false;
+
+      try {
+        run(fixture(8),{seconds:0,nodes:1});
+      } catch (error) {
+        stopped = error.code === "LIMIT";
+      }
+
+      check(stopped,"Expected a resource-limit exception.");
+    });
+
+    return {passed:results.length,tests:results};
+  }
+
+  return {
+    VERSION,
+    solve,
+    selfTest,
+    rank,
+    preference,
+    colorDifference,
+    compatible,
+    allocate
+  };
+}
+
+
+/* ========================================================================== */
+/* BURSTEIN CORE — DUTCH SEEDING PLUS 2026 BURSTEIN PAIRING                   */
+/* ========================================================================== */
+
+function Burstein2026Core(DutchCore) {
+  "use strict";
+
+  const VERSION = "2026-burstein-reference-1";
+
+  if (!DutchCore || typeof DutchCore.solve !== "function") {
+    throw new Error("Den inbyggda holländska seedningsmotorn är inte tillgänglig.");
+  }
+
+  function fault(code, message) {
+    const error = new Error(message);
+    error.code = code;
+    return error;
+  }
+
+  function compareArrays(a, b) {
+    for (let i = 0; i < Math.min(a.length, b.length); i++) {
+      if (a[i] !== b[i]) return a[i] < b[i] ? -1 : 1;
+    }
+
+    return Math.sign(a.length - b.length);
+  }
+
+  /*
+   * General score ordering used by the GUI and for board ordering.
+   * This is not the post-seeding Burstein in-bracket ranking.
+   */
+  function scoreRank(a, b) {
+    return b.score - a.score || a.tpn - b.tpn;
+  }
+
+  function colorDifference(player) {
+    return (player.playedColors || []).reduce(
+      (sum, color) => sum + (color === "W" ? 1 : -1),
+      0
+    );
+  }
+
+  function preference(player) {
+    const history = player.playedColors || [];
+
+    if (!history.length) {
+      return {color:null, strength:0, type:"none"};
+    }
+
+    const difference = colorDifference(player);
+    const last = history[history.length - 1];
+
+    const sameLastTwo =
+      history.length >= 2 &&
+      last === history[history.length - 2];
+
+    const absoluteWhite =
+      difference < -1 ||
+      (sameLastTwo && last === "B");
+
+    const absoluteBlack =
+      difference > 1 ||
+      (sameLastTwo && last === "W");
+
+    if (absoluteWhite && absoluteBlack) {
+      throw fault(
+        "INPUT",
+        "Motstridiga absoluta färgkrav i historiken för TPN " +
+        player.tpn + ". Åtgärda underliggande turneringsdata."
+      );
+    }
+
+    if (absoluteWhite) {
+      return {color:"W", strength:3, type:"absolute"};
+    }
+
+    if (absoluteBlack) {
+      return {color:"B", strength:3, type:"absolute"};
+    }
+
+    if (difference === 1) {
+      return {color:"B", strength:2, type:"strong"};
+    }
+
+    if (difference === -1) {
+      return {color:"W", strength:2, type:"strong"};
+    }
+
+    return {
+      color:last === "W" ? "B" : "W",
+      strength:1,
+      type:"mild"
+    };
+  }
+
+  function seedingRoundCount(totalRounds) {
+    const rounds = Number(totalRounds);
+
+    if (!Number.isSafeInteger(rounds) || rounds < 1) {
+      return 0;
+    }
+
+    return Math.min(Math.floor(rounds / 2), 4);
+  }
+
+  function isDutchSeedingRound(context) {
+    if (!context) return false;
+
+    const roundNumber = Number(context.roundNumber);
+    const totalRounds = Number(context.totalRounds);
+
+    return (
+      Number.isSafeInteger(roundNumber) &&
+      Number.isSafeInteger(totalRounds) &&
+      roundNumber <= seedingRoundCount(totalRounds)
+    );
+  }
+
+  function indexBH(player) {
+    return Number(
+      player.bursteinBH ??
+      player.indexBH ??
+      0
+    );
+  }
+
+  function indexSB(player) {
+    return Number(
+      player.bursteinSB ??
+      player.indexSB ??
+      0
+    );
+  }
+
+  /*
+   * Article 1.8 order:
+   *   1. Buchholz, descending
+   *   2. Sonneborn-Berger, descending
+   *   3. TPN, ascending
+   *
+   * Scores are deliberately not used here.
+   */
+  function indexRank(a, b) {
+    return indexBH(b) - indexBH(a) ||
+      indexSB(b) - indexSB(a) ||
+      a.tpn - b.tpn;
+  }
+
+  function bursteinCompatible(a, b) {
+    if (!a || !b || a.id === b.id) return false;
+
+    const aOpponents = a.opponents || [];
+    const bOpponents = b.opponents || [];
+
+    if (
+      aOpponents.includes(b.id) ||
+      bOpponents.includes(a.id)
+    ) {
+      return false;
+    }
+
+    const aPreference = preference(a);
+    const bPreference = preference(b);
+
+    return !(
+      aPreference.strength === 3 &&
+      bPreference.strength === 3 &&
+      aPreference.color === bPreference.color
+    );
+  }
+
+  function bursteinAllocate(a, b, initialColor) {
+    const higher = indexRank(a, b) <= 0 ? a : b;
+    const lower = higher === a ? b : a;
+
+    const higherPreference = preference(higher);
+    const lowerPreference = preference(lower);
+
+    function give(player, color) {
+      const other = player === higher ? lower : higher;
+
+      return color === "W"
+        ? {white:player, black:other}
+        : {white:other, black:player};
+    }
+
+    /*
+     * Article 5.2.1 is applied first when neither player has played.
+     */
+    if (
+      !higher.playedColors.length &&
+      !lower.playedColors.length
+    ) {
+      const color = higher.tpn % 2
+        ? initialColor
+        : initialColor === "W" ? "B" : "W";
+
+      return give(higher, color);
+    }
+
+    /*
+     * Grant both preferences when they are opposite.
+     */
+    if (
+      higherPreference.color &&
+      lowerPreference.color &&
+      higherPreference.color !== lowerPreference.color
+    ) {
+      return give(higher, higherPreference.color);
+    }
+
+    /*
+     * Grant the stronger preference.
+     */
+    if (
+      higherPreference.strength >
+      lowerPreference.strength
+    ) {
+      return give(higher, higherPreference.color);
+    }
+
+    if (
+      lowerPreference.strength >
+      higherPreference.strength
+    ) {
+      return give(lower, lowerPreference.color);
+    }
+
+    /*
+     * Alternate from the most recent comparable played colours.
+     * Unplayed rounds are not colours.
+     */
+    const higherHistory = higher.playedColors;
+    const lowerHistory = lower.playedColors;
+
+    const commonLength = Math.min(
+      higherHistory.length,
+      lowerHistory.length
+    );
+
+    for (let back = 1; back <= commonLength; back++) {
+      const higherColor =
+        higherHistory[higherHistory.length - back];
+
+      const lowerColor =
+        lowerHistory[lowerHistory.length - back];
+
+      if (higherColor !== lowerColor) {
+        return give(
+          higher,
+          higherColor === "W" ? "B" : "W"
+        );
+      }
+    }
+
+    /*
+     * Grant the preference of the higher-ranked player.
+     * A player with no preference yields to the opponent.
+     */
+    if (higherPreference.color) {
+      return give(higher, higherPreference.color);
+    }
+
+    if (lowerPreference.color) {
+      return give(lower, lowerPreference.color);
+    }
+
+    const fallback = higher.tpn % 2
+      ? initialColor
+      : initialColor === "W" ? "B" : "W";
+
+    return give(higher, fallback);
+  }
+
+  function compatible(a, b, context) {
+    return isDutchSeedingRound(context)
+      ? DutchCore.compatible(a, b, context)
+      : bursteinCompatible(a, b);
+  }
+
+  function allocate(a, b, context) {
+    if (isDutchSeedingRound(context)) {
+      return DutchCore.allocate(
+        a,
+        b,
+        context.initialColor
+      );
+    }
+
+    const initialColor =
+      typeof context === "string"
+        ? context
+        : context.initialColor;
+
+    return bursteinAllocate(a, b, initialColor);
+  }
+
+function solve(input, limits = {}, progress = () => {}) {
+  const roundNumber = Number(input && input.roundNumber);
+  const totalRounds = Number(input && input.totalRounds);
+  const seedingRounds = seedingRoundCount(totalRounds);
+
+  if (
+    Number.isSafeInteger(roundNumber) &&
+    Number.isSafeInteger(totalRounds) &&
+    roundNumber <= seedingRounds
+  ) {
+    const result = DutchCore.solve(
+      input,
+      limits,
+      progress
+    );
+
+    const dutchEngineVersion = result.engineVersion;
+
+    // Insert it here:
+    const byePlayer = result.pabId === null
+      ? null
+      : input.players.find(
+          player =>
+            String(player.id) === String(result.pabId)
+        ) || null;
+
+    return {
+      ...result,
+      engineVersion: VERSION,
+      dutchEngineVersion,
+      pairingSystem: "FIDE Dutch seeding",
+      seedingRounds,
+      bye: byePlayer
+        ? {
+            id: byePlayer.id,
+            tpn: byePlayer.tpn,
+            score: byePlayer.score
+          }
+        : null
+    };
+  }
+
+  return solveBurstein(input, limits, progress);
+}
+
+  function solveBurstein(
+    input,
+    limits = {},
+    progress = () => {}
+  ) {
+    const started = performance.now();
+    const seconds = Number(limits.seconds ?? 30);
+    const nodeLimit = Number(limits.nodes ?? 2000000);
+
+    const deadline = seconds > 0
+      ? started + seconds * 1000
+      : Infinity;
+
+    if (
+      !Number.isFinite(seconds) ||
+      seconds < 0 ||
+      !Number.isSafeInteger(nodeLimit) ||
+      nodeLimit < 0
+    ) {
+      throw fault("INPUT", "Ogiltiga sökgränser.");
+    }
+
+    let nodes = 0;
+    let phase = "Förbereder Burstein-lottningsdata";
+    let lastProgress = started;
+
+    function tick() {
+      nodes++;
+
+      if (nodeLimit > 0 && nodes > nodeLimit) {
+        throw fault(
+          "LIMIT",
+          "Sökgränsen för antal arbetsenheter uppnåddes."
+        );
+      }
+
+      if ((nodes & 255) === 0 || nodes === 1) {
+        const now = performance.now();
+
+        if (now >= deadline) {
+          throw fault(
+            "LIMIT",
+            "Sökgränsen för tid uppnåddes."
+          );
+        }
+
+        if (now - lastProgress >= 200) {
+          progress({
+            phase,
+            nodes,
+            elapsedMs:now - started
+          });
+
+          lastProgress = now;
+        }
+      }
+    }
+
+    const context = {
+      roundNumber:Number(input.roundNumber),
+      totalRounds:Number(input.totalRounds),
+      winPoints:Number(input.winPoints),
+      initialColor:input.initialColor
+    };
+
+    if (
+      !Number.isSafeInteger(context.roundNumber) ||
+      !Number.isSafeInteger(context.totalRounds) ||
+      context.roundNumber < 1 ||
+      context.roundNumber > context.totalRounds ||
+      context.roundNumber <=
+        seedingRoundCount(context.totalRounds) ||
+      ![1, 3].includes(context.winPoints) ||
+      !["W", "B"].includes(context.initialColor) ||
+      !Array.isArray(input.players)
+    ) {
+      throw fault(
+        "INPUT",
+        "Ogiltig kontext för Burstein-lottning."
+      );
+    }
+
+    if (
+      input.acceleration ||
+      (input.restrictions || []).length
+    ) {
+      throw fault(
+        "INPUT",
+        "Acceleration och ytterligare lottningsrestriktioner " +
+        "stöds inte."
+      );
+    }
+
+    const completedRounds = context.roundNumber - 1;
+    const seenIds = new Set();
+    const seenTPNs = new Set();
+
+    const players = input.players.map(raw => {
+      tick();
+
+      const player = {
+        id:String(raw.id),
+        tpn:Number(raw.tpn),
+        score:Number(raw.score),
+        opponents:[...(raw.opponents || [])].map(String),
+        playedColors:[...(raw.playedColors || [])],
+        hadPAB:Boolean(raw.hadPAB),
+        hadUnplayedWin:Boolean(raw.hadUnplayedWin),
+        bursteinBH:Number(
+          raw.bursteinBH ?? raw.indexBH
+        ),
+        bursteinSB:Number(
+          raw.bursteinSB ?? raw.indexSB
+        )
+      };
+
+      if (
+        !player.id ||
+        seenIds.has(player.id) ||
+        !Number.isSafeInteger(player.tpn) ||
+        player.tpn < 1 ||
+        seenTPNs.has(player.tpn) ||
+        !Number.isFinite(player.score) ||
+        player.score < 0 ||
+        !Number.isInteger(player.score * 2) ||
+        player.score >
+          completedRounds * context.winPoints ||
+        !Number.isFinite(player.bursteinBH) ||
+        player.bursteinBH < 0 ||
+        !Number.isFinite(player.bursteinSB) ||
+        player.bursteinSB < 0 ||
+        player.playedColors.length > completedRounds ||
+        player.playedColors.some(
+          color => color !== "W" && color !== "B"
+        )
+      ) {
+        throw fault(
+          "INPUT",
+          "Ogiltigt tillstånd för en spelare, inklusive TPN " +
+          player.tpn + "."
+        );
+      }
+
+      seenIds.add(player.id);
+      seenTPNs.add(player.tpn);
+
+      player.playedGames =
+        player.playedColors.length;
+
+      player.pref = preference(player);
+      player.cd = colorDifference(player);
+
+      return player;
+    }).sort((a, b) =>
+      b.score - a.score ||
+      indexRank(a, b)
+    );
+
+    const playerCount = players.length;
+    const ids = players.map((_, index) => index);
+
+    const numericOrder = (a, b) => a - b;
+    const ordered = list => [...list].sort(numericOrder);
+
+    const keyOf = list => ordered(list).join(",");
+
+    const scoreList = list =>
+      list
+        .map(index => players[index].score)
+        .sort((a, b) => b - a);
+
+    const byIndex = list =>
+      [...list].sort((a, b) =>
+        indexRank(players[a], players[b])
+      );
+
+    const eligibleForBye = index =>
+      !players[index].hadPAB &&
+      !players[index].hadUnplayedWin;
+
+    /*
+     * Compatibility, colour allocation and C8 cost are static
+     * throughout this round search.
+     */
+    const edge = Array.from(
+      {length:playerCount},
+      () => new Array(playerCount).fill(false)
+    );
+
+    const colors = Array.from(
+      {length:playerCount},
+      () => new Array(playerCount)
+    );
+
+    const colorMiss = Array.from(
+      {length:playerCount},
+      () => new Array(playerCount).fill(0)
+    );
+
+    for (let i = 0; i < playerCount; i++) {
+      for (let j = i + 1; j < playerCount; j++) {
+        tick();
+
+        const a = players[i];
+        const b = players[j];
+
+        edge[i][j] =
+          edge[j][i] =
+          bursteinCompatible(a, b);
+
+        const assignment = bursteinAllocate(
+          a,
+          b,
+          context.initialColor
+        );
+
+        const whiteIndex =
+          assignment.white === a ? i : j;
+
+        const blackIndex =
+          whiteIndex === i ? j : i;
+
+        colors[i][j] =
+          colors[j][i] =
+          [whiteIndex, blackIndex];
+
+        let misses = 0;
+
+        for (const [index, color] of [
+          [whiteIndex, "W"],
+          [blackIndex, "B"]
+        ]) {
+          const due = players[index].pref.color;
+
+          if (due && due !== color) {
+            misses++;
+          }
+        }
+
+        colorMiss[i][j] =
+          colorMiss[j][i] =
+          misses;
+      }
+    }
+
+    /*
+     * Absolute-completion matching test used for C4 and
+     * pairing-allocated-bye feasibility.
+     */
+    const matchingMemo = new Map();
+
+    function perfectMatching(list) {
+      function visit(xs) {
+        tick();
+
+        if (!xs.length) return true;
+        if (xs.length % 2) return false;
+
+        const key = xs.join(",");
+
+        if (matchingMemo.has(key)) {
+          return matchingMemo.get(key);
+        }
+
+        let chosen = -1;
+        let opponents = null;
+
+        for (const index of xs) {
+          tick();
+
+          const possible = xs.filter(
+            other =>
+              other !== index &&
+              edge[index][other]
+          );
+
+          if (!possible.length) {
+            matchingMemo.set(key, false);
+            return false;
+          }
+
+          if (
+            opponents === null ||
+            possible.length < opponents.length
+          ) {
+            chosen = index;
+            opponents = possible;
+          }
+        }
+
+        for (const opponent of opponents) {
+          const rest = xs.filter(
+            index =>
+              index !== chosen &&
+              index !== opponent
+          );
+
+          if (visit(rest)) {
+            matchingMemo.set(key, true);
+            return true;
+          }
+        }
+
+        matchingMemo.set(key, false);
+        return false;
+      }
+
+      return visit(ordered(list));
+    }
+
+    /*
+     * Article 3.1: the PAB is selected before bracket pairing.
+     */
+    phase = "Tilldelar lottad frirond";
+
+    let pabIndex = null;
+    let byeTrace = null;
+
+    if (playerCount % 2) {
+      const candidates = ids
+        .filter(eligibleForBye)
+        .sort((a, b) =>
+          players[a].score - players[b].score ||
+          players[b].playedGames -
+            players[a].playedGames ||
+          -indexRank(players[a], players[b])
+        );
+
+      const tested = [];
+
+      for (const candidate of candidates) {
+        tick();
+
+        const remaining = ids.filter(
+          index => index !== candidate
+        );
+
+        const complete = perfectMatching(remaining);
+
+        tested.push({
+          tpn:players[candidate].tpn,
+          score:players[candidate].score,
+          playedGames:players[candidate].playedGames,
+          bursteinBH:players[candidate].bursteinBH,
+          bursteinSB:players[candidate].bursteinSB,
+          complete
+        });
+
+        if (complete) {
+          pabIndex = candidate;
+          break;
+        }
+      }
+
+      if (pabIndex === null) {
+        throw fault(
+          "NO_LEGAL_COMPLETION",
+          "Ingen behörig mottagare av lottad frirond " +
+          "möjliggör en fullständig legal rond."
+        );
+      }
+
+      byeTrace = {
+        selectedTPN:players[pabIndex].tpn,
+        selectedScore:players[pabIndex].score,
+        tested
+      };
+    }
+
+    const activeIds = ids.filter(
+      index => index !== pabIndex
+    );
+
+    if (!perfectMatching(activeIds)) {
+      throw fault(
+        "NO_LEGAL_COMPLETION",
+        "Ingen fullständig rond som uppfyller C1–C4 existerar."
+      );
+    }
+
+    /*
+     * Build scoregroups after removal of the PAB recipient.
+     */
+    const groups = [];
+
+    for (const index of activeIds) {
+      const score = players[index].score;
+      const last = groups[groups.length - 1];
+
+      if (!last || last.score !== score) {
+        groups.push({
+          score,
+          ids:[index]
+        });
+      } else {
+        last.ids.push(index);
+      }
+    }
+
+    const tails = new Array(groups.length + 1);
+    tails[groups.length] = [];
+
+    for (let i = groups.length - 1; i >= 0; i--) {
+      tails[i] = [
+        ...groups[i].ids,
+        ...tails[i + 1]
+      ];
+    }
+
+    const completionMemo = new Map();
+
+    function canComplete(list) {
+      const xs = ordered(list);
+      const key = xs.join(",");
+
+      if (completionMemo.has(key)) {
+        return completionMemo.get(key);
+      }
+
+      const result =
+        xs.length % 2 === 0 &&
+        perfectMatching(xs);
+
+      completionMemo.set(key, result);
+      return result;
+    }
+
+    const contexts = new Map();
+    const highMemo = new Map();
+    const feasibleMemo = new Map();
+    const lookAheadMemo = new Map();
+
+    function bracketContext(index, incoming) {
+      const incomingFloaters = ordered(incoming);
+      const key =
+        index + ":" + incomingFloaters.join(",");
+
+      if (contexts.has(key)) {
+        return contexts.get(key);
+      }
+
+      const residents = groups[index].ids;
+
+      const result = {
+        key,
+        index,
+        score:groups[index].score,
+        incoming:incomingFloaters,
+        residents,
+        all:byIndex([
+          ...incomingFloaters,
+          ...residents
+        ]),
+        lower:tails[index + 1],
+        last:index === groups.length - 1
+      };
+
+      contexts.set(key, result);
+      return result;
+    }
+
+    function* combinations(
+      items,
+      count,
+      start = 0,
+      chosen = []
+    ) {
+      tick();
+
+      if (count === 0) {
+        yield [...chosen];
+        return;
+      }
+
+      for (
+        let i = start;
+        i <= items.length - count;
+        i++
+      ) {
+        chosen.push(items[i]);
+
+        yield* combinations(
+          items,
+          count - 1,
+          i + 1,
+          chosen
+        );
+
+        chosen.pop();
+      }
+    }
+
+    function groupedScores(list) {
+      const result = [];
+
+      const sorted = [...list].sort((a, b) =>
+        players[b].score - players[a].score ||
+        indexRank(players[a], players[b])
+      );
+
+      for (const index of sorted) {
+        const score = players[index].score;
+        const last = result[result.length - 1];
+
+        if (!last || last.score !== score) {
+          result.push({
+            score,
+            ids:[index]
+          });
+        } else {
+          last.ids.push(index);
+        }
+      }
+
+      return result;
+    }
+
+    /*
+     * Profiles are produced in C6 order: the lexicographically
+     * smallest descending score sequence comes first.
+     */
+    function* scoreProfiles(list, count) {
+      const scoregroups = groupedScores(list);
+
+      const remaining =
+        new Array(scoregroups.length + 1).fill(0);
+
+      for (
+        let i = scoregroups.length - 1;
+        i >= 0;
+        i--
+      ) {
+        remaining[i] =
+          remaining[i + 1] +
+          scoregroups[i].ids.length;
+      }
+
+      function* visit(index, needed, profile) {
+        tick();
+
+        if (index === scoregroups.length) {
+          if (needed === 0) {
+            yield profile;
+          }
+          return;
+        }
+
+        const minimum = Math.max(
+          0,
+          needed - remaining[index + 1]
+        );
+
+        const maximum = Math.min(
+          needed,
+          scoregroups[index].ids.length
+        );
+
+        for (
+          let take = minimum;
+          take <= maximum;
+          take++
+        ) {
+          yield* visit(
+            index + 1,
+            needed - take,
+            [
+              ...profile,
+              ...new Array(take).fill(
+                scoregroups[index].score
+              )
+            ]
+          );
+        }
+      }
+
+      yield* visit(0, count, []);
+    }
+
+    function* setsWithScores(list, profile) {
+      const scoregroups = groupedScores(list);
+      const counts = new Map();
+
+      for (const score of profile) {
+        counts.set(
+          score,
+          (counts.get(score) || 0) + 1
+        );
+      }
+
+      function* visit(index, chosen) {
+        tick();
+
+        if (index === scoregroups.length) {
+          yield chosen;
+          return;
+        }
+
+        const count =
+          counts.get(scoregroups[index].score) || 0;
+
+        for (
+          const part of combinations(
+            scoregroups[index].ids,
+            count
+          )
+        ) {
+          yield* visit(
+            index + 1,
+            [...chosen, ...part]
+          );
+        }
+      }
+
+      yield* visit(0, []);
+    }
+
+    function futureOK(ctx, down) {
+      if (ctx.last) {
+        return down.length === 0;
+      }
+
+      return canComplete([
+        ...down,
+        ...ctx.lower
+      ]);
+    }
+
+    function feasibleDownset(ctx, down) {
+      const key =
+        ctx.key + "|" + keyOf(down);
+
+      if (feasibleMemo.has(key)) {
+        return feasibleMemo.get(key);
+      }
+
+      const downSet = new Set(down);
+
+      const paired = ctx.all.filter(
+        index => !downSet.has(index)
+      );
+
+      const result =
+        futureOK(ctx, down) &&
+        perfectMatching(paired);
+
+      feasibleMemo.set(key, result);
+      return result;
+    }
+
+    function compareHigh(a, b) {
+      return a.count - b.count ||
+        compareArrays(a.scores, b.scores);
+    }
+
+    function theoreticalHigh(ctx) {
+      if (ctx.last) {
+        return {count:0, scores:[]};
+      }
+
+      const count = ctx.all.length % 2;
+
+      const scores = ctx.all
+        .map(index => players[index].score)
+        .sort((a, b) => a - b)
+        .slice(0, count)
+        .sort((a, b) => b - a);
+
+      return {count, scores};
+    }
+
+    /*
+     * Establish the optimum C5/C6 values for this context.
+     * This does not yet apply C7 or C8.
+     */
+    function highFor(index, incoming) {
+      const ctx = bracketContext(index, incoming);
+
+      if (highMemo.has(ctx.key)) {
+        return highMemo.get(ctx.key);
+      }
+
+      const firstCount = ctx.last
+        ? 0
+        : ctx.all.length % 2;
+
+      const lastCount = ctx.last
+        ? 0
+        : ctx.all.length;
+
+      for (
+        let count = firstCount;
+        count <= lastCount;
+        count += 2
+      ) {
+        for (
+          const profile of scoreProfiles(
+            ctx.all,
+            count
+          )
+        ) {
+          for (
+            const down of setsWithScores(
+              ctx.all,
+              profile
+            )
+          ) {
+            if (!feasibleDownset(ctx, down)) {
+              continue;
+            }
+
+            const high = {
+              count,
+              scores:profile,
+              pairs:(ctx.all.length - count) / 2,
+              exampleDown:[...down]
+            };
+
+            highMemo.set(ctx.key, high);
+            return high;
+          }
+        }
+      }
+
+      highMemo.set(ctx.key, null);
+      return null;
+    }
+
+    /*
+     * C7 compares the following bracket through C6.
+     */
+    function bestLookAhead(ctx, high) {
+      if (ctx.last) {
+        return {count:0, scores:[]};
+      }
+
+      const memoKey =
+        ctx.key + "|" +
+        high.count + "|" +
+        high.scores.join(",");
+
+      if (lookAheadMemo.has(memoKey)) {
+        return lookAheadMemo.get(memoKey);
+      }
+
+      const theoretical = theoreticalHigh(
+        bracketContext(
+          ctx.index + 1,
+          high.exampleDown
+        )
+      );
+
+      let best = null;
+
+      for (
+        const down of setsWithScores(
+          ctx.all,
+          high.scores
+        )
+      ) {
+        if (!feasibleDownset(ctx, down)) {
+          continue;
+        }
+
+        const next = highFor(
+          ctx.index + 1,
+          down
+        );
+
+        if (!next) continue;
+
+        if (
+          !best ||
+          compareHigh(next, best) < 0
+        ) {
+          best = {
+            count:next.count,
+            scores:[...next.scores]
+          };
+        }
+
+        if (
+          compareHigh(best, theoretical) === 0
+        ) {
+          break;
+        }
+      }
+
+      if (!best) {
+        throw fault(
+          "NO_BURSTEIN_CANDIDATE",
+          "Ingen C7-kompatibel nästa grupp kunde fastställas."
+        );
+      }
+
+      lookAheadMemo.set(memoKey, best);
+      return best;
+    }
+
+    function matchesLookAhead(
+      ctx,
+      down,
+      lookAhead
+    ) {
+      if (ctx.last) return true;
+
+      const next = highFor(
+        ctx.index + 1,
+        down
+      );
+
+      return (
+        next !== null &&
+        compareHigh(next, lookAhead) === 0
+      );
+    }
+
+    /*
+     * Generate complete bracket pairings in Article 4 order.
+     *
+     * For each lowest unassigned BSN, real opponents are tried
+     * in descending BSN order, followed by virtual BSN zero.
+     */
+    function* orderedPairings(
+      ctx,
+      pairCount,
+      canWin
+    ) {
+      const list = ctx.all;
+      const total = list.length;
+
+      const floatCount =
+        total - 2 * pairCount;
+
+      const used =
+        new Array(total).fill(false);
+
+      const pairs = [];
+      const down = [];
+
+      function* visit(
+        pairsMade,
+        floatsMade,
+        currentCost
+      ) {
+        tick();
+
+        if (!canWin(currentCost)) {
+          return;
+        }
+
+        let position = -1;
+
+        for (let i = 0; i < total; i++) {
+          if (!used[i]) {
+            position = i;
+            break;
+          }
+        }
+
+        if (position === -1) {
+          if (
+            pairsMade === pairCount &&
+            floatsMade === floatCount
+          ) {
+            yield {
+              pairs:[...pairs],
+              down:[...down],
+              cost:currentCost
+            };
+          }
+
+          return;
+        }
+
+        used[position] = true;
+
+        const first = list[position];
+
+        if (pairsMade < pairCount) {
+          for (
+            let opponentPosition = total - 1;
+            opponentPosition > position;
+            opponentPosition--
+          ) {
+            if (used[opponentPosition]) {
+              continue;
+            }
+
+            const second =
+              list[opponentPosition];
+
+            if (!edge[first][second]) {
+              continue;
+            }
+
+            used[opponentPosition] = true;
+            pairs.push([first, second]);
+
+            yield* visit(
+              pairsMade + 1,
+              floatsMade,
+              currentCost +
+                colorMiss[first][second]
+            );
+
+            pairs.pop();
+            used[opponentPosition] = false;
+          }
+        }
+
+        if (floatsMade < floatCount) {
+          down.push(first);
+
+          yield* visit(
+            pairsMade,
+            floatsMade + 1,
+            currentCost
+          );
+
+          down.pop();
+        }
+
+        used[position] = false;
+      }
+
+      yield* visit(0, 0, 0);
+    }
+
+    function selectBracket(index, incoming) {
+      const ctx = bracketContext(
+        index,
+        incoming
+      );
+
+      phase =
+        "Optimerar Burstein-grupp vid poäng " +
+        ctx.score;
+
+      const high = highFor(index, incoming);
+
+      if (!high) {
+        throw fault(
+          "NO_BURSTEIN_CANDIDATE",
+          "Ingen gruppkandidat kunde fastställas vid poäng " +
+          ctx.score + "."
+        );
+      }
+
+      const lookAhead =
+        bestLookAhead(ctx, high);
+
+      const acceptableMemo = new Map();
+
+      function acceptableDown(down) {
+        const key = keyOf(down);
+
+        if (acceptableMemo.has(key)) {
+          return acceptableMemo.get(key);
+        }
+
+        const result =
+          down.length === high.count &&
+          compareArrays(
+            scoreList(down),
+            high.scores
+          ) === 0 &&
+          feasibleDownset(ctx, down) &&
+          matchesLookAhead(
+            ctx,
+            down,
+            lookAhead
+          );
+
+        acceptableMemo.set(key, result);
+        return result;
+      }
+
+      let best = null;
+      let bestCost = Infinity;
+      let ordinal = 0;
+
+      function canWin(partialCost) {
+        return partialCost < bestCost;
+      }
+
+      for (
+        const candidate of orderedPairings(
+          ctx,
+          high.pairs,
+          canWin
+        )
+      ) {
+        tick();
+        ordinal++;
+
+        if (!acceptableDown(candidate.down)) {
+          continue;
+        }
+
+        if (candidate.cost < bestCost) {
+          bestCost = candidate.cost;
+
+          best = {
+            pairs:[...candidate.pairs],
+            down:[...candidate.down],
+            cost:candidate.cost,
+            ordinal
+          };
+        }
+
+        /*
+         * Zero is the theoretical lower bound for C8.
+         * The generator is already in Article 4 order.
+         */
+        if (bestCost === 0) {
+          break;
+        }
+      }
+
+      if (!best) {
+        throw fault(
+          "NO_BURSTEIN_CANDIDATE",
+          "Ingen valbar kandidat kunde fastställas vid poäng " +
+          ctx.score + "."
+        );
+      }
+
+      return {
+        ...best,
+        trace:{
+          score:ctx.score,
+
+          incomingFloaters:
+            ctx.incoming.map(
+              i => players[i].tpn
+            ),
+
+          ranking:ctx.all.map(
+            (i, position) => ({
+              bsn:position + 1,
+              tpn:players[i].tpn,
+              score:players[i].score,
+              buchholz:players[i].bursteinBH,
+              sonnebornBerger:
+                players[i].bursteinSB
+            })
+          ),
+
+          C5:{
+            pairs:high.pairs,
+            outgoingFloaters:high.count
+          },
+
+          C6:{
+            outgoingScores:high.scores
+          },
+
+          C7:{
+            nextOutgoingFloaters:
+              lookAhead.count,
+            nextOutgoingScores:
+              lookAhead.scores
+          },
+
+          C8:{
+            colourPreferenceMisses:bestCost
+          },
+
+          outgoingFloaters:
+            best.down.map(
+              i => players[i].tpn
+            ),
+
+          selectedGeneratedLegalCandidate:
+            best.ordinal,
+
+          proof:
+            bestCost === 0
+              ? "C8-lower-bound-attained"
+              : "article-4-order-exhausted"
+        }
+      };
+    }
+
+    const allPairs = [];
+    const trace = [];
+    let incoming = [];
+
+    for (
+      let index = 0;
+      index < groups.length;
+      index++
+    ) {
+      const selected = selectBracket(
+        index,
+        incoming
+      );
+
+      allPairs.push(...selected.pairs);
+      trace.push(selected.trace);
+      incoming = selected.down;
+    }
+
+    if (incoming.length !== 0) {
+      throw fault(
+        "INTERNAL",
+        "Slutlig kontroll av nedflytande spelare misslyckades."
+      );
+    }
+
+    const covered = new Set();
+    const outputPairs = [];
+
+    for (const [a, b] of allPairs) {
+      if (
+        !edge[a][b] ||
+        covered.has(a) ||
+        covered.has(b)
+      ) {
+        throw fault(
+          "INTERNAL",
+          "Slutlig legalitets- eller entydighetskontroll av par misslyckades."
+        );
+      }
+
+      covered.add(a);
+      covered.add(b);
+
+      const [white, black] = colors[a][b];
+
+      outputPairs.push({
+        whiteId:players[white].id,
+        blackId:players[black].id
+      });
+    }
+
+    if (pabIndex !== null) {
+      if (covered.has(pabIndex)) {
+        throw fault(
+          "INTERNAL",
+          "Duplicerad mottagare av lottad frirond."
+        );
+      }
+
+      covered.add(pabIndex);
+    }
+
+    if (covered.size !== playerCount) {
+      throw fault(
+        "INTERNAL",
+        "Ofullständig spelartäckning."
+      );
+    }
+
+    return {
+      engineVersion:VERSION,
+      pairingSystem:"Burstein",
+      seedingRounds:
+        seedingRoundCount(context.totalRounds),
+
+      pairs:outputPairs,
+
+      pabId:
+        pabIndex === null
+          ? null
+          : players[pabIndex].id,
+
+      byeScore:
+        pabIndex === null
+          ? null
+          : players[pabIndex].score,
+
+      bye:
+        pabIndex === null
+          ? null
+          : {
+              id:players[pabIndex].id,
+              tpn:players[pabIndex].tpn,
+              score:players[pabIndex].score,
+              playedGames:
+                players[pabIndex].playedGames,
+              buchholz:
+                players[pabIndex].bursteinBH,
+              sonnebornBerger:
+                players[pabIndex].bursteinSB
+            },
+
+      byeTrace,
+      trace,
+
+      stats:{
+        nodes,
+        elapsedMs:performance.now() - started
+      }
+    };
+  }
+
+  function selfTest(progress = () => {}) {
+    const passed = [];
+
+    function check(condition, message) {
+      if (!condition) {
+        throw new Error(message);
+      }
+    }
+
+    function test(name, fn) {
+      progress({
+        phase:"Test: " + name,
+        nodes:0,
+        elapsedMs:0
+      });
+
+      fn();
+      passed.push(name);
+    }
+
+    /*
+     * The embedded Dutch tests verify the seeding engine too.
+     */
+    const dutchTests = DutchCore.selfTest(progress);
+
+    for (const name of dutchTests.tests) {
+      passed.push("Dutch seeding: " + name);
+    }
+
+    function fixture(
+      count,
+      roundNumber = 4,
+      totalRounds = 6
+    ) {
+      const completed = roundNumber - 1;
+
+      return {
+        roundNumber,
+        totalRounds,
+        winPoints:1,
+        initialColor:"W",
+
+        players:Array.from(
+          {length:count},
+          (_, index) => ({
+            id:"P" + (index + 1),
+            tpn:index + 1,
+            score:0,
+            opponents:[],
+            playedColors:[],
+            floats:
+              new Array(completed).fill("-"),
+            hadPAB:false,
+            hadUnplayedWin:false,
+            bursteinBH:count - index,
+            bursteinSB:(count - index) / 2
+          })
+        )
+      };
+    }
+
+    function run(
+      input,
+      limits = {
+        seconds:10,
+        nodes:1000000
+      }
+    ) {
+      return solve(input, limits);
+    }
+
+    function opponentPairs(result) {
+      return result.pairs
+        .map(pair =>
+          [pair.whiteId, pair.blackId]
+            .sort()
+            .join("-")
+        )
+        .sort();
+    }
+
+    test(
+      "Dutch rounds are used for seeding",
+      () => {
+        const input = fixture(8, 1, 6);
+        const result = run(input);
+
+        check(
+          result.pairingSystem ===
+            "FIDE Dutch seeding",
+          "Round one should use Dutch seeding."
+        );
+
+        check(
+          result.pairs.length === 4,
+          "The seeding round is incomplete."
+        );
+      }
+    );
+
+    test(
+      "Burstein Article 4 order pairs high Index with low Index",
+      () => {
+        const result = run(fixture(4));
+
+        check(
+          JSON.stringify(opponentPairs(result)) ===
+          JSON.stringify([
+            "P1-P4",
+            "P2-P3"
+          ]),
+          "Expected the first Article 4 pairing."
+        );
+      }
+    );
+
+    test(
+      "C8 precedes Article 4 tie order",
+      () => {
+        const input = fixture(4);
+
+        input.players.forEach(player => {
+          player.score = 1.5;
+        });
+
+        input.players[0].playedColors =
+          ["B", "W", "B"];
+
+        input.players[1].playedColors =
+          ["W", "B", "W"];
+
+        input.players[2].playedColors =
+          ["W", "B", "W"];
+
+        input.players[3].playedColors =
+          ["B", "W", "B"];
+
+        const result = run(input);
+
+        check(
+          JSON.stringify(opponentPairs(result)) ===
+          JSON.stringify([
+            "P1-P3",
+            "P2-P4"
+          ]),
+          "Expected the pairing with zero colour misses."
+        );
+      }
+    );
+
+    test(
+      "PAB priority uses the number of played games",
+      () => {
+        const input = fixture(5);
+
+        input.players[0].score = 1;
+        input.players[1].score = 1;
+        input.players[2].score = 1;
+
+        input.players[3].score = 0;
+        input.players[4].score = 0;
+
+        input.players[3].playedColors =
+          ["B", "W", "B"];
+
+        input.players[4].playedColors =
+          ["W", "B"];
+
+        const result = run(input);
+
+        check(
+          result.pabId === "P4",
+          "TPN 4 should receive the bye because it " +
+          "has played more games than TPN 5."
+        );
+      }
+    );
+
+    test(
+      "Equal absolute preferences are prohibited",
+      () => {
+        const input = fixture(2);
+
+        input.players[0].playedColors =
+          ["W", "W"];
+
+        input.players[1].playedColors =
+          ["W", "W"];
+
+        let refused = false;
+
+        try {
+          run(input);
+        } catch (error) {
+          refused =
+            error.code ===
+            "NO_LEGAL_COMPLETION";
+        }
+
+        check(
+          refused,
+          "The same absolute preference must be rejected."
+        );
+      }
+    );
+
+    test(
+      "Resource interruption publishes no provisional pairing",
+      () => {
+        let stopped = false;
+
+        try {
+          run(
+            fixture(10),
+            {seconds:0, nodes:1}
+          );
+        } catch (error) {
+          stopped = error.code === "LIMIT";
+        }
+
+        check(
+          stopped,
+          "Expected a resource-limit exception."
+        );
+      }
+    );
+
+    return {
+      passed:passed.length,
+      tests:passed
+    };
+  }
+
+  return {
+    VERSION,
+    solve,
+    selfTest,
+
+    rank:scoreRank,
+    indexRank,
+    preference,
+    colorDifference,
+    compatible,
+    allocate,
+    seedingRoundCount
+  };
+}
+
+/* ========================================================================== */
+/* APPLICATION DATA                                                           */
+/* ========================================================================== */
+
+const DutchCore = Dutch2026Core();
+const Core = Burstein2026Core(DutchCore);
+
+const STORAGE_KEY = "fide_burstein_2026_reference_v1";
+const LEGACY_STORAGE_KEY = "experimental_fide_burstein_2026_en";
+
+const FIXED_SEARCH_LIMITS = Object.freeze({
+  seconds:30,
+  nodes:2000000
+});
+
+const TITLE_WEIGHTS = {
+  GM:8,IM:7,WGM:6,FM:5,WIM:4,CM:3,WFM:2,WCM:1,"":0
+};
+
+const STATUSES = [
+  "pair","unplayed-zero","unplayed-draw","unplayed-win"
+];
+
+const RESULTS = [
+  "1-0","0.5-0.5","0-1","1-0F","0-1F","0-0F"
+];
+
+const PLAYED_RESULTS = new Set([
+  "1-0","0.5-0.5","0-1"
+]);
+
+let tournament = emptyTournament();
+let currentTab = "setup";
+let job = null;
+let pendingImported = false;
+
+function $(id) {
+  return document.getElementById(id);
+}
+
+function emptyTournament() {
+return {
+    formatVersion:5,
+    pairingSystem:"BURSTEIN_2026",
+    engineVersion:Core.VERSION,
+    name:"FIDE Burstein Open 2026",
+    totalRounds:5,
+    initialColor:"W",
+    winPoints:1,
+    drawPoints:.5,
+    lossPoints:0,
+    pabPoints:1,
+    settingsFrozen:false,
+    listClosed:false,
+    highestPairedRound:0,
+    currentRound:0,
+    players:[],
+    rounds:[],
+    activePairings:[],
+    activeAudit:null
+  };
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g,c => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  })[c]);
+}
+
+function points(value) {
+  return String(value);
+}
+
+function message(text,type = "") {
+  $("message").className =
+    "notice no-print" + (type ? " "+type : "");
+  $("message").textContent = text;
+}
+
+function guarded(fn) {
+  try {
+    return fn();
+  } catch (error) {
+    console.error(error);
+    message(error.message,"error");
+    return undefined;
+  }
+}
+
+function requireIdle(requireNoPending = false) {
+  if (job) {
+    throw new Error("Vänta på eller avbryt den pågående sökningen.");
+  }
+
+  if (requireNoPending && tournament.activePairings.length) {
+    throw new Error(
+      "En rond har redan lottats. Deltagande och TPN " +
+      "kan inte ändras nu."
+    );
+  }
+}
+
+function numberValue(
+  value,label,minimum,maximum,integer = false
+) {
+  if (value === "" || value === null || value === undefined) {
+    throw new Error(label + " är obligatoriskt.");
+  }
+
+  const n = Number(value);
+
+  if (
+    !Number.isFinite(n) ||
+    n < minimum ||
+    n > maximum ||
+    (integer && !Number.isSafeInteger(n))
+  ) {
+    throw new Error("Ogiltigt värde för " + label + ".");
+  }
+
+  return n;
+}
+
+function halfPointValue(value,label,maximum) {
+  const n = numberValue(value,label,0,maximum);
+
+  if (!Number.isInteger(n*2)) {
+    throw new Error(label + " måste anges i steg om en halv poäng.");
+  }
+
+  return n;
+}
+
+function makeId() {
+  if (
+    globalThis.crypto &&
+    typeof crypto.randomUUID === "function"
+  ) {
+    return "P_" + crypto.randomUUID();
+  }
+
+  return "P_" + Date.now().toString(36) + "_" +
+    Math.random().toString(36).slice(2);
+}
+
+function titleValue(value) {
+  const title = String(value || "").trim().toUpperCase();
+
+  if (!Object.hasOwn(TITLE_WEIGHTS,title)) {
+    throw new Error("Okänd FIDE-titel: " + title);
+  }
+
+  return title;
+}
+
+function nextRegistrationOrder(t = tournament) {
+  return t.players.reduce(
+    (maximum,p) => Math.max(maximum,p.registrationOrder || 0),
+    0
+  ) + 1;
+}
+
+function makePlayer(name,rating,title) {
+  const cleanName = String(name).trim();
+
+  if (!cleanName) {
+    throw new Error("Ett spelarnamn krävs.");
+  }
+
+  return {
+    id:makeId(),
+    tpn:0,
+    name:cleanName,
+    rating:numberValue(rating,"rating",0,9999,true),
+    title:titleValue(title),
+    registrationOrder:nextRegistrationOrder(),
+    active:true,
+    nextRoundStatus:"pair"
+  };
+}
+
+function assignTPNs(t = tournament) {
+  const collator = new Intl.Collator(
+    "sv",{sensitivity:"base"}
+  );
+
+  t.players.sort((a,b) =>
+    b.rating-a.rating ||
+    TITLE_WEIGHTS[b.title]-TITLE_WEIGHTS[a.title] ||
+    collator.compare(a.name,b.name) ||
+    a.registrationOrder-b.registrationOrder
+  );
+
+  t.players.forEach((p,i) => {
+    p.tpn = i+1;
+  });
+}
+
+function tournamentStarted(t = tournament) {
+  return (
+    t.highestPairedRound > 0 ||
+    t.rounds.length > 0 ||
+    t.activePairings.length > 0
+  );
+}
+
+function tournamentComplete(t = tournament) {
+  return t.rounds.length >= t.totalRounds &&
+    t.activePairings.length === 0;
+}
+
+/* ========================================================================== */
+/* AUTOMATIC SETTINGS                                                         */
+/* ========================================================================== */
+
+function applySettings() {
+  const changes = {
+    name:$("tName").value.trim() || "Turnering"
+  };
+
+  if (!tournament.settingsFrozen) {
+    changes.totalRounds = numberValue(
+      $("tRounds").value,"antal ronder",1,30,true
+    );
+
+    const color = $("tColor").value;
+    if (!["W","B"].includes(color)) {
+      throw new Error("Ogiltig inledande färgfördelning.");
+    }
+    changes.initialColor = color;
+
+    const scoring = $("tPoints").value;
+    if (!["1,0.5,0","3,1,0"].includes(scoring)) {
+      throw new Error("Poängsystemet stöds inte.");
+    }
+
+    const [win,draw,loss] = scoring.split(",").map(Number);
+    changes.winPoints = win;
+    changes.drawPoints = draw;
+    changes.lossPoints = loss;
+
+    changes.pabPoints = halfPointValue(
+      $("tPab").value,"PAB-poäng",win
+    );
+  }
+
+  Object.assign(tournament,changes);
+}
+
+function saveSettingsAutomatically() {
+  try {
+    requireIdle();
+    applySettings();
+
+    // Refresh the displayed Dutch seeding-round information.
+    renderSettings();
+
+    autoSave();
+    renderStandings();
+    updateControls();
+    updatePrintTitle();
+  } catch (error) {
+    renderSettings();
+    message(error.message,"error");
+  }
+}
+
+/* ========================================================================== */
+/* RESULTS AND PLAYER HISTORY                                                 */
+/* ========================================================================== */
+
+function resultPoints(result,t = tournament) {
+  if (result === "1-0" || result === "1-0F") {
+    return [t.winPoints,t.lossPoints];
+  }
+  if (result === "0-1" || result === "0-1F") {
+    return [t.lossPoints,t.winPoints];
+  }
+  if (result === "0.5-0.5") {
+    return [t.drawPoints,t.drawPoints];
+  }
+  if (result === "0-0F") {
+    return [t.lossPoints,t.lossPoints];
+  }
+
+  throw new Error("Okänt matchresultat: " + result);
+}
+
+/*
+ * Calculates the current Burstein pairing Index.
+ *
+ * This is deliberately separate from the final-ranking tie-break
+ * calculation. The pairing Index follows Burstein Article 1.7:
+ *
+ * - OTB games use the current score of the opponent.
+ * - Every unplayed game is treated as a game against oneself,
+ *   with the actual points awarded in that round.
+ * - When a player has consecutive zero-point byes ending in the
+ *   latest completed round, all except the latest such bye are
+ *   treated as draws when that player's score is used by actual
+ *   over-the-board opponents.
+ */
+function applyBursteinPairingIndex(t = tournament) {
+  const completedRounds = t.rounds.length;
+
+  const histories = new Map(
+    t.players.map(player => [
+      player.id,
+      Array.from(
+        {length:completedRounds},
+        () => ({
+          played:false,
+          opponentId:null,
+          award:t.lossPoints,
+          zeroPointBye:true
+        })
+      )
+    ])
+  );
+
+  function setEntry(id, roundIndex, entry) {
+    const history = histories.get(id);
+
+    if (!history) {
+      throw new Error(
+        "Beräkning av Burstein-index refererar till en okänd spelare."
+      );
+    }
+
+    history[roundIndex] = entry;
+  }
+
+t.rounds.forEach((round, roundIndex) => {
+  for (const record of round.pairings) {
+    if (record.kind === "pab") {
+      setEntry(record.pabId, roundIndex, {
+        played: false,
+        opponentId: null,
+        award: record.awardedPoints,
+        zeroPointBye:
+          record.awardedPoints === t.lossPoints
+      });
+
+      continue;
+    }
+
+    if (record.kind === "unplayed") {
+      setEntry(record.unplayedId, roundIndex, {
+        played: false,
+        opponentId: null,
+        award: record.awardedPoints,
+        zeroPointBye:
+          record.awardedPoints === t.lossPoints
+      });
+
+      continue;
+    }
+
+    const [whiteAward, blackAward] =
+      resultPoints(record.result, t);
+
+    const played =
+      PLAYED_RESULTS.has(record.result);
+
+    setEntry(record.whiteId, roundIndex, {
+      played,
+      opponentId: played ? record.blackId : null,
+      award: whiteAward,
+
+      // A forfeit loss is not a requested zero-point bye.
+      zeroPointBye: false
+    });
+
+    setEntry(record.blackId, roundIndex, {
+      played,
+      opponentId: played ? record.whiteId : null,
+      award: blackAward,
+      zeroPointBye: false
+    });
+  }
+});
+
+  /*
+   * Score used for the benefit of actual OTB opponents.
+   */
+  const opponentScores = new Map();
+
+  for (const player of t.players) {
+    const history = histories.get(player.id);
+
+    let trailingZeroByes = 0;
+
+    for (
+      let round = history.length - 1;
+      round >= 0;
+      round--
+    ) {
+      if (!history[round].zeroPointBye) {
+        break;
+      }
+
+      trailingZeroByes++;
+    }
+
+    /*
+     * The zero-point bye in the latest round remains zero.
+     * Earlier members of the consecutive series count as draws.
+     */
+    const adjustment =
+      Math.max(0, trailingZeroByes - 1) *
+      t.drawPoints;
+
+    opponentScores.set(
+      player.id,
+      player.score + adjustment
+    );
+  }
+
+  for (const player of t.players) {
+    const history = histories.get(player.id);
+
+    let buchholz = 0;
+    let sonnebornBerger = 0;
+
+    for (const entry of history) {
+      let evaluatedOpponentScore;
+
+      if (entry.played) {
+        evaluatedOpponentScore =
+          opponentScores.get(entry.opponentId);
+
+        if (
+          !Number.isFinite(
+            evaluatedOpponentScore
+          )
+        ) {
+          throw new Error(
+            "Ett parti vid brädet saknar giltig motståndare."
+          );
+        }
+      } else {
+        /*
+         * An unplayed game is a game against oneself.
+         */
+        evaluatedOpponentScore = player.score;
+      }
+
+      buchholz += evaluatedOpponentScore;
+
+      sonnebornBerger +=
+        entry.award *
+        evaluatedOpponentScore;
+    }
+
+    player.bursteinBH = buchholz;
+    player.bursteinSB = sonnebornBerger;
+    player.playedGames =
+      player.playedColors.length;
+  }
+}
+
+function rebuildState(t = tournament) {
+  const m = t.rounds.length;
+  const map = new Map();
+
+  for (const p of t.players) {
+    p.score = 0;
+    p.opponents = [];
+    p.playedColors = [];
+    p.roundColors = new Array(m).fill("-");
+    p.floats = new Array(m).fill("-");
+    p.hadPAB = false;
+    p.hadUnplayedWin = false;
+    p.unplayedCount = m;
+    map.set(p.id,p);
+  }
+
+  t.rounds.forEach((round,r) => {
+    const before = new Map(
+      t.players.map(p => [p.id,p.score])
+    );
+
+    for (const record of round.pairings) {
+      if (
+        record.kind === "pab" ||
+        record.kind === "unplayed"
+      ) {
+        const p = map.get(
+          record.kind === "pab"
+            ? record.pabId
+            : record.unplayedId
+        );
+
+        if (!p) {
+          throw new Error("En rond refererar till en okänd spelare.");
+        }
+
+        p.score += record.awardedPoints;
+
+        if (record.kind === "pab") {
+          p.hadPAB = true;
+          p.floats[r] = "D";
+        } else {
+          if (record.awardedPoints === t.winPoints) {
+            p.hadUnplayedWin = true;
+          }
+          if (record.awardedPoints > t.lossPoints) {
+            p.floats[r] = "D";
+          }
+        }
+        continue;
+      }
+
+      const w = map.get(record.whiteId);
+      const b = map.get(record.blackId);
+
+      if (!w || !b) {
+        throw new Error("En rond refererar till en okänd spelare.");
+      }
+
+      const [wp,bp] = resultPoints(record.result,t);
+
+      if (PLAYED_RESULTS.has(record.result)) {
+        w.opponents.push(b.id);
+        b.opponents.push(w.id);
+        w.playedColors.push("W");
+        b.playedColors.push("B");
+        w.roundColors[r] = "W";
+        b.roundColors[r] = "B";
+        w.unplayedCount--;
+        b.unplayedCount--;
+
+        if (before.get(w.id) > before.get(b.id)) {
+          w.floats[r] = "D";
+          b.floats[r] = "U";
+        } else if (before.get(b.id) > before.get(w.id)) {
+          b.floats[r] = "D";
+          w.floats[r] = "U";
+        }
+      } else {
+        if (wp === t.winPoints) w.hadUnplayedWin = true;
+        if (bp === t.winPoints) b.hadUnplayedWin = true;
+        if (wp > t.lossPoints) w.floats[r] = "D";
+        if (bp > t.lossPoints) b.floats[r] = "D";
+      }
+
+      w.score += wp;
+      b.score += bp;
+    }
+  });
+}
+
+/* ========================================================================== */
+/* BUCHHOLZ, BUCHHOLZ CUT 1, AND SONNEBORN-BERGER                               */
+/* ========================================================================== */
+
+/*
+ * FIDE C.07, effective March 1, 2026:
+ *
+ * 8.1: BH = sum of opponent scores.
+ * 9.1: SB = sum of opponent score × actual points scored.
+ * 16.3: trailing requested byes count as draws when adjusting a
+ *       player's score for use in their opponents' tie-breaks.
+ * 16.4: own unplayed rounds use a dummy with the player's own actual
+ *       score, capped by:
+ *       - scheduled opponent's adjusted score for forfeits;
+ *       - total scheduled rounds × draw points for other unplayed rounds.
+ * 16.5: BH-1 cuts the lowest VUR contribution when a VUR exists.
+ *
+ * Missing round records are treated as requested zero-point byes.
+ * A full-win-value administrative bye is not a VUR.
+ *
+ * The function derives all values from completed round records, not
+ * from cached player scores or cached opponent lists.
+ */
+function calculateTiebreaks(t = tournament) {
+  const completedRounds = t.rounds.length;
+
+  const histories = new Map(
+    t.players.map(p => [
+      p.id,
+      Array.from({length:completedRounds},() => ({
+        type:"requested",
+        award:t.lossPoints,
+        opponentId:null,
+        vur:true
+      }))
+    ])
+  );
+
+  function setEntry(id,roundIndex,entry) {
+    const history = histories.get(id);
+
+    if (!history) {
+      throw new Error(
+        "Särskiljningsberäkning refererar till en okänd spelare."
+      );
+    }
+
+    history[roundIndex] = entry;
+  }
+
+  t.rounds.forEach((round,roundIndex) => {
+    for (const record of round.pairings) {
+      if (record.kind === "pab") {
+        setEntry(record.pabId,roundIndex,{
+          type:"bye",
+          award:record.awardedPoints,
+          opponentId:null,
+          vur:false
+        });
+        continue;
+      }
+
+      if (record.kind === "unplayed") {
+        const fullPointBye =
+          record.awardedPoints === t.winPoints;
+
+        setEntry(record.unplayedId,roundIndex,{
+          type:fullPointBye ? "bye" : "requested",
+          award:record.awardedPoints,
+          opponentId:null,
+          vur:!fullPointBye
+        });
+        continue;
+      }
+
+      const [whiteAward,blackAward] = resultPoints(
+        record.result,t
+      );
+
+      const played = PLAYED_RESULTS.has(record.result);
+
+      setEntry(record.whiteId,roundIndex,{
+        type:played ? "played" : "forfeit",
+        award:whiteAward,
+        opponentId:record.blackId,
+        vur:!played && whiteAward === t.lossPoints
+      });
+
+      setEntry(record.blackId,roundIndex,{
+        type:played ? "played" : "forfeit",
+        award:blackAward,
+        opponentId:record.whiteId,
+        vur:!played && blackAward === t.lossPoints
+      });
+    }
+  });
+
+  const actualScores = new Map();
+  const adjustedScores = new Map();
+
+  for (const p of t.players) {
+    const history = histories.get(p.id);
+
+    const actual = history.reduce(
+      (sum,entry) => sum+entry.award,0
+    );
+
+    actualScores.set(p.id,actual);
+
+    let adjusted = actual;
+    let laterNonVUR = false;
+
+    for (let r = history.length-1; r >= 0; r--) {
+      const entry = history[r];
+
+      if (entry.type === "requested" && !laterNonVUR) {
+        adjusted += t.drawPoints-entry.award;
+      }
+
+      if (!entry.vur) {
+        laterNonVUR = true;
+      }
+    }
+
+    adjustedScores.set(p.id,adjusted);
+  }
+
+  const dummyDrawCap = t.drawPoints*t.totalRounds;
+  const values = new Map();
+
+  for (const p of t.players) {
+    const history = histories.get(p.id);
+    const ownScore = actualScores.get(p.id);
+    const contributions = [];
+
+    let bh = 0;
+    let sb = 0;
+
+    for (let r = 0; r < history.length; r++) {
+      const entry = history[r];
+      let opponentScore;
+
+      if (entry.type === "played") {
+        opponentScore = adjustedScores.get(entry.opponentId);
+      } else if (entry.type === "forfeit") {
+        const scheduledScore = adjustedScores.get(entry.opponentId);
+
+        if (!Number.isFinite(scheduledScore)) {
+          throw new Error(
+            "Ett parti med w.o. saknar giltig schemalagd motståndare."
+          );
+        }
+
+        opponentScore = Math.min(ownScore,scheduledScore);
+      } else {
+        opponentScore = Math.min(ownScore,dummyDrawCap);
+      }
+
+      if (!Number.isFinite(opponentScore)) {
+        throw new Error("Ogiltig motståndarpoäng i särskiljningsberäkningen.");
+      }
+
+      const sbContribution = opponentScore*entry.award;
+
+      bh += opponentScore;
+      sb += sbContribution;
+
+      contributions.push({
+        round:r+1,
+        type:entry.type,
+        vur:entry.vur,
+        opponentId:entry.opponentId,
+        award:entry.award,
+        bh:opponentScore,
+        sb:sbContribution
+      });
+    }
+
+    const voluntary = contributions.filter(c => c.vur);
+    const cutCandidates = voluntary.length
+      ? voluntary
+      : contributions;
+
+    const cut = cutCandidates.length
+      ? cutCandidates.reduce(
+          (minimum,c) => Math.min(minimum,c.bh),
+          Infinity
+        )
+      : 0;
+
+    values.set(p.id,{
+      score:ownScore,
+      adjustedScore:adjustedScores.get(p.id),
+      bh1:bh-cut,
+      bh,
+      sb,
+      contributions
+    });
+  }
+
+  return values;
+}
+
+function compareFinalValues(a,b) {
+  return b.score-a.score ||
+    b.bh1-a.bh1 ||
+    b.bh-a.bh ||
+    b.sb-a.sb;
+}
+
+/* ========================================================================== */
+/* TIE-BREAK REGRESSION TESTS                                                  */
+/* ========================================================================== */
+
+function runTiebreakTests() {
+  const passed = [];
+
+  function test(name,fn) {
+    fn();
+    passed.push(name);
+  }
+
+  function equal(actual,expected,label) {
+    if (Math.abs(actual-expected) > 1e-9) {
+      throw new Error(
+        label + ": expected " + expected + ", got " + actual
+      );
+    }
+  }
+
+  function game(whiteId,blackId,result) {
+    return {kind:"game",whiteId,blackId,result};
+  }
+
+  function fixture(ids,rounds,win = 1,draw = .5) {
+    return {
+      players:ids.map((id,index) => ({
+        id,tpn:index+1,name:id
+      })),
+      totalRounds:rounds.length,
+      winPoints:win,
+      drawPoints:draw,
+      lossPoints:0,
+      pabPoints:win,
+      rounds:rounds.map((pairings,index) => ({
+        roundNumber:index+1,pairings
+      }))
+    };
+  }
+
+  test("BH, BH-1 and SB with ordinary played games",() => {
+    const t = fixture(["A","B","C","D"],[
+      [game("A","B","1-0"),game("C","D","1-0")],
+      [game("A","C","1-0"),game("B","D","0.5-0.5")]
+    ]);
+
+    const v = calculateTiebreaks(t);
+
+    equal(v.get("A").bh,1.5,"A BH");
+    equal(v.get("A").bh1,1,"A BH-1");
+    equal(v.get("A").sb,1.5,"A SB");
+    equal(v.get("B").bh,2.5,"B BH");
+    equal(v.get("B").bh1,2,"B BH-1");
+    equal(v.get("B").sb,.25,"B SB");
+  });
+
+  test("Forfeit dummy cap and BH-1 VUR exception",() => {
+    const t = fixture(["A","B","C","D"],[
+      [game("A","B","1-0F"),game("C","D","1-0")],
+      [game("A","C","1-0"),game("B","D","1-0")]
+    ]);
+
+    const v = calculateTiebreaks(t);
+
+    equal(v.get("A").bh,2,"Forfeit winner BH");
+    equal(v.get("A").sb,2,"Forfeit winner SB");
+    equal(v.get("B").bh,1,"Forfeit loser BH");
+    equal(v.get("B").bh1,0,"Forfeit loser BH-1");
+  });
+
+  test("Trailing requested byes adjust opponents' scores",() => {
+    const t = fixture(["A","B","C","D"],[
+      [game("A","B","1-0"),game("C","D","1-0")],
+      [game("A","C","1-0")]
+    ]);
+
+    const v = calculateTiebreaks(t);
+
+    equal(v.get("B").adjustedScore,.5,"Withdrawn B adjusted score");
+    equal(v.get("D").adjustedScore,.5,"Withdrawn D adjusted score");
+    equal(v.get("A").bh,1.5,"A BH after withdrawal adjustment");
+    equal(v.get("C").sb,.5,"C SB after withdrawal adjustment");
+  });
+
+  test("Non-forfeit dummy scores are capped at tournament draw score",() => {
+    const t = fixture(["A"],[
+      [{
+        kind:"pab",pabId:"A",awardedPoints:1
+      }],
+      [{
+        kind:"unplayed",unplayedId:"A",awardedPoints:1
+      }],
+      [{
+        kind:"unplayed",unplayedId:"A",awardedPoints:1
+      }]
+    ]);
+
+    const v = calculateTiebreaks(t).get("A");
+
+    equal(v.score,3,"Full-bye score");
+    equal(v.bh,4.5,"Capped bye BH");
+    equal(v.bh1,3,"Capped bye BH-1");
+    equal(v.sb,4.5,"Capped bye SB");
+  });
+
+  test("SB uses actual 3 / 1 / 0 points",() => {
+    const t = fixture(["A","B","C","D"],[
+      [game("A","B","1-0"),game("C","D","1-0")],
+      [game("A","C","1-0"),game("B","D","0.5-0.5")]
+    ],3,1);
+
+    const v = calculateTiebreaks(t).get("A");
+
+    equal(v.score,6,"Football score");
+    equal(v.bh,4,"Football BH");
+    equal(v.bh1,3,"Football BH-1");
+    equal(v.sb,12,"Football SB");
+  });
+
+  test("A one-round BH-1 cuts its only contribution",() => {
+    const t = fixture(["A","B"],[
+      [game("A","B","0.5-0.5")]
+    ]);
+
+    const v = calculateTiebreaks(t);
+
+    equal(v.get("A").bh,.5,"One-round BH");
+    equal(v.get("A").bh1,0,"One-round BH-1");
+    equal(v.get("A").sb,.25,"One-round SB");
+  });
+
+  return passed;
+}
+
+/* ========================================================================== */
+/* LOADED-DATA VALIDATION                                                     */
+/* ========================================================================== */
+
+function normalizeTournament(raw) {
+  if (
+    !raw ||
+    typeof raw !== "object" ||
+    !Array.isArray(raw.players)
+  ) {
+    throw new Error(
+      "Filen innehåller ingen deltagarlista."
+    );
+  }
+
+const historical =
+  Array.isArray(raw.rounds) &&
+  raw.rounds.length > 0;
+
+const pending =
+  Array.isArray(raw.activePairings) &&
+  raw.activePairings.length > 0;
+
+if (
+  (historical || pending) &&
+  raw.pairingSystem !== "BURSTEIN_2026"
+) {
+  throw new Error(
+    "En turnering med befintliga ronder måste uttryckligen ange " +
+    "lottningssystemet BURSTEIN_2026."
+  );
+}
+
+  if (
+    raw.acceleration ||
+    (raw.restrictions || []).length ||
+    (raw.pairingRestrictions || []).length
+  ) {
+    throw new Error(
+      "Denna applikation stöder inte acceleration eller " +
+      "ytterligare lottningsrestriktioner."
+    );
+  }
+
+  const t = emptyTournament();
+
+  t.name = String(raw.name || "Turnering");
+  t.totalRounds = numberValue(
+    raw.totalRounds ?? 5,"antal ronder",1,30,true
+  );
+
+  t.initialColor = raw.initialColor || "W";
+
+  if (!["W","B"].includes(t.initialColor)) {
+    throw new Error("Ogiltig inledande färg.");
+  }
+
+  if (
+    (historical || pending) &&
+    !["W","B"].includes(raw.initialColor)
+  ) {
+    throw new Error(
+      "En befintlig turnering måste innehålla sin inledande färgfördelning."
+    );
+  }
+
+  t.winPoints = Number(raw.winPoints ?? 1);
+  t.drawPoints = Number(raw.drawPoints ?? .5);
+  t.lossPoints = Number(raw.lossPoints ?? 0);
+
+  if (!(
+    (
+      t.winPoints === 1 &&
+      t.drawPoints === .5 &&
+      t.lossPoints === 0
+    ) ||
+    (
+      t.winPoints === 3 &&
+      t.drawPoints === 1 &&
+      t.lossPoints === 0
+    )
+  )) {
+    throw new Error("Poängsystemet stöds inte.");
+  }
+
+  t.pabPoints = halfPointValue(
+    raw.pabPoints ?? t.winPoints,"PAB-poäng",t.winPoints
+  );
+
+  const ids = new Set();
+  const tpns = new Set();
+
+  t.players = raw.players.map((p,index) => {
+    if (!p || typeof p !== "object") {
+      throw new Error("Ogiltig spelarpost.");
+    }
+
+    const id = String(p.id || "");
+
+    if (!id || ids.has(id)) {
+      throw new Error("Spelar-ID saknas eller är duplicerat.");
+    }
+    ids.add(id);
+
+    let tpn = Number(p.tpn || 0);
+
+    if (tpn === 0 && !historical && !pending) {
+      tpn = index+1;
+    }
+
+    if (
+      !Number.isSafeInteger(tpn) ||
+      tpn < 1 ||
+      tpns.has(tpn)
+    ) {
+      throw new Error("Ogiltigt eller duplicerat TPN.");
+    }
+    tpns.add(tpn);
+
+    const status = p.nextRoundStatus || "pair";
+
+    if (!STATUSES.includes(status)) {
+      throw new Error("Ogiltig status för nästa rond.");
+    }
+
+    return {
+      id,
+      tpn,
+      name:String(p.name || "").trim() || "Spelare "+tpn,
+      rating:numberValue(
+        p.rating ?? 1500,"rating",0,9999,true
+      ),
+      title:titleValue(p.title),
+      registrationOrder:index+1,
+      active:p.active !== false,
+      nextRoundStatus:status
+    };
+  });
+
+  function records(list,complete) {
+    if (!Array.isArray(list)) {
+      throw new Error("Ogiltig rondlista.");
+    }
+
+    const used = new Set();
+    let pabCount = 0;
+    let board = 0;
+
+    function use(id) {
+      if (!ids.has(id)) {
+        throw new Error("Rondpost refererar till en okänd spelare.");
+      }
+      if (used.has(id)) {
+        throw new Error("En spelare förekommer två gånger i samma rond.");
+      }
+      used.add(id);
+    }
+
+    return list.map(record => {
+      if (!record || typeof record !== "object") {
+        throw new Error("Ogiltig lottningspost.");
+      }
+
+      const kind = record.kind || (
+        record.pabId
+          ? "pab"
+          : record.unplayedId ? "unplayed" : "game"
+      );
+
+      if (kind === "game") {
+        use(record.whiteId);
+        use(record.blackId);
+
+        const result = record.result || "*";
+
+        if (
+          !RESULTS.includes(result) &&
+          !(result === "*" && !complete)
+        ) {
+          throw new Error(
+            "Ogiltigt eller saknat resultat för spelat parti."
+          );
+        }
+
+        return {
+          kind,
+          board:++board,
+          whiteId:record.whiteId,
+          blackId:record.blackId,
+          result
+        };
+      }
+
+      if (kind === "pab") {
+        const id = record.pabId || record.whiteId;
+        use(id);
+
+        if (++pabCount > 1) {
+          throw new Error("Mer än en lottad frirond (PAB) i en rond.");
+        }
+
+        const award = halfPointValue(
+          record.awardedPoints ?? t.pabPoints,
+          "PAB-tilldelning",
+          t.winPoints
+        );
+
+        if (award !== t.pabPoints) {
+          throw new Error(
+            "PAB-poäng måste vara konstant under hela turneringen."
+          );
+        }
+
+        return {
+          kind,
+          board:null,
+          pabId:id,
+          result:"AUTO",
+          awardedPoints:award
+        };
+      }
+
+      if (kind === "unplayed") {
+        const id = record.unplayedId || record.whiteId;
+        use(id);
+
+        return {
+          kind,
+          board:null,
+          unplayedId:id,
+          result:"AUTO",
+          awardedPoints:halfPointValue(
+            record.awardedPoints ?? 0,
+            "poäng för ospelad rond",
+            t.winPoints
+          ),
+          label:String(record.label || "Ospelad rond")
+        };
+      }
+
+      throw new Error("Lottningstypen stöds inte.");
+    });
+  }
+
+  const rounds = raw.rounds ?? [];
+
+  if (
+    !Array.isArray(rounds) ||
+    rounds.length > t.totalRounds
+  ) {
+    throw new Error("Ogiltig rondhistorik.");
+  }
+
+  t.rounds = rounds.map((round,index) => {
+    if (
+      !round ||
+      Number(round.roundNumber ?? index+1) !== index+1
+    ) {
+      throw new Error(
+        "Ronder måste vara på varandra följande och i kronologisk ordning."
+      );
+    }
+
+    return {
+      roundNumber:index+1,
+      pairings:records(round.pairings,true),
+      audit:round.audit || null
+    };
+  });
+
+  t.activePairings = records(
+    raw.activePairings || [],false
+  );
+
+  if (
+    t.activePairings.length &&
+    t.rounds.length >= t.totalRounds
+  ) {
+    throw new Error(
+      "En väntande rond överskrider planerat antal ronder."
+    );
+  }
+
+  t.currentRound = t.rounds.length +
+    (t.activePairings.length ? 1 : 0);
+
+  t.highestPairedRound = Math.max(
+    t.currentRound,
+    numberValue(
+      raw.highestPairedRound ?? t.currentRound,
+      "högsta lottade rond",
+      0,
+      t.totalRounds,
+      true
+    )
+  );
+
+  t.settingsFrozen = Boolean(
+    raw.settingsFrozen || t.highestPairedRound > 0
+  );
+
+  /*
+   * New lifecycle policy:
+   * registration is open before the first successful pairing,
+   * and closed thereafter, regardless of old saved listClosed flags.
+   */
+  t.listClosed = tournamentStarted(t);
+  t.activeAudit = raw.activeAudit || null;
+
+  t.players.sort((a,b) => a.tpn-b.tpn);
+  rebuildState(t);
+
+  return t;
+}
+
+/* ========================================================================== */
+/* STORAGE AND FILE OPERATIONS                                                */
+/* ========================================================================== */
+
+function autoSave() {
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,JSON.stringify(tournament)
+    );
+  } catch (error) {
+    console.error(error);
+    message(
+      "Automatisk lagring i webbläsaren misslyckades. " +
+      "Ladda ner en säkerhetskopia (JSON).",
+      "warning"
+    );
+  }
+}
+
+function saveTournament() {
+  guarded(() => {
+    requireIdle();
+    applySettings();
+    autoSave();
+
+    const blob = new Blob(
+      [JSON.stringify(tournament,null,2)],
+      {type:"application/json"}
+    );
+
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    const name = tournament.name.replace(
+      /[^\w.-]+/g,"_"
+    ) || "Turnering";
+
+    anchor.href = url;
+    anchor.download = name + "_rond_" +
+      tournament.rounds.length + ".json";
+
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url),1000);
+
+    message("Turneringsdata (JSON) sparades...");
+  });
+}
+
+async function loadTournamentFile(event) {
+  const file = event.target.files[0];
+  event.target.value = "";
+
+  if (!file) return;
+
+  try {
+    requireIdle();
+
+    const text = await file.text();
+    requireIdle();
+
+    const candidate = normalizeTournament(JSON.parse(text));
+
+    if (
+      (tournament.players.length || tournament.rounds.length) &&
+      !confirm(
+        "Ersätt den aktuella turneringen med den valda filen?"
+      )
+    ) {
+      return;
+    }
+
+    tournament = candidate;
+    pendingImported = tournament.activePairings.length > 0;
+
+    renderAll();
+    autoSave();
+
+    message(
+      "Turneringen har lästs in. Poäng, historik och särskiljningsvärden " +
+      "har återskapats från arkiverade ronder. " +
+      "Befintliga lottningar har inte verifierats självständigt.",
+      "warning"
+    );
+  } catch (error) {
+    console.error(error);
+    message("Inläsningen misslyckades: " + error.message,"error");
+  }
+}
+
+/* ========================================================================== */
+/* REGISTRATION AND PARTICIPATION                                             */
+/* ========================================================================== */
+
+function canRegister() {
+  requireIdle(true);
+
+  if (tournament.listClosed || tournamentStarted()) {
+    throw new Error(
+      "Registreringen är stängd eftersom den första ronden har lottats."
+    );
+  }
+
+  if (tournamentComplete()) {
+    throw new Error("Turneringen är avslutad.");
+  }
+}
+
+function admitPlayers(list) {
+  canRegister();
+  applySettings();
+
+  let order = nextRegistrationOrder();
+
+  for (const p of list) {
+    p.registrationOrder = order++;
+    tournament.players.push(p);
+  }
+
+  assignTPNs();
+  rebuildState();
+  renderAll();
+  autoSave();
+
+  message(
+    list.length + " spelare har lagts till. Granska den uppdaterade TPN-listan."
+  );
+
+  return true;
+}
+
+function addPlayer() {
+  guarded(() => {
+    const p = makePlayer(
+      $("pName").value,
+      $("pRating").value,
+      $("pTitle").value
+    );
+
+    if (admitPlayers([p])) {
+      $("pName").value = "";
+      $("pName").focus();
+    }
+  });
+}
+
+function loadSamplePlayers() {
+  guarded(() => {
+    const list = [
+      { name:"Magnus Carlsen", rating:2832, title:"GM" },
+      { name:"Fabiano Caruana", rating:2805, title:"GM" },
+      { name:"Hikaru Nakamura", rating:2802, title:"GM" },
+      { name:"Arjun Erigaisi", rating:2797, title:"GM" },
+      { name:"Gukesh D", rating:2794, title:"GM" },
+      { name:"Nodirbek Abdusattorov", rating:2783, title:"GM" },
+      { name:"Alireza Firouzja", rating:2767, title:"GM" },
+      { name:"Wei Yi", rating:2762, title:"GM" },
+      { name:"Ian Nepomniachtchi", rating:2755, title:"GM" },
+      { name:"Wesley So", rating:2751, title:"GM" },
+      { name:"Viswanathan Anand", rating:2750, title:"GM" },
+      { name:"Leinier Dominguez Perez", rating:2748, title:"GM" },
+      { name:"Anish Giri", rating:2746, title:"GM" },
+      { name:"Praggnanandhaa R", rating:2737, title:"GM" },
+      { name:"Jan-Krzysztof Duda", rating:2733, title:"GM" },
+      { name:"Shakhriyar Mamedyarov", rating:2732, title:"GM" },
+      { name:"Maxime Vachier-Lagrave", rating:2731, title:"GM" },
+      { name:"Vincent Keymer", rating:2730, title:"GM" },
+      { name:"Levon Aronian", rating:2729, title:"GM" },
+      { name:"Ding Liren", rating:2728, title:"GM" },
+      { name:"Parham Maghsoodloo", rating:2719, title:"GM" },
+      { name:"Yu Yangyi", rating:2717, title:"GM" },
+      { name:"Richard Rapport", rating:2715, title:"GM" },
+      { name:"Hans Niemann", rating:2711, title:"GM" },
+      { name:"Ray Robson", rating:2700, title:"GM" },
+      { name:"Aravindh Chithambaram", rating:2698, title:"GM" },
+      { name:"Jorden van Foreest", rating:2696, title:"GM" },
+      { name:"Bogdan-Daniel Deac", rating:2690, title:"GM" },
+      { name:"Pentala Harikrishna", rating:2686, title:"GM" },
+      { name:"Alexey Sarana", rating:2679, title:"GM" },
+      { name:"Nihal Sarin", rating:2668, title:"GM" },
+      { name:"Daniil Dubov", rating:2666, title:"GM" }
+    ].map(p => makePlayer(p.name, p.rating, p.title));
+
+    admitPlayers(list);
+  });
+}
+
+function splitDelimited(line,delimiter) {
+  const fields = [];
+  let field = "";
+  let quoted = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+
+    if (c === '"') {
+      if (quoted && line[i+1] === '"') {
+        field += '"';
+        i++;
+      } else {
+        quoted = !quoted;
+      }
+    } else if (c === delimiter && !quoted) {
+      fields.push(field.trim());
+      field = "";
+    } else {
+      field += c;
+    }
+  }
+
+  if (quoted) {
+    throw new Error("Icke-avslutat citattecken i importrad.");
+  }
+
+  fields.push(field.trim());
+  return fields;
+}
+
+function parseRegistration(text) {
+  const lines = String(text)
+    .replace(/^\uFEFF/,"")
+    .split(/\r?\n/);
+
+  const trf = lines.some(line => /^001 /.test(line));
+  const list = [];
+
+  for (const original of lines) {
+    if (trf) {
+      if (!/^001 /.test(original)) continue;
+
+      const name = original.slice(14,47).trim();
+      const ratingText = original.slice(48,52).trim();
+      const title = original.slice(10,13).trim();
+
+      list.push(makePlayer(name,ratingText || 1500,title));
+      continue;
+    }
+
+    const line = original.trim();
+
+    if (
+      !line ||
+      line.startsWith("#") ||
+      line.startsWith("//")
+    ) {
+      continue;
+    }
+
+    const delimiter = line.includes("\t")
+      ? "\t"
+      : line.includes(";") ? ";" : ",";
+
+    const fields = splitDelimited(line,delimiter);
+
+    if (
+      /^name$/i.test(fields[0] || "") &&
+      /rating/i.test(fields[1] || "")
+    ) {
+      continue;
+    }
+
+    let name = fields[0];
+    let rating = 1500;
+    let title = "";
+
+    if (
+      fields.length >= 3 &&
+      !/^\d+$/.test(fields[1]) &&
+      /^\d+$/.test(fields[2])
+    ) {
+      name = fields[0] + ", " + fields[1];
+      rating = fields[2];
+      title = fields[3] || "";
+    } else {
+      if (fields.length >= 2 && fields[1] !== "") {
+        rating = fields[1];
+      }
+      if (fields.length >= 3) {
+        title = fields[2];
+      }
+    }
+
+    list.push(makePlayer(name,rating,title));
+  }
+
+  if (!list.length) {
+    throw new Error("Inga spelarregistreringar hittades.");
+  }
+
+  return list;
+}
+
+async function loadPlayersFile(event) {
+  const file = event.target.files[0];
+  event.target.value = "";
+
+  if (!file) return;
+
+  try {
+    canRegister();
+    const text = await file.text();
+    canRegister();
+    admitPlayers(parseRegistration(text));
+  } catch (error) {
+    message("Importen misslyckades: " + error.message,"error");
+  }
+}
+
+function importPastedPlayers() {
+  guarded(() => {
+    if (admitPlayers(parseRegistration($("pasteText").value))) {
+      $("pasteText").value = "";
+      $("pasteDialog").close();
+    }
+  });
+}
+
+function editPlayer(index) {
+  guarded(() => {
+    requireIdle(true);
+    applySettings();
+
+    const p = tournament.players[index];
+    if (!p) return;
+
+    const name = prompt("Spelarnamn:",p.name);
+    if (name === null) return;
+
+    if (!name.trim()) {
+      throw new Error("Ett spelarnamn krävs.");
+    }
+
+    let rating = p.rating;
+    let title = p.title;
+    const canReassign = tournament.highestPairedRound < 4;
+
+    if (canReassign) {
+      const ratingText = prompt(
+        "Rating / uppskattad spelstyrka:",String(p.rating)
+      );
+      if (ratingText === null) return;
+
+      rating = numberValue(
+        ratingText,"rating",0,9999,true
+      );
+
+      const titleText = prompt(
+        "FIDE-titel, eller tomt:",p.title
+      );
+      if (titleText === null) return;
+
+      title = titleValue(titleText);
+    }
+
+    p.name = name.trim();
+    p.rating = rating;
+    p.title = title;
+
+    if (canReassign) assignTPNs();
+
+    renderAll();
+    autoSave();
+
+    message(
+      canReassign
+        ? "Spelaruppgifter uppdaterade; granska de omtilldelade startnumren (TPN)."
+        : "Namn uppdaterat. TPN behölls eftersom rond 4 " +
+          "redan har lottats."
+    );
+  });
+}
+
+function toggleActive(index) {
+  guarded(() => {
+    requireIdle(true);
+
+    if (tournamentComplete()) {
+      throw new Error("Turneringen är avslutad.");
+    }
+
+    const p = tournament.players[index];
+    if (!p) return;
+
+    p.active = !p.active;
+    p.nextRoundStatus = "pair";
+
+    renderAll();
+    autoSave();
+  });
+}
+
+function removePlayer(index) {
+  guarded(() => {
+    requireIdle(true);
+
+    if (tournamentComplete()) {
+      throw new Error("Turneringen är avslutad.");
+    }
+
+    const p = tournament.players[index];
+    if (!p) return;
+
+    if (tournamentStarted()) {
+      if (!confirm("Vill du stryka " + p.name + " från framtida ronder?")) {
+        return;
+      }
+      p.active = false;
+      p.nextRoundStatus = "pair";
+    } else {
+      if (!confirm("Vill du ta bort " + p.name + "?")) return;
+      tournament.players.splice(index,1);
+      assignTPNs();
+    }
+
+    rebuildState();
+    renderAll();
+    autoSave();
+  });
+}
+
+function setStatus(index,value) {
+  guarded(() => {
+    requireIdle(true);
+
+    if (tournamentComplete()) {
+      throw new Error("Turneringen är avslutad.");
+    }
+
+    const p = tournament.players[index];
+
+    if (!p || !p.active || !STATUSES.includes(value)) {
+      throw new Error("Ogiltig statusändring.");
+    }
+
+    p.nextRoundStatus = value;
+    autoSave();
+  });
+}
+
+function resetTournament() {
+  guarded(() => {
+    requireIdle();
+
+    if (!confirm(
+      "Återställ alla spelare och ronder? Ladda ner en säkerhetskopia först om det behövs."
+    )) {
+      return;
+    }
+
+    tournament = emptyTournament();
+    pendingImported = false;
+
+    renderAll();
+    autoSave();
+    showTab("setup");
+
+    message("Ny tom turnering har skapats.");
+  });
+}
+
+/* ========================================================================== */
+/* WORKER MANAGEMENT                                                          */
+/* ========================================================================== */
+
+function searchLimits() {
+  return {
+    seconds:FIXED_SEARCH_LIMITS.seconds,
+    nodes:FIXED_SEARCH_LIMITS.nodes
+  };
+}
+
+function launchWorker(type,input,onSuccess) {
+  requireIdle();
+
+  if (typeof Worker === "undefined") {
+    throw new Error("Denna webbläsare saknar stöd för Web Workers.");
+  }
+
+  const limits = searchLimits();
+
+const source = [
+  '"use strict";',
+  'const dutch = (' +
+    Dutch2026Core.toString() +
+    ')();',
+  'const core = (' +
+    Burstein2026Core.toString() +
+    ')(dutch);',
+    'self.onmessage = function(event) {',
+    '  const data = event.data;',
+    '  const progress = p => self.postMessage({type:"progress",progress:p});',
+    '  try {',
+    '    const result = data.type === "tests"',
+    '      ? core.selfTest(progress)',
+    '      : core.solve(data.input,data.limits,progress);',
+    '    self.postMessage({type:"done",result});',
+    '  } catch (error) {',
+    '    self.postMessage({',
+    '      type:"error",',
+    '      code:error.code || "ERROR",',
+    '      message:error.message',
+    '    });',
+    '  }',
+    '};'
+  ].join("\n");
+
+  const url = URL.createObjectURL(
+    new Blob([source],{type:"text/javascript"})
+  );
+
+  let worker;
+
+  try {
+    worker = new Worker(url);
+  } catch (error) {
+    URL.revokeObjectURL(url);
+    throw error;
+  }
+
+  const token = {};
+  job = {worker,url,token,timer:null};
+
+  function finish() {
+    if (!job || job.token !== token) return false;
+
+    const old = job;
+    job = null;
+
+    if (old.timer) clearTimeout(old.timer);
+
+    old.worker.terminate();
+    URL.revokeObjectURL(old.url);
+    updateControls();
+
+    return true;
+  }
+
+  worker.onmessage = event => {
+    if (!job || job.token !== token) return;
+
+    const data = event.data;
+
+    if (data.type === "progress") {
+      const p = data.progress;
+
+      message(
+        p.phase +
+        "\nArbete: " + Number(p.nodes || 0).toLocaleString("sv-SE") +
+        " · förfluten tid: " +
+        (Number(p.elapsedMs || 0)/1000).toFixed(1) + " s"
+      );
+    } else if (data.type === "done") {
+      if (finish()) {
+        guarded(() => onSuccess(data.result));
+      }
+    } else if (data.type === "error") {
+      finish();
+
+      const limit = data.code === "LIMIT";
+
+      message(
+        data.message +
+        (
+          limit
+            ? "\nOptimum kunde inte fastställas inom de fasta gränserna. " +
+              "Ingen rond skapades. Använd en självständigt verifierad " +
+              "lottningsmotor för denna ställning."
+            : "\nIngen ny rond skapades. Granska uppgifterna och, " +
+              "om nödvändigt, rådfråga chefsdomaren."
+        ),
+        limit ? "warning" : "error"
+      );
+    }
+  };
+
+  worker.onerror = event => {
+    if (!finish()) return;
+
+    message(
+      "Processen misslyckades: " + event.message +
+      "\nIngen ny rond skapades.",
+      "error"
+    );
+  };
+
+  if (type === "pair") {
+    job.timer = setTimeout(() => {
+      if (!finish()) return;
+
+      message(
+        "Sökvakten stoppade processen. Ingen rond skapades.",
+        "warning"
+      );
+    },limits.seconds*1000+3000);
+  }
+
+  updateControls();
+
+  message(
+    type === "tests"
+      ? "Kör regressionstester för utvecklare…"
+      : "Söker efter föreskriven lottning…"
+  );
+
+  worker.postMessage({type,input,limits});
+}
+
+function cancelSearch() {
+  if (!job) return;
+
+  const old = job;
+  job = null;
+
+  if (old.timer) clearTimeout(old.timer);
+
+  old.worker.terminate();
+  URL.revokeObjectURL(old.url);
+  updateControls();
+
+  message("Sökningen avbröts. Ingen rond skapades.","warning");
+}
+
+function runRegressionTests() {
+  guarded(() => {
+    requireIdle();
+
+    const tieTests = runTiebreakTests();
+
+    launchWorker("tests",null,result => {
+      const tests = [...result.tests,...tieTests];
+
+      message(
+        tests.length + " regressionstester godkända:\n" +
+        tests.map(name => "• "+name).join("\n") +
+        "\n\nDessa är inte FIDE-godkännandetest.",
+        "success"
+      );
+    });
+  });
+}
+
+/* ========================================================================== */
+/* ROUND GENERATION                                                           */
+/* ========================================================================== */
+
+function unplayedDetails(player,t = tournament) {
+  if (player.nextRoundStatus === "unplayed-draw") {
+    return {
+      awardedPoints:t.drawPoints,
+      label:"Begärd ospelad rond — remivärde"
+    };
+  }
+
+  if (player.nextRoundStatus === "unplayed-win") {
+    return {
+      awardedPoints:t.winPoints,
+      label:"Administrativ ospelad rond — vinstvärde"
+    };
+  }
+
+  return {
+    awardedPoints:t.lossPoints,
+    label:"Ospelad rond — förlustvärde"
+  };
+}
+
+function generateRound() {
+  guarded(() => {
+    requireIdle(true);
+    applySettings();
+    rebuildState();
+    applyBursteinPairingIndex(tournament);
+
+    const roundNumber = tournament.rounds.length+1;
+    if (roundNumber > tournament.totalRounds) {
+      throw new Error("Turneringen är avslutad.");
+    }
+
+    const active = tournament.players.filter(p => p.active);
+
+    if (!active.length) {
+      throw new Error("Inga spelare är aktiva.");
+    }
+
+    const toPair = active.filter(
+      p => p.nextRoundStatus === "pair"
+    );
+
+    const scheduled = active.filter(
+      p => p.nextRoundStatus !== "pair"
+    );
+
+    const input = {
+      roundNumber,
+      totalRounds:tournament.totalRounds,
+      winPoints:tournament.winPoints,
+      initialColor:tournament.initialColor,
+      players:JSON.parse(JSON.stringify(toPair))
+    };
+
+    const plan = {
+      roundNumber,
+      input,
+      scheduled:scheduled.map(p => ({
+        id:p.id,
+        ...unplayedDetails(p)
+      }))
+    };
+
+    showTab("pairings");
+
+    if (!toPair.length) {
+      commitRound({
+        engineVersion:Core.VERSION,
+        pairs:[],
+        pabId:null,
+        byeScore:null,
+        trace:[],
+        stats:{nodes:0,elapsedMs:0}
+      },plan);
+    } else {
+      launchWorker(
+        "pair",input,result => commitRound(result,plan)
+      );
+    }
+  });
+}
+
+function commitRound(result,plan) {
+  requireIdle(true);
+
+  const map = new Map(
+    tournament.players.map(p => [p.id,p])
+  );
+
+  const expected = new Set(
+    plan.input.players.map(p => p.id)
+  );
+
+  const covered = new Set();
+
+  function mark(id) {
+    if (!expected.has(id) || covered.has(id)) {
+      throw new Error(
+        "Den returnerade lottningen har ogiltig eller duplicerad spelartäckning."
+      );
+    }
+    covered.add(id);
+  }
+
+  for (const pair of result.pairs) {
+    mark(pair.whiteId);
+    mark(pair.blackId);
+
+    const w = map.get(pair.whiteId);
+    const b = map.get(pair.blackId);
+
+    if (!Core.compatible(w,b,plan.input)) {
+      throw new Error(
+        "Returnerat par bryter mot ett absolut kriterium."
+      );
+    }
+
+const assigned = Core.allocate(
+  w,
+  b,
+  plan.input
+);
+
+    if (assigned.white.id !== w.id) {
+      throw new Error(
+        "Returnerade färger misslyckades vid färgfördelningskontrollen."
+      );
+    }
+  }
+
+  if (result.pabId !== null) {
+    mark(result.pabId);
+
+    const p = map.get(result.pabId);
+
+    if (p.hadPAB || p.hadUnplayedWin) {
+      throw new Error("Mottagaren av den lottade frironden är inte behörig.");
+    }
+  }
+
+  if (
+    covered.size !== expected.size ||
+    (result.pabId !== null ? 1 : 0) !== expected.size%2
+  ) {
+    throw new Error("Den returnerade ronden är ofullständig.");
+  }
+
+  const pairs = [...result.pairs].sort((a,b) => {
+    const aw = map.get(a.whiteId);
+    const ab = map.get(a.blackId);
+    const bw = map.get(b.whiteId);
+    const bb = map.get(b.blackId);
+
+    const ah = Core.rank(aw,ab) <= 0 ? aw : ab;
+    const bh = Core.rank(bw,bb) <= 0 ? bw : bb;
+
+    return bh.score-ah.score ||
+      (bw.score+bb.score)-(aw.score+ab.score) ||
+      ah.tpn-bh.tpn;
+  });
+
+  const records = pairs.map((pair,index) => ({
+    kind:"game",
+    board:index+1,
+    ...pair,
+    result:"*"
+  }));
+
+  if (result.pabId !== null) {
+    records.push({
+      kind:"pab",
+      board:null,
+      pabId:result.pabId,
+      result:"AUTO",
+      awardedPoints:tournament.pabPoints
+    });
+  }
+
+  for (const p of plan.scheduled) {
+    records.push({
+      kind:"unplayed",
+      board:null,
+      unplayedId:p.id,
+      result:"AUTO",
+      awardedPoints:p.awardedPoints,
+      label:p.label
+    });
+  }
+
+  tournament.activePairings = records;
+
+tournament.activeAudit = {
+  engineVersion:result.engineVersion,
+  pairingSystem:
+    result.pairingSystem || "Unknown",
+  seedingRounds:
+    result.seedingRounds ??
+    Core.seedingRoundCount(
+      tournament.totalRounds
+    ),
+  bye:result.bye || null,
+  byeTrace:result.byeTrace || null,
+  stats:result.stats,
+  brackets:result.trace
+};
+
+  tournament.currentRound = plan.roundNumber;
+  tournament.highestPairedRound = Math.max(
+    tournament.highestPairedRound,plan.roundNumber
+  );
+
+  tournament.settingsFrozen = true;
+
+  /*
+   * Close registration only after a complete result has passed
+   * validation and the round has actually been created.
+   * A failed or cancelled search does not close registration.
+   */
+  tournament.listClosed = true;
+  pendingImported = false;
+
+  renderAll();
+  autoSave();
+
+  message(
+    "Rond " + plan.roundNumber + " skapad. " +
+    (plan.roundNumber === 1 ? "Registreringen är nu stängd. " : ""),
+    "success"
+  );
+}
+
+function changeResult(index,value) {
+  guarded(() => {
+    requireIdle();
+
+    if (value !== "*" && !RESULTS.includes(value)) {
+      throw new Error("Ogiltigt resultat.");
+    }
+
+    const record = tournament.activePairings[index];
+
+    if (!record || record.kind !== "game") {
+      throw new Error("Ogiltigt bord.");
+    }
+
+    record.result = value;
+    renderPairings();
+    updateControls();
+    autoSave();
+  });
+}
+
+function confirmRound() {
+  guarded(() => {
+    requireIdle();
+
+    if (!tournament.activePairings.length) return;
+
+    if (tournament.activePairings.some(
+      r => r.kind === "game" && !RESULTS.includes(r.result)
+    )) {
+      throw new Error(
+        "Fyll i resultat för alla bord innan du bekräftar."
+      );
+    }
+
+    if (!confirm(
+      "Bekräfta och arkivera denna rond? Kontrollera resultat och " +
+      "faktiska spelade färger först."
+    )) {
+      return;
+    }
+
+    tournament.rounds.push({
+      roundNumber:tournament.currentRound,
+      pairings:JSON.parse(
+        JSON.stringify(tournament.activePairings)
+      ),
+      audit:tournament.activeAudit
+    });
+
+    tournament.activePairings = [];
+    tournament.activeAudit = null;
+    tournament.currentRound = tournament.rounds.length;
+
+    tournament.players.forEach(p => {
+      p.nextRoundStatus = "pair";
+    });
+
+    pendingImported = false;
+
+    rebuildState();
+    renderAll();
+    autoSave();
+    showTab("standings");
+
+    message(
+      tournamentComplete()
+        ? "Turneringen är avslutad. Slutresultatet inkluderar Buchholz cut 1, Buchholz, Sonneborn-Berger och färgskillnad."
+        : "Ronden har bekräftats. Deltagande inför nästa rond kan nu uppdateras."
+    );
+  });
+}
+
+/* ========================================================================== */
+/* RENDERING                                                                  */
+/* ========================================================================== */
+
+function renderSettings() {
+  $("tName").value = tournament.name;
+  $("tRounds").value = tournament.totalRounds;
+  $("tColor").value = tournament.initialColor;
+
+  $("tPoints").value = [
+    tournament.winPoints,
+    tournament.drawPoints,
+    tournament.lossPoints
+  ].join(",");
+
+  $("tPab").value = tournament.pabPoints;
+
+const seedingRounds =
+  Core.seedingRoundCount(
+    tournament.totalRounds
+  );
+
+const seedingDescription = seedingRounds
+  ? " Ronderna 1–" + seedingRounds +
+    " är FIDE holländska seedningsronder; efterföljande ronder använder Burstein."
+  : " Denna turnering har ingen holländsk seedningsrond.";
+
+$("listStatus").textContent = (
+  tournament.listClosed
+    ? "Deltagarlistan är stängd."
+    : "Deltagarlistan är öppen tills den första ronden har lottats."
+) + seedingDescription;
+
+  $("registrationHint").textContent = tournament.listClosed
+    ? "Registreringen är stängd. Befintliga spelare kan strykas eller " +
+      "återinsättas mellan ronderna."
+    : "Spelarna ordnas inledningsvis efter rating, titel och namn.";
+}
+
+function renderPlayers() {
+  $("playerCount").textContent = tournament.players.length;
+
+  const pending = tournament.activePairings.length > 0;
+  const finished = tournamentComplete();
+  const blocked = Boolean(job) || pending;
+  const participationBlocked = blocked || finished;
+
+  $("playersBody").innerHTML = tournament.players.map((p,index) => {
+    const options = [
+      ["pair","Lotta normalt"],
+      ["unplayed-zero","Ospelad — förlustvärde"],
+      ["unplayed-draw","Ospelad — remivärde"],
+      ["unplayed-win","Ospelad — vinstvärde"]
+    ].map(([value,label]) =>
+      `<option value="${value}"
+        ${p.nextRoundStatus === value ? "selected" : ""}>
+        ${label}
+      </option>`
+    ).join("");
+
+    return `
+      <tr>
+        <td><strong>${p.tpn}</strong></td>
+        <td>${escapeHtml(p.name)}</td>
+        <td>${p.rating}</td>
+        <td>${escapeHtml(p.title || "—")}</td>
+        <td>${p.active ? "Aktiv" : "Struken"}</td>
+        <td class="no-print">
+          <select onchange="setStatus(${index},this.value)"
+            ${participationBlocked || !p.active ? "disabled" : ""}>
+            ${options}
+          </select>
+        </td>
+        <td class="no-print">
+          <button class="small" onclick="editPlayer(${index})"
+            ${blocked ? "disabled" : ""}>
+            Redigera
+          </button>
+          <button class="small" onclick="toggleActive(${index})"
+            ${participationBlocked ? "disabled" : ""}>
+            ${p.active ? "Stryk" : "Återinsätt"}
+          </button>
+          <button class="small" onclick="removePlayer(${index})"
+            ${participationBlocked ? "disabled" : ""}>
+            Ta bort
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("") ||
+    '<tr><td colspan="7">Inga registrerade spelare.</td></tr>';
+}
+
+function displayResult(result) {
+  const labels = {
+    "*":"—",
+    "1-0":"1 – 0",
+    "0.5-0.5":"½ – ½",
+    "0-1":"0 – 1",
+    "1-0F":"1 – 0 (F)",
+    "0-1F":"0 – 1 (F)",
+    "0-0F":"0 – 0 (F)"
+  };
+
+  return labels[result] || result;
+}
+
+function playerLabel(id,withScore = false) {
+  const p = tournament.players.find(x => x.id === id);
+
+  if (!p) return "Okänd spelare";
+
+  return `[${p.tpn}] <strong>${escapeHtml(p.name)}</strong>` +
+    (
+      withScore
+        ? ` <span class="badge">${points(p.score)} p</span>`
+        : ""
+    );
+}
+
+function renderPairings() {
+  const hasRound = tournament.activePairings.length > 0;
+  const finished = tournamentComplete();
+
+  $("roundTitle").textContent = hasRound
+    ? "Rond " + tournament.currentRound
+    : finished
+      ? "Turneringsronderna avslutade"
+      : "Nästa rond: " + (tournament.rounds.length+1);
+
+const rawSystem =
+  tournament.activeAudit &&
+  tournament.activeAudit.pairingSystem
+    ? tournament.activeAudit.pairingSystem
+    : "okänt system";
+
+const pairingSystem = rawSystem === "FIDE Dutch seeding"
+  ? "FIDE holländsk seedning"
+  : rawSystem;
+
+$("roundProvenance").textContent = !hasRound
+  ? "Ingen väntande rond."
+  : pendingImported
+    ? "Inläst lottning. Applikationen har inte verifierat att detta " +
+      "är den föreskrivna Burstein-lottningen."
+    : "Genererad av den experimentella referensmotorn med " +
+      pairingSystem + ".";
+
+  const games = [];
+  const unplayed = [];
+
+  tournament.activePairings.forEach((record,index) => {
+    if (record.kind === "pab") {
+      unplayed.push(
+        `<p>
+          <span class="badge bye">PAB</span>
+          ${playerLabel(record.pabId)} —
+          ${points(record.awardedPoints)} poäng;
+          ingen motståndare och ingen färg.
+        </p>`
+      );
+      return;
+    }
+
+    if (record.kind === "unplayed") {
+      unplayed.push(
+        `<p>
+          ${playerLabel(record.unplayedId)} —
+          ${escapeHtml(record.label)}:
+          ${points(record.awardedPoints)} poäng.
+        </p>`
+      );
+      return;
+    }
+
+    const options = ["*",...RESULTS].map(value =>
+      `<option value="${value}"
+        ${record.result === value ? "selected" : ""}>
+        ${displayResult(value)}
+      </option>`
+    ).join("");
+
+    games.push(`
+      <tr>
+        <td>${record.board}</td>
+        <td>
+          <span class="badge white">V</span>
+          ${playerLabel(record.whiteId,true)}
+        </td>
+        <td class="center result">
+          <select class="result-select"
+            onchange="changeResult(${index},this.value)"
+            ${job ? "disabled" : ""}>
+            ${options}
+          </select>
+          <span class="print-result">
+            ${displayResult(record.result)}
+          </span>
+        </td>
+        <td>
+          <span class="badge black">S</span>
+          ${playerLabel(record.blackId,true)}
+        </td>
+      </tr>
+    `);
+  });
+
+  $("pairingsBody").innerHTML = games.join("") ||
+    `<tr>
+      <td colspan="4">
+        ${hasRound
+          ? "Inga partier vid brädet i denna rond."
+          : "Inga väntande bordslottningar."}
+      </td>
+    </tr>`;
+
+  $("unplayedView").innerHTML = unplayed.join("");
+
+  $("activeAudit").textContent = tournament.activeAudit
+    ? JSON.stringify(tournament.activeAudit,null,2)
+    : "Ingen spårning.";
+}
+
+function renderStandings() {
+  const final = tournamentComplete();
+  const tiebreaks = calculateTiebreaks();
+
+  $("scoreTournamentName").textContent = tournament.name;
+
+  $("scoreTitle").textContent = final
+    ? "Slutresultat"
+    : "Poänglista efter rond " + tournament.rounds.length;
+
+  $("tabButton-standings").textContent = final
+    ? "Slutresultat"
+    : "Poänglista";
+
+  $("standingsNotice").textContent = final
+    ? "Placering: poäng → BH-1 → BH → SB. Spelare som fortfarande är lika delar " +
+      "placering; TPN styr endast visningsordningen. Särskiljning " +
+      "inkluderar inställd hantering av ospelade ronder."
+    : "Aktuell lista ordnad efter poäng, därefter TPN. Vid turneringens " +
+      "slut visar slutresultatet BH-1, BH och SB och använder dem i " +
+      "den ordningen för att särskilja vid lika poäng.";
+
+  $("standingsHead").innerHTML = `
+    <tr>
+      <th>${final ? "Plac." : "Ordning"}</th>
+      <th>TPN</th>
+      <th>Namn</th>
+      <th>Poäng</th>
+      ${
+        final
+          ? `<th title="Buchholz Cut 1">BH-1</th>
+             <th title="Buchholz">BH</th>
+             <th title="Sonneborn-Berger">SB</th>`
+          : `<th>Spelade</th><th>Ospelade</th>`
+      }
+      <th>Färger per rond</th>
+      <th>FS</th>
+      <th>Flyttning per rond</th>
+    </tr>
+  `;
+
+  const sorted = [...tournament.players].sort((a,b) => {
+    if (!final) return Core.rank(a,b);
+
+    return compareFinalValues(
+      tiebreaks.get(a.id),
+      tiebreaks.get(b.id)
+    ) || a.tpn-b.tpn;
+  });
+
+  let displayedRank = 0;
+
+  $("standingsBody").innerHTML = sorted.map((p,index) => {
+    const tb = tiebreaks.get(p.id);
+
+    if (
+      !final ||
+      index === 0 ||
+      compareFinalValues(
+        tiebreaks.get(sorted[index-1].id),tb
+      ) !== 0
+    ) {
+      displayedRank = index+1;
+    }
+
+    return `
+      <tr>
+        <td>${displayedRank}</td>
+        <td>${p.tpn}</td>
+        <td>
+          ${escapeHtml(p.name)}
+          ${p.active ? "" : " (struken)"}
+        </td>
+        <td><strong>${points(tb.score)}</strong></td>
+        ${
+          final
+            ? `<td>${tb.bh1.toFixed(1)}</td>
+               <td>${tb.bh.toFixed(1)}</td>
+               <td>${tb.sb.toFixed(2)}</td>`
+            : `<td>${p.playedColors.length}</td>
+               <td>${p.unplayedCount}</td>`
+        }
+
+<td class="mono">
+  ${p.roundColors.map(c => c === "W" ? "v" : c === "B" ? "s" : c).join("") || "—"}
+</td>
+
+        <td>${Core.colorDifference(p)}</td>
+        <td class="mono">
+          ${p.floats.join(" ") || "—"}
+        </td>
+      </tr>
+    `;
+  }).join("") ||
+    `<tr><td colspan="${final ? 10 : 9}">Inga spelare.</td></tr>`;
+}
+
+function renderHistory() {
+  $("historyBody").innerHTML = tournament.rounds.map(round => {
+    const rows = round.pairings.map(record => {
+      if (record.kind === "pab") {
+        return `
+          <tr>
+            <td>—</td>
+            <td colspan="3">
+              PAB: ${playerLabel(record.pabId)} —
+              ${points(record.awardedPoints)} poäng
+            </td>
+          </tr>
+        `;
+      }
+
+      if (record.kind === "unplayed") {
+        return `
+          <tr>
+            <td>—</td>
+            <td colspan="3">
+              ${playerLabel(record.unplayedId)} —
+              ${escapeHtml(record.label)} —
+              ${points(record.awardedPoints)} poäng
+            </td>
+          </tr>
+        `;
+      }
+
+      return `
+        <tr>
+          <td>${record.board}</td>
+          <td>${playerLabel(record.whiteId)}</td>
+          <td>${displayResult(record.result)}</td>
+          <td>${playerLabel(record.blackId)}</td>
+        </tr>
+      `;
+    }).join("");
+
+    return `
+      <div class="card">
+        <h3>Rond ${round.roundNumber}</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Bord</th>
+                <th>Vit</th>
+                <th>Resultat</th>
+                <th>Svart</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+        ${
+          round.audit
+            ? `<details class="audit no-print">
+                <summary>Sparad spårning</summary>
+                <pre>${escapeHtml(
+                  JSON.stringify(round.audit,null,2)
+                )}</pre>
+              </details>`
+            : ""
+        }
+      </div>
+    `;
+  }).join("") || "<p>Inga avslutade ronder.</p>";
+}
+
+function updateControls() {
+  const busy = Boolean(job);
+  const pending = tournament.activePairings.length > 0;
+  const finished = tournamentComplete();
+
+  const registrationBlocked =
+    busy ||
+    pending ||
+    tournament.listClosed ||
+    tournamentStarted() ||
+    finished;
+
+  for (const id of [
+    "addButton","importButton","pasteButton","sampleButton"
+  ]) {
+    $(id).disabled = registrationBlocked;
+  }
+
+  for (const id of [
+    "pName","pRating","pTitle"
+  ]) {
+    $(id).disabled = registrationBlocked;
+  }
+
+  for (const id of [
+    "tRounds","tColor","tPoints","tPab"
+  ]) {
+    $(id).disabled = busy || tournament.settingsFrozen;
+  }
+
+  $("tName").disabled = busy;
+  $("saveButton").disabled = busy;
+  $("openButton").disabled = busy;
+  $("resetButton").disabled = busy;
+  $("testButton").disabled = busy;
+
+  $("pairButton").disabled = busy || pending || finished;
+  $("cancelButton").disabled = !busy;
+
+  $("confirmButton").disabled =
+    busy ||
+    !pending ||
+    tournament.activePairings.some(
+      r => r.kind === "game" && r.result === "*"
+    );
+
+  $("pairButton").textContent = busy
+    ? "Söker…"
+    : finished
+      ? "Turneringen är avslutad"
+      : pending
+        ? "Ronden är redan lottad"
+        : "Lotta rond " + (tournament.rounds.length+1);
+
+  renderPlayers();
+}
+
+function updatePrintTitle() {
+  const labels = {
+    setup:"Deltagarlista",
+    pairings:tournament.activePairings.length
+      ? "Lottning rond "+tournament.currentRound
+      : "Rondlottning",
+    standings:tournamentComplete()
+      ? "Slutresultat"
+      : "Poänglista efter rond "+tournament.rounds.length,
+    history:"Rondhistorik"
+  };
+
+  $("printTitle").textContent =
+    tournament.name + " — " + labels[currentTab];
+}
+
+function renderAll() {
+  renderSettings();
+  renderPlayers();
+  renderPairings();
+  renderStandings();
+  renderHistory();
+  updateControls();
+  updatePrintTitle();
+}
+
+function showTab(id) {
+  guarded(() => {
+    if (![
+      "setup","pairings","standings","history"
+    ].includes(id)) {
+      return;
+    }
+
+    if (currentTab === "setup" && !job) {
+      applySettings();
+      autoSave();
+    }
+
+    currentTab = id;
+    document.body.dataset.tab = id;
+
+    for (const name of [
+      "setup","pairings","standings","history"
+    ]) {
+      $(name).classList.toggle("active",name === id);
+      $("tabButton-"+name).classList.toggle(
+        "active",name === id
+      );
+    }
+
+    if (id === "pairings") renderPairings();
+    if (id === "standings") renderStandings();
+    if (id === "history") renderHistory();
+
+    updatePrintTitle();
+  });
+}
+
+function printPage() {
+  guarded(() => {
+    if (!job) applySettings();
+    renderStandings();
+    updatePrintTitle();
+    window.print();
+  });
+}
+
+/* ========================================================================== */
+/* AUTOMATIC SETTINGS LISTENERS                                               */
+/* ========================================================================== */
+
+for (const id of [
+  "tName","tRounds","tColor","tPab"
+]) {
+  $(id).addEventListener("change",saveSettingsAutomatically);
+}
+
+$("tPoints").addEventListener("change",() => {
+  if (tournament.settingsFrozen || job) return;
+
+  $("tPab").value = $("tPoints").value.split(",")[0];
+  saveSettingsAutomatically();
+});
+
+window.addEventListener("beforeprint",() => {
+  renderStandings();
+  updatePrintTitle();
+});
+
+/* ========================================================================== */
+/* INITIALIZATION                                                             */
+/* ========================================================================== */
+
+(function initialize() {
+  let loaded = false;
+  let legacy = false;
+
+  try {
+    let saved = localStorage.getItem(STORAGE_KEY);
+
+    if (!saved) {
+      saved = localStorage.getItem(LEGACY_STORAGE_KEY);
+      legacy = Boolean(saved);
+    }
+
+    if (saved) {
+      tournament = normalizeTournament(JSON.parse(saved));
+      loaded = true;
+      pendingImported = tournament.activePairings.length > 0;
+    }
+  } catch (error) {
+    console.error(error);
+
+    message(
+      "Den lagrade turneringen kunde inte läsas in: " +
+      error.message +
+      "\nDen felaktiga lagrade filen har inte skrivits över.",
+      "error"
+    );
+  }
+
+  rebuildState();
+  renderAll();
+
+  if (loaded) {
+    message(
+      (
+        legacy
+          ? "Tidigare applikations sparade turnering lästes in. "
+          : "Sparad turnering återställdes. "
+      ) +
+      "Poäng, historik och särskiljningsvärden återskapades från " +
+      "arkiverade ronder. " +
+      (
+        tournament.listClosed
+          ? "Registreringen är stängd eftersom turneringen har startat. "
+          : "Registreringen är öppen tills den första ronden har lottats. "
+      ) +
+      "Befintliga lottningar verifieras inte i efterhand.",
+      "warning"
+    );
+  }
+})();
+</script>
+
+</body>
+</html>
