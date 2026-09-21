@@ -40,7 +40,7 @@
     efter rating. Algoritmen innehåller alltså ingen inbyggd slumpfaktor. Det är spelarna själva som skapar variationen
     genom sina mer eller mindre oförutsägbara resultat.<br>
     <br>
-    <b>Monrad-systemet</b> är uppkallat efter den danske schackorganisatören Poul&nbsp;Monrad, som under mitten av
+    <strong>Monrad-systemet</strong> är uppkallat efter den danske schackorganisatören Poul&nbsp;Monrad, som under mitten av
     1900-talet utvecklade och populariserade denna förenklade variant av schweizer-lottning. Det blev mycket utbrett i
     Danmark, Norge och Sverige, särskilt i skoltävlingar, weekendturneringar och större amatörevenemang, eftersom det
     är enklare än det fullständiga schweiziska systemet: spelarna lottas strikt efter aktuell poäng, utan de mer
@@ -75,8 +75,8 @@
       N)<sup>2</sup> ]<br>
       <br>
       <strong>&sum;<sub>i</sub></strong> = summan över alla motståndare du mött<br>
-      <strong>r<sub>i</sub></strong> = ditt resultat mot motståndare <b>i</b>&nbsp; (1, 0,5, 0)<br>
-      <strong>P<sub>i</sub></strong> = motståndare <b>i</b>:s slutpoäng i turneringen<br>
+      <strong>r<sub>i</sub></strong> = ditt resultat mot motståndare <strong>i</strong>&nbsp; (1, 0,5, 0)<br>
+      <strong>P<sub>i</sub></strong> = motståndare <strong>i</strong>:s slutpoäng i turneringen<br>
       <strong>N</strong> = totalt antal ronder i turneringen<br>
       <strong>(P<sub>i</sub> / N)<sup>2</sup></strong> = kvadraten på motståndarens poängandel (poängkvoten uttryckt
       som decimaltal)
@@ -108,14 +108,14 @@
     högre kumulativt tiebreak, vilket gynnar en aggressiv spelstil. (Att börja med en vinst och sedan en förlust ger 2
     kumulativa poäng efter två ronder, medan två remier ger 1,5. Det är på sätt och vis rättvist.)<br>
     <br>
-    <b>Berger</b> innebär att alla möter alla, antingen en eller två gånger. Berger-systemet formaliserades av
+    <strong>Berger</strong> innebär att alla möter alla, antingen en eller två gånger. Berger-systemet formaliserades av
     Johann&nbsp;Berger i slutet av 1800-talet. Det är det mest rättvisa av alla lottningssystem, vilket gör det
     idealiskt för kandidat- och elitturneringar. Spelarna alternerar färg automatiskt. Jag har skapat ett Berger-system
     för 3-16 spelare enligt FIDE:s specifikationer. Det kan användas direkt i webbläsaren, men går även att ladda ned
     och köra lokalt: <a href="../berger.htm" title="Berger lottningsprogram">Bergers turneringssystem
     (alla-mot-alla)</a>.<br>
     <br>
-    <b>Scheveningen</b> är ett format för lagspel där två lag av samma storlek spelar ett fullständigt korsmöte: alla
+    <strong>Scheveningen</strong> är ett format för lagspel där två lag av samma storlek spelar ett fullständigt korsmöte: alla
     spelare i lag A möter alla spelare i lag B över n ronder: <a href="../scheveningen.htm">Scheveningen
     turneringssystem</a>. Det har sitt namn från en turnering i Scheveningen, Nederländerna, 1923, där formatet
     användes i en lagmatch mellan två grupper av stormästare. Systemet är rättvist och deterministiskt (ingen lottning
@@ -128,7 +128,7 @@
     mäter därmed hur väl spelaren presterat mot turneringens starkaste motstånd, medan Sonneborn-Berger ger ett mer
     finfördelat och övergripande mått på motståndarnas samlade resultat.<br>
     <br>
-    <b>Schweizer-systemet</b> uppstod i Schweiz i slutet av 1800-talet, främst för stora schackturneringar där
+    <strong>Schweizer-systemet</strong> uppstod i Schweiz i slutet av 1800-talet, främst för stora schackturneringar där
     alla-mot-alla var opraktiskt. Tidiga schweizer-turneringar var informella och använde enkla regler: spelare med
     samma poäng möttes, liknande hur dagens Monrad-lottning fungerar. Schweizer-systemen är idag konstruerade på olika
     sätt. Det finns bland annat dubbelaccelererad Schweizer, Haldane-accelerering och FIDE-accelerering (numera
@@ -142,19 +142,19 @@
     minimum. Det är tydligt bättre än Nordisk Schweizer, förutsatt att programmet visar sig pålitligt efter noggrann
     testning.<br>
     <br>
-    <b>Accelererad schweizer-lottning (Winther-accelerering)</b>:<br>
+    <strong>Accelererad schweizer-lottning (Winther-accelerering)</strong>:<br>
     <br>
-    <b>Rond 1:</b> Spelarna delas in i fyra grupper (kvadranter). Den högst rankade i K1 har vit mot den högst rankade
+    <strong>Rond 1:</strong> Spelarna delas in i fyra grupper (kvadranter). Den högst rankade i K1 har vit mot den högst rankade
     i K2, och motsvarande för K3 och K4. (Vid ojämna grupper anpassas storlekarna automatiskt och vid udda
     deltagarantal ges lägst rankad frirond).<br>
     <br>
-    <b>Rond 2:</b> Högst seedad vinnare har svart mot högst seedad vinnare i den andra halvan. Näst högst seedad har
+    <strong>Rond 2:</strong> Högst seedad vinnare har svart mot högst seedad vinnare i den andra halvan. Näst högst seedad har
     svart mot nästa i den andra halvan, osv.<br>
     <br>
-    <b>Rond 3+:</b> Schweizer-lottning börjar. Spelarna sorteras efter poäng, Buchholz och ursprunglig seedning.
+    <strong>Rond 3+:</strong> Schweizer-lottning börjar. Spelarna sorteras efter poäng, Buchholz och ursprunglig seedning.
     Lottning sker uppifrån och ned.<br>
     <br>
-    <b>Färgfördelning:</b> Spelaren med färre vita partier får vit. Vid lika får den lägre seedade spelaren vit.
+    <strong>Färgfördelning:</strong> Spelaren med färre vita partier får vit. Vid lika får den lägre seedade spelaren vit.
     Absolut färgbalans garanteras (färgskillnaden kan aldrig överskrida 2). Vid krock mellan färgbalans och
     2-i-rad-regeln tillåts tre partier med samma färg i rad.<br>
     <br>
@@ -231,7 +231,7 @@
       </tbody>
     </table>
     <p><br>
-    <b>Holländsk Schweizer</b> (FIDE Dutch Swiss) är den internationella guldstandarden för schackturneringar och det
+    <strong>Holländsk Schweizer</strong> (FIDE Dutch Swiss) är den internationella guldstandarden för schackturneringar och det
     officiella system som FIDE föreskriver för merparten av alla öppna elo-tävlingar från och med 1 februari 2026. Det
     syftar till att få en så rättvis lottning som möjligt. Algoritmen, som är mycket komplex (se <a href=
     "https://handbook.fide.com/chapter/C0403202602" title=
@@ -270,7 +270,7 @@
     möter inte nödvändigtvis varandra, och man kan få möta någon med helt annan TPN än väntat. Färgallokeringen är
     komplex och inte intuitiv.<br>
     <br>
-    <b>Dubov-schweizer</b> är en originell metod utvecklad av den ryske matematikern Eduard&nbsp;Dubov. Systemet, som
+    <strong>Dubov-schweizer</strong> är en originell metod utvecklad av den ryske matematikern Eduard&nbsp;Dubov. Systemet, som
     är godkänt av FIDE, strävar aktivt efter att alla spelare på samma slutpoäng ska ha mött motståndare med så
     likartad genomsnittlig rating som möjligt. Syftet är att minska risken att någon når en prisplacering tack vare tur
     i lottningen och därmed ovanligt svagt motstånd jämfört med konkurrenterna på samma poäng.<br>
@@ -285,7 +285,7 @@
     idealiskt för turneringar som syftar till vidare kvalificering, såsom kandidatturneringen. Jag har skapat ett
     program för lottning enligt FIDE:s specifikationer: <a href="../fide-dubov.htm">Dubovs lottningssystem</a>.<br>
     <br>
-    <b>Burstein-schweizer</b> utvecklades 1993 av Almog Burstein (född 1950), en israelisk internationell domare,
+    <strong>Burstein-schweizer</strong> utvecklades 1993 av Almog Burstein (född 1950), en israelisk internationell domare,
     schackorganisatör och mångårig FIDE-funktionär. Grundtanken är att motståndets styrka ska vara så jämnt fördelad
     som möjligt mellan spelare (eller lag) inom samma poänggrupp. Systemet antogs av FIDE för lagtävlingar och användes
     vid schackolympiaderna från Moskva 1994 till Dresden 2008. Det är fortfarande ett av de lottningssystem som erkänns
@@ -354,7 +354,7 @@
     <a href="https://en.wikipedia.org/wiki/Swiss-system_tournament" title=
     "Wikipedia: Swiss-system tournament">https://en.wikipedia.org/wiki/Swiss-system_tournament</a><br>
     <br>
-    <b>Online lottningsprogram:</b><br>
+    <strong>Online lottningsprogram:</strong><br>
     <br>
     Bergers turneringssystem (Alla-mot-alla).<br>
     <a href="../berger.htm" title=
