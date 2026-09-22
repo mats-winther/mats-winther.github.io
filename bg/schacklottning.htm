@@ -8,6 +8,7 @@
   "En teknisk genomgång av lottning i schackturneringar med fokus på Monrad och Schweizer. Artikeln presenterar ett nytt schweizer-system som ett stabilt och rättvist alternativ för öppna turneringar.">
 
   <style>
+  sub.c1 {font-style: italic}  
   table.c1 {margin-top:25px; margin-bottom:10px;}
   table {margin-left: auto;
   margin-right: auto;
@@ -20,17 +21,15 @@
   td {
   font-size:100%;
   padding: 6px; 
-  border: 1px solid #000; 
-  }
-  </style>
+  border: 1px solid #000;  } 
+</style>
+
   <meta name="keywords" content=
   "Monrad, Schweizer, Berger, Scheveningen, FIDE Schweizer, Winther-poäng (WNT), Winther-accelerering, Dutch, Dubov, Burstein, Koya, lottning, schack, program">
   <meta name="author" content="Mats Winther">
   <link rel="canonical" href="https://mats-winther.github.io/bg/schacklottning.htm">
   <title>Schacklottning: en genomgång av Monrad, Schweizer och Berger</title>
-  <style>
-  sub.c1 {font-style: italic}
-  </style>
+
 </head>
 <body>
   <div class="middle">
@@ -69,10 +68,10 @@
     "Monrad lottningsprogram">Monrads lottningssystem</a>. Programmet introducerar en ny särskiljningsmetod som
     alternativt förval: för varje parti, ta motståndarens slutresultat som ett decimaltal mellan 0 och 1 (till exempel
     0,8 vid 80% av maxpoängen). Kvadrera det för att öka skillnaden. Multiplicera sedan med resultatet mot just den
-    spelaren, vilket ger full utdelning vid vinst, hälften vid remi och noll vid förlust. Multiplicera slutligen med
-    hundra för att slippa decimaltal. Hittills har alla särskiljningsmetoder (Buchholz, Sonneborn-Berger etc.)
-    utformats efter principen att de enkelt ska kunna beräknas för hand. Resultatet är en trubbig särskiljning. Det
-    finns ingen anledning att hålla fast vid detta i dag.</p>
+    spelaren, vilket ger full utdelning vid vinst, hälften vid remi, men även viss utdelning vid förlust, speciellt mot
+    en framgångsrik spelare. Multiplicera slutligen med hundra för att slippa decimaltal. Hittills har alla
+    särskiljningsmetoder (Buchholz, Sonneborn-Berger etc.) utformats efter principen att de enkelt ska kunna beräknas
+    för hand. Resultatet är en trubbig särskiljning. Det finns ingen anledning att hålla fast vid detta i dag.</p>
     <blockquote>
       <strong>Winther-poäng (WNT)</strong> = 100 &times; &sum;<sub class="c1">i</sub> [ (<i>P<sub>i</sub></i> /
       <i>N</i>&thinsp;) &times; (<i>r<sub>i</sub></i> + <i>P<sub>i</sub></i> / (2<i>N</i>&thinsp;)&thinsp;)
@@ -85,8 +84,8 @@
       <strong>r</strong><sub class="c1">i</sub> = ditt resultat mot motståndare <i>i</i>&nbsp; (1, 0,5, 0)<br>
       <strong>P</strong><sub class="c1">i</sub> = motståndare <i>i</i>:s slutpoäng i turneringen<br>
       <strong>N</strong> = totalt antal ronder i turneringen<br>
-      <strong>P</strong><sub class="c1">i</sub> <strong>/ N </strong>= motståndarens poängandel (poängkvoten uttryckt som decimaltal
-      mellan 0 och 1)
+      <strong>P</strong><sub class="c1">i</sub> <strong>/ N</strong> = motståndarens poängandel (poängkvoten uttryckt
+      som decimaltal mellan 0 och 1)
     </blockquote>
     <p>Denna metod ger en mer rättvisande bild av spelarnas prestationer än traditionella särskiljningsmetoder. När
     spelare slutar på samma poäng särskiljs de med avseende på kvaliteten hos det motstånd de mött. WNT premierar
