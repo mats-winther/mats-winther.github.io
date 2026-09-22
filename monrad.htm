@@ -410,9 +410,9 @@
     <div class="tiebreak-selector" style="margin-top: 0; margin-bottom: 14px;">
       <span style="font-weight: 600; color: #334155;">Särskiljning:</span>
       <label>
-        <input type="radio" class="tb-radio" name="tb-choice-final" value="wnt" checked onchange="setTieBreak(this.value)">
-        <span>Winther<sup class="wnt-asterisk" onclick="openWntModal(event)" title="Information om Winther-poäng">*</sup></span>
-      </label>
+         <input type="radio" class="tb-radio" name="tb-choice-final" value="wnt" checked onchange="setTieBreak(this.value)">
+         <span>Winther</span>
+      </label>      
       <label>
         <input type="radio" class="tb-radio" name="tb-choice-final" value="cumulative" onchange="setTieBreak(this.value)">
         Kumulativ
@@ -447,15 +447,15 @@
 
 <!-- MODAL: WNT INFORMATION -->
 <div id="wnt-modal" class="modal-overlay hidden" onclick="if(event.target === this) closeWntModal()">
-  <div class="modal-box" style="max-width: 520px;">
+  <div class="modal-box" style="max-width: 580px;">
     <h3 style="margin-top: 0; color: var(--primary); font-size: 1.2rem;">Winther-poäng (WNT)</h3>
-    <div style="font-family: monospace, monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.92rem; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; color: #0f172a;">Winther-poäng (WNT) = 100 × ∑ᵢ [ rᵢ × (Pᵢ / N)² ]
+    <div style="font-family: monospace, monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.92rem; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; color: #0f172a;">Winther-poäng (WNT) = 100 × ∑ᵢ [&nbsp;(Pᵢ&nbsp;/&nbsp;N)&nbsp;× (rᵢ&nbsp;+&nbsp;Pᵢ&nbsp;/&nbsp;(2N))&nbsp;]
 
 ∑ᵢ = summan över alla motståndare du mött
-rᵢ = ditt resultat mot motståndare i (1, 0,5, 0)
+rᵢ = ditt resultat mot motståndare i&nbsp; (1, 0,5, 0)
 Pᵢ = motståndare i:s slutpoäng i turneringen
 N = totalt antal ronder i turneringen
-(Pᵢ / N)² = kvadraten på motståndarens poängandel (poängkvoten uttryckt som decimaltal)</div>
+Pᵢ / N = motståndarens poängandel (poängkvoten uttryckt som decimaltal mellan 0 och 1)</div>
     <p style="font-size: 0.95rem; line-height: 1.5; color: #334155; margin-bottom: 18px;">
       När spelare slutar på samma poäng särskiljs de med avseende på kvaliteten hos motståndet de mött. Denna nya metod är mer rättvisande än andra särskiljningsmetoder. Det premierar konsekvent de som faktiskt spelar på toppborden.
     </p>
@@ -1148,7 +1148,8 @@ Moa Lundin`;
           const opp = map.get(m.oppId);
           if (opp) {
             const ratio = opp.score / N;
-            sum += m.score * Math.pow(ratio, 2);
+            // Följande beräkning väger in både motståndets kvalitet och resultatet
+            sum += ratio * (m.score + ratio / 2);
           }
         });
       }
@@ -1430,6 +1431,7 @@ Moa Lundin`;
       .toolbar {
         display: none !important;
       }
+
       body {
         margin: 0;
       }
