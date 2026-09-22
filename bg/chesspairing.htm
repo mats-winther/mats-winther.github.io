@@ -8,6 +8,7 @@
   "A technical overview of pairing methods in chess tournaments, with a focus on Monrad and Swiss. The article critiques Nordic Swiss and presents an alternative Swiss system as a more stable and fair option for open tournaments.">
 
   <style>
+  sub.c1 {font-style: italic}  
   table.c1 {margin-top:25px; margin-bottom:10px;}
   table {margin-left: auto;
   margin-right: auto;
@@ -24,7 +25,7 @@
   }
   </style>
   <meta name="keywords" content=
-  "Monrad, Swiss, Berger, Scheveningen, FIDE Swiss Dutch, Dubov, Burstein, Koya, pairing, chess, software, Solkoff, Winther acceleration">
+  "Monrad, Swiss, Berger, Scheveningen, FIDE Swiss Dutch, Dubov, Burstein, Koya, Winther Score (WNT), Winther acceleration, pairing, chess, software, Solkoff">
   <meta name="author" content="Mats Winther">
   <link rel="canonical" href="https://mats-winther.github.io/bg/chesspairing.htm">
   <title>Chess Pairings: A Review of Monrad, Swiss, and Berger</title>
@@ -60,7 +61,52 @@
   cases, be overridden.<br>
   <br>
   I have created a program in JavaScript for Danish-Swedish Monrad here: <a href="../monrad-eng.htm">Monrad Pairing
-  System</a>. My online version of the Norwegian system is available here: <a href="../norwegian-monrad.htm" title=
+  System</a>. The program introduces a new tie-break method as an alternative preset: for each game, take the
+  opponent&rsquo;s final score as a decimal between 0 and 1 (for example, 0.8 for 80% of the maximum score). Square it
+  to amplify the differentiation. Then multiply by the result against that specific player, which yields full points
+  for a win, half for a draw, and also some return for a loss&#8239;&mdash;&thinsp;especially against a successful
+  player. Finally, multiply by one hundred to avoid decimals. Until now, all tie-break systems (Buchholz,
+  Sonneborn-Berger, etc.) have been designed around the principle of being easy to calculate by hand. The result is a
+  coarse tie-breaking mechanism. There is no reason to hold on to that legacy today.</p>
+  <blockquote>
+    <strong>Winther Score (WNT)</strong> = 100 &times; &sum;<sub class="c1">i</sub> [ (<i>P<sub>i</sub></i> /
+    <i>N</i>&thinsp;) &times; (<i>r<sub>i</sub></i> + <i>P<sub>i</sub></i> / (2<i>N</i>&thinsp;)&thinsp;) ]&nbsp;&nbsp;
+    (<i>Alternative form</i>&#8239;: WNT&nbsp;= &sum;<sub class="c1">i</sub> [&nbsp;100&nbsp;&times;
+    <i>r</i><sub class="c1">i</sub>&nbsp;&times; (<i>P</i><sub class="c1">i</sub>&nbsp;/&nbsp;<i>N</i>&thinsp;)&nbsp;+
+    50&nbsp;&times;&nbsp;(<i>P</i><sub class="c1">i</sub>&nbsp;/&nbsp;<i>N</i>&thinsp;)<sup>2</sup>&nbsp;])<br>
+    <br>
+    <strong>&sum;</strong><sub class="c1">i</sub> = the sum over all opponents you have faced<br>
+    <strong>r</strong><sub class="c1">i</sub> = your result against opponent <i>i</i>&nbsp; (1, 0.5, 0)<br>
+    <strong>P</strong><sub class="c1">i</sub> = opponent <i>i</i>&thinsp;&rsquo;s final score in the tournament<br>
+    <strong>N</strong> = total number of rounds in the tournament<br>
+    <strong>P</strong><sub class="c1">i</sub> <strong>/ N</strong> = the opponent&rsquo;s score share (score ratio
+    expressed as a decimal between 0 and 1)
+  </blockquote>
+  <p>This method provides a fairer reflection of player performance than traditional tie-break systems. When players
+  finish tied on points, they are separated based on the quality of the opposition they have faced. WNT consistently
+  rewards those who actually play on the top boards. Those who face and score points against the tournament&rsquo;s
+  best players are rewarded <i>quadratically and disproportionately higher</i> than those who gather their points on
+  the lower boards, rendering the tournament strategy known as the &ldquo;Swiss gambit&rdquo; virtually useless in
+  practice. In traditional Buchholz, a player who suffers an early loss and picks up points on lower boards against
+  weaker opposition can often still obtain a surprisingly high Buchholz score, as opponents&rsquo; points are summed
+  linearly. In WNT, thanks to the squaring, this gap is widened substantially. At the same time, facing a strong
+  opponent yields a return even in defeat.<br>
+  <br>
+  Unlike truncated systems (such as Buchholz Cut), there are no artificial thresholds. Every half-point an opponent
+  fights for increases a player&rsquo;s WNT, but it is encounters at the top boards that ultimately make the
+  difference. Sonneborn-Berger was originally developed for round-robin tournaments (all-play-all) and is less suited
+  for Swiss-system and Monrad tournaments. WNT is tailored specifically for the latter. In a round-robin, the algorithm
+  collapses mathematically to the exact same relative ranking as classic Sonneborn-Berger, making WNT applicable to all
+  tournament formats.<br>
+  <br>
+  WNT integrates the advantages of opponent strength or schedule difficulty (Buchholz) and individual performance or
+  win quality (Sonneborn-Berger) into a single, unified metric, rather than treating them as separate, sequential
+  filters where the latter rarely comes into play&#8239;&mdash;&thinsp;such as in this cumbersome tie-break hierarchy:
+  direct encounter&nbsp;&rarr; Buchholz Cut 1&nbsp;&rarr; Buchholz (full)&nbsp;&rarr; Sonneborn-Berger&nbsp;&rarr; most
+  wins&#8239;/&thinsp;most games with black. Thanks to WNT&rsquo;s high mathematical resolution, the risk of two
+  players finishing tied down to the exact same decimal is virtually negligible in practice.<br>
+  <br>
+  My online version of the Norwegian system is available here: <a href="../norwegian-monrad.htm" title=
   "Monrad Tournament Manager, Norwegian model">Monrad Tournament Manager</a>. The final standings is sorted according
   Buchholz (Cut 1/2). Both can be used online, but the page itself can also be downloaded and run locally. The
   Danish-Swedish version uses either cumulative (progressive) score or Buchholz (the opponents&rsquo; total score) to
