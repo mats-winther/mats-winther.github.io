@@ -1,0 +1,1613 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Experimental FIDE Lim Pairing System</title>
+<style>
+:root{--ink:#263445;--navy:#861EB3;--blue:#2364a3;--line:#dce4ed;--bg:#f6f8fb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,sans-serif}
+header{background:var(--navy);color:white;padding:1rem;display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+h1{font-size:1.35rem;margin:0} h2{font-size:1.15rem;margin:.1rem 0 .8rem}
+h3{font-size:1rem;margin:.7rem 0}
+main{max-width:1200px;margin:auto;padding:1rem 1rem 3rem}
+.card{background:white;border:1px solid var(--line);border-radius:8px;padding:1rem;margin:1rem 0}
+.row{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.between{justify-content:space-between}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:.8rem}
+label{font-size:.85rem;font-weight:600;display:block}
+input,select,textarea,button{font:inherit}
+input,select,textarea{width:100%;padding:.45rem .55rem;margin-top:.2rem;border:1px solid var(--line);border-radius:5px;background:white;color:var(--ink)}
+textarea{min-height:180px;font-family:monospace}
+button{border:1px solid var(--line);border-radius:5px;background:#ecf1f6;color:var(--ink);padding:.43rem .7rem;cursor:pointer}
+button.primary{background:var(--blue);color:white;border-color:var(--blue)}
+button.danger{background:#b83232;color:white;border-color:#b83232}
+button:disabled{opacity:.5;cursor:not-allowed}
+.tabs{display:flex;gap:.3rem;overflow:auto;padding-bottom:.5rem;border-bottom:2px solid var(--line)}
+.tabs button{white-space:nowrap}
+.tabs .active{background:var(--navy);color:white}
+.tab{display:none}.tab.active{display:block}
+.notice{white-space:pre-wrap;background:#edf5ff;border:1px solid #bbd8f7;border-radius:6px;padding:.7rem;margin:1rem 0}
+.notice.warning{background:#fff8e7;border-color:#edcf78}
+.notice.error{background:#fff0f0;border-color:#f4a6a6}
+.notice.success{background:#eefaf0;border-color:#95d7a3}
+.muted{font-size:.85rem;color:#607084}
+.wrap{overflow:auto}
+.swap-button{float:right;margin-left:.75rem}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th,td{border-bottom:1px solid var(--line);padding:.5rem;text-align:left}
+th{background:#f1f5f9}
+.mono{font-family:monospace;white-space:nowrap}
+.small{font-size:.78rem;padding:.2rem .4rem}
+dialog{border:1px solid var(--line);border-radius:8px;width:min(680px,95vw);max-height:85vh;overflow:auto}
+dialog::backdrop{background:#0008}
+pre{white-space:pre-wrap;overflow:auto;font-size:.8rem;background:#f5f7fa;padding:.75rem}
+a{color:var(--blue)}
+.print-only{display:none}
+@media print{
+  header,.tabs,.no-print,button,dialog{display:none!important}
+  body{background:white;color:black;font-size:10pt}
+  main{max-width:none;margin:0;padding:0}
+  .card{border:0;padding:0}
+  .print-only{display:block}
+  .tab:not(.active){display:none!important}
+  th,td{border:1px solid #555}
+}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Experimental FIDE Lim Pairing System</h1>
+    <small>2026 rules · non-Maxi only</small>
+  </div>
+  <div class="row">
+    <button onclick="saveTournament()">Save tournament</button>
+    <button onclick="document.getElementById('openFile').click()">Open tournament</button>
+    <button onclick="window.print()">Print</button>
+    <button onclick="document.getElementById('about').showModal()">About</button>
+  </div>
+</header>
+<input id="openFile" type="file" accept=".json" hidden onchange="openTournament(event)">
+<main>
+  <h2 id="printTitle" class="print-only"></h2>
+  <div id="message" class="notice no-print" role="status" aria-live="polite">
+    Register players and check their tournament pairing numbers (TPNs).
+  </div>
+
+  <nav class="tabs no-print">
+    <button id="b-setup" class="active" onclick="tab('setup')">Settings &amp; registration</button>
+    <button id="b-pairings" onclick="tab('pairings')">Round pairings</button>
+    <button id="b-standings" onclick="tab('standings')">Score list</button>
+    <button id="b-history" onclick="tab('history')">Round history</button>
+  </nav>
+
+  <section id="setup" class="tab active">
+    <div class="card no-print">
+      <h2>Tournament settings</h2>
+      <div class="grid">
+        <label>Tournament name<input id="tName" value="Lim Swiss Open"></label>
+        <label>Number of rounds<input id="tRounds" type="number" min="1" max="30" value="5"></label>
+        <label>Round-one colour drawn for TPN 1
+          <select id="tColor"><option value="W">White</option><option value="B">Black</option></select>
+        </label>
+        <label>Pairing-allocated bye points
+          <select id="tPab">
+            <option value="1">1 (ordinary)</option>
+            <option value="0.5">½ (only if tournament regulations allow)</option>
+            <option value="0">0 (only if tournament regulations allow)</option>
+          </select>
+        </label>
+      </div>
+      <p class="muted">Settings and registrations lock when round one is generated. Final-result tie-break order in this application: points, BH-1, BH, SB.</p>
+    </div>
+
+    <div class="card">
+      <div class="row between">
+        <h2>Players (<span id="playerCount">0</span>)</h2>
+        <div class="row no-print">
+          <button id="importButton" onclick="document.getElementById('playersFile').click()">Import players</button>
+          <button id="pasteButton" onclick="document.getElementById('paste').showModal()">Paste players</button>
+          <button id="sampleButton" onclick="samplePlayers()">32 sample players</button>
+          <button class="danger" onclick="resetTournament()">Reset</button>
+        </div>
+      </div>
+      <input id="playersFile" type="file" accept=".csv,.txt,.trf" hidden onchange="importFile(event)">
+      <div class="grid no-print">
+        <label>Name<input id="pName" placeholder="Surname, First name"></label>
+        <label>Rating / estimated strength<input id="pRating" type="number" min="0" value="1500"></label>
+        <label>FIDE title
+          <select id="pTitle">
+            <option value="">None</option><option>GM</option><option>IM</option>
+            <option>WGM</option><option>FM</option><option>WIM</option>
+            <option>CM</option><option>WFM</option><option>WCM</option>
+          </select>
+        </label>
+        <div style="align-self:end"><button id="addButton" class="primary" onclick="addPlayer()">Add player</button></div>
+      </div>
+      <p class="muted">Before pairing round one, players are ordered by rating, title, then name. Imports load registrations only, not TRF tournament results.</p>
+      <div class="wrap"><table>
+        <thead><tr><th>TPN</th><th>Name</th><th>Rating</th><th>Title</th><th>Status</th><th class="no-print">Next round</th><th class="no-print">Actions</th></tr></thead>
+        <tbody id="playersBody"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section id="pairings" class="tab">
+    <div class="card">
+      <div class="row between">
+        <h2 id="roundTitle">Next round</h2>
+        <div class="row no-print">
+          <button id="generateButton" class="primary" onclick="generateRound()">Generate pairings</button>
+          <button id="cancelButton" class="danger" onclick="cancelSearch()" disabled>Cancel search</button>
+          <button id="confirmButton" onclick="confirmRound()" disabled>Confirm round</button>
+        </div>
+      </div>
+      <button class="no-print" id="testsButton" onclick="runTests()">Run built-in tests</button>
+      <div id="provenance" class="notice warning"></div>
+      <div class="wrap"><table>
+        <thead><tr><th>Board</th><th>White</th><th>Result</th><th>Black</th></tr></thead>
+        <tbody id="pairingsBody"></tbody>
+      </table></div>
+      <div id="unplayedView"></div>
+      <details class="no-print"><summary>Pairing trace</summary><pre id="audit"></pre></details>
+    </div>
+  </section>
+
+  <section id="standings" class="tab">
+    <div class="card">
+      <h2 id="standingsName"></h2><h3 id="standingsTitle"></h3>
+      <p class="muted no-print">Final rankings use this application's selected tie-break order; Lim itself does not prescribe it.</p>
+      <div class="wrap"><table>
+        <thead id="standingsHead"></thead><tbody id="standingsBody"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section id="history" class="tab">
+    <div class="card"><h2>Completed rounds</h2><div id="historyBody"></div></div>
+  </section>
+</main>
+
+<dialog id="paste">
+  <h2>Paste registrations</h2>
+  <p>CSV, tab-separated, or semicolon-separated: <code>Name,Rating,Title</code>.
+     Quote names containing commas. TRF <code>001</code> registration lines are also recognized.</p>
+  <textarea id="pasteText" placeholder='"Smith, Jane",1900,WFM'></textarea>
+  <div class="row"><button onclick="document.getElementById('paste').close()">Cancel</button>
+    <button class="primary" onclick="importPaste()">Import</button></div>
+</dialog>
+<dialog id="about">
+  <h2>About</h2>
+  <p>Experimental implementation of FIDE C.04.4.3 Lim, effective 1 February 2026.
+     NOT FIDE-endorsed.</p>
+  <p>Implements ordinary, non-Maxi pairing, the two-sided scoregroup traversal,
+     compatible-opponent checks, floater selection, median-group repair,
+     colour preferences and the last-round same-score exception.
+     Complex cases can have more than one interpretation; this is not an official checker.</p>
+  <p>Does not implement late entries,
+   acceleration, or adjournments. The actual colours of a game in the latest
+   archived round can be corrected before generating the next round; other
+   archived results cannot be edited directly. To change a previously reported result, a backup of the round must be loaded and the round results re-entered.</p> 
+<p>This non-Maxi implementation does not minimise or cap the rating difference between opponents.
+     The fixed search limit is 30 seconds or 2,000,000 work units.
+     Failure or interruption never publishes a partial round.</p>
+  <ul>
+    <li><a href="https://handbook.fide.com/chapter/C040403202602" target="_blank" rel="noopener">Lim rules</a></li>
+    <li><a href="https://handbook.fide.com/chapter/GeneralHandlingRulesForSwissTournaments202602" target="_blank" rel="noopener">General handling rules</a></li>
+    <li><a href="https://handbook.fide.com/chapter/TieBreakRegulations032026" target="_blank" rel="noopener">Tie-break regulations</a></li>
+  </ul>
+  <button onclick="document.getElementById('about').close()">Close</button>
+</dialog>
+
+<script>
+"use strict";
+
+/* ================================================================
+   DOM-INDEPENDENT LIM PAIRING CORE
+   Worker-safe: this entire function is serialized into a Worker.
+   ================================================================ */
+function LimCore() {
+  const VERSION = "lim-experimental-2026-1";
+
+  function fail(code, text) {
+    const e = new Error(text);
+    e.code = code;
+    throw e;
+  }
+
+  function lex(a, b) {
+    for (let i = 0; i < Math.min(a.length, b.length); i++) {
+      if (a[i] !== b[i]) return a[i] < b[i] ? -1 : 1;
+    }
+    return a.length - b.length;
+  }
+
+  function solve(input, limits = {seconds:30,nodes:2000000}) {
+    const started = performance.now();
+    const deadline = started + limits.seconds * 1000;
+    let work = 0;
+    function tick() {
+      work++;
+      if (work > limits.nodes ||
+          ((work & 127) === 0 && performance.now() >= deadline))
+        fail("LIMIT", "Search limit reached; no round was generated.");
+    }
+
+    const round = Number(input.roundNumber);
+    const total = Number(input.totalRounds);
+    if (!Number.isInteger(round) || !Number.isInteger(total) ||
+        round < 1 || round > total || !["W","B"].includes(input.initialColor) ||
+        !Array.isArray(input.players))
+      fail("INPUT", "Invalid pairing input.");
+
+    const players = input.players.map(raw => ({
+      id:String(raw.id),
+      tpn:Number(raw.tpn),
+      rating:Number(raw.rating),
+      score:Number(raw.score),
+      colors:[...(raw.playedColors || [])],
+      opponents:[...(raw.opponents || [])],
+      floats:[...(raw.floats || [])],
+      hadPAB:!!raw.hadPAB,
+      hadUnplayedWin:!!raw.hadUnplayedWin
+    })).sort((a,b) => a.tpn - b.tpn);
+
+    const ids = new Set(), tpns = new Set();
+    for (const p of players) {
+      tick();
+      if (!p.id || ids.has(p.id) || !Number.isSafeInteger(p.tpn) ||
+          p.tpn < 1 || tpns.has(p.tpn) ||
+          !Number.isFinite(p.score) || p.score < 0 ||
+          !Number.isInteger(p.score * 2) || p.score > round - 1 ||
+          p.colors.length > round - 1 ||
+          p.colors.some(c => c !== "W" && c !== "B") ||
+          p.floats.length !== round - 1)
+        fail("INPUT", "Invalid history or TPN.");
+      ids.add(p.id);
+      tpns.add(p.tpn);
+    }
+
+    const byId = new Map(players.map(p => [p.id,p]));
+    const byTPN = (a,b) => a.tpn - b.tpn;
+    const inverse = c => c === "W" ? "B" : "W";
+    const cd = p => p.colors.reduce((n,c) => n + (c === "W" ? 1 : -1), 0);
+    const last = p => p.colors[p.colors.length - 1] || null;
+    const due = p => {
+      if (cd(p) > 0) return "B";
+      if (cd(p) < 0) return "W";
+      return last(p) ? inverse(last(p)) : null;
+    };
+    const eligible = p => !p.hadPAB && !p.hadUnplayedWin;
+
+    function permissible(p, color) {
+      const h = p.colors, n = h.length;
+      return Math.abs(cd(p) + (color === "W" ? 1 : -1)) <= 2 &&
+        !(n >= 2 && h[n-1] === color && h[n-2] === color);
+    }
+
+    // Article 5.4: search colour histories backwards from their last
+    // played games, not from their calendar-round positions.
+    function colourPriority(a,b,region) {
+      const x = a.colors, y = b.colors;
+      for (let k = 1; k <= Math.min(x.length,y.length); k++) {
+        const cx = x[x.length-k], cy = y[y.length-k];
+        if (cx !== cy) return inverse(cx) === "W" ? a : b;
+      }
+      if (!x.length && !y.length) return null;
+      return region === "below"
+        ? (a.tpn > b.tpn ? a : b)
+        : (a.tpn < b.tpn ? a : b);
+    }
+
+    function orient(a,b,region) {
+      let best = null;
+      const exceptions = round === total && a.score === b.score;
+      for (const white of [a,b]) {
+        const black = white === a ? b : a;
+        const hard = +!permissible(white,"W") + +!permissible(black,"B");
+        if (hard && !exceptions) continue;
+
+        const alternate = +!!(last(white) === "W") +
+                          +!!(last(black) === "B");
+        const equalise = +(round % 2 === 0 && cd(white) >= 1) +
+                         +(round % 2 === 0 && cd(black) <= -1);
+        let precedent = 0;
+        if (last(a) && last(a) === last(b)) {
+          const chosen = colourPriority(a,b,region);
+          if (chosen && (chosen === white ? "W" : "B") === last(a))
+            precedent = 1;
+        }
+        const firstRoundTie = !last(a) && !last(b)
+          ? +((white.tpn % 2 ? "W" : "B") !== input.initialColor)
+          : 0;
+        const value = [hard,alternate,equalise,precedent,
+                       firstRoundTie,white.tpn];
+        if (!best || lex(value,best.value) < 0)
+          best = {whiteId:white.id,blackId:black.id,value};
+      }
+      return best;
+    }
+
+    const edge = new Map();
+    function pairInfo(a,b,region) {
+      tick();
+      if (!a || !b || a.id === b.id ||
+          a.opponents.includes(b.id) || b.opponents.includes(a.id))
+        return null;
+      const key = [Math.min(a.tpn,b.tpn),Math.max(a.tpn,b.tpn),region].join("/");
+      if (!edge.has(key)) edge.set(key,orient(a,b,region));
+      return edge.get(key);
+    }
+
+    function regionOf(a,b) {
+      const median = (round - 1) / 2;
+      if (Math.max(a.score,b.score) < median) return "below";
+      return "above";
+    }
+    function legal(a,b) { return !!pairInfo(a,b,regionOf(a,b)); }
+
+    // Exact legal-completion check (not a claim of exact Lim preference).
+    function canMatch(list) {
+      const memo = new Map();
+      function visit(xs) {
+        tick();
+        if (xs.length % 2) return false;
+        if (!xs.length) return true;
+        const key = xs.map(p => p.tpn).sort((a,b) => a-b).join(",");
+        if (memo.has(key)) return memo.get(key);
+
+        let chosen = null, options = null;
+        for (const p of xs) {
+          const available = xs.filter(q => q !== p && legal(p,q));
+          if (!available.length) {
+            memo.set(key,false);
+            return false;
+          }
+          if (!options || available.length < options.length) {
+            chosen = p;
+            options = available;
+          }
+        }
+        for (const q of options) {
+          if (visit(xs.filter(p => p !== chosen && p !== q))) {
+            memo.set(key,true);
+            return true;
+          }
+        }
+        memo.set(key,false);
+        return false;
+      }
+      return visit(list);
+    }
+
+    if (!players.length) fail("INPUT", "No players to pair.");
+
+    // Articles 1.1 and Basic Swiss 3–4. If the lowest-ranked eligible
+    // choice makes completion impossible, try the next eligible choice.
+    let bye = null;
+    if (players.length % 2) {
+      const options = players.filter(eligible).sort((a,b) =>
+        a.score-b.score || b.tpn-a.tpn);
+      for (const p of options) {
+        if (canMatch(players.filter(q => q !== p))) {
+          bye = p;
+          break;
+        }
+      }
+      if (!bye)
+        fail("NO_LEGAL_COMPLETION",
+             "No eligible bye recipient leaves a legal complete pairing.");
+    } else if (!canMatch(players)) {
+      fail("NO_LEGAL_COMPLETION",
+           "No complete pairing satisfies rematch and colour restrictions.");
+    }
+
+    const participants = players.filter(p => p !== bye);
+    const stats = () => ({nodes:work,elapsedMs:performance.now()-started});
+    if (round === 1) {
+      const n = participants.length/2, pairs = [];
+      for (let i=0;i<n;i++) {
+        const a=participants[i], b=participants[i+n];
+        if (!legal(a,b))
+          fail("NO_LIM_CANDIDATE","First-round top/bottom pairing is unavailable.");
+        const wanted = (a.tpn % 2 ? input.initialColor : inverse(input.initialColor));
+        pairs.push(wanted === "W"
+          ? {whiteId:a.id,blackId:b.id}
+          : {whiteId:b.id,blackId:a.id});
+      }
+      return {engineVersion:VERSION,pairs,pabId:bye?.id || null,
+              trace:[{rule:"7.1–7.2",note:"Top-half/bottom-half; initial colour by lot"}],
+              stats:stats()};
+    }
+
+    const medianScore = (round-1)/2;
+    const scores = [...new Set(participants.map(p => p.score))].sort((a,b) => b-a);
+    const group = s => participants.filter(p => p.score === s).sort(byTPN);
+    const upper = scores.filter(s => s > medianScore);       // descending
+    const lower = scores.filter(s => s < medianScore).reverse(); // ascending
+    const medianResidents = group(medianScore);
+    const traces = [];
+    const blocks = {above:[],below:[]};
+
+    // Pair a fixed even collection: incoming floaters first, then
+    // top-half/bottom-half proposals, attempting exchanges when needed.
+    // Among complete pairings, favour legal colour alternation/equalisation.
+function matchBest(items, incoming, region) {
+  if (items.length % 2) return null;
+
+  const incomingSet = new Set(incoming.map(p => p.id));
+  let best = null, stop = false;
+  const fixedOrder = [...items].sort(byTPN);
+  const half = fixedOrder.length / 2;
+  const natural = new Map();
+
+  for (let i = 0; i < half; i++) {
+    natural.set(fixedOrder[i].id, fixedOrder[i + half]);
+    natural.set(fixedOrder[i + half].id, fixedOrder[i]);
+  }
+
+  function incomingOrder(a, b) {
+    // Median: downfloaters before upfloaters.
+    if (region === "median") {
+      const ad = a.score > medianScore, bd = b.score > medianScore;
+      if (ad !== bd) return ad ? -1 : 1;
+    }
+    if (region === "below")
+      return a.score - b.score || a.tpn - b.tpn;
+    return b.score - a.score || b.tpn - a.tpn;
+  }
+
+  function visit(left, pairs, totals, signature) {
+    tick();
+    if (stop) return;
+
+    if (!left.length) {
+      const quality = [...totals, ...signature];
+      if (!best || lex(quality, best.quality) < 0)
+        best = {pairs: [...pairs], quality};
+      if (totals.every(x => x === 0)) stop = true;
+      return;
+    }
+
+    if (best && lex(totals, best.quality.slice(0, 5)) > 0) return;
+
+    const floats = left
+      .filter(p => incomingSet.has(p.id))
+      .sort(incomingOrder);
+    const anchor = floats.length
+      ? floats[0]
+      : [...left].sort(byTPN)[region === "below" ? left.length - 1 : 0];
+
+    const candidates = left
+      .filter(p => p !== anchor)
+      .map(p => ({p, info: pairInfo(anchor, p, region)}))
+      .filter(x => x.info)
+      .sort((x, y) => {
+        if (incomingSet.has(anchor.id)) {
+          // Prefer a resident, but do not exclude another incoming floater:
+          // a resident choice may prevent the remaining players from pairing.
+          const xResident = !incomingSet.has(x.p.id);
+          const yResident = !incomingSet.has(y.p.id);
+          if (xResident !== yResident) return xResident ? -1 : 1;
+
+          const altX = due(anchor) && due(x.p) &&
+                       due(anchor) !== due(x.p);
+          const altY = due(anchor) && due(y.p) &&
+                       due(anchor) !== due(y.p);
+          if (altX !== altY) return altX ? -1 : 1;
+
+          return region === "below"
+            ? y.p.tpn - x.p.tpn
+            : x.p.tpn - y.p.tpn;
+        }
+
+        const nx = +(natural.get(anchor.id) !== x.p);
+        const ny = +(natural.get(anchor.id) !== y.p);
+        return nx - ny ||
+          (region === "below" ? y.p.tpn - x.p.tpn : x.p.tpn - y.p.tpn);
+      });
+
+    for (const {p, info} of candidates) {
+      const v = info.value;
+      const next = totals.map((n, i) => n + v[i]);
+
+      visit(
+        left.filter(q => q !== anchor && q !== p),
+        [...pairs, {whiteId: info.whiteId, blackId: info.blackId}],
+        next,
+        [...signature, p.tpn]
+      );
+      if (stop) return;
+    }
+  }
+
+  visit(items, [], [0, 0, 0, 0, 0], []);
+  return best;
+}
+
+    function* subsets(list,count,start=0,chosen=[]) {
+      tick();
+      if (count===0) { yield [...chosen]; return; }
+      for (let i=start;i<=list.length-count;i++) {
+        chosen.push(list[i]);
+        yield* subsets(list,count-1,i+1,chosen);
+        chosen.pop();
+      }
+    }
+
+    // Rule 3: protect previously floated players; prefer floaters with
+    // compatible opponents next door; then favour due-colour balance.
+    function floaterCost(out,all,next,dir) {
+      const types=[0,0,0], nextList=next || [];
+      let recent=0;
+      for (const p of out) {
+        const already=p.score !== all.residentScore;
+        const has=nextList.some(q => legal(p,q));
+        if (already && !has) types[0]++;
+        else if (already) types[1]++;
+        else if (!has) types[2]++;
+        if (p.floats[round-2] &&
+            p.floats[round-2] !== "-") recent++;
+      }
+      const remaining=all.items.filter(p => !out.includes(p));
+      const white=remaining.filter(p => due(p)==="W").length;
+      const black=remaining.filter(p => due(p)==="B").length;
+      const byRank=out.map(p => dir==="above" ? -p.tpn : p.tpn)
+                      .sort((a,b) => a-b);
+      return [...types,recent,Math.abs(white-black),...byRank];
+    }
+
+    // DFS across groups: never publish a provisional answer. A global
+    // matching check prunes locally plausible choices that block the round.
+    function processSide(dir,index,incoming,pairs) {
+      const sequence=dir==="above" ? upper : lower;
+      if (index===sequence.length) {
+        if (dir==="above")
+          return processSide("below",0,[],pairs);
+        return finishMedian(pairs);
+      }
+      const score=sequence[index];
+      const residents=group(score);
+      const items=[...incoming,...residents];
+      const nextScore=sequence[index+1];
+      const next=nextScore===undefined ? medianResidents : group(nextScore);
+      const min=items.length % 2;
+
+      for (let count=min;count<=items.length;count+=2) {
+        const options=[...subsets(items,count)].map(out => ({
+          out,cost:floaterCost(out,{items,residentScore:score},next,dir)
+        })).sort((a,b) => lex(a.cost,b.cost));
+
+        for (const option of options) {
+          tick();
+          const out=option.out;
+          const left=items.filter(p => !out.includes(p));
+          const match=matchBest(left,incoming.filter(p=>!out.includes(p)),dir);
+          if (!match) continue;
+
+          const block={score,dir,pairs:match.pairs};
+          blocks[dir].push(block);
+          traces.push({score,travel:dir,
+            incoming:incoming.map(p=>p.tpn),
+            floated:out.map(p=>p.tpn),
+            paired:match.pairs.length,
+            floaterPriority:option.cost});
+
+          const found=processSide(dir,index+1,out,
+                                  [...pairs,...match.pairs]);
+          if (found) return found;
+          traces.pop();
+          blocks[dir].pop();
+        }
+      }
+      return null;
+    }
+
+    function finishMedian(pairs) {
+      const upperIncoming=blocks.above.length
+        ? traces.filter(t=>t.travel==="above").at(-1)?.floated || [] : [];
+      const lowerIncoming=blocks.below.length
+        ? traces.filter(t=>t.travel==="below").at(-1)?.floated || [] : [];
+      let up=upperIncoming.map(n=>players.find(p=>p.tpn===n));
+      let down=lowerIncoming.map(n=>players.find(p=>p.tpn===n));
+      let retained=[...pairs];
+
+      // Article 2.6: crack the next adjacent pairing on the side
+      // indicated by the numbers of incoming floaters.
+      for (let attempts=0;attempts<=participants.length/2;attempts++) {
+        tick();
+        const items=[...medianResidents,...up,...down];
+        const match=matchBest(items,[...up,...down],"median");
+        if (match) {
+          const note=attempts
+            ? "Blocked median repaired by cracking adjacent pairings"
+            : "Median paired";
+          const resultPairs=[...retained,...match.pairs];
+          const covered=new Set(resultPairs.flatMap(p=>[p.whiteId,p.blackId]));
+          if (covered.size===participants.length &&
+              resultPairs.length===participants.length/2) {
+            return {pairs:resultPairs,medianTrace:{
+              score:medianScore,note,cracked:attempts,
+              fromAbove:up.map(p=>p.tpn),
+              fromBelow:down.map(p=>p.tpn)
+            }};
+          }
+        }
+
+        let side=up.length>down.length ? "below" : "above";
+        if (!blocks[side].some(b=>b.pairs.length))
+          side=side==="above" ? "below" : "above";
+        const source=[...blocks[side]].reverse()
+          .find(b=>b.pairs.length);
+        if (!source) return null;
+
+        const cracked=source.pairs.shift();
+        retained=retained.filter(p=>p!==cracked);
+        const people=[byId.get(cracked.whiteId),byId.get(cracked.blackId)];
+        if (side==="above") up.push(...people);
+        else down.push(...people);
+      }
+      return null;
+    }
+
+    // A failed branch must restore cracked blocks before another branch.
+    // We therefore use snapshots for the mutable median-repair state.
+    const originalFinish=finishMedian;
+    finishMedian=function(pairs) {
+      const savedA=blocks.above.map(b=>[b,[...b.pairs]]);
+      const savedB=blocks.below.map(b=>[b,[...b.pairs]]);
+      const result=originalFinish(pairs);
+      for (const [block,old] of [...savedA,...savedB]) block.pairs=old;
+      return result;
+    };
+
+    const found=processSide("above",0,[],[]);
+    if (!found)
+      fail("NO_LIM_CANDIDATE",
+           "No Lim candidate was established within this implementation.");
+    traces.push(found.medianTrace);
+
+    return {engineVersion:VERSION,pairs:found.pairs,
+            pabId:bye?.id || null,trace:traces,stats:stats()};
+  }
+
+  function selfTest() {
+    const tests=[];
+    function ok(name,condition) {
+      if (!condition) throw new Error("Test failed: "+name);
+      tests.push(name);
+    }
+    function fixture(n,r=1,full=5) {
+      return {roundNumber:r,totalRounds:full,initialColor:"W",
+        players:Array.from({length:n},(_,i)=>({
+          id:"P"+(i+1),tpn:i+1,rating:2000-i,
+          score:0,playedColors:[],opponents:[],
+          floats:Array(r-1).fill("-"),hadPAB:false,hadUnplayedWin:false
+        }))};
+    }
+    const a=solve(fixture(7),{seconds:10,nodes:300000});
+    ok("First-round bye to lowest-ranked player",a.pabId==="P7");
+    ok("First-round top/bottom pairing",
+       a.pairs.some(p=>p.whiteId==="P1"&&p.blackId==="P4"));
+    const b=fixture(3,2); b.players[2].hadPAB=true;
+    b.players[0].playedColors=["W"];
+    b.players[1].playedColors=["B"];
+    b.players[2].playedColors=["W"];
+    const c=solve(b,{seconds:10,nodes:300000});
+    ok("Previous PAB recipient ineligible",c.pabId!=="P3");
+    const d=fixture(2,3,4);
+    d.players.forEach(p=>{p.score=1;p.playedColors=["W","W"];});
+    let rejected=false;
+    try { solve(d,{seconds:10,nodes:300000}); }
+    catch(e) { rejected=e.code==="NO_LEGAL_COMPLETION"; }
+    ok("Nonfinal three-consecutive-colour prohibition",rejected);
+    d.totalRounds=3;
+    ok("Final-round same-score colour exception",
+       solve(d,{seconds:10,nodes:300000}).pairs.length===1);
+    return tests;
+  }
+
+  return {VERSION,solve,selfTest};
+}
+
+/* ================================================================
+   TOURNAMENT AND INTERFACE
+   ================================================================ */
+const Core=LimCore();
+const KEY="experimental_fide_lim_2026_v1";
+const TITLES={GM:8,IM:7,WGM:6,FM:5,WIM:4,CM:3,WFM:2,WCM:1,"":0};
+const RESULTS=["1-0","½-½","0-1","1-0F","0-1F","0-0F"];
+const PLAYED=new Set(["1-0","½-½","0-1"]);
+const STATUSES=["pair","unplayed-zero","unplayed-draw","unplayed-win"];
+const $=id=>document.getElementById(id);
+let tournament=blank(), currentTab="setup", workerJob=null, importedPending=false;
+
+function blank() {
+  return {format:"lim-experimental-1",engineVersion:Core.VERSION,
+    name:"Lim Swiss Open",totalRounds:5,initialColor:"W",pabPoints:1,
+    frozen:false,players:[],rounds:[],pending:[],pendingAudit:null};
+}
+function esc(s) {
+  return String(s??"").replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[c]);
+}
+function notice(text,type="") {
+  $("message").textContent=text;
+  $("message").className="notice no-print"+(type?" "+type:"");
+}
+function guarded(fn) {
+  try { return fn(); }
+  catch(e) { console.error(e); notice(e.message,"error"); }
+}
+function requireIdle(noPending=false) {
+  if (workerJob) throw Error("Wait for or cancel the current search.");
+  if (noPending && tournament.pending.length)
+    throw Error("Confirm the pending round first.");
+}
+function number(n,label,min,max,integer=false) {
+  if (n==="" || n===null || n===undefined ||
+      !Number.isFinite(Number(n)) || Number(n)<min || Number(n)>max ||
+      (integer && !Number.isSafeInteger(Number(n))))
+    throw Error("Invalid "+label+".");
+  return Number(n);
+}
+function half(n,label,max=1) {
+  const value=number(n,label,0,max);
+  if (!Number.isInteger(value*2)) throw Error(label+" must use half-points.");
+  return value;
+}
+function settings() {
+  requireIdle();
+  tournament.name=$("tName").value.trim()||"Tournament";
+  if (!tournament.frozen) {
+    tournament.totalRounds=number($("tRounds").value,"round count",1,30,true);
+    if (!["W","B"].includes($("tColor").value)) throw Error("Invalid colour.");
+    tournament.initialColor=$("tColor").value;
+    tournament.pabPoints=half($("tPab").value,"PAB points");
+  }
+}
+function saveLocal() {
+  try { localStorage.setItem(KEY,JSON.stringify(tournament)); }
+  catch(e) { notice("Browser storage failed; download a JSON backup.","warning"); }
+}
+function id() {
+  return "P_"+(crypto.randomUUID?.() ||
+    Date.now().toString(36)+"_"+Math.random().toString(36).slice(2));
+}
+function makePlayer(name,rating,title) {
+  title=String(title||"").trim().toUpperCase();
+  if (!Object.hasOwn(TITLES,title)) throw Error("Unknown title: "+title);
+  name=String(name).trim();
+  if (!name) throw Error("A player name is required.");
+  return {id:id(),tpn:0,name,rating:number(rating,"rating",0,9999,true),
+          title,active:true,status:"pair"};
+}
+function assignTPNs() {
+  const collator=new Intl.Collator("en",{sensitivity:"base"});
+  tournament.players.sort((a,b)=>b.rating-a.rating ||
+    TITLES[b.title]-TITLES[a.title] || collator.compare(a.name,b.name) ||
+    a.tpn-b.tpn);
+  tournament.players.forEach((p,i)=>p.tpn=i+1);
+}
+function started() { return tournament.frozen || !!tournament.rounds.length || !!tournament.pending.length; }
+function complete() {
+  return tournament.rounds.length>=tournament.totalRounds && !tournament.pending.length;
+}
+function award(result) {
+  if (result==="1-0"||result==="1-0F") return [1,0];
+  if (result==="0-1"||result==="0-1F") return [0,1];
+  if (result==="½-½") return [.5,.5];
+  if (result==="0-0F") return [0,0];
+  throw Error("Invalid result.");
+}
+
+/* Rebuild all pairing-relevant state from completed rounds. */
+function rebuild() {
+  const map=new Map(tournament.players.map(p=>{
+    Object.assign(p,{score:0,opponents:[],playedColors:[],
+      colorsByRound:Array(tournament.rounds.length).fill("-"),
+      floats:Array(tournament.rounds.length).fill("-"),
+      hadPAB:false,hadUnplayedWin:false});
+    return [p.id,p];
+  }));
+  tournament.rounds.forEach((round,r)=>{
+    const before=new Map(tournament.players.map(p=>[p.id,p.score]));
+    const used=new Set();
+    for (const rec of round.pairings) {
+      const participants=rec.kind==="game"
+        ? [rec.whiteId,rec.blackId]
+        : [rec.kind==="pab" ? rec.pabId : rec.unplayedId];
+      for (const pid of participants) {
+        if (!map.has(pid)||used.has(pid)) throw Error("Invalid archive coverage.");
+        used.add(pid);
+      }
+      if (rec.kind==="pab") {
+        const p=map.get(rec.pabId);
+        p.hadPAB=true; p.score+=rec.points;
+      } else if (rec.kind==="unplayed") {
+        const p=map.get(rec.unplayedId);
+        p.score+=rec.points;
+        if (rec.points===1) p.hadUnplayedWin=true;
+      } else {
+        const w=map.get(rec.whiteId), b=map.get(rec.blackId);
+        const [wp,bp]=award(rec.result);
+        w.score+=wp;b.score+=bp;
+        if (PLAYED.has(rec.result)) {
+          if (w.opponents.includes(b.id)) throw Error("Repeated played opponents in archive.");
+          w.opponents.push(b.id);b.opponents.push(w.id);
+          w.playedColors.push("W");b.playedColors.push("B");
+          w.colorsByRound[r]="W";b.colorsByRound[r]="B";
+          if (before.get(w.id)>before.get(b.id)) {
+            w.floats[r]="D";b.floats[r]="U";
+          } else if (before.get(b.id)>before.get(w.id)) {
+            b.floats[r]="D";w.floats[r]="U";
+          }
+        } else {
+          if (wp===1) w.hadUnplayedWin=true;
+          if (bp===1) b.hadUnplayedWin=true;
+        }
+      }
+    }
+  });
+}
+
+/* Individual-Swiss BH/BH-1/SB, using March 2026 unplayed-round rules. */
+function tiebreaks() {
+  const n=tournament.rounds.length;
+  const histories=new Map(tournament.players.map(p=>[
+    p.id,Array.from({length:n},()=>({
+      type:"requested",points:0,opponent:null,vur:true
+    }))
+  ]));
+  tournament.rounds.forEach((round,r)=>{
+    for (const rec of round.pairings) {
+      if (rec.kind==="pab"||rec.kind==="unplayed") {
+        const pid=rec.kind==="pab"?rec.pabId:rec.unplayedId;
+        histories.get(pid)[r]={
+          type:rec.kind==="pab"||rec.points===1?"bye":"requested",
+          points:rec.points,opponent:null,
+          vur:rec.kind!=="pab"&&rec.points!==1
+        };
+      } else {
+        const [wp,bp]=award(rec.result),played=PLAYED.has(rec.result);
+        histories.get(rec.whiteId)[r]={
+          type:played?"played":"forfeit",points:wp,
+          opponent:rec.blackId,vur:!played&&wp===0
+        };
+        histories.get(rec.blackId)[r]={
+          type:played?"played":"forfeit",points:bp,
+          opponent:rec.whiteId,vur:!played&&bp===0
+        };
+      }
+    }
+  });
+  const actual=new Map(),adjusted=new Map();
+  for (const [pid,h] of histories) {
+    const score=h.reduce((sum,x)=>sum+x.points,0);
+    actual.set(pid,score);
+    let value=score,laterNonVUR=false;
+    for (let i=h.length-1;i>=0;i--) {
+      if (h[i].type==="requested"&&!laterNonVUR)
+        value+=.5-h[i].points;
+      if (!h[i].vur) laterNonVUR=true;
+    }
+    adjusted.set(pid,value);
+  }
+  const out=new Map();
+  for (const [pid,h] of histories) {
+    let bh=0,sb=0;
+    const parts=[];
+    for (const entry of h) {
+      const opp=entry.type==="played"
+        ? adjusted.get(entry.opponent)
+        : entry.type==="forfeit"
+          ? Math.min(actual.get(pid),adjusted.get(entry.opponent))
+          : Math.min(actual.get(pid),.5*tournament.totalRounds);
+      bh+=opp;
+      sb+=opp*entry.points;
+      parts.push({value:opp,vur:entry.vur});
+    }
+    const vurs=parts.filter(x=>x.vur);
+    const cut=(vurs.length?vurs:parts).length
+      ? Math.min(...(vurs.length?vurs:parts).map(x=>x.value)) : 0;
+    out.set(pid,{score:actual.get(pid),bh,bh1:bh-cut,sb});
+  }
+  return out;
+}
+function compareTB(a,b) {
+  return b.score-a.score || b.bh1-a.bh1 || b.bh-a.bh || b.sb-a.sb;
+}
+
+/* Validate JSON before replacing the running tournament. */
+function normalize(raw) {
+  if (!raw||raw.format!=="lim-experimental-1"||
+      !Array.isArray(raw.players)||!Array.isArray(raw.rounds)||
+      !Array.isArray(raw.pending))
+    throw Error("Not a compatible Lim tournament file.");
+  const t=blank();
+  t.name=String(raw.name||"Tournament");
+  t.totalRounds=number(raw.totalRounds,"round count",1,30,true);
+  if (!["W","B"].includes(raw.initialColor)) throw Error("Invalid initial colour.");
+  t.initialColor=raw.initialColor;
+  t.pabPoints=half(raw.pabPoints,"PAB points");
+  if (raw.rounds.length>t.totalRounds ||
+      (raw.pending.length&&raw.rounds.length>=t.totalRounds))
+    throw Error("Too many rounds.");
+  const ids=new Set(),tpns=new Set();
+  t.players=raw.players.map(p=>{
+    if (!p||typeof p!=="object") throw Error("Invalid player.");
+    const pid=String(p.id||""), tpn=number(p.tpn,"TPN",1,100000,true);
+    if (!pid||ids.has(pid)||tpns.has(tpn)) throw Error("Duplicate ID or TPN.");
+    ids.add(pid);tpns.add(tpn);
+    const title=String(p.title||"");
+    if (!Object.hasOwn(TITLES,title)||!STATUSES.includes(p.status))
+      throw Error("Invalid player title or status.");
+    return {id:pid,tpn,name:String(p.name||"").trim()||"Player "+tpn,
+      rating:number(p.rating,"rating",0,9999,true),title,
+      active:p.active!==false,status:p.status};
+  });
+  function readRecords(records,completed) {
+    if (!Array.isArray(records)) throw Error("Invalid round.");
+    const seen=new Set();let pab=0;
+    return records.map(rec=>{
+      if (!rec||!["game","pab","unplayed"].includes(rec.kind))
+        throw Error("Invalid pairing record.");
+      const people=rec.kind==="game" ? [rec.whiteId,rec.blackId]
+        : [rec.kind==="pab"?rec.pabId:rec.unplayedId];
+      for (const pid of people) {
+        if (typeof pid!=="string"||!ids.has(pid)||seen.has(pid))
+          throw Error("Invalid or duplicate round participant.");
+        seen.add(pid);
+      }
+      if (rec.kind==="game") {
+        if (!RESULTS.includes(rec.result) &&
+            !(rec.result==="*"&&!completed))
+          throw Error("Invalid result.");
+        return {kind:"game",whiteId:rec.whiteId,blackId:rec.blackId,
+                result:rec.result};
+      }
+      if (rec.kind==="pab"&&++pab>1) throw Error("Multiple PABs.");
+      const pts=half(rec.points,"unplayed award");
+      if (rec.kind==="pab"&&pts!==t.pabPoints)
+        throw Error("Inconsistent PAB award.");
+      return rec.kind==="pab"
+        ? {kind:"pab",pabId:rec.pabId,points:pts}
+        : {kind:"unplayed",unplayedId:rec.unplayedId,points:pts,
+           label:String(rec.label||"Unplayed round")};
+    });
+  }
+  t.rounds=raw.rounds.map((r,i)=>{
+    if (!r||r.number!==i+1) throw Error("Rounds must be consecutive.");
+    return {number:i+1,pairings:readRecords(r.pairings,true),
+            audit:r.audit||null};
+  });
+  t.pending=readRecords(raw.pending,false);
+  t.pendingAudit=raw.pendingAudit||null;
+  t.frozen=!!(t.rounds.length||t.pending.length||raw.frozen);
+  t.players.sort((a,b)=>a.tpn-b.tpn);
+  return t;
+}
+
+/* Registration and files */
+function register(list) {
+  requireIdle(true);
+  if (started()) throw Error("Registration is closed.");
+  settings();
+  tournament.players.push(...list);
+  assignTPNs(); rebuild(); render(); saveLocal();
+  notice(list.length+" player(s) added. Review TPN order.");
+}
+function addPlayer() {
+  guarded(()=>{
+    register([makePlayer($("pName").value,$("pRating").value,$("pTitle").value)]);
+    $("pName").value="";
+  });
+}
+
+function samplePlayers() {
+  guarded(() => {
+    const players = [
+      ["James Smith", "IM"],
+      ["Emily Taylor", "WIM"],
+      ["Oliver Brown", "FM"],
+      ["Charlotte Davies", ""],
+      ["Harry Wilson", "FM"],
+      ["Sophie Evans", "WFM"],
+      ["George Thomas", ""],
+      ["Olivia Roberts", ""],
+      ["Yusuf Al-Mansoor", "CM"],
+      ["Amelia Walker", ""],
+      ["Jack Johnson", ""],
+      ["Chloe Green", "WCM"],
+      ["Thomas Wright", ""],
+      ["Fatima Hassan", ""],
+      ["William Hall", ""],
+      ["Grace Lewis", ""],
+      ["Charlie Clarke", ""],
+      ["Jessica Robinson", ""],
+      ["Benjamin Harris", ""],
+      ["Lily Turner", ""],
+      ["Kofi Mensah", ""],
+      ["Daniel Clark", ""],
+      ["Lucas Wood", ""],
+      ["Ella Cooper", ""],
+      ["Samuel King", ""],
+      ["Hannah Baker", ""],
+      ["Alexander Scott", ""],
+      ["Amara Diallo", ""],
+      ["Mia Phillips", ""],
+      ["Liam Campbell", ""],
+      ["Zoe Mitchell", ""],
+      ["Ethan Adams", ""]
+    ];
+
+    register(players.map(([name, title], index) =>
+      makePlayer(name, 2400 - index * 25, title)
+    ));
+  });
+}
+
+function splitLine(line,delimiter) {
+  const fields=[];let field="",quoted=false;
+  for (let i=0;i<line.length;i++) {
+    if (line[i]==='"') {
+      if (quoted&&line[i+1]==='"') {field+='"';i++;}
+      else quoted=!quoted;
+    } else if (line[i]===delimiter&&!quoted) {
+      fields.push(field.trim());field="";
+    } else field+=line[i];
+  }
+  if (quoted) throw Error("Unclosed quote in import.");
+  fields.push(field.trim());
+  return fields;
+}
+function parsePlayers(text) {
+  const lines=String(text).replace(/^\uFEFF/,"").split(/\r?\n/);
+  const trf=lines.some(line=>/^001 /.test(line));
+  const list=[];
+  for (const original of lines) {
+    if (trf) {
+      if (/^001 /.test(original))
+        list.push(makePlayer(original.slice(14,47).trim(),
+          original.slice(48,52).trim()||1500,
+          original.slice(10,13).trim()));
+      continue;
+    }
+    const line=original.trim();
+    if (!line||line.startsWith("#")||line.startsWith("//")) continue;
+    const sep=line.includes("\t")?"\t":line.includes(";")?";":",";
+    const f=splitLine(line,sep);
+    if (/^name$/i.test(f[0])&&/rating/i.test(f[1]||"")) continue;
+    if (f.length>=3&&!/^\d+$/.test(f[1])&&/^\d+$/.test(f[2]))
+      list.push(makePlayer(f[0]+", "+f[1],f[2],f[3]||""));
+    else list.push(makePlayer(f[0],f[1]||1500,f[2]||""));
+  }
+  if (!list.length) throw Error("No registrations found.");
+  return list;
+}
+async function importFile(event) {
+  const file=event.target.files[0];event.target.value="";
+  if (!file) return;
+  try {
+    requireIdle(true);
+    const text=await file.text();
+    requireIdle(true);
+    register(parsePlayers(text));
+  } catch(e) {notice("Import failed: "+e.message,"error");}
+}
+function importPaste() {
+  guarded(()=>{
+    register(parsePlayers($("pasteText").value));
+    $("pasteText").value="";$("paste").close();
+  });
+}
+function editPlayer(index) {
+  guarded(()=>{
+    requireIdle(true);
+    const p=tournament.players[index];
+    if (!p) return;
+    const name=prompt("Player name:",p.name);
+    if (name===null) return;
+    if (!name.trim()) throw Error("Name is required.");
+    p.name=name.trim();
+    // This interface closes registration when pairing round one.
+    // Do not silently reassign historical TPNs after that point.
+    if (!started()) {
+      const rating=prompt("Rating / estimated strength:",p.rating);
+      if (rating===null) return;
+      const title=prompt("FIDE title, or blank:",p.title);
+      if (title===null) return;
+      const normalized=String(title).trim().toUpperCase();
+      if (!Object.hasOwn(TITLES,normalized)) throw Error("Invalid title.");
+      p.rating=number(rating,"rating",0,9999,true);
+      p.title=normalized;
+      assignTPNs();
+    }
+    render();saveLocal();
+  });
+}
+function toggleActive(index) {
+  guarded(()=>{
+    requireIdle(true);
+    if (complete()) throw Error("Tournament complete.");
+    const p=tournament.players[index];if (!p) return;
+    p.active=!p.active;p.status="pair";
+    render();saveLocal();
+  });
+}
+function removePlayer(index) {
+  guarded(()=>{
+    requireIdle(true);
+    if (complete()) throw Error("Tournament complete.");
+    const p=tournament.players[index];if (!p) return;
+    if (started()) {
+      if (!confirm("Withdraw "+p.name+" from future rounds?")) return;
+      p.active=false;p.status="pair";
+    } else {
+      if (!confirm("Remove "+p.name+"?")) return;
+      tournament.players.splice(index,1);assignTPNs();
+    }
+    rebuild();render();saveLocal();
+  });
+}
+function setStatus(index,value) {
+  guarded(()=>{
+    requireIdle(true);
+    if (complete()||!STATUSES.includes(value)||
+        !tournament.players[index]?.active) throw Error("Invalid status change.");
+    tournament.players[index].status=value;saveLocal();
+  });
+}
+function saveTournament() {
+  guarded(()=>{
+    requireIdle();settings();saveLocal();
+    const blob=new Blob([JSON.stringify(tournament,null,2)],
+                        {type:"application/json"});
+    const url=URL.createObjectURL(blob), a=document.createElement("a");
+    a.href=url;
+    a.download=(tournament.name.replace(/[^\w.-]+/g,"_")||"lim")+".json";
+    document.body.append(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  });
+}
+async function openTournament(event) {
+  const file=event.target.files[0];event.target.value="";
+  if (!file) return;
+  try {
+    requireIdle();
+    const candidate=normalize(JSON.parse(await file.text()));
+    requireIdle();
+    if (tournament.players.length&&!confirm("Replace current tournament?")) return;
+    tournament=candidate;rebuild();
+    importedPending=!!tournament.pending.length;
+    render();saveLocal();
+    notice("Tournament loaded. Imported pairings have NOT been checked against the Lim engine.","warning");
+  } catch(e) {notice("Load failed: "+e.message,"error");}
+}
+function resetTournament() {
+  guarded(()=>{
+    requireIdle();
+    if (!confirm("Reset all players and rounds? Save a backup first.")) return;
+    tournament=blank();importedPending=false;render();saveLocal();tab("setup");
+    notice("New empty tournament created.");
+  });
+}
+
+/* Worker management: an interrupted search never creates a round. */
+function startWorker(type,input,done) {
+  requireIdle();
+  if (typeof Worker==="undefined") throw Error("Web Workers are unavailable.");
+  const source=`
+    "use strict";
+    const core=(${LimCore.toString()})();
+    onmessage=e=>{
+      try {
+        postMessage({kind:"done",result:e.data.type==="tests"
+          ?core.selfTest()
+          :core.solve(e.data.input,{seconds:30,nodes:2000000})});
+      } catch(error) {
+        postMessage({kind:"error",message:error.message,code:error.code});
+      }
+    };`;
+  const url=URL.createObjectURL(new Blob([source],{type:"text/javascript"}));
+  let worker;
+  try { worker=new Worker(url); }
+  catch(e) {URL.revokeObjectURL(url);throw e;}
+  const token={};
+  workerJob={worker,url,token,timer:null};
+  const finish=()=>{
+    if (workerJob?.token!==token) return false;
+    clearTimeout(workerJob.timer);
+    worker.terminate();URL.revokeObjectURL(url);
+    workerJob=null;render();
+    return true;
+  };
+  worker.onmessage=e=>{
+    if (!finish()) return;
+    if (e.data.kind==="done") guarded(()=>done(e.data.result));
+    else notice(e.data.message+
+      "\nNo round was created. Consult the Chief Arbiter if necessary.",
+      e.data.code==="LIMIT"?"warning":"error");
+  };
+  worker.onerror=e=>{
+    if (finish()) notice("Pairing worker failed: "+e.message,"error");
+  };
+  workerJob.timer=setTimeout(()=>{
+    if (finish()) notice("Search watchdog stopped the worker. No round was created.","warning");
+  },33000);
+  worker.postMessage({type,input});
+  render();notice(type==="tests"?"Running tests…":"Searching for Lim pairings…");
+}
+function cancelSearch() {
+  if (!workerJob) return;
+  clearTimeout(workerJob.timer);
+  workerJob.worker.terminate();URL.revokeObjectURL(workerJob.url);
+  workerJob=null;render();
+  notice("Search cancelled. No round was created.","warning");
+}
+function runTests() {
+  guarded(()=>startWorker("tests",null,result=>{
+    notice(result.length+" built-in tests passed:\n• "+result.join("\n• ")+
+      "\n\nThese are developer checks, NOT FIDE endorsement tests.","success");
+  }));
+}
+
+/* Round generation, verification, and recording */
+function generateRound() {
+  guarded(()=>{
+    requireIdle(true);settings();rebuild();
+    const n=tournament.rounds.length+1;
+    if (n>tournament.totalRounds) throw Error("Tournament complete.");
+    const active=tournament.players.filter(p=>p.active);
+    if (!active.length) throw Error("No active players.");
+    const pairing=active.filter(p=>p.status==="pair");
+    const scheduled=active.filter(p=>p.status!=="pair").map(p=>({
+      id:p.id,points:p.status==="unplayed-draw"?.5:
+        p.status==="unplayed-win"?1:0,
+      label:p.status==="unplayed-win"?"Administrative full-point absence":
+        p.status==="unplayed-draw"?"Requested half-point absence":
+        "Requested zero-point absence"
+    }));
+    const input={roundNumber:n,totalRounds:tournament.totalRounds,
+      initialColor:tournament.initialColor,
+      players:JSON.parse(JSON.stringify(pairing))};
+    const plan={number:n,input,scheduled};
+    tab("pairings");
+    if (!pairing.length) {
+      commit({engineVersion:Core.VERSION,pairs:[],pabId:null,
+              trace:[],stats:{nodes:0,elapsedMs:0}},plan);
+    } else startWorker("pair",input,result=>commit(result,plan));
+  });
+}
+function commit(result,plan) {
+  requireIdle(true);
+  const map=new Map(tournament.players.map(p=>[p.id,p]));
+  const expected=new Set(plan.input.players.map(p=>p.id)),seen=new Set();
+  function use(pid) {
+    if (!expected.has(pid)||seen.has(pid))
+      throw Error("Pairing returned incomplete or duplicate coverage.");
+    seen.add(pid);
+  }
+  const records=[];
+  for (const pair of result.pairs) {
+    use(pair.whiteId);use(pair.blackId);
+    const a=map.get(pair.whiteId),b=map.get(pair.blackId);
+    if (a.opponents.includes(b.id)||b.opponents.includes(a.id))
+      throw Error("Pairing returned a played opponent.");
+    records.push({kind:"game",whiteId:a.id,blackId:b.id,result:"*"});
+  }
+  if (result.pabId!==null) {
+    use(result.pabId);
+    const p=map.get(result.pabId);
+    if (p.hadPAB||p.hadUnplayedWin) throw Error("Ineligible PAB recipient.");
+    records.push({kind:"pab",pabId:p.id,points:tournament.pabPoints});
+  }
+  if (seen.size!==expected.size ||
+      Number(result.pabId!==null)!==expected.size%2)
+    throw Error("Round failed coverage verification.");
+
+  const games=records.filter(r=>r.kind==="game");
+  games.sort((x,y)=>{
+    const ax=map.get(x.whiteId),bx=map.get(x.blackId);
+    const ay=map.get(y.whiteId),by=map.get(y.blackId);
+    const hx=ax.tpn<bx.tpn?ax:bx,hy=ay.tpn<by.tpn?ay:by;
+    return hy.score-hx.score ||
+      ay.score+by.score-ax.score-bx.score || hx.tpn-hy.tpn;
+  });
+  const other=records.filter(r=>r.kind!=="game");
+  tournament.pending=[...games,...other,
+    ...plan.scheduled.map(p=>({
+      kind:"unplayed",unplayedId:p.id,points:p.points,label:p.label
+    }))];
+  tournament.pendingAudit={engineVersion:result.engineVersion,
+    trace:result.trace,stats:result.stats};
+  tournament.frozen=true;importedPending=false;
+  render();saveLocal();
+  notice("Round "+plan.number+" generated.","success");
+}
+function changeResult(i,value) {
+  guarded(()=>{
+    requireIdle();
+    if (value!=="*"&&!RESULTS.includes(value)) throw Error("Invalid result.");
+    const rec=tournament.pending[i];
+    if (rec?.kind!=="game") throw Error("Invalid board.");
+    rec.result=value;render();saveLocal();
+  });
+}
+
+function swapColours(index, roundNumber = null) {
+  guarded(() => {
+    requireIdle();
+
+    const archived = roundNumber !== null;
+    if (archived && (
+      tournament.pending.length ||
+      !Number.isInteger(roundNumber) ||
+      roundNumber !== tournament.rounds.length
+    )) {
+      throw Error(
+        "Only the latest archived round can be corrected, before generating the next round."
+      );
+    }
+
+    const round = archived ? tournament.rounds.at(-1) : null;
+    const rec = (archived ? round.pairings : tournament.pending)[index];
+    if (!Number.isInteger(index) || index < 0 || rec?.kind !== "game")
+      throw Error("Invalid board.");
+
+    const reversed = {
+      "*": "*",
+      "1-0": "0-1",
+      "0-1": "1-0",
+      "½-½": "½-½",
+      "1-0F": "0-1F",
+      "0-1F": "1-0F",
+      "0-0F": "0-0F"
+    };
+    if (!Object.hasOwn(reversed, rec.result))
+      throw Error("Invalid result.");
+
+    if (!confirm(
+      "Swap White and Black on this board? The result will be reversed so each player keeps the same score."
+    )) return;
+
+    const original = {
+      whiteId: rec.whiteId,
+      blackId: rec.blackId,
+      result: rec.result
+    };
+    const previousAudit = archived ? round.audit : tournament.pendingAudit;
+    const updatedAudit = {
+      ...(previousAudit && typeof previousAudit === "object" &&
+          !Array.isArray(previousAudit) ? previousAudit : {}),
+      actualColoursCorrected: true
+    };
+
+    rec.whiteId = original.blackId;
+    rec.blackId = original.whiteId;
+    rec.result = reversed[original.result];
+
+    if (archived) {
+      round.audit = updatedAudit;
+      try {
+        rebuild(); // Recalculate played-colour history from the corrected round.
+      } catch (error) {
+        Object.assign(rec, original);
+        round.audit = previousAudit;
+        rebuild();
+        throw error;
+      }
+    } else {
+      tournament.pendingAudit = updatedAudit;
+    }
+
+    render();
+    saveLocal();
+    notice(
+      "Actual colours corrected. The result was reversed to preserve each player's score. Review the board before publication.",
+      "warning"
+    );
+  });
+}
+
+function confirmRound() {
+  guarded(()=>{
+    requireIdle();
+    if (!tournament.pending.length) return;
+    if (tournament.pending.some(r=>r.kind==="game"&&!RESULTS.includes(r.result)))
+      throw Error("Enter every board result first.");
+    if (!confirm("Confirm and archive this round? Check results and actual colours.")) return;
+    tournament.rounds.push({number:tournament.rounds.length+1,
+      pairings:structuredClone(tournament.pending),
+      audit:tournament.pendingAudit});
+    tournament.pending=[];tournament.pendingAudit=null;
+    tournament.players.forEach(p=>p.status="pair");
+    importedPending=false;rebuild();render();saveLocal();tab("standings");
+    notice(complete()?"Tournament complete.":"Round archived. Set participation for the next round.");
+  });
+}
+
+/* Rendering */
+function label(pid) {
+  const p = tournament.players.find(q => q.id === pid);
+  return p
+    ? `[${p.tpn}] ${p.title ? esc(p.title) + " " : ""}${esc(p.name)} (${p.rating})`
+    : "Unknown player";
+}
+function resultLabel(result) {
+  return ({"*":"—","½-½":"½–½","1-0":"1–0","0-1":"0–1",
+           "1-0F":"1–0 (F)","0-1F":"0–1 (F)","0-0F":"0–0 (F)"})[result]||result;
+}
+function render() {
+  $("tName").value = tournament.name;
+  $("tRounds").value = tournament.totalRounds;
+  $("tColor").value = tournament.initialColor;
+  $("tPab").value = tournament.pabPoints;
+  $("playerCount").textContent = tournament.players.length;
+  const busy = !!workerJob, pending = !!tournament.pending.length, finished = complete();
+  const registrationBlocked = busy || started() || finished;
+
+  for (const key of ["tRounds", "tColor", "tPab"])
+    $(key).disabled = busy || tournament.frozen;
+  $("tName").disabled = busy;
+  for (const key of ["pName", "pRating", "pTitle", "addButton",
+                     "importButton", "pasteButton", "sampleButton"])
+    $(key).disabled = registrationBlocked;
+  $("generateButton").disabled = busy || pending || finished;
+  $("cancelButton").disabled = !busy;
+  $("testsButton").disabled = busy;
+  $("confirmButton").disabled = busy || !pending ||
+    tournament.pending.some(r => r.kind === "game" && r.result === "*");
+  $("generateButton").textContent = finished ? "Tournament complete" :
+    pending ? "Round already generated" :
+    "Generate round " + (tournament.rounds.length + 1);
+
+  $("playersBody").innerHTML = tournament.players.map((p, i) => `
+    <tr><td>${p.tpn}</td><td>${esc(p.name)}</td><td>${p.rating}</td>
+    <td>${esc(p.title || "—")}</td><td>${p.active ? "Active" : "Withdrawn"}</td>
+    <td class="no-print"><select onchange="setStatus(${i},this.value)"
+      ${busy || pending || finished || !p.active ? "disabled" : ""}>
+      ${[
+        ["pair", "Pair normally"],
+        ["unplayed-zero", "Unplayed — 0"],
+        ["unplayed-draw", "Unplayed — ½"],
+        ["unplayed-win", "Administrative absence — 1"]
+      ].map(([v, text]) => `<option value="${v}" ${p.status === v ? "selected" : ""}>${text}</option>`).join("")}
+    </select></td>
+    <td class="no-print">
+      <button class="small" onclick="editPlayer(${i})" ${busy || pending ? "disabled" : ""}>Edit</button>
+      <button class="small" onclick="toggleActive(${i})"
+        ${busy || pending || finished ? "disabled" : ""}>${p.active ? "Withdraw" : "Reinstate"}</button>
+      <button class="small" onclick="removePlayer(${i})"
+        ${busy || pending || finished ? "disabled" : ""}>Remove</button>
+    </td></tr>`).join("") ||
+    '<tr><td colspan="7">No players registered.</td></tr>';
+
+  $("roundTitle").textContent = pending
+    ? "Round " + (tournament.rounds.length + 1)
+    : finished ? "Tournament complete" : "Next round: " + (tournament.rounds.length + 1);
+$("provenance").textContent = !pending ? "No pending round." :
+  importedPending
+    ? "Loaded pairings: NOT verified by this application." +
+      (tournament.pendingAudit?.actualColoursCorrected
+        ? " Actual colours manually corrected." : "")
+    : tournament.pendingAudit?.actualColoursCorrected
+      ? "Actual colours manually corrected; the pairing trace reflects the originally assigned colours. Independently verify before publication."
+      : "Experimental Lim engine output.";  $("pairingsBody").innerHTML = tournament.pending.map((rec, i) => {
+    if (rec.kind !== "game") return "";
+    const options = ["*", ...RESULTS].map(v => `<option value="${v}"
+      ${rec.result === v ? "selected" : ""}>${resultLabel(v)}</option>`).join("");
+return `<tr><td>${i + 1}</td>
+  <td>${label(rec.whiteId)}</td>
+  <td><select class="no-print" onchange="changeResult(${i},this.value)"
+    ${busy ? "disabled" : ""}>${options}</select>
+    <span class="print-only">${resultLabel(rec.result)}</span></td>
+  <td>${label(rec.blackId)}
+    <button type="button" class="small no-print swap-button"
+      onclick="swapColours(${i})" ${busy ? "disabled" : ""}>
+      Swap actual colours
+    </button>
+  </td></tr>`;
+  }).join("") || '<tr><td colspan="4">No pending board pairings.</td></tr>';
+  $("unplayedView").innerHTML = tournament.pending.filter(r => r.kind !== "game")
+    .map(r => r.kind === "pab"
+      ? `<p>PAB: ${label(r.pabId)} — ${r.points} points, no colour or opponent.</p>`
+      : `<p>${label(r.unplayedId)} — ${esc(r.label)}: ${r.points} points.</p>`
+    ).join("");
+  $("audit").textContent = tournament.pendingAudit
+    ? JSON.stringify(tournament.pendingAudit, null, 2) : "No trace.";
+
+  const final = complete(), tb = tiebreaks();
+  $("standingsName").textContent = tournament.name;
+  $("standingsTitle").textContent = final ? "Final Result" :
+    "Score list after round " + tournament.rounds.length;
+  $("b-standings").textContent = final ? "Final Result" : "Score list";
+  $("standingsHead").innerHTML = `<tr>
+    <th>${final ? "Rank" : "Order"}</th><th>TPN</th><th>Name</th><th>Points</th>
+    ${final ? "<th>BH-1</th><th>BH</th><th>SB</th>" : "<th>Played</th><th>Unplayed</th>"}
+    <th>Colours</th><th>CD</th><th>Floats</th></tr>`;
+  const sorted = [...tournament.players].sort((a, b) => final
+    ? compareTB(tb.get(a.id), tb.get(b.id)) || a.tpn - b.tpn
+    : b.score - a.score || a.tpn - b.tpn);
+  let place = 0;
+  $("standingsBody").innerHTML = sorted.map((p, i) => {
+    if (!final || !i || compareTB(tb.get(sorted[i - 1].id), tb.get(p.id))) place = i + 1;
+    const v = tb.get(p.id), played = p.playedColors.length;
+    const cd = p.playedColors.reduce((n, c) => n + (c === "W" ? 1 : -1), 0);
+    return `<tr><td>${place}</td><td>${p.tpn}</td>
+      <td>${p.title ? esc(p.title) + " " : ""}${esc(p.name)} (${p.rating})${p.active ? "" : " (withdrawn)"}</td>
+      <td><strong>${v.score}</strong></td>
+      ${final
+        ? `<td>${v.bh1.toFixed(1)}</td><td>${v.bh.toFixed(1)}</td><td>${v.sb.toFixed(2)}</td>`
+        : `<td>${played}</td><td>${tournament.rounds.length - played}</td>`}
+      <td class="mono">${p.colorsByRound.join("") || "—"}</td>
+      <td>${cd}</td>
+      <td class="mono">${p.floats.join(" ") || "—"}</td></tr>`;
+  }).join("") || '<tr><td colspan="10">No players.</td></tr>';
+
+  $("historyBody").innerHTML = tournament.rounds.map(r => `
+    <div class="card"><h3>Round ${r.number}</h3>
+    <div class="wrap"><table><thead><tr>
+    <th>Board</th><th>White / player</th><th>Result</th><th>Black</th>
+    </tr></thead><tbody>${r.pairings.map((rec, i) => rec.kind === "game"
+? `<tr><td>${i + 1}</td>
+   <td>${label(rec.whiteId)}</td>
+   <td>${resultLabel(rec.result)}</td>
+   <td>${label(rec.blackId)}
+     ${r.number === tournament.rounds.length && !pending
+       ? `<button type="button" class="small no-print swap-button"
+            onclick="swapColours(${i},${r.number})"
+            ${busy ? "disabled" : ""}>Swap actual colours</button>`
+       : ""}
+   </td></tr>`
+  : `<tr><td>—</td><td colspan="3">${rec.kind === "pab" ? "PAB" : "Unplayed"}:
+     ${label(rec.kind === "pab" ? rec.pabId : rec.unplayedId)} —
+     ${rec.points} points</td></tr>`
+).join("")}
+    </tbody></table></div>
+    ${r.audit ? `<details class="no-print"><summary>Saved trace</summary>
+       <pre>${esc(JSON.stringify(r.audit, null, 2))}</pre></details>` : ""}
+    </div>`).join("") || "<p>No completed rounds.</p>";
+
+  $("printTitle").textContent = tournament.name + " — " + ({
+    setup: "Players", pairings: "Round pairings",
+    standings: final ? "Final Result" : "Score list", history: "Round history"
+  })[currentTab];
+}function tab(name) {
+  if (!["setup","pairings","standings","history"].includes(name)) return;
+  if (currentTab==="setup"&&!workerJob) {
+    try {settings();saveLocal();} catch(e) {notice(e.message,"error");return;}
+  }
+  currentTab=name;
+  for (const key of ["setup","pairings","standings","history"]) {
+    $(key).classList.toggle("active",key===name);
+    $("b-"+key).classList.toggle("active",key===name);
+  }
+  render();
+}
+for (const key of ["tName","tRounds","tColor","tPab"]) {
+  $(key).addEventListener("change",()=>{
+    guarded(()=>{settings();saveLocal();render();});
+  });
+}
+try {
+  const saved=localStorage.getItem(KEY);
+  if (saved) {
+    tournament=normalize(JSON.parse(saved));
+    rebuild();
+    importedPending=!!tournament.pending.length;
+    notice("Saved tournament restored. Existing pairings were not retrospectively verified.","warning");
+  }
+} catch(e) {
+  console.error(e);
+  notice("Saved tournament could not be loaded: "+e.message+
+         "\nThe invalid storage entry was not overwritten.","error");
+}
+rebuild();
+render();
+</script>
+</body>
+</html>
