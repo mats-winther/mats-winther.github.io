@@ -24,7 +24,7 @@
   border: 1px solid #000;  } 
   </style>
   <meta name="keywords" content=
-  "Monrad, Schweizer, Berger, Scheveningen, FIDE Schweizer, Winther-poäng (WNT), Winther-accelerering, Dutch, Dubov, Burstein, Koya, lottning, schack, program">
+  "Monrad, Schweizer, Berger, Scheveningen, FIDE Schweizer, Winther-poäng (WNT), Winther-accelerering, Dutch, Dubov, Burstein, Lim, Koya, lottning, schack, program">
   <meta name="author" content="Mats Winther">
   <link rel="canonical" href="https://mats-winther.github.io/bg/schacklottning.htm">
   <title>Schacklottning: en genomgång av Monrad, Schweizer och Berger</title>
@@ -308,6 +308,19 @@
     samtidigt som återmöten undviks, absoluta färgkrav respekteras och antalet ouppfyllda färgpreferenser minimeras.
     Min implementation finns här: <a href="../fide-burstein.htm">Bursteins lottningssystem</a>.<br>
     <br>
+    <b>Lim-schweizer</b> är uppkallat efter sin upphovsman, professor Lim&nbsp;Kok&nbsp;Ann från Singapore (1920-2003),
+    tidigare generalsekreterare för FIDE och mångårig schackorganisatör. Systemet godkändes av FIDE:s generalförsamling
+    1987 och är ett av FIDE:s officiellt erkända schweizersystem.<br>
+    <br>
+    Till skillnad från det standardiserade nederländska systemet, där poänggrupperna lottas i tur och ordning uppifrån
+    och ned, använder Lims system en <i>tvåsidig utifrån-och-in-metod</i>: lottningen börjar med de högsta
+    poänggrupperna och arbetar sig ned mot medianen, växlar därefter till de lägsta poänggrupperna och arbetar sig
+    uppåt, medan mediangruppen lottas sist. Algoritmen strävar efter att para samman spelare med lika eller liknande
+    poäng samtidigt som färgbalans och klassificeringen av flyttade spelare (floaters) regleras strikt. FIDE:s
+    lottningssystem för schackolympiader har liknande konvergensprinciper, anpassade för lagtävlingar. Min
+    implementation finns här: <a href="../fide-lim.htm" title="Online FIDE Lim Lottningsystem">Lims
+    lottningssystem</a>.<br>
+    <br>
     &copy; Mats Winther, 2026.</p>
     <p><br>
     <span class="bigger">Referenser</span><br>
@@ -338,6 +351,12 @@
     <a href="https://handbook.fide.com/chapter/C040401202602" title=
     "C. GENERAL RULES AND TECHNICAL RECOMMENDATIONS FOR TOURNAMENTS / 04. FIDE Swiss Rules / C.04.4 Other FIDE-approved Pairing Systems / C.04.4.1 Dubov System (effective from 1 February 2026) /">
     https://handbook.fide.com/chapter/C040401202602</a><br>
+    <br>
+    &lsquo;General Rules and Technical Recommendations for Tournaments. 04. FIDE Swiss Rules / C.04.4 Other
+    FIDE-approved Pairing Systems / C.04.4.3 Lim System&rsquo;. FIDE Handbook.<br>
+    <a href="https://handbook.fide.com/chapter/C040403202602" title=
+    "C. GENERAL RULES AND TECHNICAL RECOMMENDATIONS FOR TOURNAMENTS / 04. FIDE Swiss Rules / C.04.4 Other FIDE-approved Pairing Systems / C.04.4.3 Lim System (effective from 1 February 2026) /">
+    https://handbook.fide.com/chapter/C0403202602</a><br>
     <br>
     &lsquo;General Rules and Technical Recommendations for Tournaments. 07. Play-Off and Tie-Break Regulations 07.
     Tie-Break Regulations&rsquo;. FIDE Handbook.<br>
@@ -376,6 +395,10 @@
     <br>
     Holländskt lottningssystem (&ldquo;Dutch&rdquo;)<br>
     <a href="../fide-hollandskt.htm">https://mats-winther.github.io/fide-hollandskt.htm</a><br>
+    <br>
+    Lims lottningssystem<br>
+    <a href="../fide-lim.htm" title=
+    "Online FIDE Lim Lottningsystem">https://mats-winther.github.io/fide-lim.htm</a><br>
     <br>
     Monrads lottningssystem (dansk-svensk modell).<br>
     <a href="../monrad.htm" title=
