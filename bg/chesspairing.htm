@@ -8,6 +8,12 @@
   "A technical overview of pairing methods in chess tournaments, with a focus on Monrad and Swiss. The article critiques Nordic Swiss and presents an alternative Swiss system as a more stable and fair option for open tournaments.">
 
   <style>
+    img.c1 {margin-top: 10px;}
+  div.container {
+  border: 1px solid black;
+  padding: 20px;
+  width: 400px;;
+  }
   sub.c1 {font-style: italic}  
   table.c1 {margin-top:25px; margin-bottom:10px;}
   table {margin-left: auto;
@@ -69,14 +75,20 @@
   Sonneborn-Berger, etc.) have been designed around the principle of being easy to calculate by hand. The result is a
   coarse tie-breaking mechanism. There is no reason to hold on to that legacy today.</p>
   <blockquote>
-    <strong>Winther Score (WNT)</strong> = 100 &times; &sum;<sub class="c1">i</sub> [ (<i>P<sub>i</sub></i> /
-    <i>N</i>&thinsp;) &times; (<i>r<sub>i</sub></i> + <i>P<sub>i</sub></i> / (2<i>N</i>&thinsp;)&thinsp;) ]<br>
-    <br>
-    <strong>&sum;</strong><sub class="c1">i</sub> = the sum over all opponents you have faced<br>
-    <strong>r</strong><sub class="c1">i</sub> = your result against opponent <i>i</i>&nbsp; (1, 0.5, 0)<br>
-    <strong>P</strong><sub class="c1">i</sub> = opponent <i>i</i>&thinsp;&rsquo;s final score in the tournament<br>
-    <strong>N</strong> = total number of rounds in the tournament<br>
-    <strong>P</strong><sub class="c1">i</sub> <strong>/ N</strong> = the opponent&rsquo;s score share (score ratio
+      <br>
+      <div class="container">
+        <b>Winther Score (WNT) = 100 &times; &sum;</b><sub class="c1">i</sub> <b>[
+        (<i>P</i></b><i><sub>i</sub></i> <b>/ <i>N</i>&thinsp;) &times; (<i>r</i></b><i><sub>i</sub></i>
+        <b>+ <i>P</i></b><i><sub>i</sub></i> <b>/ (2<i>N</i>&thinsp;)&thinsp;) ]</b>
+      </div><br>
+      Alternative form:<br>
+      <img class="c1" src="gifs/wnteng.gif" width="449" height="143" alt="Formula for WNT tie-break (Winther)"><br>
+      <br>
+    <b>&sum;</b><sub class="c1">i</sub> = the sum over all opponents you have faced<br>
+    <b>r</b><sub class="c1">i</sub> = your result against opponent <i>i</i>&nbsp; (1, 0.5, 0)<br>
+    <b>P</b><sub class="c1">i</sub> = opponent <i>i</i>&thinsp;&rsquo;s final score in the tournament<br>
+    <b>N</b> = total number of rounds in the tournament<br>
+    <b>P</b><sub class="c1">i</sub> <b>/ N</b> = the opponent&rsquo;s score share (score ratio
     expressed as a decimal between 0 and 1)
   </blockquote>
   <p>This method provides a fairer reflection of player performance than traditional tie-break systems. When players
