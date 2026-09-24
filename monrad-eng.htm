@@ -414,7 +414,7 @@
       <span style="font-weight: 600; color: #334155;">Tie-break:</span>
       <label>
          <input type="radio" class="tb-radio" name="tb-choice-final" value="wnt" checked onchange="setTieBreak(this.value)">
-         <span>Winther</span>
+         <span>WNT</span>
       </label>      
       <label>
         <input type="radio" class="tb-radio" name="tb-choice-final" value="cumulative" onchange="setTieBreak(this.value)">
@@ -1222,7 +1222,7 @@ Ethan Adams`;
   function renderFinalStandings() {
     sortFinalStandings();
 
-    let tbLabel = "Winther";
+    let tbLabel = "WNT";
     if (tieBreakSystem === "buchholz") {
       tbLabel = "Buchholz";
     } else if (tieBreakSystem === "cumulative") {
