@@ -66,15 +66,15 @@
   "The Norwegian Chess Federation&#39;s Monrad system">here</a>). These rules are not absolute and may, in exceptional
   cases, be overridden.<br>
   <br>
-  I have created a program in JavaScript for Danish-Swedish Monrad here: <a href="../monrad-eng.htm">Monrad Pairing
-  System</a>. The program introduces a new tie-break method as an alternative preset: for each game, take the
-  opponent&rsquo;s final score as a decimal between 0 and 1 (for example, 0.8 for 80% of the maximum score). Square it
-  to amplify the differentiation. Then multiply by the result against that specific player, which yields full points
-  for a win, half for a draw, <i>and also some return for a loss</i>&#8239;&mdash;&thinsp;especially against a
-  successful player. Finally, multiply by one hundred to avoid decimals. I provisionally call it WNT, a name derived
-  from the letters of my surname. Until now, all tie-break systems (Buchholz, Sonneborn-Berger, etc.) have been
-  designed around the principle of being easy to calculate by hand. The result is a coarse tie-breaking mechanism.
-  There is no reason to hold on to that legacy today.</p>
+  I have created a program in JavaScript for Danish-Swedish Monrad here: <a href=
+  "../monrad-eng.htm">Monrad&nbsp;Pairing&nbsp;System</a>. The program introduces a new tie-break method as an
+  alternative preset: for each game, take the opponent&rsquo;s final score as a decimal between 0 and 1 (for example,
+  0.8 for 80% of the maximum score). Square it to amplify the differentiation. Then multiply by the result against that
+  specific player, which yields full points for a win, half for a draw, <i>and also some return for a
+  loss</i>&#8239;&mdash;&thinsp;especially against a successful player. Finally, multiply by one hundred to avoid
+  decimals. I provisionally call it WNT, a name derived from the letters of my surname. Until now, all tie-break
+  systems (Buchholz, Sonneborn-Berger, etc.) have been designed around the principle of being easy to calculate by
+  hand. The result is a coarse tie-breaking mechanism. There is no reason to hold on to that legacy today.</p>
   <blockquote>
     <br>
     <div class="container">
@@ -105,9 +105,9 @@
   Unlike truncated systems (such as Buchholz Cut), there are no artificial thresholds. Every half-point an opponent
   fights for increases a player&rsquo;s WNT, but it is encounters at the top boards that ultimately make the
   difference. Sonneborn-Berger was originally developed for round-robin tournaments (all-play-all) and is less suited
-  for Swiss-system and Monrad tournaments. WNT is tailored specifically for the latter. In a round-robin, the algorithm
-  collapses mathematically to the exact same relative ranking as classic Sonneborn-Berger, making WNT applicable to all
-  tournament formats.<br>
+  for Swiss-system and Monrad tournaments. Although WNT is designed specifically for the latter, in round-robin
+  tournaments the algorithm reduces mathematically to the same relative ranking produced by the classic
+  Sonneborn-Berger system, making WNT applicable across all tournament formats.<br>
   <br>
   WNT integrates the advantages of opponent strength or schedule difficulty (Buchholz) and individual performance or
   win quality (Sonneborn-Berger) into a single, unified metric, rather than treating them as separate, sequential
@@ -116,9 +116,16 @@
   wins&#8239;/&thinsp;most games with black. Thanks to WNT&rsquo;s high mathematical resolution, the likelihood of two
   players finishing with exactly the same decimal score is practically negligible.<br>
   <br>
+  Tie-break systems reflect an important principle: the final score alone does not tell the whole story. Two players
+  may finish a tournament on the same score, even though one has fought through considerably stronger opposition than
+  the other. To ignore this difference is to treat two fundamentally different achievements as equivalent. Tournament
+  points alone are therefore too crude a measure of success.<br>
+  <br>
+  <i>The score shows how many points you earned. The tie-break shows how difficult they were to earn.</i><br>
+  <br>
   My online version of the Norwegian system is available here: <a href="../norwegian-monrad.htm" title=
-  "Monrad Tournament Manager, Norwegian model">Monrad Tournament Manager</a>. The final standings is sorted according
-  Buchholz (Cut 1). Both can be used online, but the page itself can also be downloaded and run locally. The
+  "Monrad Tournament Manager, Norwegian model">Monrad&nbsp;Tournament&nbsp;Manager</a>. The final standings is sorted
+  according Buchholz (Cut 1). Both can be used online, but the page itself can also be downloaded and run locally. The
   Danish-Swedish version uses either cumulative (progressive) score or Buchholz (the opponents&rsquo; total score) to
   differentiate players with the same final result. Cumulative score is defined so that early wins yield a higher
   tiebreak, which favours an aggressive playing style. (Starting with a win and then a loss gives 2 cumulative points
@@ -127,10 +134,10 @@
   Johann&nbsp;Berger in the late 19th century. It is the fairest of all pairing systems, which makes it ideal for
   Candidates tournaments and elite events. Players alternate colours automatically. I have created a Berger system for
   3-16 players according to FIDE specifications. It can be used directly in the browser, but can also be downloaded and
-  run locally: <a href="../berger-eng.htm">Berger Tournament System (Round-Robin)</a>.</p>
+  run locally: <a href="../berger-eng.htm">Berger&nbsp;Tournament&nbsp;System</a>.</p>
   <p><b>Scheveningen</b> is a team-play format in which two teams of equal size meet in a full cross-pairing: every
   player in Team A faces every player in Team B over n rounds: <a href="../scheveningen-eng.htm" title=
-  "Scheveningen tournament manager">Scheveningen Chess Manager</a>. It takes its name from a tournament in
+  "Scheveningen tournament manager">Scheveningen&nbsp;Chess&nbsp;Manager</a>. It takes its name from a tournament in
   Scheveningen, the Netherlands, in 1923, where the format was used in a team match between two groups of grandmasters.
   The system is fair and deterministic (no arbitrary pairing is required) and it therefore spread quickly. This format
   can also be used within a club by dividing the players into two evenly matched teams. It then becomes both an
@@ -150,10 +157,10 @@
   that they oscillate between overly strong and overly weak opposition: in one round they face a significantly stronger
   player, in the next a clearly weaker one, and then once again an overly strong opponent. This oscillation diminishes
   the enjoyment of the tournament and produces an uneven tournament experience. In my accelerated Swiss system, this
-  does not occur: <a href="../swiss-eng.htm" title="Program for Swiss pairing with Winther acceleration">Swiss
-  Tournament System</a>. The program includes a safeguard that keeps the chance of receiving the same colour three
-  times in a row to a minimum. It is distinctly superior to Nordic Swiss, provided that the program proves reliable
-  after thorough testing.</p>
+  does not occur: <a href="../swiss-eng.htm" title=
+  "Program for Swiss pairing with Winther acceleration">Swiss&nbsp;Tournament&nbsp;System</a>. The program includes a
+  safeguard that keeps the chance of receiving the same colour three times in a row to a minimum. It is distinctly
+  superior to Nordic Swiss, provided that the program proves reliable after thorough testing.</p>
   <p><b>Accelerated Swiss Pairing (Winther acceleration):</b></p>
   <p><b>Round 1:</b> Players are divided into four groups (quadrants). The highest-ranked player in Q1 plays White
   against the highest-ranked player in Q2, and correspondingly for Q3 and Q4. (For uneven groups, sizes are adjusted
@@ -264,10 +271,11 @@
   of sporting integrity: it maximally protects colour allocation and ensures that players with the best results meet
   each other towards the end of the tournament.<br>
   <br>
-  I have created an experimental version here: <a href="../fide-dutch.htm">Dutch Pairing System</a>. As it has not been
-  verified, the program is not valid for Elo tournaments. If the program proves to work, it can still be used for blitz
-  and rapid tournaments, but the pairing should then be labelled &ldquo;modified Dutch&rdquo; or something similar. The
-  program can be used to test the algorithm, which GPT-Sol (AI) has verified as working correctly.<br>
+  I have created an experimental version here: <a href="../fide-dutch.htm">Dutch&nbsp;Pairing&nbsp;System</a>. As it
+  has not been verified, the program is not valid for Elo tournaments. If the program proves to work, it can still be
+  used for blitz and rapid tournaments, but the pairing should then be labelled &ldquo;modified Dutch&rdquo; or
+  something similar. The program can be used to test the algorithm, which GPT-Sol (AI) has verified as working
+  correctly.<br>
   <br>
   In the Dutch system, having two consecutive black games is normal. Three black games in a row is generally forbidden,
   with rare exceptions in the last round. Four black games in a row is never possible. A player may in some cases
@@ -296,9 +304,9 @@
   playing strength as possible. The Dubov system is mathematically elegant but has remained a niche option for
   practical and psychological reasons. It is, however, ideal for tournaments aimed at further qualification, such as
   the Candidates Tournament. I have created a pairing program that follows FIDE&rsquo;s specifications: <a href=
-  "../fide-dubov-eng.htm">Dubov Swiss Pairing System</a>.<br>
+  "../fide-dubov-eng.htm">Dubov&nbsp;Swiss&nbsp;Pairing&nbsp;System</a>.<br>
   <br>
-  <b>The Burstein Swiss System</b> was developed in 1993 by Almog Burstein (born 1950), an Israeli international
+  <b>The Burstein Swiss System</b> was developed in 1993 by Almog&nbsp;Burstein (born 1950), an Israeli international
   arbiter (IA), chess organizer, and long-time FIDE official. The core philosophy is to equalize the strength of
   opposition among players (or teams) in the same score group. It was famously adopted by FIDE for team competitions
   and served as the pairing system used in Chess Olympiads from Moscow 1994 through Dresden 2008. It remains one of the
@@ -310,8 +318,8 @@
   generally match the highest-ranked available player with the lowest-ranked compatible player. Floaters (players
   paired against an opponent from a different score group) and any pairing-allocated bye (unpaired round) are selected
   according to prescribed priorities, while avoiding repeat opponents, respecting absolute color restrictions, and
-  minimizing unmet color preferences. My implementation is here: <a href="../fide-burstein-eng.htm">Burstein Pairing
-  System</a>.<br>
+  minimizing unmet color preferences. My implementation is here: <a href=
+  "../fide-burstein-eng.htm">Burstein&nbsp;Pairing&nbsp;System</a>.<br>
   <br>
   <b>The Lim Swiss System</b> is named after its developer, Professor Lim&nbsp;Kok&nbsp;Ann of Singapore (1920-2003), a
   former FIDE Secretary-General and long-time chess organizer. Approved by the FIDE General Assembly in 1987, it is one
@@ -322,8 +330,8 @@
   median, then alternates to the lowest scoregroups working upwards, pairing the median scoregroup last. The algorithm
   strives to pair players with equal or similar scores while strictly regulating colour balance and floater
   classification. FIDE&rsquo;s Olympiad team pairing system incorporates similar convergence principles adapted for
-  teams. My implementation is here: <a href="../fide-lim-eng.htm" title="Online FIDE Lim Pairing System">Lim Pairing
-  System</a>.<br>
+  teams. My implementation is here: <a href="../fide-lim-eng.htm" title=
+  "Online FIDE Lim Pairing System">Lim&nbsp;Pairing&nbsp;System</a>.<br>
   <br>
   &copy; Mats Winther, 2026.</p>
   <p><br>

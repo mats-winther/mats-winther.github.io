@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="style4.css" rel="stylesheet" type="text/css">
   <meta name="description" content=
-  "En teknisk genomgång av lottning i schackturneringar med fokus på Monrad och Schweizer. Artikeln presenterar ett nytt schweizer-system som ett stabilt och rättvist alternativ för öppna turneringar.">
+  "En teknisk genomgång av lottning i schackturneringar med fokus på Monrad och Schweizer. Artikeln presenterar ett nytt schweizersystem som ett stabilt och rättvist alternativ för öppna turneringar.">
 
   <style>
   img.c1 {margin-top: 10px;}
@@ -42,39 +42,39 @@
     <p><br>
     Schacklottning är i regel inte slumpmässig. Undantaget är första ronden i Berger och Monrad, där spelarna slumpas
     fram i en ordningslista som sedan bestämmer vilka som möts i inledningsronden. Därefter är processen helt
-    deterministisk. I schweizer-lottning förekommer ingen slump alls, eftersom startordningen är seedad, vanligtvis
+    deterministisk. I schweizerlottning förekommer ingen slump alls, eftersom startordningen är seedad, vanligtvis
     efter rating. Algoritmen innehåller alltså ingen inbyggd slumpfaktor. Det är spelarna själva som skapar variationen
     genom sina mer eller mindre oförutsägbara resultat.<br>
     <br>
-    <b>Monrad-systemet</b> är uppkallat efter den danske schackorganisatören Poul&nbsp;Monrad, som under mitten av
-    1900-talet utvecklade och populariserade denna förenklade variant av schweizer-lottning. Det blev mycket utbrett i
+    <b>Monradsystemet</b> är uppkallat efter den danske schackorganisatören Poul&nbsp;Monrad, som under mitten av
+    1900-talet utvecklade och populariserade denna förenklade variant av schweizerlottning. Det blev mycket utbrett i
     Danmark, Norge och Sverige, särskilt i skoltävlingar, weekendturneringar och större amatörevenemang, eftersom det
     är enklare än det fullständiga schweiziska systemet: spelarna lottas strikt efter aktuell poäng, utan de mer
     komplicerade FIDE-restriktionerna.<br>
     <br>
-    I Monrad (förenklad Schweizer) kan det i början uppstå viss orättvisa, då en toppspelare kan få möta en stark
+    I Monrad (förenklad schweizer) kan det i början uppstå viss orättvisa, då en toppspelare kan få möta en stark
     motståndare medan en annan får en betydligt svagare. Därför använder man i elitturneringar hellre någon form av
-    schweizer-lottning. En annan nackdel är att en spelare kan få samma färg tre gånger i rad (i sällsynta fall ännu
+    schweizerlottning. En annan nackdel är att en spelare kan få samma färg tre gånger i rad (i sällsynta fall ännu
     fler). I en turnering över sju ronder får sannolikt omkring 34% av spelarna detta åtminstone en gång, och vid nio
     ronder stiger andelen till cirka 45%. Detta är en tydlig svaghet i Monrad om systemet används i elitturneringar. I
     amatörturneringar spelar det däremot kanske mindre roll, eftersom resultatet där oftare avgörs av vem som först gör
     ett misstag än av vilken färg man får.<br>
     <br>
     Ovanstående gäller för dansk-svensk Monrad. Enligt FIDE:s officiella regler får en spelare inte ha samma färg tre
-    gånger i rad, och inte heller ha en färgbalans som avviker med mer än &plusmn;2. (Nederländsk schweizer-lottning
-    följer denna regel, utom i extremfall.) Det norska Monrad-systemet är mindre strikt: en spelare får aldrig ha mer
-    än <i>tre</i> partier i rad med samma färg, och om möjligt bör ingen spelare ha mer än 50%&nbsp;+&nbsp;1 partier
-    med samma färg (se <a href="https://2000.sjakk.no/kunnskap/systemer/norges-sjakkforbunds-monradsystem/" title=
+    gånger i rad, och inte heller ha en färgbalans som avviker med mer än &plusmn;2. (Nederländsk schweizerlottning
+    följer denna regel, utom i extremfall.) Det norska monradsystemet är mindre strikt: en spelare får aldrig ha mer än
+    <i>tre</i> partier i rad med samma färg, och om möjligt bör ingen spelare ha mer än 50%&nbsp;+&nbsp;1 partier med
+    samma färg (se <a href="https://2000.sjakk.no/kunnskap/systemer/norges-sjakkforbunds-monradsystem/" title=
     "Norges Schackförbunds Monradsystem">här</a>). Dessa regler är inte absoluta och kan i undantagsfall
     åsidosättas.<br>
     <br>
     Jag har skapat ett program i JavaScript för dansk-svensk Monrad här: <a href="../monrad.htm" title=
-    "Monrad lottningsprogram">Monrads lottningssystem</a>. Programmet introducerar en ny särskiljningsmetod som
+    "Monrad&nbsp;lottningsprogram">Monrads lottningssystem</a>. Programmet introducerar en ny särskiljningsmetod som
     alternativt förval: för varje parti, ta motståndarens slutresultat som ett decimaltal mellan 0 och 1 (till exempel
     0,8 vid 80% av maxpoängen). Kvadrera det för att öka skillnaden. Multiplicera sedan med resultatet mot just den
-    spelaren, vilket ger full utdelning vid vinst, hälften vid remi, <i>men även viss utdelning vid förlust</i>, speciellt mot
-    en framgångsrik spelare. Multiplicera slutligen med hundra för att slippa decimaltal. Jag kallar det preliminärt
-    WNT, ett namn bildat av bokstäverna i mitt efternamn. Hittills har alla särskiljningsmetoder (Buchholz,
+    spelaren, vilket ger full utdelning vid vinst, hälften vid remi, <i>men även viss utdelning vid förlust</i>,
+    speciellt mot en framgångsrik spelare. Multiplicera slutligen med hundra för att slippa decimaltal. Jag kallar det
+    preliminärt WNT, ett namn bildat av bokstäverna i mitt efternamn. Hittills har alla särskiljningsmetoder (Buchholz,
     Sonneborn-Berger etc.) utformats efter principen att de enkelt ska kunna beräknas för hand. Resultatet är en
     trubbig särskiljning. Det finns ingen anledning att hålla fast vid detta i dag.</p>
     <blockquote>
@@ -98,17 +98,17 @@
     spelare slutar på samma poäng särskiljs de med avseende på kvaliteten hos det motstånd de mött. WNT premierar
     konsekvent dem som faktiskt spelar på toppborden. Den som möter och tar poäng mot turneringens bästa spelare
     belönas <i>kvadratiskt och oproportionerligt mycket högre</i> än den som samlar sina poäng på de lägre borden,
-    vilket gör att turneringsstrategin kallad &ldquo;schweizer-gambit&rdquo; i praktiken blir helt verkningslös. I
+    vilket gör att turneringsstrategin kallad &ldquo;schweizergambit&rdquo; i praktiken blir helt verkningslös. I
     klassisk Buchholz kan en spelare som förlorar tidigt och samlar poäng på låga bord mot svagare motstånd ofta få en
     förvånansvärt hög Buchholz ändå, eftersom motståndarnas poäng adderas helt linjärt. I WNT, tack vare kvadreringen,
     dras klyftan isär kraftigt. Samtidigt ger mötet med en stark motståndare utdelning även vid förlust.<br>
     <br>
     Till skillnad från system med trunkeringar (som Buchholz Cut) finns det inga artificiella gränsvärden. Varje
     halvpoäng som en spelares motståndare kämpar ihop ökar dennes WNT, men det är mötena vid toppborden som i slutändan
-    fäller avgörandet. Sonneborn-Berger utvecklades ursprungligen för berger-turneringar (alla-möter-alla) och lämpar
-    sig sämre för schweizer- och monrad-turneringar. WNT är skräddarsytt för de senare. I Berger kollapsar algoritmen
-    matematiskt till exakt samma inbördes ordning som klassisk Sonneborn-Berger, vilket gör WNT tillämpbar för samtliga
-    turneringsformer.<br>
+    fäller avgörandet. Sonneborn-Berger utvecklades ursprungligen för bergerturneringar (alla-möter-alla) och lämpar
+    sig sämre för schweizer- och monradturneringar. Även om WNT är utformat specifikt för de senare, ger algoritmen i
+    bergerturneringar matematiskt sett samma relativa rangordning som det klassiska Sonneborn-Berger-systemet, vilket
+    gör WNT tillämpligt oavsett tävlingsformat.<br>
     <br>
     WNT integrerar fördelarna med motståndsstyrka eller lottningssvårighet (Buchholz) och prestation eller
     vinstkvalitet (Sonneborn-Berger) i ett enda samlat mått, i stället för att behandla dem som separata, stegvisa
@@ -117,49 +117,55 @@
     vinster&#8239;/&thinsp;flest partier med svart. Tack vare WNT:s höga matematiska upplösning är risken för att två
     spelare hamnar på exakt samma decimal i praktiken försumbar.<br>
     <br>
-    Min online-version av det norska systemet finns här: <a href="../norsk-monrad.htm" title=
-    "Monrad – turneringshanterare (norsk modell)">turneringshanterare för Monrad</a>. Kvalitetspoäng beräknas enligt
-    Buchholz (cut-1). Programmet kan användas online, men själva sidan går också att ladda ned och köra lokalt. Den
-    dansk-svenska versionen använder antingen kumulativ (progressiv) poäng eller Buchholz (motståndarnas sammanlagda
-    poäng) för att särskilja spelare med samma slutresultat. Kumulativ poäng fungerar så att tidiga vinster ger ett
-    högre kumulativt tiebreak, vilket gynnar en aggressiv spelstil. (Att börja med en vinst och sedan en förlust ger 2
-    kumulativa poäng efter två ronder, medan två remier ger 1,5. Det är på sätt och vis rättvist.)<br>
+    Särskiljning är en viktig princip. Enbart slutpoängen berättar inte hela historien. Två spelare kan avsluta en
+    turnering på samma poäng, trots att den ene har kämpat sig igenom betydligt starkare motstånd än den andre. Att
+    bortse från denna skillnad innebär att behandla två väsentligt olika prestationer som likvärdiga. Turneringspoängen
+    ensam är därför ett alltför grovt mått på framgång.<br>
     <br>
-    <b>Berger</b> innebär att alla möter alla, antingen en eller två gånger. Berger-systemet formaliserades av
+    <i>Poängen visar hur många poäng du tog. Särskiljningen visar hur svårt det var att ta dem.</i><br>
+    <br>
+    Min online-version av det norska systemet finns här: <a href="../norsk-monrad.htm" title=
+    "Monrad – turneringshanterare (norsk modell)">turneringshanterare&nbsp;för&nbsp;Monrad</a>. Kvalitetspoäng beräknas
+    enligt Buchholz (cut-1). Programmet kan användas online, men själva sidan går också att ladda ned och köra lokalt.
+    Den dansk-svenska versionen använder antingen kumulativ (progressiv) poäng eller Buchholz (motståndarnas
+    sammanlagda poäng) för att särskilja spelare med samma slutresultat. Kumulativ poäng fungerar så att tidiga vinster
+    ger ett högre kumulativt tiebreak, vilket gynnar en aggressiv spelstil. (Att börja med en vinst och sedan en
+    förlust ger 2 kumulativa poäng efter två ronder, medan två remier ger 1,5. Det är på sätt och vis rättvist.)<br>
+    <br>
+    <b>Berger</b> innebär att alla möter alla, antingen en eller två gånger. Bergersystemet formaliserades av
     Johann&nbsp;Berger i slutet av 1800-talet. Det är det mest rättvisa av alla lottningssystem, vilket gör det
-    idealiskt för kandidat- och elitturneringar. Spelarna alternerar färg automatiskt. Jag har skapat ett Berger-system
+    idealiskt för kandidat- och elitturneringar. Spelarna alternerar färg automatiskt. Jag har skapat ett bergersystem
     för 3-16 spelare enligt FIDE:s specifikationer. Det kan användas direkt i webbläsaren, men går även att ladda ned
-    och köra lokalt: <a href="../berger.htm" title="Berger lottningsprogram">Bergers turneringssystem
-    (alla-mot-alla)</a>.<br>
+    och köra lokalt: <a href="../berger.htm" title="Berger lottningsprogram">Bergers&nbsp;turneringssystem</a>.<br>
     <br>
     <b>Scheveningen</b> är ett format för lagspel där två lag av samma storlek spelar ett fullständigt korsmöte: alla
-    spelare i lag A möter alla spelare i lag B över n ronder: <a href="../scheveningen.htm">Scheveningen
-    turneringssystem</a>. Det har sitt namn från en turnering i Scheveningen, Nederländerna, 1923, där formatet
-    användes i en lagmatch mellan två grupper av stormästare. Systemet är rättvist och deterministiskt (ingen lottning
-    krävs) och systemet fick därför snabb spridning. Denna turneringsform kan även användas inom en klubb, om spelarna
-    delas upp i två jämna lag. Det blir då både en individuell turnering och en lagmatch, vilket kan vara
-    stimulerande.<br>
+    spelare i lag A möter alla spelare i lag B över n ronder: <a href=
+    "../scheveningen.htm">Scheveningen&nbsp;turneringssystem</a>. Det har sitt namn från en turnering i Scheveningen,
+    Nederländerna, 1923, där formatet användes i en lagmatch mellan två grupper av stormästare. Systemet är rättvist
+    och deterministiskt (ingen lottning krävs) och systemet fick därför snabb spridning. Denna turneringsform kan även
+    användas inom en klubb, om spelarna delas upp i två jämna lag. Det blir då både en individuell turnering och en
+    lagmatch, vilket kan vara stimulerande.<br>
     <br>
     Som särskiljningsmetod använder programmet i första hand Koya och i andra hand Sonneborn-Berger. Koyapoängen utgörs
     av summan av de poäng en spelare tagit mot motståndare som slutade på minst 50 % av maximala poängantalet. Koya
     mäter därmed hur väl spelaren presterat mot turneringens starkaste motstånd, medan Sonneborn-Berger ger ett mer
     finfördelat och övergripande mått på motståndarnas samlade resultat.<br>
     <br>
-    <b>Schweizer-systemet</b> uppstod i Schweiz i slutet av 1800-talet, främst för stora schackturneringar där
-    alla-mot-alla var opraktiskt. Tidiga schweizer-turneringar var informella och använde enkla regler: spelare med
-    samma poäng möttes, liknande hur dagens Monrad-lottning fungerar. Schweizer-systemen är idag konstruerade på olika
-    sätt. Det finns bland annat dubbelaccelererad Schweizer, Haldane-accelerering och FIDE-accelerering (numera
+    <b>Schweizersystemet</b> uppstod i Schweiz i slutet av 1800-talet, främst för stora schackturneringar där
+    alla-mot-alla var opraktiskt. Tidiga schweizerturneringar var informella och använde enkla regler: spelare med
+    samma poäng möttes, liknande hur dagens monradlottning fungerar. Schweizersystemen är idag konstruerade på olika
+    sätt. Det finns bland annat dubbelaccelererad schweizer, Haldane-accelerering och FIDE-accelerering (numera
     sällsynt). Vissa varianter fungerar dock riktigt dåligt, däribland Nordisk Schweizer (se <a href=
     "https://www.kristallen.org/ongoingtournaments/nordch.html" title="Nordisk Schweizer">här</a>). Ett typiskt problem
     för mellanstarka spelare är att de pendlar mellan alltför starkt och alltför svagt motstånd: i en rond möter de en
     betydligt starkare spelare, i nästa en klart svagare, och därefter åter en alltför stark. Denna pendling förtar
-    spelglädjen och ger en ojämn turneringsupplevelse. I mitt accelererade schweizer-system inträffar inte detta:
-    <a href="../swiss.htm" title="Program för schweizer-lottning med Winther-accelerering">schweiziskt
-    turneringssystem</a>. Programmet har en spärr som gör att risken att få samma färg tre gånger i rad hålls på ett
-    minimum. Det är tydligt bättre än Nordisk Schweizer, förutsatt att programmet visar sig pålitligt efter noggrann
-    testning.<br>
+    spelglädjen och ger en ojämn turneringsupplevelse. I mitt accelererade schweizersystem inträffar inte detta:
+    <a href="../swiss.htm" title=
+    "Program för schweizerlottning med Winther-accelerering">schweiziskt&nbsp;turneringssystem</a>. Programmet har en
+    spärr som gör att risken att få samma färg tre gånger i rad hålls på ett minimum. Det är tydligt bättre än Nordisk
+    Schweizer, förutsatt att programmet visar sig pålitligt efter noggrann testning.<br>
     <br>
-    <b>Accelererad schweizer-lottning (Winther-accelerering)</b>:<br>
+    <b>Accelererad schweizerlottning (Winther-accelerering)</b>:<br>
     <br>
     <b>Rond 1:</b> Spelarna delas in i fyra grupper (kvadranter). Den högst rankade i K1 har vit mot den högst rankade
     i K2, och motsvarande för K3 och K4. (Vid ojämna grupper anpassas storlekarna automatiskt och vid udda
@@ -168,7 +174,7 @@
     <b>Rond 2:</b> Högst seedad vinnare har svart mot högst seedad vinnare i den andra halvan. Näst högst seedad har
     svart mot nästa i den andra halvan, osv.<br>
     <br>
-    <b>Rond 3+:</b> Schweizer-lottning börjar. Spelarna sorteras efter poäng, Buchholz och ursprunglig seedning.
+    <b>Rond 3+:</b> schweizerlottning börjar. Spelarna sorteras efter poäng, Buchholz och ursprunglig seedning.
     Lottning sker uppifrån och ned.<br>
     <br>
     <b>Färgfördelning:</b> Spelaren med färre vita partier får vit. Vid lika får den lägre seedade spelaren vit.
@@ -177,9 +183,9 @@
     <br>
     Detta system lämpar sig väl för öppna turneringar. Elitspelarna har ingen anledning att klaga, eftersom de får möta
     lägre rankade spelare i de två första ronderna. Samtidigt undviker man den pendling som mellanstarka spelare ofta
-    drabbas av i andra schweizer-lottningar. Programmet använder Buchholz som sekundärt sorteringskriterium vid parning
+    drabbas av i andra schweizerlottningar. Programmet använder Buchholz som sekundärt sorteringskriterium vid parning
     av spelare, efter poäng. Buchholz är stabilt och välkänt och harmonierar med målet att spelare med liknande
-    motstånd ska mötas. Buchholz är standard i internationella schweizer-turneringar, vilket gör systemet förenligt med
+    motstånd ska mötas. Buchholz är standard i internationella schweizerturneringar, vilket gör systemet förenligt med
     etablerad praxis.<br>
     <br>
     Att vinnarna i den andra halvan får vit mot vinnarna i den första halvan i rond två, anser jag är en bra
@@ -190,9 +196,9 @@
     detta inte kan inträffa för spelare i den första och den tredje fjärdedelen i startlistan. Hur ratingfördelningen i
     stort påverkar lottningen vet jag inte, men det går att undersöka med hjälp av programmet.<br>
     <br>
-    Schweizer-lottningens grundproblem är att den försöker åstadkomma en rättvis turnering inom ett begränsat antal
+    Schweizerlottningens grundproblem är att den försöker åstadkomma en rättvis turnering inom ett begränsat antal
     ronder, utan att kunna använda det idealiska alla-mot-alla-formatet. Därför måste systemet både skapa parningar av
-    hög kvalitet och samtidigt upplevas som rättvist av spelarna. Många schweizer-varianter misslyckas med detta,
+    hög kvalitet och samtidigt upplevas som rättvist av spelarna. Många schweizervarianter misslyckas med detta,
     särskilt när mellanskiktet pendlar mellan alltför starkt och alltför svagt motstånd, eller när färgfördelningen
     blir orimlig. FIDE:s nuvarande regler är dessutom komplexa och svåröverskådliga, vilket gör dem mindre transparenta
     för deltagarna.<br>
@@ -248,7 +254,7 @@
       </tbody>
     </table>
     <p><br>
-    <b>Holländsk Schweizer</b> (FIDE Dutch Swiss) är den internationella guldstandarden för schackturneringar och det
+    <b>Holländsk schweizer</b> (FIDE Dutch Swiss) är den internationella guldstandarden för schackturneringar och det
     officiella system som FIDE föreskriver för merparten av alla öppna elo-tävlingar från och med 1 februari 2026. Det
     syftar till att få en så rättvis lottning som möjligt. Algoritmen, som är mycket komplex (se <a href=
     "https://handbook.fide.com/chapter/C0403202602" title=
@@ -270,7 +276,7 @@
     anses vara att det erbjuder högsta sportsliga integritet: det skyddar färgfördelningen maximalt och ser till att
     spelare med bäst resultat möter varandra mot slutet av turneringen.<br>
     <br>
-    Jag har skapat en experimentell version här: <a href="../fide-hollandskt.htm">holländskt lottningssystem</a>.
+    Jag har skapat en experimentell version här: <a href="../fide-hollandskt.htm">holländskt&nbsp;lottningssystem</a>.
     Programmet är inte giltigt för elo-turneringar eftersom det inte verifierats. Om programmet visar sig fungera kan
     man ändå använda det för blixt och snabbschack, men då bör lottningen benämnas &ldquo;modifierad holländsk&rdquo;
     eller liknande. Programmet kan användas för att testa algoritmen, som enligt GPT-Sol (AI) fungerar korrekt.<br>
@@ -292,7 +298,7 @@
     likartad genomsnittlig rating som möjligt. Syftet är att minska risken att någon når en prisplacering tack vare tur
     i lottningen och därmed ovanligt svagt motstånd jämfört med konkurrenterna på samma poäng.<br>
     <br>
-    Metoden är dock mindre intuitiv för spelare och publik. I vanlig schweizer-lottning brukar ettan och tvåan mötas
+    Metoden är dock mindre intuitiv för spelare och publik. I vanlig schweizerlottning brukar ettan och tvåan mötas
     naturligt när turneringen närmar sig slutet. I Dubov-schweizer kan två spelare i absolut delad ledning mycket väl
     <i>inte</i> mötas, helt enkelt därför att systemet bedömer att den ena behöver möta en högre rankad spelare för att
     jämna ut sitt ARO-värde (Average Rating of Opponents). FIDE-dutch är i jämförelse konstruerat för att utse en
@@ -300,7 +306,8 @@
     målet är att ge hela fältet en så rättvis och likvärdig bedömning av spelstyrka som möjligt. Dubov-systemet är
     matematiskt elegant men har förblivit ett nischalternativ av praktiska och psykologiska skäl. Däremot är det
     idealiskt för turneringar som syftar till vidare kvalificering, såsom kandidatturneringen. Jag har skapat ett
-    program för lottning enligt FIDE:s specifikationer: <a href="../fide-dubov.htm">Dubovs lottningssystem</a>.<br>
+    program för lottning enligt FIDE:s specifikationer: <a href=
+    "../fide-dubov.htm">Dubovs&nbsp;lottningssystem</a>.<br>
     <br>
     <b>Burstein-schweizer</b> utvecklades 1993 av Almog Burstein (född 1950), en israelisk internationell domare,
     schackorganisatör och mångårig FIDE-funktionär. Grundtanken är att motståndets styrka ska vara så jämnt fördelad
@@ -315,7 +322,7 @@
     tillgängliga spelaren ihop med den lägst rankade kompatibla spelaren. Flyttare (spelare lottade mot en motståndare
     från en annan poänggrupp) och en eventuell lottningstilldelad frirond väljs enligt fastställda prioritetsregler,
     samtidigt som återmöten undviks, absoluta färgkrav respekteras och antalet ouppfyllda färgpreferenser minimeras.
-    Min implementation finns här: <a href="../fide-burstein.htm">Bursteins lottningssystem</a>.<br>
+    Min implementation finns här: <a href="../fide-burstein.htm">Bursteins&nbsp;lottningssystem</a>.<br>
     <br>
     <b>Lim-schweizer</b> är uppkallat efter sin upphovsman, professor Lim&nbsp;Kok&nbsp;Ann från Singapore (1920-2003),
     tidigare generalsekreterare för FIDE och mångårig schackorganisatör. Systemet godkändes av FIDE:s generalförsamling
@@ -327,8 +334,8 @@
     uppåt, medan mediangruppen lottas sist. Algoritmen strävar efter att para samman spelare med lika eller liknande
     poäng samtidigt som färgbalans och klassificeringen av flyttade spelare (floaters) regleras strikt. FIDE:s
     lottningssystem för schackolympiader har liknande konvergensprinciper, anpassade för lagtävlingar. Min
-    implementation finns här: <a href="../fide-lim.htm" title="Online FIDE Lim Lottningsystem">Lims
-    lottningssystem</a>.<br>
+    implementation finns här: <a href="../fide-lim.htm" title=
+    "Online FIDE Lim Lottningsystem">Lims&nbsp;lottningssystem</a>.<br>
     <br>
     &copy; Mats Winther, 2026.</p>
     <p><br>
