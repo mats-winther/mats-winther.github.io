@@ -67,14 +67,14 @@
   cases, be overridden.<br>
   <br>
   I have created a program in JavaScript for Danish-Swedish Monrad here: <a href="../monrad-eng.htm">Monrad Pairing
-  System</a>. The program introduces <i>a new tie-break method</i> as an alternative preset: for each game, take the
+  System</a>. The program introduces a new tie-break method as an alternative preset: for each game, take the
   opponent&rsquo;s final score as a decimal between 0 and 1 (for example, 0.8 for 80% of the maximum score). Square it
   to amplify the differentiation. Then multiply by the result against that specific player, which yields full points
-  for a win, half for a draw, and also some return for a loss&#8239;&mdash;&thinsp;especially against a successful
-  player. Finally, multiply by one hundred to avoid decimals. I provisionally call it WNT, a name derived from the
-  letters of my surname. Until now, all tie-break systems (Buchholz, Sonneborn-Berger, etc.) have been designed around
-  the principle of being easy to calculate by hand. The result is a coarse tie-breaking mechanism. There is no reason
-  to hold on to that legacy today.</p>
+  for a win, half for a draw, <i>and also some return for a loss</i>&#8239;&mdash;&thinsp;especially against a
+  successful player. Finally, multiply by one hundred to avoid decimals. I provisionally call it WNT, a name derived
+  from the letters of my surname. Until now, all tie-break systems (Buchholz, Sonneborn-Berger, etc.) have been
+  designed around the principle of being easy to calculate by hand. The result is a coarse tie-breaking mechanism.
+  There is no reason to hold on to that legacy today.</p>
   <blockquote>
     <br>
     <div class="container">
@@ -83,7 +83,7 @@
       (2<i>N</i>&thinsp;)&thinsp;) ]</b>
     </div><br>
     Alternative form:<br>
-    <img class="c1" src="gifs/wnteng.gif" width="449" height="143" alt="Formula for WNT tie-break (Winther)"><br>
+    <img class="c1" src="gifs/wnteng.gif" width="444" height="143" alt="Formula for WNT tie-break (Winther)"><br>
     <br>
     <b>&sum;</b><sub class="c1">i</sub> = the sum over all opponents you have faced<br>
     <b>r</b><sub class="c1">i</sub> = your result against opponent <i>i</i>&nbsp; (1, 0.5, 0)<br>
@@ -113,8 +113,8 @@
   win quality (Sonneborn-Berger) into a single, unified metric, rather than treating them as separate, sequential
   filters where the latter rarely comes into play&#8239;&mdash;&thinsp;such as in this cumbersome tie-break hierarchy:
   direct encounter&nbsp;&rarr; Buchholz Cut 1&nbsp;&rarr; Buchholz (full)&nbsp;&rarr; Sonneborn-Berger&nbsp;&rarr; most
-  wins&#8239;/&thinsp;most games with black. Thanks to WNT&rsquo;s high mathematical resolution, the risk of two
-  players finishing tied down to the exact same decimal is virtually negligible in practice.<br>
+  wins&#8239;/&thinsp;most games with black. Thanks to WNT&rsquo;s high mathematical resolution, the likelihood of two
+  players finishing with exactly the same decimal score is practically negligible.<br>
   <br>
   My online version of the Norwegian system is available here: <a href="../norwegian-monrad.htm" title=
   "Monrad Tournament Manager, Norwegian model">Monrad Tournament Manager</a>. The final standings is sorted according
