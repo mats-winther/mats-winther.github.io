@@ -8,6 +8,10 @@
   "En teknisk genomgång av lottning i schackturneringar med fokus på Monrad och Schweizer. Artikeln presenterar ett nytt schweizersystem som ett stabilt och rättvist alternativ för öppna turneringar.">
 
   <style>
+  hr {
+  width: 50%; 
+  margin: auto; 
+  border: 1px solid }
   img.c1 {margin-top: 10px;}
   div.container {
   border: 1px solid black;
@@ -117,12 +121,31 @@
     Buchholz Cut-1&nbsp;&rarr; Buchholz (hel)&nbsp;&rarr; Sonneborn-Berger&nbsp;&rarr; flest
     vinster&#8239;/&thinsp;flest partier med svart. Det gör det möjligt för turneringsledaren att visa ett löpande
     WNT-värde under hela turneringen, ett meningsfullt mått som bara kan öka. Tack vare WNT:s höga matematiska
-    upplösning är risken för att två spelare hamnar på exakt samma decimal i praktiken försumbar. (Betrakta följande
-    två PDF-filer från en simulerad Monradturnering, där slutrankningen bestäms av WNT respektive Buchholz: <a href=
+    upplösning är risken för att två spelare hamnar på exakt samma decimal i praktiken försumbar. (Studera följande två
+    PDF-filer från en simulerad Monradturnering, där slutrankningen bestäms av WNT respektive Buchholz: <a href=
     "https://drive.google.com/file/d/1G4rcOtnkq3D1kQwf7m3JiJYHjWeFzXs4/view?usp=drive_link" title=
     "Monradturnering slutresultat (WNT)">fil&nbsp;1</a>, <a href=
     "https://drive.google.com/file/d/1Gcwz9kdHoTDwJWiffGDinSa6uNw_wqxg/view?usp=drive_link" title=
-    "Monradturnering slutresultat (Buchholz)">fil&nbsp;2</a>.)<br>
+    "Monradturnering slutresultat (Buchholz)">fil&nbsp;2</a>.)</p>
+    <p><b>Exempel: en turnering med fem ronder</b><br>
+    <br>
+    &bull; Vinst mot en stark spelare (4/5) ger maximal utdelning: 112 poäng. (Resultatbonus:
+    100&nbsp;&sdot;&nbsp;1&nbsp;&sdot;&nbsp;0,8&nbsp;=&nbsp;80. Motståndsbonus:
+    50&nbsp;&sdot;&nbsp;0,64&nbsp;=&nbsp;32. Totalt:&nbsp;112.)<br>
+    <br>
+    &bull; Remi mot samma spelare ger 40 + 32 = 72 poäng.<br>
+    <br>
+    &bull; Förlust ger 0 + 32 = 32 poäng. (Du får med andra ord fortfarande 32 poäng enbart för att ha mött motstånd på
+    toppnivå.)<br>
+    <br>
+    &bull; Vinst mot en medelstark spelare (2,5/5) ger 62,5 poäng.<br>
+    <br>
+    &bull; Vinst mot en spelare nära botten av tabellen (1/5) ger 22 poäng.<br>
+    <br>
+    Systemet lägger alltså stor vikt vid att både möta och ta poäng mot starkt motstånd. Vinster mot toppspelare
+    belönas disproportionellt mer än vinster mot svagare motståndare, samtidigt som även förluster mot elitspelare
+    belönas eftersom motståndarens styrka kvarstår som en del av beräkningen. Detta skapar starka incitament för att
+    prestera på toppborden snarare än att plocka poäng i den nedre halvan av fältet.<br>
     <br>
     Särskiljning är en viktig princip. Enbart slutpoängen berättar inte hela historien. Två spelare kan avsluta en
     turnering på samma poäng, trots att den ene har kämpat sig igenom betydligt starkare motstånd än den andre. Att
@@ -130,7 +153,9 @@
     ensam är därför ett alltför grovt mått på framgång.<br>
     <br>
     <i>Poängen visar hur många poäng du tog. Särskiljningen visar hur svårt det var att ta dem.</i><br>
-    <br>
+    &nbsp;</p>
+    <hr>
+    <p><br>
     Min online-version av det norska systemet finns här: <a href="../norsk-monrad.htm" title=
     "Monrad – turneringshanterare (norsk modell)">turneringshanterare&nbsp;för&nbsp;Monrad</a>. Kvalitetspoäng beräknas
     enligt Buchholz (cut-1). Programmet kan användas online, men själva sidan går också att ladda ned och köra lokalt.
