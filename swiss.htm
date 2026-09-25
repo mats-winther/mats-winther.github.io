@@ -9,7 +9,7 @@
 <meta name="description" content="Schweiziskt turneringssystem för schack direkt i webbläsaren.">
 <meta name="author" content="Mats Winther">
 <link rel="canonical" href="https://mats-winther.github.io/swiss.htm">
-<title>Schweiziskt turneringssystem</title>
+<title>Schweiziskt Turneringssystem</title>
 <style>
   :root {
     --primary: #1e3a8a;
@@ -38,6 +38,20 @@
   }
   .rules-box h3 { margin: 0 0 6px 0; font-size: 14px; color: var(--primary); }
   .rules-box ul { margin: 0; padding-left: 18px; }
+.wnt-asterisk {
+  color: var(--accent);
+  font-weight: bold;
+  font-size: 1.15rem;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 0;
+  user-select: none;
+  vertical-align: super;
+}
+.wnt-asterisk:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
   .btn-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
   button {
     background: var(--primary); color: #fff; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500;
@@ -70,6 +84,7 @@
     
     /* Göm alla modaler som standard vid utskrift */
     body.printing-modal .modal-overlay { display: none !important; }
+    body.printing-modal #wnt-modal { display: none !important; }
 
     /* Visa ENDAST ställnings-modalen */
     body.printing-modal #standings-modal {
@@ -94,9 +109,9 @@
 <body>
 
 <div class="container">
-  <h1>Schweiziskt turneringssystem</h1>
+  <h1>Schweiziskt Turneringssystem</h1>
 
-  <!-- Settings -->
+  <!-- Inställningar -->
   <div id="setup-section" class="settings-section">
     <h2>Turneringsinställningar</h2>
     <div class="settings-grid">
@@ -114,22 +129,29 @@
       <label>Färgfördelning rond 1</label>
       <div class="radio-group">
         <label><input type="radio" name="r1-color" value="higherWhite" checked> Högre seedad har alltid vit (Seed #1 vit)</label>
-        <label><input type="radio" name="r1-color" value="alternate"> Varannan färg (Bord 1 vit, Bord 2 svart...)</label>
+        <label><input type="radio" name="r1-color" value="alternate"> Alternerande färger (Bord 1 vit, bord 2 svart...)</label>
+      </div>
+    </div>
+
+    <div style="margin-top: 16px;">
+      <label>Särskiljningssystem (slutställning)</label>
+      <div class="radio-group">
+        <label><input type="radio" name="tiebreak" value="wnt" checked> WNT<sup class="wnt-asterisk" onclick="openWntModal(event)" title="Information om Winther-poäng">*</sup></label>
+        <label><input type="radio" name="tiebreak" value="buchholz"> Buchholz</label>
       </div>
     </div>
 
     <div class="rules-box">
-      <h3>Lottningssystem: Winther-accelerering<sup><a href="https://mats-winther.github.io/bg/schacklottning.htm" style="text-decoration:none;" target="_blank" title=
-    "Schacklottning: en genomgång av Monrad, Schweizer och Berger">&thinsp;*</a></sup></h3>
+      <h3>Lottningssystem: Winther-acceleration</h3>
       <ul>
-        <li><strong>Rond 1:</strong> Spelarna delas in i fyra grupper (kvadranter). Den högst rankade i K1 har vit mot den högst rankade i K2, och motsvarande för K3 och K4. (Vid ojämna grupper anpassas storlekarna automatiskt och vid udda deltagarantal ges lägst rankad frirond).</li>
-        <li><strong>Rond 2:</strong> Högst seedad vinnare har svart mot högst seedad vinnare i den andra halvan. Näst högst seedad har svart mot nästa i den andra halvan, osv.</li>
-        <li><strong>Rond 3+:</strong> Schweizerlottning börjar. Spelarna sorteras efter poäng, Buchholz och ursprunglig seedning. Lottning sker uppifrån och ned.</li>
-        <li><strong>Färgfördelning:</strong> Spelaren med färre vita partier får vit. Vid lika får den lägre seedade spelaren vit. Färgbalans garanteras (färgskillnaden kan aldrig bli 3). Vid krock mellan färgbalans och 2-i-rad-regeln tillåts tre partier med samma färg i rad.</li>
+        <li><strong>Rond 1:</strong> Spelarna delas in i fyra grupper (kvadranter). Den högst rankade spelaren i Q1 spelar vit mot den högst rankade spelaren i Q2, och motsvarande för Q3 och Q4. (Vid ojämna grupper justeras storlekarna automatiskt, och vid udda antal spelare får den lägst rankade en frirond).</li>
+        <li><strong>Rond 2:</strong> Högst seed vinnare spelar svart mot högst seedad vinnare i den andra halvan. Näst högst seedad vinnare spelar svart mot nästa i den andra halvan, och så vidare.</li>
+        <li><strong>Rond 3+:</strong> Schweizerlottning börjar. Spelarna sorteras efter poäng, Buchholz och ursprunglig seedning. Lottningen genereras uppifrån och ned.</li>
+        <li><strong>Färgtilldelning:</strong> Spelaren med färre vitpartier får vit. Vid lika får den lägre seedade spelaren vit. Färgbalansen garanteras (färgskillnaden kan aldrig bli 3). Om färgbalansen krockar med 2-i-rad-regeln tillåts upp till tre partier i rad med samma färg.</li>
       </ul>
     </div>
 
-    <label for="player-input">Spelarlista (Namn Ranking, en per rad – sorteras automatiskt efter ranking vid start)</label>
+    <label for="player-input">Spelarlista (Namn Rating, en per rad – sorteras automatiskt efter rating vid start)</label>
     <textarea id="player-input" placeholder="Magnus Carlsen 2830&#10;Hikaru Nakamura 2805..."></textarea>
 
     <div class="btn-bar">
@@ -143,25 +165,25 @@
     </div>
   </div>
 
-  <!-- Pairings Section -->
+  <!-- Lottningssektion -->
   <div id="pairings-section" style="display:none;">
     <h2 id="round-title">Lottning</h2>
-    <p class="no-print">Mata in resultat och gå vidare till nästa rond.</p>
+    <p class="no-print">Ange resultat och fortsätt till nästa rond.</p>
 
     <div class="btn-bar no-print">
       <button type="button" class="secondary" onclick="printPairings()">Skriv ut lottning</button>
       <button type="button" class="secondary" onclick="saveTournament()">Spara turnering</button>
       <button type="button" class="secondary" onclick="openStandingsModal()">Aktuell ställning</button>
-      <button type="button" class="danger" onclick="openWithdrawModal()">Avanmäl spelare</button>
+      <button type="button" class="danger" onclick="openWithdrawModal()">Dra tillbaka spelare</button>
     </div>
 
     <table>
       <thead>
         <tr>
           <th style="width:50px;">Bord</th>
-          <th>Vit (Seed / Ranking)</th>
+          <th>Vit (Seed / Rating)</th>
           <th style="width:130px;">Resultat</th>
-          <th>Svart (Seed / Ranking)</th>
+          <th>Svart (Seed / Rating)</th>
         </tr>
       </thead>
       <tbody id="pairings-table-body"></tbody>
@@ -172,32 +194,32 @@
     </div>
   </div>
 
-  <!-- Final Standings -->
-  <div id="final-section" style="display:none;">
-    <h2>Slutställning</h2>
+  <!-- Slutställning -->
+<div id="final-section" style="display:none;">
+  <h2 id="final-standings-title">Slutställning</h2>
+    
     <table>
       <thead>
-        <tr>
+        <tr id="final-thead-row">
           <th>Plac.</th>
           <th>Seed</th>
           <th>Spelare</th>
-          <th>Ranking</th>
+          <th>Rating</th>
           <th>Poäng</th>
-          <th>Buchholz</th>
-          <th>S-B</th>
-	  <th>Färger</th>
+          <!-- Särskiljningskolumner injiceras dynamiskt -->
+          <th>Färger</th>
         </tr>
       </thead>
       <tbody id="final-table-body"></tbody>
     </table>
     <div class="btn-bar no-print" style="margin-top:16px;">
-      <button type="button" onclick="printFinalStandings()">Skriv ut slutresultat</button>
+      <button type="button" onclick="printFinalStandings()">Skriv ut slutställning</button>
       <button type="button" class="secondary" onclick="restartTournament()">Starta ny turnering</button>
     </div>
   </div>
 </div>
 
-<!-- Modal: Current Standings -->
+<!-- Modal: Aktuell ställning -->
 <div id="standings-modal" class="modal-overlay">
   <div class="modal-box">
     <button class="close-btn" onclick="closeStandingsModal()">&times;</button>
@@ -208,7 +230,7 @@
           <th>Plac.</th>
           <th>Seed</th>
           <th>Spelare</th>
-          <th>Ranking</th>
+          <th>Rating</th>
           <th>Poäng</th>
           <th>Buchholz</th>
           <th>S-B</th>
@@ -223,18 +245,39 @@
   </div>
 </div>
 
-<!-- Modal: Withdraw Player -->
+<!-- Modal: Dra tillbaka spelare -->
 <div id="withdraw-modal" class="modal-overlay">
   <div class="modal-box">
     <button class="close-btn" onclick="closeWithdrawModal()">&times;</button>
-    <h2>Avanmäl spelare</h2>
-    <p>Välj en spelare som ska utgå. Om spelarens parti pågår i den aktuella ronden tilldöms motståndaren vinst på walkover (w.o.).</p>
+    <h2>Dra tillbaka spelare</h2>
+    <p>Välj en spelare att dra tillbaka. Om spelarens parti pågår tilldelas motståndaren vinst genom walkover (w.o.).</p>
     <div style="margin-bottom:14px;">
       <select id="withdraw-select"></select>
     </div>
     <div class="btn-bar">
-      <button type="button" class="danger" onclick="confirmWithdrawal()">Bekräfta avanmälan</button>
+      <button type="button" class="danger" onclick="confirmWithdrawal()">Bekräfta återtagande</button>
       <button type="button" class="secondary" onclick="closeWithdrawModal()">Avbryt</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: WNT-information -->
+<div id="wnt-modal" class="modal-overlay" onclick="if(event.target === this) closeWntModal()">
+  <div class="modal-box" style="max-width: 580px;">
+    <button class="close-btn" onclick="closeWntModal()">&times;</button>
+    <h2 style="margin-top: 0; color: var(--primary); font-size: 1.2rem;">Winther-poäng (WNT)</h2>
+    <div style="font-family: monospace, monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.92rem; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; color: #0f172a;">Winther-poäng (WNT) = 100 × ∑ᵢ [ (Pᵢ / N) × (rᵢ + Pᵢ / (2N)) ]
+
+∑ᵢ = summan över alla mötta motståndare
+rᵢ = ditt resultat mot motståndare i (1, 0.5, 0)
+Pᵢ = motståndare i:s slutturneringspoäng
+N = totalt antal ronder i turneringen
+Pᵢ / N = motståndarens poängandel (förhållande uttryckt som decimal mellan 0 och 1)</div>
+    <p style="font-size: 0.95rem; line-height: 1.5; color: #334155; margin-bottom: 18px;">
+      När spelare slutar på samma poäng skiljs de åt baserat på kvaliteten på det motstånd de mött. Denna nya metod ger en rättvisare bild av spelarens prestation än traditionella särskiljningssystem, och belönar konsekvent dem som tävlar på de högsta borden. Se även: <a href="https://mats-winther.github.io/bg/chesspairing.htm" style="text-decoration:none;" target="_blank" title="Schacklottning: En genomgång av Monrad, Schweizer och Berger">Schacklottning: en genomgång av Monrad, Schweizer och Berger</a>.
+    </p>
+    <div class="btn-bar" style="justify-content: flex-end; margin-top: 0;">
+      <button type="button" onclick="closeWntModal()">Stäng</button>
     </div>
   </div>
 </div>
@@ -245,6 +288,7 @@ let state = {
   totalRounds: 5,
   currentRound: 0,
   r1ColorOption: 'higherWhite',
+  tieBreakSystem: 'wnt',   // 'wnt' (standard) eller 'buchholz'
   players: [],
   rounds: []
 };
@@ -296,14 +340,14 @@ function printFinalStandings() {
 
 function load32ClubPlayers() {
   const sample = [
-    "Alexander Lindqvist 2280", "Johan Berg 2245", "Erik Holmberg 2210", "Marcus Nyström 2190",
-    "Viktor Strand 2165", "Karin Nyberg 2140", "Fredrik Ek 2115", "Oskar Blom 2095",
-    "Andreas Wallin 2070", "Stefan Sjöborg 2050", "Patrik Sund 2030", "Yusuf Al-Mansoor 2010",
-    "Henrik Lund 1990", "David Hedlund 1970", "Niklas Dahl 1950", "Mikael Holm 1930",
-    "Simon Sand 1910", "Kofi Mensah 1890", "Jonas Falk 1870", "Daniel Asplund 1850",
-    "Christian Vik 1830", "Robert Bäck 1810", "Amara Diallo 1790", "Per Alm 1770",
-    "Martin Gren 1750", "Björn Palm 1730", "Gustav Ekström 1710", "Tobias Löv 1690",
-    "Filip Malm 1670", "Anton Lind 1650", "Carl Larsson 1620", "Sara Månsson 1590"
+    "Erik Andersson 2280", "Lars Johansson 2245", "Karl Svensson 2210", "Anders Nilsson 2190",
+    "Johan Eriksson 2165", "Per Gustafsson 2140", "Mikael Larsson 2115", "Yusuf Al-Mansoor 2095",
+    "Fredrik Olsson 2070", "Daniel Persson 2050", "Mattias Lindberg 2030", "Samuel Berg 2010",
+    "Emma Lindqvist 1990", "Jonas Martinsson 1970", "David Klark 1950", "Benjamin Levander 1930",
+    "Edvard Klasson 1910", "Henrik Jakobsson 1890", "Lukas Wood 1870", "Artur Thörn 1850",
+    "Leo Scott 1830", "Kofi Mensah 1810", "Karl Månsson 1790", "Robert Vård 1770",
+    "Ludvig Vats 1750", "Fredrik Davidsson 1730", "Arvid Miller 1710", "Albin Bagare 1690",
+    "Natan Broström 1670", "Sofia Bengtsson 1650", "Alexander Haraldsson 1620", "Peter Ung 1590"
   ];
   document.getElementById('player-input').value = sample.join('\n');
 }
@@ -329,7 +373,7 @@ document.getElementById('json-file-input').addEventListener('change', function(e
     try {
       state = JSON.parse(ev.target.result);
 
-      // Re-link player object references to maintain integrity
+      // Återlänka spelarobjektreferenser för att bibehålla integritet
       const pMap = new Map(state.players.map(p => [p.id, p]));
       (state.rounds || []).forEach(r => {
         (r.pairings || []).forEach(pair => {
@@ -337,6 +381,9 @@ document.getElementById('json-file-input').addEventListener('change', function(e
           if (pair.black && pMap.has(pair.black.id)) pair.black = pMap.get(pair.black.id);
         });
       });
+
+      // Säkerställ att tieBreakSystem finns (bakåtkompatibilitet)
+      if (!state.tieBreakSystem) state.tieBreakSystem = 'wnt';
 
       document.getElementById('setup-section').style.display = 'none';
       if (state.currentRound > state.totalRounds) {
@@ -385,6 +432,7 @@ function parsePlayers() {
     score: 0,
     buchholz: 0,
     sonneborn: 0,
+    wnt: 0,
     opponents: [],
     history: [],
     withdrawn: false
@@ -398,9 +446,10 @@ function startTournament() {
     return;
   }
 
-  state.name = document.getElementById('tournament-name').value || 'Schweizisk turnering';
+  state.name = document.getElementById('tournament-name').value || 'Swiss-turnering';
   state.totalRounds = parseInt(document.getElementById('round-count').value, 10) || 5;
   state.r1ColorOption = document.querySelector('input[name="r1-color"]:checked').value;
+  state.tieBreakSystem = document.querySelector('input[name="tiebreak"]:checked').value;
   state.players = parsed;
   state.rounds = [];
   state.currentRound = 1;
@@ -416,7 +465,7 @@ function generateRound1() {
   let byePlayer = null;
   let playersToPair = [...activePlayers];
 
-  // If odd, lowest-ranked player receives a bye
+  // Vid udda antal får lägst rankade en frirond
   if (n % 2 !== 0) {
     byePlayer = playersToPair.pop();
   }
@@ -469,7 +518,7 @@ function generateRound2() {
   const paired = new Set();
   let board = 1;
 
-  // 1. Vid udda antal deltagare: tilldela frirond till en spelare som INTE haft frirond
+  // 1. Vid udda antal spelare: tilldela frirond till en kvalificerad spelare som INTE haft frirond
   if (activePlayers.length % 2 !== 0) {
     const candidates = activePlayers
       .filter(p => !(p.history || []).some(h => h.opponent === null))
@@ -507,7 +556,7 @@ function generateRound2() {
 
   const scoreGroups = [1, 0.5, 0];
 
-  // 2. Lotta mellan H1 och H2 för respektive poänggrupp
+  // 2. Korslotta H1 och H2 per poänggrupp
   scoreGroups.forEach(sc => {
     const groupH1 = h1.filter(p => !paired.has(p.id) && p.score === sc).sort((a, b) => a.seed - b.seed);
     const groupH2 = h2.filter(p => !paired.has(p.id) && p.score === sc).sort((a, b) => a.seed - b.seed);
@@ -517,35 +566,37 @@ function generateRound2() {
       const pA = groupH1[i];
       const pB = groupH2[i];
       let white, black;
+
       const pAColorR1 = (pA.history && pA.history[0]) ? pA.history[0].color : null;
       const pBColorR1 = (pB.history && pB.history[0]) ? pB.history[0].color : null;
 
       if (pAColorR1 === 'B' && pBColorR1 === 'W') {
-        white = pA; black = pB; // pA had Black, so give pA White
+        white = pA; black = pB; // pA hade svart, ge pA vit
       } else if (pAColorR1 === 'W' && pBColorR1 === 'B') {
-        white = pB; black = pA; // pB had Black, so give pB White
+        white = pB; black = pA; // pB hade svart, ge pB vit
       } else {
-        // If both had the same color in R1, fall back to seed preference
+        // Om båda hade samma färg i rond 1, fall tillbaka på seed-preferens
         if (pA.seed < pB.seed) {
           black = pA; white = pB;
         } else {
           black = pB; white = pA;
         }
       }
+
       pairings.push({ board: board++, white, black, result: '' });
       paired.add(pA.id);
       paired.add(pB.id);
     }
   });
 
-  // 3. Resterande spelarantal är nu garanterat jämnt
+  // 3. Återstående antal spelare är nu garanterat jämnt
   const remaining = state.players.filter(p => !paired.has(p.id) && !p.withdrawn);
   if (remaining.length > 0) {
     const extra = pairRound3Plus(remaining);
     extra.forEach(p => pairings.push({ ...p, board: board++ }));
   }
 
-  // 4. Lägg till frironden sist i rondens lottning
+  // 4. Lägg till frirondsparet på nedersta bordet
   if (byePlayer) {
     pairings.push({ board: board++, white: byePlayer, black: null, result: '1-0 (Frirond)' });
   }
@@ -558,8 +609,8 @@ function generateRound2() {
 // ============================================================================
 
 /**
- * Beräknar total färgstatistik för en spelare.
- * diff = vita - svarta (positiv = överskott på vit, negativ = överskott på svart)
+ * Beräknar total färgbalans för en spelare.
+ * diff = vita - svarta (positiv = överskott vit, negativ = överskott svart)
  */
 function getColorStats(p) {
   const history = p.history || [];
@@ -573,8 +624,8 @@ function getColorStats(p) {
 }
 
 /**
- * Returnerar pågående svit av samma färg bakåt i tiden.
- * Ignorerar ronder utan färg (exempelvis frirond/bye).
+ * Returnerar pågående följd av samma färg bakåt i tiden.
+ * Hoppar över ronder utan färg (t.ex. frironder).
  */
 function getStreak(p) {
   const history = (p.history || []).filter(h => h.color === 'W' || h.color === 'B');
@@ -592,20 +643,20 @@ function getStreak(p) {
 }
 
 /**
- * Kontrollerar om en specifik färgfördelning är tillåten givet max tillåten svit.
+ * Kontrollerar om en specifik färgtilldelning är tillåten under en given maxföljd.
  */
 function canAssignColors(whitePlayer, blackPlayer, maxStreak) {
   const wStats = getColorStats(whitePlayer);
   const bStats = getColorStats(blackPlayer);
 
-  // KRAV 1: Absolut färgbalans (|Vit - Svart| får ALDRIG nå 3)
-  // Om vit spelare redan har diff >= 2, skulle ytterligare en vit ge diff >= 3 (otillåtet)
+  // REGEL 1: Absolut färgbalans (|Vit - Svart| kan ALDRIG nå 3)
+  // Om vit spelare redan har diff >= 2 skulle ytterligare vit göra diff >= 3 (otillåtet)
   if (wStats.diff >= 2) return false;
 
-  // Om svart spelare redan har diff <= -2, skulle ytterligare en svart ge diff <= -3 (otillåtet)
+  // Om svart spelare redan har diff <= -2 skulle ytterligare svart göra diff <= -3 (otillåtet)
   if (bStats.diff <= -2) return false;
 
-  // KRAV 2: Svitregel (max antal partier i rad med samma färg)
+  // REGEL 2: Följdbegränsning (max antal på varandra följande partier med samma färg)
   const wStreak = getStreak(whitePlayer);
   const bStreak = getStreak(blackPlayer);
 
@@ -616,7 +667,7 @@ function canAssignColors(whitePlayer, blackPlayer, maxStreak) {
 }
 
 /**
- * Standard färgprioritering när båda färgfördelningar är tillåtna.
+ * Standardfärgpreferens när båda färgordningarna är tillåtna.
  */
 function choosePreferredColor(p1, p2) {
   const s1 = getColorStats(p1);
@@ -629,11 +680,11 @@ function choosePreferredColor(p1, p2) {
 }
 
 /**
- * Tilldelar färg mellan p1 och p2.
- * Försöker först med max 2 i rad. Krockar det med färgbalansen tillåts 3 i rad.
+ * Tilldelar färger mellan p1 och p2.
+ * Försöker först med strikt max 2 i rad. Faller tillbaka på 3 i rad om balansen krockar.
  */
 function getValidColorAssignment(p1, p2, maxStreakAllowed = 3) {
-  // Nivå 1: Försök först med standardregeln (max 2 i rad med samma färg)
+  // Nivå 1: Försök med strikt 2 i rad
   const p1W_p2B_2 = canAssignColors(p1, p2, 2);
   const p2W_p1B_2 = canAssignColors(p2, p1, 2);
 
@@ -647,7 +698,7 @@ function getValidColorAssignment(p1, p2, maxStreakAllowed = 3) {
     return { white: p2, black: p1 };
   }
 
-  // Nivå 2: Om det krockar p.g.a. absolut färgbalans, tillåt upp till 3 i rad
+  // Nivå 2: Tillåt upp till 3 i rad om det behövs för absolut färgbalans
   if (maxStreakAllowed >= 3) {
     const p1W_p2B_3 = canAssignColors(p1, p2, 3);
     const p2W_p1B_3 = canAssignColors(p2, p1, 3);
@@ -684,7 +735,7 @@ function pairRound3Plus(players) {
   let byePairing = null;
   let toPair = [...available];
 
-  // Tilldela frirond vid udda deltagarantal från botten
+  // Tilldela frirond från botten vid udda antal spelare
   if (toPair.length % 2 !== 0) {
     let byeIdx = -1;
     for (let i = toPair.length - 1; i >= 0; i--) {
@@ -721,15 +772,15 @@ function pairRound3Plus(players) {
     return null;
   }
 
-  // 1. Primär lottning: strikt max 2 i rad med samma färg och |diff| < 3
+  // 1. Primär lösare: strikt max 2 i rad och |diff| < 3
   let solution = solve(toPair, 2);
 
-  // 2. Sekundär lottning: om krock uppstår p.g.a. färgbalansen, tillåt 3 i rad
+  // 2. Sekundär lösare: tillåt upp till 3 i rad om färgbalansen tvingar det
   if (solution === null) {
     solution = solve(toPair, 3);
   }
 
-  // 3. Nödfallshantering i extrema fall
+  // 3. Reservlösare för extrema kantfall
   if (solution === null) {
     const pairs = [];
     const rem = [...toPair];
@@ -761,7 +812,7 @@ function pairRound3Plus(players) {
 
 function renderPairings() {
   document.getElementById('pairings-section').style.display = 'block';
-  document.getElementById('round-title').textContent = `${state.name} – Rond ${state.currentRound} Lottning`;
+  document.getElementById('round-title').textContent = `${state.name} – Rond ${state.currentRound} lottning`;
 
   const nextBtn = document.getElementById('next-round-btn');
   if (nextBtn) {
@@ -821,7 +872,7 @@ function submitRound() {
   const curRound = state.rounds[state.currentRound - 1];
   for (let p of curRound.pairings) {
     if (p.black && !p.result) {
-      alert(`Mata in ett resultat för bord ${p.board}.`);
+      alert(`Ange ett resultat för bord ${p.board}.`);
       return;
     }
   }
@@ -894,44 +945,109 @@ function recalculateTiebreaks() {
     p.buchholz = buchholz;
     p.sonneborn = sonneborn;
   });
+
+  // Beräkna WNT (Winther-poäng) för alla spelare
+  calculateWNT();
+}
+
+/* --- WNT (WINTHER-SÄRSKILJNING) --- */
+function calculateWNT() {
+  // Räkna endast ronder vars resultat har registrerats
+  const N = state.rounds.filter(r =>
+    r.pairings.every(p => !p.black || p.result)
+  ).length;
+  if (N === 0) {
+    state.players.forEach(p => { p.wnt = 0; });
+    return;
+  }
+
+  const pMap = new Map(state.players.map(p => [p.id, p]));
+  state.players.forEach(p => {
+    let sum = 0;
+    (p.history || []).forEach(h => {
+      if (!h.opponent) return; // hoppa över frirond
+      const opp = pMap.get(h.opponent);
+      if (!opp) return;
+
+      // Bestäm resultatpoäng för denna spelare i detta parti
+      let resultScore = 0;
+      if (h.result === '1-0') resultScore = 1.0;
+      else if (h.result === '0.5-0.5') resultScore = 0.5;
+      else if (h.result === '0-1') resultScore = 0.0;
+
+      const ratio = opp.score / N;
+      // WNT-formel: 100 * sum( (P_i / N) * (r_i + P_i / (2N)) )
+      sum += ratio * (resultScore + ratio / 2);
+    });
+    p.wnt = 100 * sum;
+  });
 }
 
 function getSortedStandings() {
   return [...state.players].sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
-    if (b.buchholz !== a.buchholz) return b.buchholz - a.buchholz;
-    if (b.sonneborn !== a.sonneborn) return b.sonneborn - a.sonneborn;
+
+    if (state.tieBreakSystem === 'wnt') {
+      if (Math.abs(b.wnt - a.wnt) > 0.0001) return b.wnt - a.wnt;
+    } else {
+      // Buchholz / Sonneborn-Berger
+      if (b.buchholz !== a.buchholz) return b.buchholz - a.buchholz;
+      if (b.sonneborn !== a.sonneborn) return b.sonneborn - a.sonneborn;
+    }
     return a.seed - b.seed;
   });
 }
 
-
 function showFinalStandings() {
   recalculateTiebreaks();
   document.getElementById('final-section').style.display = 'block';
+
+  const tName = (state.name || 'Swiss-turnering').trim();
+  document.getElementById('final-standings-title').textContent = `${tName} — Slutställning`;
+  // Bygg om tabellhuvudet dynamiskt baserat på valt särskiljningssystem
+  const theadRow = document.getElementById('final-thead-row');
+  theadRow.innerHTML = '';
+
+  const headers = ['Plac.', 'Seed', 'Spelare', 'Rating', 'Poäng'];
+  if (state.tieBreakSystem === 'wnt') {
+    headers.push('WNT');
+  } else {
+    headers.push('Buchholz', 'S-B');
+  }
+  headers.push('Färger');
+
+  headers.forEach(h => {
+    const th = document.createElement('th');
+    th.textContent = h;
+    theadRow.appendChild(th);
+  });
+
   const tbody = document.getElementById('final-table-body');
   tbody.innerHTML = '';
 
   const standings = getSortedStandings();
-  const colorMap = { 'W': 'v', 'B': 's' };
-
   standings.forEach((p, idx) => {
-    // Genererar färgsekvensen på svenska: 'v', 's' eller '-'
+    // Samla sekvensen av färger ('W', 'B' eller '-' för frironder)
     const colorHistory = (p.history || [])
-      .map(h => colorMap[h.color] || '-')
+      .map(h => (h.color && h.color !== '-') ? h.color : '-')
       .join('');
 
     const tr = document.createElement('tr');
-    tr.innerHTML = `
+    let rowHtml = `
       <td>${idx + 1}</td>
       <td>${p.seed}</td>
-      <td>${p.name} ${p.withdrawn ? '(Utgått)' : ''}</td>
+      <td>${p.name} ${p.withdrawn ? '(Återtagen)' : ''}</td>
       <td>${p.rating}</td>
       <td><strong>${p.score}</strong></td>
-      <td>${p.buchholz}</td>
-      <td>${p.sonneborn}</td>
-      <td style="font-family: monospace; letter-spacing: 1px;">${colorHistory}</td>
     `;
+    if (state.tieBreakSystem === 'wnt') {
+      rowHtml += `<td>${p.wnt.toFixed(1)}</td>`;
+    } else {
+      rowHtml += `<td>${p.buchholz}</td><td>${p.sonneborn}</td>`;
+    }
+    rowHtml += `<td style="font-family: monospace; letter-spacing: 1px;">${colorHistory}</td>`;
+
+    tr.innerHTML = rowHtml;
     tbody.appendChild(tr);
   });
 }
@@ -947,7 +1063,7 @@ function openStandingsModal() {
     tr.innerHTML = `
       <td>${idx + 1}</td>
       <td>${p.seed}</td>
-      <td>${p.name} ${p.withdrawn ? '(Utgått)' : ''}</td>
+      <td>${p.name} ${p.withdrawn ? '(Återtagen)' : ''}</td>
       <td>${p.rating}</td>
       <td><strong>${p.score}</strong></td>
       <td>${p.buchholz}</td>
@@ -970,7 +1086,7 @@ function openWithdrawModal() {
   active.forEach(p => {
     const opt = document.createElement('option');
     opt.value = p.id;
-    opt.textContent = `${p.name} (Seed #${p.seed}, Ranking ${p.rating})`;
+    opt.textContent = `${p.name} (Seed #${p.seed}, Rating ${p.rating})`;
     sel.appendChild(opt);
   });
   document.getElementById('withdraw-modal').style.display = 'flex';
@@ -978,6 +1094,18 @@ function openWithdrawModal() {
 
 function closeWithdrawModal() {
   document.getElementById('withdraw-modal').style.display = 'none';
+}
+
+function openWntModal(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  document.getElementById('wnt-modal').style.display = 'flex';
+}
+
+function closeWntModal() {
+  document.getElementById('wnt-modal').style.display = 'none';
 }
 
 function confirmWithdrawal() {
@@ -1004,7 +1132,7 @@ function confirmWithdrawal() {
 
   closeWithdrawModal();
   renderPairings();
-  alert(`${player.name} har avanmälts från turneringen.`);
+  alert(`${player.name} har dragits tillbaka från turneringen.`);
 }
 
 function saveTournament() {

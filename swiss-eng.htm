@@ -38,6 +38,20 @@
   }
   .rules-box h3 { margin: 0 0 6px 0; font-size: 14px; color: var(--primary); }
   .rules-box ul { margin: 0; padding-left: 18px; }
+.wnt-asterisk {
+  color: var(--accent);
+  font-weight: bold;
+  font-size: 1.15rem;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 0;
+  user-select: none;
+  vertical-align: super;
+}
+.wnt-asterisk:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
   .btn-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
   button {
     background: var(--primary); color: #fff; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500;
@@ -70,6 +84,7 @@
     
     /* Göm alla modaler som standard vid utskrift */
     body.printing-modal .modal-overlay { display: none !important; }
+    body.printing-modal #wnt-modal { display: none !important; }
 
     /* Visa ENDAST ställnings-modalen */
     body.printing-modal #standings-modal {
@@ -118,9 +133,16 @@
       </div>
     </div>
 
+    <div style="margin-top: 16px;">
+      <label>Tie-break System (Final Standings)</label>
+      <div class="radio-group">
+        <label><input type="radio" name="tiebreak" value="wnt" checked> WNT<sup class="wnt-asterisk" onclick="openWntModal(event)" title="Information about Winther score">*</sup></label>
+        <label><input type="radio" name="tiebreak" value="buchholz"> Buchholz</label>
+      </div>
+    </div>
+
     <div class="rules-box">
-      <h3>Pairing System: Winther Acceleration<sup><a href="https://mats-winther.github.io/bg/chesspairing.htm" style="text-decoration:none;" target="_blank" title=
-    "Chess Pairings: A Review of Monrad, Swiss, and Berger">&thinsp;*</a></sup></h3>
+      <h3>Pairing System: Winther Acceleration</h3>
       <ul>
         <li><strong>Round 1:</strong> Players are divided into four groups (quadrants). The highest-ranked player in Q1 plays White against the highest-ranked player in Q2, and correspondingly for Q3 and Q4. (For uneven groups, sizes are adjusted automatically, and with an odd number of players, the lowest-ranked gets a bye).</li>
         <li><strong>Round 2:</strong> Highest-seeded winner plays Black against the highest-seeded winner in the other half. Second highest-seeded plays Black against the next in the other half, and so on.</li>
@@ -173,19 +195,19 @@
   </div>
 
   <!-- Final Standings -->
-  <div id="final-section" style="display:none;">
-    <h2>Final Standings</h2>
+<div id="final-section" style="display:none;">
+  <h2 id="final-standings-title">Final Standings</h2>
+    
     <table>
       <thead>
-        <tr>
+        <tr id="final-thead-row">
           <th>Pos.</th>
           <th>Seed</th>
           <th>Player</th>
           <th>Rating</th>
           <th>Score</th>
-          <th>Buchholz</th>
-          <th>S-B</th>
-	  <th>Colors</th>
+          <!-- Tie-break columns injected dynamically -->
+          <th>Colors</th>
         </tr>
       </thead>
       <tbody id="final-table-body"></tbody>
@@ -239,12 +261,34 @@
   </div>
 </div>
 
+<!-- Modal: WNT Information -->
+<div id="wnt-modal" class="modal-overlay" onclick="if(event.target === this) closeWntModal()">
+  <div class="modal-box" style="max-width: 580px;">
+    <button class="close-btn" onclick="closeWntModal()">&times;</button>
+    <h2 style="margin-top: 0; color: var(--primary); font-size: 1.2rem;">Winther Score (WNT)</h2>
+    <div style="font-family: monospace, monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.92rem; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; color: #0f172a;">Winther Score (WNT) = 100 × ∑ᵢ [ (Pᵢ / N) × (rᵢ + Pᵢ / (2N)) ]
+
+∑ᵢ = sum over all opponents faced
+rᵢ = your result against opponent i (1, 0.5, 0)
+Pᵢ = opponent i's final tournament score
+N = total number of rounds in the tournament
+Pᵢ / N = opponent's score share (ratio expressed as a decimal between 0 and 1)</div>
+    <p style="font-size: 0.95rem; line-height: 1.5; color: #334155; margin-bottom: 18px;">
+      When players finish tied on points, they are separated based on the quality of the opposition they have faced. This new method provides a fairer reflection of player performance than traditional tie-break systems, consistently rewarding those who compete on the top boards. See also: <a href="https://mats-winther.github.io/bg/chesspairing.htm" style="text-decoration:none;" target="_blank" title="Chess Pairings: A Review of Monrad, Swiss, and Berger">Chess pairings: a review of Monrad, Swiss, and Berger</a>.
+    </p>
+    <div class="btn-bar" style="justify-content: flex-end; margin-top: 0;">
+      <button type="button" onclick="closeWntModal()">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
 let state = {
   name: '',
   totalRounds: 5,
   currentRound: 0,
   r1ColorOption: 'higherWhite',
+  tieBreakSystem: 'wnt',   // 'wnt' (default) or 'buchholz'
   players: [],
   rounds: []
 };
@@ -338,6 +382,9 @@ document.getElementById('json-file-input').addEventListener('change', function(e
         });
       });
 
+      // Ensure tieBreakSystem exists (backwards compatibility)
+      if (!state.tieBreakSystem) state.tieBreakSystem = 'wnt';
+
       document.getElementById('setup-section').style.display = 'none';
       if (state.currentRound > state.totalRounds) {
         showFinalStandings();
@@ -385,6 +432,7 @@ function parsePlayers() {
     score: 0,
     buchholz: 0,
     sonneborn: 0,
+    wnt: 0,
     opponents: [],
     history: [],
     withdrawn: false
@@ -401,6 +449,7 @@ function startTournament() {
   state.name = document.getElementById('tournament-name').value || 'Swiss Tournament';
   state.totalRounds = parseInt(document.getElementById('round-count').value, 10) || 5;
   state.r1ColorOption = document.querySelector('input[name="r1-color"]:checked').value;
+  state.tieBreakSystem = document.querySelector('input[name="tiebreak"]:checked').value;
   state.players = parsed;
   state.rounds = [];
   state.currentRound = 1;
@@ -896,13 +945,55 @@ function recalculateTiebreaks() {
     p.buchholz = buchholz;
     p.sonneborn = sonneborn;
   });
+
+  // Calculate WNT (Winther Score) for all players
+  calculateWNT();
+}
+
+/* --- WNT (WINTHER TIE-BREAK) --- */
+function calculateWNT() {
+  // Count only rounds whose results have been recorded
+  const N = state.rounds.filter(r =>
+    r.pairings.every(p => !p.black || p.result)
+  ).length;
+  if (N === 0) {
+    state.players.forEach(p => { p.wnt = 0; });
+    return;
+  }
+
+  const pMap = new Map(state.players.map(p => [p.id, p]));
+  state.players.forEach(p => {
+    let sum = 0;
+    (p.history || []).forEach(h => {
+      if (!h.opponent) return; // skip bye
+      const opp = pMap.get(h.opponent);
+      if (!opp) return;
+
+      // Determine result score for this player in this game
+      let resultScore = 0;
+      if (h.result === '1-0') resultScore = 1.0;
+      else if (h.result === '0.5-0.5') resultScore = 0.5;
+      else if (h.result === '0-1') resultScore = 0.0;
+
+      const ratio = opp.score / N;
+      // WNT formula: 100 * sum( (P_i / N) * (r_i + P_i / (2N)) )
+      sum += ratio * (resultScore + ratio / 2);
+    });
+    p.wnt = 100 * sum;
+  });
 }
 
 function getSortedStandings() {
   return [...state.players].sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
-    if (b.buchholz !== a.buchholz) return b.buchholz - a.buchholz;
-    if (b.sonneborn !== a.sonneborn) return b.sonneborn - a.sonneborn;
+
+    if (state.tieBreakSystem === 'wnt') {
+      if (Math.abs(b.wnt - a.wnt) > 0.0001) return b.wnt - a.wnt;
+    } else {
+      // Buchholz / Sonneborn-Berger
+      if (b.buchholz !== a.buchholz) return b.buchholz - a.buchholz;
+      if (b.sonneborn !== a.sonneborn) return b.sonneborn - a.sonneborn;
+    }
     return a.seed - b.seed;
   });
 }
@@ -910,6 +1001,27 @@ function getSortedStandings() {
 function showFinalStandings() {
   recalculateTiebreaks();
   document.getElementById('final-section').style.display = 'block';
+
+  const tName = (state.name || 'Swiss Tournament').trim();
+  document.getElementById('final-standings-title').textContent = `${tName} — Final Standings`;
+  // Rebuild the table header dynamically based on the selected tie-break system
+  const theadRow = document.getElementById('final-thead-row');
+  theadRow.innerHTML = '';
+
+  const headers = ['Pos.', 'Seed', 'Player', 'Rating', 'Score'];
+  if (state.tieBreakSystem === 'wnt') {
+    headers.push('WNT');
+  } else {
+    headers.push('Buchholz', 'S-B');
+  }
+  headers.push('Colors');
+
+  headers.forEach(h => {
+    const th = document.createElement('th');
+    th.textContent = h;
+    theadRow.appendChild(th);
+  });
+
   const tbody = document.getElementById('final-table-body');
   tbody.innerHTML = '';
 
@@ -921,16 +1033,21 @@ function showFinalStandings() {
       .join('');
 
     const tr = document.createElement('tr');
-    tr.innerHTML = `
+    let rowHtml = `
       <td>${idx + 1}</td>
       <td>${p.seed}</td>
       <td>${p.name} ${p.withdrawn ? '(Withdrawn)' : ''}</td>
       <td>${p.rating}</td>
       <td><strong>${p.score}</strong></td>
-      <td>${p.buchholz}</td>
-      <td>${p.sonneborn}</td>
-      <td style="font-family: monospace; letter-spacing: 1px;">${colorHistory}</td>
     `;
+    if (state.tieBreakSystem === 'wnt') {
+      rowHtml += `<td>${p.wnt.toFixed(1)}</td>`;
+    } else {
+      rowHtml += `<td>${p.buchholz}</td><td>${p.sonneborn}</td>`;
+    }
+    rowHtml += `<td style="font-family: monospace; letter-spacing: 1px;">${colorHistory}</td>`;
+
+    tr.innerHTML = rowHtml;
     tbody.appendChild(tr);
   });
 }
@@ -977,6 +1094,18 @@ function openWithdrawModal() {
 
 function closeWithdrawModal() {
   document.getElementById('withdraw-modal').style.display = 'none';
+}
+
+function openWntModal(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  document.getElementById('wnt-modal').style.display = 'flex';
+}
+
+function closeWntModal() {
+  document.getElementById('wnt-modal').style.display = 'none';
 }
 
 function confirmWithdrawal() {
