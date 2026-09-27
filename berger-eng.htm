@@ -45,6 +45,10 @@
       border-bottom: 2px solid var(--border);
       padding-bottom: 16px;
       margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
     }
     h1 { font-size: 25px; color: var(--primary); font-weight: 700; }
     header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
@@ -186,15 +190,72 @@
     .matrix-table { overflow-x: auto; display: block; }
     .matrix-table th, .matrix-table td { min-width: 36px; text-align: center; font-size: 13px; }
     .matrix-table td.matrix-diag { background: #e2e8f0; font-weight: bold; }
-  </style>
+
+/* Dialog Box Styling */
+dialog {
+  border: 1px solid #cbd5e1; /* Clear, visible border */
+  border-radius: 8px;
+  width: min(650px, 92vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+  
+  /* Force solid light background and dark text */
+  background-color: #ffffff;
+  color: #0f172a;
+  
+  /* Drop shadow to pop out from the backdrop */
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  
+  text-align: left;
+  margin: auto;
+}
+
+/* Ensure backdrop dims the rest of the page behind the dialog */
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+}
+dialog h2 {
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+  color: var(--text);
+}
+
+dialog p {
+  margin: 0.6rem 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+dialog ul {
+  margin: 0.75rem 0 1.25rem 1.25rem;
+  font-size: 0.88rem;
+}
+
+dialog li {
+  margin-bottom: 0.35rem;
+}
+
+dialog a {
+  color: var(--primary);
+  text-decoration: underline;
+}
+</style>
 </head>
 <body>
 <div class="container">
-  <header>
-    <h1>Berger Tournament System (Round-Robin)</h1>
-    <p>Official Berger pairing tables for 3 to 16 players in compliance with FIDE Handbook (Annex 1 &amp; C.07)<sup><a href="https://mats-winther.github.io/bg/chesspairing.htm" style="text-decoration:none;" target="_blank" title=
-    "Chess Pairings: A Review of Monrad, Swiss, and Berger">&thinsp;<b>*</b></a></sup></p>
-  </header>
+
+<header>
+  <div class="brand">
+    <h1>Berger Tournament System</h1>
+<p>Official Berger Pairing Tables for 3 to 16 Players According to the FIDE Handbook (C05/Annex 1 &amp; C.07)</p>
+
+  </div>
+  <div>
+    <button id="aboutButton" class="btn btn-secondary" onclick="document.getElementById('aboutDialog').showModal()">About</button>
+  </div>
+</header>
 
   <!-- SETUP SECTION -->
   <section id="setupSection">
@@ -387,6 +448,11 @@ const SAMPLE_CHAMPIONS = [
   "Garry Kasparov", "Vladimir Kramnik", "Viswanathan Anand", "Magnus Carlsen"
 ];
 
+function setAboutButtonVisible(visible) {
+document.getElementById("aboutButton").style.display =
+visible ? "inline-flex" : "none";
+}
+
 function loadSamplePlayers() {
   document.getElementById("playerRoster").value = SAMPLE_CHAMPIONS.join("\n");
 }
@@ -578,6 +644,7 @@ function showTournamentScreen() {
   document.getElementById("setupSection").style.display = "none";
   document.getElementById("finalSection").style.display = "none";
   document.getElementById("tournamentSection").style.display = "block";
+  setAboutButtonVisible(false);
   document.querySelector(`input[name="roundTb"][value="${tournament.defaultTieBreak}"]`).checked = true;
   renderRound();
 }
@@ -588,6 +655,7 @@ function finishTournament() {
   document.getElementById("setupSection").style.display = "none";
   document.getElementById("tournamentSection").style.display = "none";
   document.getElementById("finalSection").style.display = "block";
+  setAboutButtonVisible(false);
   document.querySelector(`input[name="finalTb"][value="${tournament.defaultTieBreak}"]`).checked = true;
   renderFinals();
 }
@@ -602,6 +670,7 @@ function newTournamentSetup() {
     document.getElementById("setupSection").style.display = "block";
     document.getElementById("tournamentSection").style.display = "none";
     document.getElementById("finalSection").style.display = "none";
+    setAboutButtonVisible(true);
     localStorage.removeItem("bergerTournamentSession");
   }
 }
@@ -1288,7 +1357,40 @@ window.onload = function() {
       else showTournamentScreen();
     } catch (e) {}
   }
+  setAboutButtonVisible(true);
 };
 </script>
+<!-- ==================== ABOUT DIALOG ==================== -->
+<dialog id="aboutDialog">
+  <h2>About Berger Tournament System</h2>
+
+  <p>
+    This application generates pairing schedules and standings based on the Berger round-robin pairing system as specified by FIDE.
+    The pairing tables determine the exact color distribution and round-by-round pairings for all participants.
+  </p>
+
+  <ul>
+    <li>
+      <a href="https://handbook.fide.com/chapter/C05Annex1" target="_blank" rel="noopener">
+        FIDE Handbook: Details of Berger Table
+      </a>
+    </li>    
+  <li>
+      <a href="https://handbook.fide.com/chapter/TieBreakRegulations032026"
+         target="_blank" rel="noopener">Play-Off and Tie-Break Regulations</a>
+    </li>
+
+    <li>
+      <a href="https://mats-winther.github.io/bg/chesspairing.htm" target="_blank" rel="noopener">
+        Chess Pairings: A Review of Monrad, Swiss, and Berger
+      </a>
+    </li>
+
+  </ul>
+
+  <div style="text-align: left; margin-top: 1.25rem;">
+    <button class="btn btn-primary" onclick="document.getElementById('aboutDialog').close()">Close</button>
+  </div>
+</dialog>
 </body>
 </html>

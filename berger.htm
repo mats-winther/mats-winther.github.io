@@ -45,6 +45,10 @@
       border-bottom: 2px solid var(--border);
       padding-bottom: 16px;
       margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
     }
     h1 { font-size: 25px; color: var(--primary); font-weight: 700; }
     header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
@@ -186,15 +190,69 @@
     .matrix-table { overflow-x: auto; display: block; }
     .matrix-table th, .matrix-table td { min-width: 36px; text-align: center; font-size: 13px; }
     .matrix-table td.matrix-diag { background: #e2e8f0; font-weight: bold; }
+
+/* Dialog Box Styling */
+dialog {
+  border: 1px solid #cbd5e1; /* Clear, visible border */
+  border-radius: 8px;
+  width: min(650px, 92vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+  
+  /* Force solid light background and dark text */
+  background-color: #ffffff;
+  color: #0f172a;
+  
+  /* Drop shadow to pop out from the backdrop */
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  
+  text-align: left;
+  margin: auto;
+}
+
+/* Ensure backdrop dims the rest of the page behind the dialog */
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+}
+dialog h2 {
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+  color: var(--text);
+}
+
+dialog p {
+  margin: 0.6rem 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+dialog ul {
+  margin: 0.75rem 0 1.25rem 1.25rem;
+  font-size: 0.88rem;
+}
+
+dialog li {
+  margin-bottom: 0.35rem;
+}
+
+dialog a {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
   </style>
 </head>
 <body>
 <div class="container">
-  <header>
+<header>
+  <div>
     <h1>Berger Turneringssystem (Alla-mot-alla)</h1>
-    <p>Officiella Berger-lottningstabeller för 3 till 16 spelare enligt FIDE Handbook (Annex 1 &amp; C.07)<sup><a href="https://mats-winther.github.io/bg/schacklottning.htm" style="text-decoration:none;" target="_blank" title=
-    "Schacklottning: en genomgång av Monrad, Schweizer och Berger">&thinsp;<b>*</b></a></sup></p>
-  </header>
+    <p>Officiella Berger-lottningstabeller för 3 till 16 spelare enligt FIDE Handbook (C05/Annex 1 &amp; C.07)</p>
+  </div>
+  <button type="button" id="aboutButton" class="btn-secondary" onclick="document.getElementById('aboutDialog').showModal()">Om systemet</button>
+</header>
 
   <!-- START / INSTÄLLNINGAR -->
   <section id="setupSection">
@@ -391,6 +449,11 @@ function loadSamplePlayers() {
   document.getElementById("playerRoster").value = SAMPLE_CHAMPIONS.join("\n");
 }
 
+function setAboutButtonVisible(visible) {
+document.getElementById("aboutButton").style.display =
+visible ? "inline-flex" : "none";
+}
+
 function importPlayersTxt(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -578,6 +641,7 @@ function showTournamentScreen() {
   document.getElementById("setupSection").style.display = "none";
   document.getElementById("finalSection").style.display = "none";
   document.getElementById("tournamentSection").style.display = "block";
+  setAboutButtonVisible(false);
   document.querySelector(`input[name="roundTb"][value="${tournament.defaultTieBreak}"]`).checked = true;
   renderRound();
 }
@@ -589,6 +653,7 @@ function finishTournament() {
   document.getElementById("tournamentSection").style.display = "none";
   document.getElementById("finalSection").style.display = "block";
   document.querySelector(`input[name="finalTb"][value="${tournament.defaultTieBreak}"]`).checked = true;
+  setAboutButtonVisible(false);
   renderFinals();
 }
 
@@ -602,6 +667,7 @@ function newTournamentSetup() {
     document.getElementById("setupSection").style.display = "block";
     document.getElementById("tournamentSection").style.display = "none";
     document.getElementById("finalSection").style.display = "none";
+    setAboutButtonVisible(true);
     localStorage.removeItem("bergerTournamentSession");
   }
 }
@@ -1288,7 +1354,40 @@ window.onload = function() {
       else showTournamentScreen();
     } catch (e) {}
   }
+  setAboutButtonVisible(true);
 };
 </script>
+<!-- ==================== ABOUT DIALOG ==================== -->
+<dialog id="aboutDialog">
+  <h2>Om Berger Turneringssystem</h2>
+
+  <p>
+    Denna applikation genererar spelscheman och ställningstabeller baserade på Bergers officiella lottningssystem för alla-mot-alla-turneringar enligt FIDE:s bestämmelser. Lottningstabellerna anger den exakta färgfördelningen och de rondvisa parningarna för samtliga deltagare.
+  </p>
+
+  <ul>
+    <li>
+      <a href="https://handbook.fide.com/chapter/C05Annex1" target="_blank" rel="noopener">
+        FIDE Handbook: Details of Berger Table
+      </a>
+    </li>    
+  <li>
+      <a href="https://handbook.fide.com/chapter/TieBreakRegulations032026"
+         target="_blank" rel="noopener">Play-Off and Tie-Break Regulations</a>
+    </li>
+
+    <li>
+      <a href="https://mats-winther.github.io/bg/schacklottning.htm" target="_blank" rel="noopener">
+        Schacklottning: en genomgång av Monrad, Schweizer och Berger
+      </a>
+    </li>
+
+  </ul>
+
+  <div style="text-align: left; margin-top: 1.25rem;">
+    <button class="btn btn-primary" onclick="document.getElementById('aboutDialog').close()">Stäng</button>
+  </div>
+</dialog>
+
 </body>
 </html>
