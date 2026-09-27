@@ -305,6 +305,55 @@
       margin-bottom: 1rem;
     }
 
+    /* Dialog styling */
+    dialog {
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      width: min(650px, 92vw);
+      max-height: 88vh;
+      overflow-y: auto;
+      padding: 1.5rem;
+      background: var(--card-bg);
+      color: var(--text);
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25);
+margin: auto;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+    }
+
+    dialog::backdrop {
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(2px);
+    }
+
+    dialog h2 {
+      margin-bottom: 0.75rem;
+      font-size: 1.25rem;
+      color: var(--text);
+    }
+
+    dialog p {
+      margin: 0.6rem 0;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    dialog ul {
+      margin: 0.75rem 0 1.25rem 1.25rem;
+      font-size: 0.88rem;
+    }
+
+    dialog li {
+      margin-bottom: 0.35rem;
+    }
+
+    dialog a {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+
     /* Withdrawal Modal */
     .modal-overlay {
       position: fixed;
@@ -343,12 +392,12 @@
 <header>
   <div class="brand">
     <h1>Scheveningen Chess Manager</h1>
-    <span>FIDE Pairing Standard</span> <span><a href="https://mats-winther.github.io/bg/chesspairing.htm" style="text-decoration:none; color:#2563EB;" target="_blank" title=
-    "Chess Pairings: A Review of Monrad, Swiss, and Berger">&thinsp;About&hellip;</a></span>
+    <span>FIDE Pairing Standard</span>
   </div>
   <div style="display: flex; gap: 0.6rem; align-items: center;">
     <button class="btn btn-secondary" onclick="quickSave()">💾 Save Tournament</button>
     <button class="btn btn-secondary" onclick="exportTournamentJSON()">⬇ Export JSON</button>
+    <button class="btn btn-secondary" onclick="document.getElementById('aboutDialog').showModal()">About</button>
   </div>
 </header>
 
@@ -467,6 +516,47 @@
   </div>
 
 </div>
+
+<!-- ==================== ABOUT DIALOG ==================== -->
+<dialog id="aboutDialog">
+  <h2>About this implementation</h2>
+
+  <p>
+    A streamlined web tool for running team tournaments using the Scheveningen System,
+    where each player on one team plays against every player on the opposing team.
+  </p>
+
+  <p>
+    Standard pairing tables (2 to 13 boards) are used to ensure proper alternating
+    color distribution. Both single-round and double-round (reversed colors) formats
+    are supported.
+  </p>
+
+  <p>
+    Tie-breaks for individual standings include the Koya System (score against opponents
+    scoring 50% or more) and the Sonneborn-Berger score.
+  </p>
+
+  <p>
+    Player withdrawals can be scheduled starting from any round; opponents in
+    subsequent rounds automatically receive a 1-point bye win.
+  </p>
+
+  <ul>
+    <li>
+      <a href="https://mats-winther.github.io/bg/chesspairing.htm" target="_blank" rel="noopener">
+        Chess Pairings: A Review of Monrad, Swiss, and Berger
+      </a>
+    </li>
+    <li>
+      <a href="https://en.wikipedia.org/wiki/Scheveningen_system" target="_blank" rel="noopener">
+        Scheveningen System (Wikipedia)
+      </a>
+    </li>
+  </ul>
+
+  <button class="btn btn-primary" onclick="document.getElementById('aboutDialog').close()">Close</button>
+</dialog>
 
 <!-- ==================== WITHDRAWAL MODAL ==================== -->
 <div id="withdrawModal" class="modal-overlay" style="display: none;">
@@ -836,7 +926,6 @@ function generatePairingsForRound(n, rIndex, isDoubleSecondHalf) {
       if (n % 2 === 1) {
         whiteIsA = ((i + rIndex) % 2 === 0);
       } else {
-        // Balanced color parity for arbitrary even board count
         whiteIsA = (i <= half) ? (rIndex % 2 === 0) : (rIndex % 2 === 1);
       }
       pairingDefs.push(whiteIsA ? `A${i}-B${j}` : `B${j}-A${i}`);
@@ -1037,25 +1126,21 @@ function applyWithdrawalsToTournament() {
       const blackWD = pBlack.withdrawn && r.roundNumber >= pBlack.withdrawnFromRound;
 
       if (whiteWD && blackWD) {
-        // Both players withdrawn: double forfeit / unplayed
         if (!b.result || b.isBye) {
           b.result = '0-0';
           b.isBye = true;
         }
       } else if (whiteWD && !blackWD) {
-        // Black receives a 1-point BYE
         if (!b.result || b.isBye) {
           b.result = '0-1';
           b.isBye = true;
         }
       } else if (blackWD && !whiteWD) {
-        // White receives a 1-point BYE
         if (!b.result || b.isBye) {
           b.result = '1-0';
           b.isBye = true;
         }
       } else if (!whiteWD && !blackWD) {
-        // If neither is withdrawn, reset bye if it was previously set as bye
         if (b.isBye) {
           b.isBye = false;
           b.result = null;
@@ -1168,7 +1253,7 @@ function setResult(boardIndex, resStr) {
   const round = tournament.rounds[tournament.activeRoundIndex];
   const board = round.boards[boardIndex];
   board.result = (board.result === resStr) ? null : resStr;
-  board.isBye = false; // Manual override clears default bye flag
+  board.isBye = false;
 
   renderPairingsTable();
   renderScoreBanner();
@@ -1242,7 +1327,6 @@ function computeFullStandings() {
     });
   });
 
-  // Koya threshold: at least 50% of maximum possible tournament score (total rounds)
   const halfMaxScore = (tournament.roundsCount || (tournament.rounds ? tournament.rounds.length : 0) || 0) * 0.5;
 
   Object.values(stats).forEach(p => {
@@ -1269,7 +1353,7 @@ function computeFullStandings() {
 }
 
 /* =====================================================================
-   10. OPEN STANDINGS IN A BRAND NEW PAGE (LENGTHWISE PRINT READY)
+   10. OPEN STANDINGS IN A BRAND NEW PAGE
    ===================================================================== */
 function openStandingsNewPage() {
   if (!tournament || !tournament.rounds || tournament.rounds.length === 0) {
@@ -1292,7 +1376,6 @@ function openStandingsNewPage() {
     outcomeSubtitle = `Both teams have scored ${scoreA.toFixed(1)} points.`;
   }
 
-  // Cross table matrix
   const matrix = {};
   const teamBTotals = {};
   tournament.teamB.players.forEach(b => { teamBTotals[b.id] = 0; });
@@ -1319,7 +1402,6 @@ function openStandingsNewPage() {
         matrix[aId][bId].push(aScore);
       }
 
-      // Track Team B points
       if (b.white.team === 'B') {
         if (b.result === '1-0') teamBTotals[b.white.id] += 1.0;
         else if (b.result === '1/2-1/2') teamBTotals[b.white.id] += 0.5;
@@ -1350,7 +1432,6 @@ function openStandingsNewPage() {
     crosstableRows += `<td style="font-weight:700; text-align:center; color:#2563eb;">${rowScore.toFixed(1)}</td></tr>`;
   });
 
-  // Team B summary footer row
   let crosstableFooter = `<tr><td style="font-weight:700; text-align:left; background:#f1f5f9;">${escapeHtml(tournament.teamB.name)} Totals</td>`;
   let totalBScore = 0;
   tournament.teamB.players.forEach(b => {
@@ -1367,7 +1448,6 @@ function openStandingsNewPage() {
   });
   crosstableHeaders += `<th style="text-align:center;">Total</th>`;
 
-  // Individual standings rows
   let standingsRows = "";
   individual.forEach((p, idx) => {
     const pDisplayName = escapeHtml(getPlayerDisplayName(p));
