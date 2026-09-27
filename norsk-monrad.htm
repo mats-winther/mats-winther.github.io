@@ -326,6 +326,48 @@
         width: auto;
       }
     }
+
+.modal-overlay {
+position: fixed;
+inset: 0;
+z-index: 1000;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 20px;
+background: rgba(0, 0, 0, 0.55);
+}
+ 
+.modal-overlay.hidden {
+display: none;
+}
+
+    .modal-box {
+      background: white;
+      border-radius: 12px;
+      padding: 22px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border);
+    }
+
+   .monrad-asterisk {
+      color: var(--accent);
+      font-weight: bold;
+      font-size: 1.15rem;
+      cursor: pointer;
+      padding: 0 2px;
+      line-height: 0;
+      user-select: none;
+      vertical-align: super;
+    }
+
+   .monrad-asterisk:hover {
+      color: var(--primary-hover);
+      text-decoration: underline;
+    }
+
   </style>
 </head>
 
@@ -335,8 +377,7 @@
 
   <p>
     Lottning och administration enligt Norges
-    Schackförbunds Monradsystem<sup><a href="https://mats-winther.github.io/bg/schacklottning.htm" style="text-decoration:none; color:white;" target="_blank" title=
-    "Schacklottning: en genomgång av Monrad, Schweizer och Berger">&thinsp;<b>*</b></a></sup>
+    Schackförbunds Monradsystem<span><sup class="monrad-asterisk" onclick="openNorwegianModal(event)" title="Information about Norwegian Monrad">*</sup></span>
   </p>
 </header>
 
@@ -564,6 +605,40 @@
   </section>
 </main>
 
+<!-- MODAL: NORWEGIAN MONRAD INFORMATION -->
+<div id="norwegian-modal" class="modal-overlay hidden" onclick="if(event.target === this) closeNorwegianModal()">
+  <div class="modal-box" style="max-width: 580px;">
+    <h3 style="margin-top: 0; color: var(--primary); font-size: 1.2rem;">Norsk Monrad</h3>
+    <div style="font-family: monospace, monospace; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.95rem; line-height: 1.5; color: #334155; margin-bottom: 18px; ">
+  Startnummer kan lottas slumpmässigt eller genom seedad lottning.
+  Efter varje rond sorteras spelarna i poänggrupper och ordnas
+  efter startnummer inom varje grupp. Motståndare bör i möjligaste
+  mån hämtas från samma poänggrupp.
+<br><br>
+  Färgfördelningen strävar efter både balans och växling. Ingen spelare bör
+  få samma färg mer än tre gånger i rad eller få den ena färgen i mer än
+  hälften av partierna plus ett.
+<br><br>
+  Slutställningen avgörs i första hand av partipoäng och i andra hand av
+  summan av motståndarnas slutpoäng. Ytterligare särskiljning görs med kvalitetspoäng enligt Sonneborn-Berger).
+<br><br>
+  När rondresultaten har fastställts kan ett felaktigt registrerat 
+  resultat korrigeras via användargränssnittet, förutsatt att en säkerhetskopia
+  av turneringen tidigare har skapats med funktionen "Spara turnering".
+<ul>
+  <li>
+    <a href="https://2000.sjakk.no/kunnskap/systemer/norges-sjakkforbunds-monradsystem/" >Norges Sjakkforbunds Monradsystem</a>
+  </li>
+
+  <li><a href="https://mats-winther.github.io/bg/chesspairing.htm" target="_blank">Schacklottning: En genomgång av Monrad, Schweizer och Berger</a>
+  </li>
+</ul>
+    <div class="btn-group" style="justify-content: flex-end; margin-top: 0;">
+      <button type="button" onclick="closeNorwegianModal()">Stäng</button>
+    </div>
+  </div>
+</div>
+</div>
 <script>
 "use strict";
 
@@ -607,6 +682,19 @@ function makeId() {
     Math.random().toString(36).slice(2)
   );
 }
+
+  function openNorwegianModal(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    document.getElementById("norwegian-modal").classList.remove("hidden");
+  }
+
+function closeNorwegianModal() {
+    document.getElementById("norwegian-modal").classList.add("hidden");
+  }
+
 
 function escapeHTML(value) {
   return String(value ?? "")

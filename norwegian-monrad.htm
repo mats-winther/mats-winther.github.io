@@ -328,6 +328,50 @@
         width: auto;
       }
     }
+
+.modal-overlay {
+position: fixed;
+inset: 0;
+z-index: 1000;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 20px;
+background: rgba(0, 0, 0, 0.55);
+}
+ 
+.modal-overlay.hidden {
+display: none;
+}
+
+    .modal-box {
+      background: white;
+      border-radius: 12px;
+      padding: 22px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border);
+    }
+
+
+   .monrad-asterisk {
+      color: var(--accent);
+      font-weight: bold;
+      font-size: 1.15rem;
+      cursor: pointer;
+      padding: 0 2px;
+      line-height: 0;
+      user-select: none;
+      vertical-align: super;
+    }
+
+   .monrad-asterisk:hover {
+      color: var(--primary-hover);
+      text-decoration: underline;
+    }
+
+
   </style>
 </head>
 
@@ -337,8 +381,8 @@
 
   <p>
     Pairing and administration according to the Norwegian
-    Chess Federation’s Monrad system<sup><a href="https://mats-winther.github.io/bg/chesspairing.htm" style="text-decoration:none; color:white" target="_blank" title=
-    "Chess Pairings: A Review of Monrad, Swiss, and Berger">&thinsp;<b>*</b></a></sup>
+    Chess Federation’s Monrad system<span><sup class="monrad-asterisk" onclick="openNorwegianModal(event)" title="Information about Norwegian Monrad">*</sup></span>
+
   </p>
 </header>
 
@@ -494,7 +538,7 @@
 
       <p class="muted small">
         If the number of players is not divisible by four, the
-        lowest-ranked remainder is drawn randomly and receives the
+        lowest-ranked remaining players are drawn randomly and receive the
         final start numbers.
       </p>
     </div>
@@ -566,6 +610,40 @@
   </section>
 </main>
 
+<!-- MODAL: NORWEGIAN MONRAD INFORMATION -->
+<div id="norwegian-modal" class="modal-overlay hidden" onclick="if(event.target === this) closeNorwegianModal()">
+  <div class="modal-box" style="max-width: 580px;">
+    <h3 style="margin-top: 0; color: var(--primary); font-size: 1.2rem;">Norwegian Monrad</h3>
+    <div style="font-family: monospace, monospace; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.95rem; line-height: 1.5; color: #334155; margin-bottom: 18px; ">
+  Starting numbers may be assigned randomly or through seeded drawing.
+  After every round, players are arranged in score groups and ordered
+  by starting number within each group. Opponents should come from the
+  same score group whenever possible.
+<br><br>
+  Colour allocation aims at both balance and alternation. No player should
+  receive the same colour more than three times consecutively or receive
+  one colour in more than half of the games plus one.
+<br><br>
+  Final standings are determined first by game points and then by the
+  sum of the opponents’ final scores. Further ties are decided by Sonneborn–Berger.
+<br><br>
+  Once a round is confirmed, an incorrectly recorded result can be 
+  corrected through the GUI, provided that a tournament backup was 
+  previously created using the "Save Tournament" function.
+<ul>
+  <li>
+  <a href="https://2000.sjakk.no/kunnskap/systemer/norges-sjakkforbunds-monradsystem/" >Norwegian Chess Federation's Monrad System</a> (Norwegian)
+  </li>
+
+<li><a href="https://mats-winther.github.io/bg/chesspairing.htm" target="_blank" title="Chess Pairings: A Review of Monrad, Swiss, and Berger">Chess pairings: a review of Monrad, Swiss, and Berger</a>
+    </li></ul>
+    <div class="btn-group" style="justify-content: flex-end; margin-top: 0;">
+      <button type="button" onclick="closeNorwegianModal()">Close</button>
+    </div>
+  </div>
+</div>
+</div>
+
 <script>
 "use strict";
 
@@ -609,6 +687,20 @@ function makeId() {
     Math.random().toString(36).slice(2)
   );
 }
+
+  function openNorwegianModal(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    document.getElementById("norwegian-modal").classList.remove("hidden");
+  }
+
+function closeNorwegianModal() {
+    document.getElementById("norwegian-modal").classList.add("hidden");
+  }
+
+
 
 function escapeHTML(value) {
   return String(value ?? "")
