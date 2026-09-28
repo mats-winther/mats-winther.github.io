@@ -538,7 +538,7 @@ display: none;
 
       <p class="muted small">
         If the number of players is not divisible by four, the
-        lowest-ranked remaining players are drawn randomly and receive the
+        lowest-ranked remaining players are drawn randomly to receive the
         final start numbers.
       </p>
     </div>
@@ -612,7 +612,7 @@ display: none;
 
 <!-- MODAL: NORWEGIAN MONRAD INFORMATION -->
 <div id="norwegian-modal" class="modal-overlay hidden" onclick="if(event.target === this) closeNorwegianModal()">
-  <div class="modal-box" style="max-width: 580px;">
+  <div class="modal-box" style="max-width: 620px;">
     <h3 style="margin-top: 0; color: var(--primary); font-size: 1.2rem;">Norwegian Monrad</h3>
     <div style="font-family: monospace, monospace; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.95rem; line-height: 1.5; color: #334155; margin-bottom: 18px; ">
   Starting numbers may be assigned randomly or through seeded drawing.
@@ -622,10 +622,10 @@ display: none;
 <br><br>
   Colour allocation aims at both balance and alternation. No player should
   receive the same colour more than three times consecutively or receive
-  one colour in more than half of the games plus one.
+  one colour in more than half of the games plus one. These absolute colour rules override score-group matching in all rounds except the final round.
 <br><br>
   Final standings are determined first by game points and then by the
-  sum of the opponents’ final scores. Further ties are decided by Sonneborn–Berger.
+  sum of the opponents&rsquo; final scores (Buchholz Cut&#8209;1 or Cut&#8209;2). Further ties are decided by Sonneborn-Berger.
 <br><br>
   Once a round is confirmed, an incorrectly recorded result can be 
   corrected through the GUI, provided that a tournament backup was 
