@@ -371,6 +371,86 @@ display: none;
       text-decoration: underline;
     }
 
+/* Expand modal box to fit two columns */
+.modal-box.modal-wide {
+  max-width: 820px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Two-column layout */
+.modal-layout {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+  min-height: 0;
+}
+
+/* Sidebar styling */
+.modal-sidebar {
+  flex: 0 0 190px;
+  background: var(--secondary);
+  border-radius: 6px;
+  padding: 14px 12px;
+  font-size: 0.88rem;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-sidebar h4 {
+  margin: 0 0 6px 0;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+}
+
+.modal-sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.modal-sidebar li {
+  margin-bottom: 8px;
+}
+
+.modal-sidebar a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  display: block;
+}
+
+.modal-sidebar a:hover {
+  text-decoration: underline;
+}
+
+/* Main scrollable body inside the modal */
+.modal-main {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  max-height: 65vh;
+  padding-right: 6px;
+}
+
+/* Responsive adjustment for mobile screens */
+@media (max-width: 650px) {
+  .modal-layout {
+    flex-direction: column;
+  }
+  .modal-sidebar {
+    flex: none;
+    width: 100%;
+  }
+  .modal-main {
+    max-height: 50vh;
+  }
+}
+
 
   </style>
 </head>
@@ -612,36 +692,72 @@ display: none;
 
 <!-- MODAL: NORWEGIAN MONRAD INFORMATION -->
 <div id="norwegian-modal" class="modal-overlay hidden" onclick="if(event.target === this) closeNorwegianModal()">
-  <div class="modal-box" style="max-width: 620px;">
-    <h3 style="margin-top: 0; color: var(--primary); font-size: 1.2rem;">Norwegian Monrad</h3>
-    <div style="font-family: monospace, monospace; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.95rem; line-height: 1.5; color: #334155; margin-bottom: 18px; ">
-  Starting numbers may be assigned randomly or through seeded drawing.
-  After every round, players are arranged in score groups and ordered
-  by starting number within each group. Opponents should come from the
-  same score group whenever possible.
-<br><br>
-  Colour allocation aims at both balance and alternation. No player should
-  receive the same colour more than three times consecutively or receive
-  one colour in more than half of the games plus one. These absolute colour rules override score-group matching in all rounds except the final round.
-<br><br>
-  Final standings are determined first by game points and then by the
-  sum of the opponents&rsquo; final scores (Buchholz Cut&#8209;1 or Cut&#8209;2). Further ties are decided by Sonneborn-Berger.
-<br><br>
-  Once a round is confirmed, an incorrectly recorded result can be 
-  corrected through the GUI, provided that a tournament backup was 
-  previously created using the "Save Tournament" function.
-<ul>
-  <li>
-  <a href="https://2000.sjakk.no/kunnskap/systemer/norges-sjakkforbunds-monradsystem/" >Norwegian Chess Federation's Monrad System</a> (Norwegian)
-  </li>
+  <div class="modal-box modal-wide">
+    <h3 style="margin-top: 0; margin-bottom: 14px; color: var(--primary); font-size: 1.25rem;">
+      Norwegian Monrad
+    </h3>
 
-<li><a href="https://mats-winther.github.io/bg/chesspairing.htm" target="_blank" title="Chess Pairings: A Review of Monrad, Swiss, and Berger">Chess pairings: a review of Monrad, Swiss, and Berger</a>
-    </li></ul>
-    <div class="btn-group" style="justify-content: flex-end; margin-top: 0;">
+    <div class="modal-layout">
+      <!-- SIDEBAR -->
+      <aside class="modal-sidebar">
+
+        <div>
+          <h4>References</h4>
+          <ul>
+            <li>
+              <a href="https://2000.sjakk.no/kunnskap/systemer/norges-sjakkforbunds-monradsystem/" target="_blank">
+                NSF Monrad Rules ↗
+              </a>
+            </li>
+            <li>
+              <a href="https://mats-winther.github.io/bg/chesspairing.htm" target="_blank">
+                Pairing Review ↗
+              </a>
+            </li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <div class="modal-main">
+        <div style="font-family: inherit; font-size: 0.93rem; line-height: 1.55; color: #334155;">
+          <section id="modal-pairing" style="margin-bottom: 14px;">
+            <h4 style="margin: 0 0 4px 0; color: var(--primary-dark);">Starting Numbers &amp; Grouping</h4>
+            Starting numbers may be assigned randomly or through seeded drawing.
+            After every round, players are arranged in score groups and ordered
+            by starting number within each group. Opponents should come from the
+            same score group whenever possible.
+          </section>
+
+          <section id="modal-colors" style="margin-bottom: 14px;">
+            <h4 style="margin: 0 0 4px 0; color: var(--primary-dark);">Colour Rules</h4>
+		Colour allocation aims at both balance and alternation. No player should receive the same colour 
+		more than three times consecutively or receive one colour in more than half of the games plus one. 
+		These absolute colour rules override score-group matching in all rounds except the final round.
+	  </section>
+
+          <section id="modal-tiebreak" style="margin-bottom: 14px;">
+            <h4 style="margin: 0 0 4px 0; color: var(--primary-dark);">Standings &amp; Tie-Breaks</h4>
+            Final standings are determined first by game points and then by the
+            sum of the opponents&rsquo; final scores (Buchholz Cut-1 or Cut-2).
+            Further ties are decided by Sonneborn-Berger and drawing of lots.
+          </section>
+
+          <section id="modal-corrections">
+            <h4 style="margin: 0 0 4px 0; color: var(--primary-dark);">Corrections</h4>
+            Once a round is confirmed, an incorrectly recorded result can be 
+            corrected through the GUI, provided that a tournament backup was 
+            previously created using the "Save Tournament" function.
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL FOOTER -->
+    <div style="display: flex; justify-content: flex-end; margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px;">
       <button type="button" onclick="closeNorwegianModal()">Close</button>
     </div>
   </div>
-</div>
 </div>
 
 <script>
