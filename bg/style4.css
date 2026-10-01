@@ -2,7 +2,8 @@ span.nb { white-space:nowrap; }
 span.nobr { white-space:nowrap; }
 p.centered {text-align:center; }
 p.cn { text-align: center}
-img {border:0px; margin-bottom:2px; max-width:100%; height:auto;}
+p.c4 {clear:left;}
+img {border:0px; max-width:100%; height:auto;}
 img.center {   display: block;   margin-left: auto;   margin-right: auto;} 
 div.cn { text-align: center}
 ul{
@@ -11,10 +12,9 @@ padding: 0px;
 margin: 20px;}
 
 span.small { font-size:87%; }
-span.xsmall { font-size:75%; }
 .bigger {font-size:110%;	font-weight:700; }
 div { font-style:normal; font-family: 'Lucida Sans Unicode', 'Lucida Grande', Helvetica, Arial, sans-serif; }
-td {font-style:normal; font-family: 'Lucida Sans Unicode', 'Lucida Grande', Helvetica, Arial, sans-serif;}
+td {font-family: 'Lucida Sans Unicode', 'Lucida Grande', Helvetica, Arial, sans-serif;  font-size:80%;}
 p {text-align:left; font-style:normal; font-family: 'Lucida Sans Unicode', 'Lucida Grande', Helvetica, Arial, sans-serif;  }
 strong, em, b, ul {font-family: 'Lucida Sans Unicode', 'Lucida Grande', Helvetica, Arial, sans-serif; }
 blockquote {text-align:left; font-style:normal; font-family: 'Lucida Sans Unicode', 'Lucida Grande', Helvetica, Arial, sans-serif; }
