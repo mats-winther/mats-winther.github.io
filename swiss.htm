@@ -143,7 +143,7 @@
       <ul>
         <li><strong>Rond 1:</strong> Spelarna delas in i fyra grupper (kvadranter). Den högst rankade spelaren i Q1 har vit mot den högst rankade spelaren i Q2, och motsvarande för Q3 och Q4. (Vid ojämna grupper justeras storlekarna automatiskt, och vid udda antal spelare får den lägst rankade en frirond).</li>
         <li><strong>Rond 2:</strong> Högst seedad vinnare har svart mot högst seedad vinnare i den andra halvan. Näst högst seedad vinnare har svart mot nästa i den andra halvan, och så vidare.</li>
-        <li><strong>Rond 3+:</strong> Schweizerlottning börjar. Spelarna sorteras efter poäng, Buchholz och ursprunglig seedning. Lottningen genereras uppifrån och ned.</li>
+        <li><strong>Rond 3+:</strong> Schweizerlottning börjar. Spelarna sorteras efter poäng, WNT och ursprunglig seedning. Lottningen genereras uppifrån och ned.</li>
         <li><strong>Färgtilldelning:</strong> Spelaren med färre vitpartier får vit. Vid lika får den lägre seedade spelaren vit. Färgbalansen garanteras (färgskillnaden kan aldrig bli 3). Om färgbalansen krockar med 2-i-rad-regeln tillåts upp till tre partier i rad med samma färg.</li>
       </ul>
     </div>
@@ -723,11 +723,11 @@ function assignSwissColors(p1, p2) {
 function pairRound3Plus(players) {
   const available = players
     .filter(p => !p.withdrawn)
-    .sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      if (b.buchholz !== a.buchholz) return b.buchholz - a.buchholz;
-      return a.seed - b.seed;
-    });
+  .sort((a, b) => {
+  if (b.score !== a.score) return b.score - a.score;
+  if (Math.abs(b.wnt - a.wnt) > 0.0001) return b.wnt - a.wnt;
+  return a.seed - b.seed;
+  });
 
   let byePairing = null;
   let toPair = [...available];
