@@ -326,7 +326,7 @@
     injectCSS();
     win = el('div', 'rn-win');
     var title = el('div', 'rn-title');
-    title.appendChild(el('span', '', 'Regroupment Chess (no knight swap)'));
+    title.appendChild(el('span', '', 'Regroupment Chess (no king-knight swap)'));
     var x = el('button', 'rn-x', '\u00D7'); x.title = 'Close';
     x.onclick = function () { win.style.display = 'none'; };
     title.appendChild(x);
