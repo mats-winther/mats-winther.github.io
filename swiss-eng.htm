@@ -131,7 +131,7 @@
     </div>
 
     <div style="margin-top: 16px;">
-      <label>Tie-break System (Final Standings)</label>
+      <label>Tie-break System (Standings and Pairings)</label>
       <div class="radio-group">
         <label><input type="radio" name="tiebreak" value="wnt" checked> WNT<sup class="wnt-asterisk" onclick="openWntModal(event)" title="Information about Winther score">*</sup></label>
         <label><input type="radio" name="tiebreak" value="buchholz"> Buchholz</label>
@@ -143,7 +143,7 @@
       <ul>
         <li><strong>Round 1:</strong> Players are divided into four groups (quadrants). The highest-ranked player in Q1 plays White against the highest-ranked player in Q2, and correspondingly for Q3 and Q4. (For uneven groups, sizes are adjusted automatically, and with an odd number of players, the lowest-ranked gets a bye).</li>
         <li><strong>Round 2:</strong> Highest-seeded winner plays Black against the highest-seeded winner in the other half. Second highest-seeded plays Black against the next in the other half, and so on.</li>
-        <li><strong>Round 3+:</strong> Standard Swiss pairings begin. Players are sorted by score, WNT, and initial seeding. Pairings are generated top-down.</li>
+        <li><strong>Round 3+:</strong> Standard Swiss pairings begin. Players are sorted by score, the selected tie-break (WNT or Buchholz), and initial seeding. Pairings are generated top-down.</li>
         <li><strong>Color Allocation:</strong> The player with fewer White games receives White. If equal, the lower-seeded player receives White. Color balance is guaranteed (color difference can never reach 3). If color balance conflicts with the 2-in-a-row rule, up to three games in a row with the same color are permitted.</li>
       </ul>
     </div>
@@ -191,10 +191,10 @@
     </div>
   </div>
 
-  <!-- Final Standings -->
-<div id="final-section" style="display:none;">
-  <h2 id="final-standings-title">Final Standings</h2>
-    
+<!-- Final Standings -->
+  <div id="final-section" style="display:none;">
+    <h2 id="final-standings-title">Final Standings</h2>
+
     <table>
       <thead>
         <tr id="final-thead-row">
@@ -209,8 +209,10 @@
       </thead>
       <tbody id="final-table-body"></tbody>
     </table>
+
     <div class="btn-bar no-print" style="margin-top:16px;">
       <button type="button" onclick="printFinalStandings()">Print Final Standings</button>
+      <button type="button" class="secondary" onclick="saveTournament()">Save Tournament</button>
       <button type="button" class="secondary" onclick="restartTournament()">Start New Tournament</button>
     </div>
   </div>
@@ -223,14 +225,12 @@
     <h2>Current Standings</h2>
     <table>
       <thead>
-        <tr>
+        <tr id="modal-thead-row">
           <th>Pos.</th>
           <th>Seed</th>
           <th>Player</th>
           <th>Rating</th>
           <th>Score</th>
-          <th>Buchholz</th>
-          <th>S-B</th>
         </tr>
       </thead>
       <tbody id="modal-standings-body"></tbody>
@@ -280,12 +280,45 @@ Pᵢ / N = opponent's score share (ratio expressed as a decimal between 0 and 1)
 </div>
 
 <script>
+
+function finishTournament() {
+  state.finished = true;
+  document.getElementById('pairings-section').style.display = 'none';
+  showFinalStandings();
+}
+
+function escapeHtml(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+function tiebreakHeaders() {
+  return state.tieBreakSystem === 'wnt' ? ['WNT'] : ['Buchholz', 'S-B'];
+}
+
+function tiebreakCells(p) {
+  return state.tieBreakSystem === 'wnt'
+    ? `<td>${p.wnt.toFixed(1)}</td>`
+    : `<td>${escapeHtml(p.buchholz)}</td><td>${escapeHtml(p.sonneborn)}</td>`;
+}
+
+function fillHeaderRow(row, headers) {
+  row.innerHTML = '';
+  headers.forEach(h => {
+    const th = document.createElement('th');
+    th.textContent = h;
+    row.appendChild(th);
+  });
+}
+
 let state = {
   name: '',
   totalRounds: 5,
   currentRound: 0,
+  finished: false,
   r1ColorOption: 'higherWhite',
-  tieBreakSystem: 'wnt',   // 'wnt' (default) or 'buchholz'
+  tieBreakSystem: 'wnt',
   players: [],
   rounds: []
 };
@@ -321,9 +354,9 @@ function printStandings() {
   const modalBox = document.querySelector('#standings-modal .modal-box');
   if (modalBox) modalBox.scrollTop = 0;
 
-  const tName = (state.name || 'Turnering').trim();
+  const tName = (state.name || 'Tournament').trim();
   const rd = state.currentRound > 1 ? state.currentRound - 1 : 1;
-  customPrintTitle = `${tName} - Ställning efter rond ${rd}`;
+  customPrintTitle = `${tName} - Standings after round ${rd}`;
   document.body.classList.add('printing-modal');
   window.print();
   document.body.classList.remove('printing-modal');
@@ -379,17 +412,19 @@ document.getElementById('json-file-input').addEventListener('change', function(e
         });
       });
 
-      // Ensure tieBreakSystem exists (backwards compatibility)
+// Ensure tieBreakSystem exists (backwards compatibility)
       if (!state.tieBreakSystem) state.tieBreakSystem = 'wnt';
 
-      document.getElementById('setup-section').style.display = 'none';
-      if (state.currentRound > state.totalRounds) {
+      if (state.finished || state.currentRound > state.totalRounds) {
         showFinalStandings();
       } else {
         renderPairings();
       }
+
+      // Hide the setup screen only after rendering succeeded
+      document.getElementById('setup-section').style.display = 'none';
     } catch(err) {
-      alert('Error loading JSON file: ' + err.message);
+    alert('Error loading JSON file: ' + err.message);
     }
   };
   reader.readAsText(file);
@@ -444,12 +479,22 @@ function startTournament() {
   }
 
   state.name = document.getElementById('tournament-name').value || 'Swiss Tournament';
-  state.totalRounds = parseInt(document.getElementById('round-count').value, 10) || 5;
+  const rounds = parseInt(document.getElementById('round-count').value, 10);
+  if (!Number.isInteger(rounds) || rounds < 1) {
+    alert('Number of rounds must be at least 1.');
+    return;
+  }
+  if (rounds > parsed.length - 1) {
+    alert(`With ${parsed.length} players, at most ${parsed.length - 1} rounds can be played without rematches.`);
+    return;
+  }
+  state.totalRounds = rounds;
   state.r1ColorOption = document.querySelector('input[name="r1-color"]:checked').value;
   state.tieBreakSystem = document.querySelector('input[name="tiebreak"]:checked').value;
   state.players = parsed;
   state.rounds = [];
   state.currentRound = 1;
+  state.finished = false;
 
   document.getElementById('setup-section').style.display = 'none';
   generateRound1();
@@ -714,20 +759,11 @@ function getValidColorAssignment(p1, p2, maxStreakAllowed = 3) {
   return null;
 }
 
-function assignSwissColors(p1, p2) {
-  const assignment = getValidColorAssignment(p1, p2, 3);
-  if (assignment) return assignment;
-  return choosePreferredColor(p1, p2);
-}
-
 function pairRound3Plus(players) {
+
   const available = players
     .filter(p => !p.withdrawn)
-  .sort((a, b) => {
-  if (b.score !== a.score) return b.score - a.score;
-  if (Math.abs(b.wnt - a.wnt) > 0.0001) return b.wnt - a.wnt;
-  return a.seed - b.seed;
-  });
+    .sort(compareStandings);
 
   let byePairing = null;
   let toPair = [...available];
@@ -737,75 +773,73 @@ function pairRound3Plus(players) {
     let byeIdx = -1;
     for (let i = toPair.length - 1; i >= 0; i--) {
       const hadBye = (toPair[i].history || []).some(h => h.opponent === null);
-      if (!hadBye) {
-        byeIdx = i;
-        break;
-      }
+      if (!hadBye) { byeIdx = i; break; }
     }
     if (byeIdx === -1) byeIdx = toPair.length - 1;
     const byePlayer = toPair.splice(byeIdx, 1)[0];
     byePairing = { white: byePlayer, black: null, result: '1-0 (Bye)' };
   }
 
-  function solve(remaining, maxStreakAllowed) {
+  const NODE_LIMIT = 100000;
+  let nodes = 0;
+  let failed = new Set();
+
+  // relaxed = allow rematches and ignore colour rules (last resort)
+  function solve(remaining, maxStreak, relaxed) {
     if (remaining.length === 0) return [];
+    if (++nodes > NODE_LIMIT) return null;
+
+    const key = remaining.map(p => p.id).join(',');
+    if (failed.has(key)) return null;
 
     const p1 = remaining[0];
-
+    const candidates = [];
     for (let j = 1; j < remaining.length; j++) {
       const p2 = remaining[j];
-      if ((p1.opponents || []).includes(p2.id)) continue;
+      const met = (p1.opponents || []).includes(p2.id);
+      if (met && !relaxed) continue;
+      candidates.push({ p2, met });
+    }
+    // In the relaxed pass, prefer opponents not yet met (sort is stable)
+    if (relaxed) candidates.sort((a, b) => Number(a.met) - Number(b.met));
 
-      const assignment = getValidColorAssignment(p1, p2, maxStreakAllowed);
+    for (const { p2, met } of candidates) {
+      let assignment = getValidColorAssignment(p1, p2, maxStreak);
+      if (!assignment && relaxed) assignment = choosePreferredColor(p1, p2);
       if (!assignment) continue;
 
-      const nextRemaining = remaining.filter(p => p.id !== p1.id && p.id !== p2.id);
-      const sub = solve(nextRemaining, maxStreakAllowed);
+      const next = remaining.filter(p => p !== p1 && p !== p2);
+      const sub = solve(next, maxStreak, relaxed);
       if (sub !== null) {
-        return [{ white: assignment.white, black: assignment.black, result: '' }, ...sub];
+        const pairing = { white: assignment.white, black: assignment.black, result: '' };
+        if (met) pairing.rematch = true;
+        return [pairing, ...sub];
       }
     }
 
+    // Only cache real failures, not aborts caused by the node limit
+    if (nodes <= NODE_LIMIT) failed.add(key);
     return null;
   }
 
-  // 1. Primary solver: strict max 2 in a row and |diff| < 3
-  let solution = solve(toPair, 2);
-
-  // 2. Secondary solver: allow up to 3 in a row if color balance forces it
-  if (solution === null) {
-    solution = solve(toPair, 3);
+  let solution = null;
+  const passes = [
+    { streak: 2, relaxed: false },  // strict: max 2 in a row, no rematches
+    { streak: 3, relaxed: false },  // allow 3 in a row for colour balance
+    { streak: 3, relaxed: true }    // last resort: rematches / colour rules bent
+  ];
+  for (const pass of passes) {
+    nodes = 0;
+    failed = new Set();
+    solution = solve(toPair, pass.streak, pass.relaxed);
+    if (solution !== null) break;
   }
+  if (solution === null) solution = [];
 
-  // 3. Fallback solver for extreme edge cases
-  if (solution === null) {
-    const pairs = [];
-    const rem = [...toPair];
-    while (rem.length >= 2) {
-      const p1 = rem.shift();
-      let bestIdx = 0;
-      for (let i = 0; i < rem.length; i++) {
-        if (!(p1.opponents || []).includes(rem[i].id)) {
-          bestIdx = i;
-          break;
-        }
-      }
-      const p2 = rem.splice(bestIdx, 1)[0];
-      let assignment = getValidColorAssignment(p1, p2, 3);
-      if (!assignment) {
-        assignment = choosePreferredColor(p1, p2);
-      }
-      pairs.push({ white: assignment.white, black: assignment.black, result: '' });
-    }
-    solution = pairs;
-  }
-
-  if (byePairing) {
-    solution.push(byePairing);
-  }
-
+  if (byePairing) solution.push(byePairing);
   return solution.map((p, idx) => ({ board: idx + 1, ...p }));
 }
+
 
 function renderPairings() {
   document.getElementById('pairings-section').style.display = 'block';
@@ -827,8 +861,12 @@ function renderPairings() {
     boardTd.textContent = pair.board;
     tr.appendChild(boardTd);
 
+    const rematchTag = pair.rematch ? ' ⚠ rematch' : '';
+
     const whiteTd = document.createElement('td');
-    whiteTd.textContent = pair.white ? `${pair.white.name} (${pair.white.seed} / ${pair.white.rating})` : 'BYE';
+    whiteTd.textContent = pair.white
+      ? `${pair.white.name} (${pair.white.seed} / ${pair.white.rating})${rematchTag}`
+      : 'BYE';
     tr.appendChild(whiteTd);
 
     const resultTd = document.createElement('td');
@@ -837,6 +875,8 @@ function renderPairings() {
 
     if (!pair.black) {
       screenSpan.textContent = pair.result || '1-0 (Bye)';
+    } else if (pair.forfeit) {
+      screenSpan.textContent = `${pair.result} (w.o.)`;
     } else {
       const select = document.createElement('select');
       select.innerHTML = `
@@ -880,46 +920,63 @@ function submitRound() {
     const res = pair.result;
 
     if (!b) {
-      w.score += 1;
-      w.history.push({ round: state.currentRound, opponent: null, color: '-', result: '1-0' });
+      if (w.withdrawn) {
+        // Withdrawn player on a bye: no point awarded
+        pair.result = '0-0 (Withdrawn)';
+        w.history.push({ round: state.currentRound, opponent: null, color: '-', result: '0-0' });
+      } else {
+        w.score += 1;
+        w.history.push({ round: state.currentRound, opponent: null, color: '-', result: '1-0' });
+      }
       return;
     }
+
+    // Walkovers don't count as a colour played
+    const cw = pair.forfeit ? '-' : 'W';
+    const cb = pair.forfeit ? '-' : 'B';
+    const extra = pair.forfeit ? { forfeit: true } : {};
 
     w.opponents.push(b.id);
     b.opponents.push(w.id);
 
     if (res === '1-0') {
       w.score += 1;
-      b.history.push({ round: state.currentRound, opponent: w.id, color: 'B', result: '0-1' });
-      w.history.push({ round: state.currentRound, opponent: b.id, color: 'W', result: '1-0' });
+      w.history.push({ round: state.currentRound, opponent: b.id, color: cw, result: '1-0', ...extra });
+      b.history.push({ round: state.currentRound, opponent: w.id, color: cb, result: '0-1', ...extra });
     } else if (res === '0.5-0.5') {
       w.score += 0.5;
       b.score += 0.5;
-      w.history.push({ round: state.currentRound, opponent: b.id, color: 'W', result: '0.5-0.5' });
-      b.history.push({ round: state.currentRound, opponent: w.id, color: 'B', result: '0.5-0.5' });
+      w.history.push({ round: state.currentRound, opponent: b.id, color: cw, result: '0.5-0.5' });
+      b.history.push({ round: state.currentRound, opponent: w.id, color: cb, result: '0.5-0.5' });
     } else if (res === '0-1') {
       b.score += 1;
-      w.history.push({ round: state.currentRound, opponent: b.id, color: 'W', result: '0-1' });
-      b.history.push({ round: state.currentRound, opponent: w.id, color: 'B', result: '1-0' });
+      w.history.push({ round: state.currentRound, opponent: b.id, color: cw, result: '0-1', ...extra });
+      b.history.push({ round: state.currentRound, opponent: w.id, color: cb, result: '1-0', ...extra });
     }
   });
 
   recalculateTiebreaks();
 
   if (state.currentRound >= state.totalRounds) {
-    document.getElementById('pairings-section').style.display = 'none';
-    showFinalStandings();
-  } else {
-    state.currentRound++;
-    if (state.currentRound === 2) {
-      generateRound2();
-    } else {
-      const active = state.players.filter(p => !p.withdrawn);
-      const pairings = pairRound3Plus(active);
-      state.rounds.push({ roundNum: state.currentRound, pairings });
-    }
-    renderPairings();
+    finishTournament();
+    return;
   }
+
+  const active = state.players.filter(p => !p.withdrawn);
+  if (active.length < 2) {
+    alert('Fewer than two active players remain. The tournament ends here.');
+    finishTournament();
+    return;
+  }
+
+  state.currentRound++;
+  if (state.currentRound === 2) {
+    generateRound2();
+  } else {
+    const pairings = pairRound3Plus(active);
+    state.rounds.push({ roundNum: state.currentRound, pairings });
+  }
+  renderPairings();
 }
 
 function recalculateTiebreaks() {
@@ -950,9 +1007,7 @@ function recalculateTiebreaks() {
 /* --- WNT (WINTHER TIE-BREAK) --- */
 function calculateWNT() {
   // Count only rounds whose results have been recorded
-  const N = state.rounds.filter(r =>
-    r.pairings.every(p => !p.black || p.result)
-  ).length;
+  const N = Math.max(0, ...state.players.map(p => (p.history || []).length));
   if (N === 0) {
     state.players.forEach(p => { p.wnt = 0; });
     return;
@@ -980,19 +1035,20 @@ function calculateWNT() {
   });
 }
 
-function getSortedStandings() {
-  return [...state.players].sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score;
+function compareStandings(a, b) {
+  if (b.score !== a.score) return b.score - a.score;
 
-    if (state.tieBreakSystem === 'wnt') {
-      if (Math.abs(b.wnt - a.wnt) > 0.0001) return b.wnt - a.wnt;
-    } else {
-      // Buchholz / Sonneborn-Berger
-      if (b.buchholz !== a.buchholz) return b.buchholz - a.buchholz;
-      if (b.sonneborn !== a.sonneborn) return b.sonneborn - a.sonneborn;
-    }
-    return a.seed - b.seed;
-  });
+  if (state.tieBreakSystem === 'wnt') {
+    if (Math.abs(b.wnt - a.wnt) > 0.0001) return b.wnt - a.wnt;
+  } else {
+    if (b.buchholz !== a.buchholz) return b.buchholz - a.buchholz;
+    if (b.sonneborn !== a.sonneborn) return b.sonneborn - a.sonneborn;
+  }
+  return a.seed - b.seed;
+}
+
+function getSortedStandings() {
+  return [...state.players].sort(compareStandings);
 }
 
 function showFinalStandings() {
@@ -1001,70 +1057,54 @@ function showFinalStandings() {
 
   const tName = (state.name || 'Swiss Tournament').trim();
   document.getElementById('final-standings-title').textContent = `${tName} — Final Standings`;
-  // Rebuild the table header dynamically based on the selected tie-break system
-  const theadRow = document.getElementById('final-thead-row');
-  theadRow.innerHTML = '';
 
-  const headers = ['Pos.', 'Seed', 'Player', 'Rating', 'Score'];
-  if (state.tieBreakSystem === 'wnt') {
-    headers.push('WNT');
-  } else {
-    headers.push('Buchholz', 'S-B');
-  }
-  headers.push('Colors');
-
-  headers.forEach(h => {
-    const th = document.createElement('th');
-    th.textContent = h;
-    theadRow.appendChild(th);
-  });
+  fillHeaderRow(
+    document.getElementById('final-thead-row'),
+    ['Pos.', 'Seed', 'Player', 'Rating', 'Score', ...tiebreakHeaders(), 'Colors']
+  );
 
   const tbody = document.getElementById('final-table-body');
   tbody.innerHTML = '';
 
-  const standings = getSortedStandings();
-  standings.forEach((p, idx) => {
-    // Collect the sequence of colors ('W', 'B', or '-' for byes)
+  getSortedStandings().forEach((p, idx) => {
     const colorHistory = (p.history || [])
       .map(h => (h.color && h.color !== '-') ? h.color : '-')
       .join('');
 
     const tr = document.createElement('tr');
-    let rowHtml = `
+    tr.innerHTML = `
       <td>${idx + 1}</td>
-      <td>${p.seed}</td>
-      <td>${p.name} ${p.withdrawn ? '(Withdrawn)' : ''}</td>
-      <td>${p.rating}</td>
-      <td><strong>${p.score}</strong></td>
+      <td>${escapeHtml(p.seed)}</td>
+      <td>${escapeHtml(p.name)} ${p.withdrawn ? '(Withdrawn)' : ''}</td>
+      <td>${escapeHtml(p.rating)}</td>
+      <td><strong>${escapeHtml(p.score)}</strong></td>
+      ${tiebreakCells(p)}
+      <td style="font-family: monospace; letter-spacing: 1px;">${escapeHtml(colorHistory)}</td>
     `;
-    if (state.tieBreakSystem === 'wnt') {
-      rowHtml += `<td>${p.wnt.toFixed(1)}</td>`;
-    } else {
-      rowHtml += `<td>${p.buchholz}</td><td>${p.sonneborn}</td>`;
-    }
-    rowHtml += `<td style="font-family: monospace; letter-spacing: 1px;">${colorHistory}</td>`;
-
-    tr.innerHTML = rowHtml;
     tbody.appendChild(tr);
   });
 }
 
 function openStandingsModal() {
   recalculateTiebreaks();
-  const standings = getSortedStandings();
+
+  fillHeaderRow(
+    document.getElementById('modal-thead-row'),
+    ['Pos.', 'Seed', 'Player', 'Rating', 'Score', ...tiebreakHeaders()]
+  );
+
   const tbody = document.getElementById('modal-standings-body');
   tbody.innerHTML = '';
 
-  standings.forEach((p, idx) => {
+  getSortedStandings().forEach((p, idx) => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${idx + 1}</td>
-      <td>${p.seed}</td>
-      <td>${p.name} ${p.withdrawn ? '(Withdrawn)' : ''}</td>
-      <td>${p.rating}</td>
-      <td><strong>${p.score}</strong></td>
-      <td>${p.buchholz}</td>
-      <td>${p.sonneborn}</td>
+      <td>${escapeHtml(p.seed)}</td>
+      <td>${escapeHtml(p.name)} ${p.withdrawn ? '(Withdrawn)' : ''}</td>
+      <td>${escapeHtml(p.rating)}</td>
+      <td><strong>${escapeHtml(p.score)}</strong></td>
+      ${tiebreakCells(p)}
     `;
     tbody.appendChild(tr);
   });
@@ -1115,15 +1155,21 @@ function confirmWithdrawal() {
 
   const curRound = state.rounds[state.currentRound - 1];
   if (curRound) {
-    for (let pair of curRound.pairings) {
-      if (pair.white && pair.white.id === pid) {
-        pair.result = '0-1';
-        break;
+    for (const pair of curRound.pairings) {
+      const isWhite = pair.white && pair.white.id === pid;
+      const isBlack = pair.black && pair.black.id === pid;
+      if (!isWhite && !isBlack) continue;
+
+      if (!pair.black) {
+        // Withdrawn player held the bye: no free point
+        pair.result = '0-0 (Withdrawn)';
+      } else if (!pair.result) {
+        // Game not yet played: opponent wins by walkover, locked
+        pair.result = isWhite ? '0-1' : '1-0';
+        pair.forfeit = true;
       }
-      if (pair.black && pair.black.id === pid) {
-        pair.result = '1-0';
-        break;
-      }
+      // If a result was already entered, leave it untouched
+      break;
     }
   }
 
@@ -1137,10 +1183,13 @@ function saveTournament() {
   const blob = new Blob([data], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
+  const suffix = state.finished ? 'final' : `round_${state.currentRound}`;
   a.href = url;
-  a.download = `${state.name.replace(/\s+/g, '_')}_round_${state.currentRound}.json`;
+  a.download = `${state.name.replace(/[^\w\-]+/g, '_')}_${suffix}.json`;
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function restartTournament() {
