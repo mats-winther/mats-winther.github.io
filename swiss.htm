@@ -141,7 +141,7 @@
     <div class="rules-box">
       <h3>Lottningssystem: Winther-acceleration</h3>
       <ul>
-        <li><strong>Rond 1:</strong> Spelarna delas in i fyra grupper (kvadranter). Den högst rankade spelaren i K1 har vit mot den högst rankade spelaren i K2, och på motsvarande sätt för K3 och K4. (Vid ojämna grupper justeras storlekarna automatiskt, och vid ett udda antal spelare får den lägst rankade frirond).</li>
+        <li><strong>Rond 1:</strong> Spelarna delas in i fyra grupper (kvadranter). Den högst rankade spelaren i K1 har vit mot den högst rankade spelaren i K2, och på motsvarande sätt för K3 och K4. (Detta gäller om antalet spelare är minst 16. Annars paras den övre halvan mot den undre halvan och vanlig schweizerlottning startar redan vid rond 2. Vid ojämna grupper justeras storlekarna automatiskt, och vid ett udda antal spelare får den lägst rankade frirond.)</li>
         <li><strong>Rond 2:</strong> Den högst seedade vinnaren har svart mot den högst seedade vinnaren i den andra halvan. Den näst högst seedade vinnaren har svart mot nästa i den andra halvan, och så vidare.</li>
         <li><strong>Rond 3+:</strong> Vanlig schweizerlottning börjar. Spelarna sorteras efter poäng, vald särskiljning (WNT eller Buchholz) och ursprunglig seedning. Lottningen görs uppifrån och ner.</li>
         <li><strong>Färgfördelning:</strong> Spelaren med färre vitpartier får vit. Vid lika får den lägre seedade spelaren vit. Färgbalansen garanteras (färgskillnaden kan aldrig bli 3). Om färgbalansen kommer i konflikt med regeln om högst två i rad tillåts upp till tre partier i rad med samma färg.</li>
@@ -517,8 +517,9 @@ function generateRound1() {
   }
 
   const m = playersToPair.length / 2;
-  const s1 = Math.ceil(m / 2);
-  const s2 = Math.floor(m / 2);
+  const useQuadrants = playersToPair.length >= 16;   // threshold is a judgment call
+  const s1 = useQuadrants ? Math.ceil(m / 2) : m;
+  const s2 = useQuadrants ? Math.floor(m / 2) : 0;
 
   const q1 = playersToPair.slice(0, s1);
   const q2 = playersToPair.slice(s1, 2 * s1);
