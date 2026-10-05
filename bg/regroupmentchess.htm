@@ -6,7 +6,8 @@
   <link href="style4b.css" rel="stylesheet" type="text/css">
   <meta name="description" content=
   "Players change positions of pieces before play begins. The rooks are left in the corners. A Windows program is provided.">
-  <meta name="keywords" content="Regroupment Chess, Chess484, Chess196, Fischer Random Chess, arrangement, relocation, swap">
+  <meta name="keywords" content=
+  "Regroupment Chess, Chess484, Chess196, Fischer Random Chess, arrangement, relocation, swap">
   <link rel="canonical" href="https://mats-winther.github.io/bg/regroupmentchess.htm">
   <style>
   p.container {
@@ -69,10 +70,11 @@
   of the four central files. In other words, if the king is positioned on the g or b file, the castling right is
   forfeited. After all, such a safety move brings certain advantages so it should cost something. This restrictive rule
   would also enhance strategical predictability. <i>In an alternative variant the king is not allowed to swap with the
-  knights.</i> Thus, the king cannot immediately achieve a secure position.<br>
+  knights </i> (Chess-196). Thus, the king cannot immediately achieve a secure position. In yet another variant, <i>neither the king
+  nor the queen may swap places with the knights</i> (Chess-64).<br>
   &nbsp;</p>
   <p class="container c2">Click this button to open a Regroupment Chess analysis board that can randomly create the 484
-  positions:<br>
+  positions. (Press the &ldquo;skip&rdquo; button if you prefer not to relocate.):<br>
   <br>
   <button type="button" onclick="RegroupmentChess.open()">Regroupment Chess analysis board A</button> 
   <script src="regroupmentchess.js"></script></p>
@@ -82,6 +84,12 @@
   <br>
   <button type="button" onclick="RegroupmentChessNK.open()">Regroupment Chess analysis board B</button> 
   <script src="regroupmentchess-noknights.js"></script></p>
+  <p></p>
+  <p class="container c2">In this analysis board, neither the king nor the queen may swap with the knights, which
+  randomly creates 64 positions:<br>
+  <br>
+  <button type="button" onclick="RegroupmentChess64.open()">Regroupment Chess analysis board C</button> 
+  <script src="regroupmentchess-64.js"></script></p>
   <p><br>
   <span class="bigger">Discussion</span><br>
   <br>
