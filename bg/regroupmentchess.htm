@@ -7,7 +7,7 @@
   <meta name="description" content=
   "Players change positions of pieces before play begins. The rooks are left in the corners. A Windows program is provided.">
   <meta name="keywords" content=
-  "Regroupment Chess, Chess484, Chess196, Fischer Random Chess, arrangement, relocation, swap">
+  "Regroupment Chess, Chess484, Chess196, Chess64, Fischer Random Chess, arrangement, relocation, swap">
   <link rel="canonical" href="https://mats-winther.github.io/bg/regroupmentchess.htm">
   <style>
   p.container {
@@ -25,7 +25,7 @@
 </head>
 <body>
   <h1>Regroupment Chess</h1>
-  <h2 class="c1">(Chess484 and Chess196)</h2>
+  <h2 class="c1">(Chess484, Chess196, Chess64)</h2>
   <h2>regroupment in the piece array</h2>
   <p class="centered"><img alt="Regroupment Chess" width="289" height="304" src="gifs/regroupmentboard.gif"></p>
   <p><br></p>
@@ -70,8 +70,8 @@
   of the four central files. In other words, if the king is positioned on the g or b file, the castling right is
   forfeited. After all, such a safety move brings certain advantages so it should cost something. This restrictive rule
   would also enhance strategical predictability. <i>In an alternative variant the king is not allowed to swap with the
-  knights </i> (Chess-196). Thus, the king cannot immediately achieve a secure position. In yet another variant, <i>neither the king
-  nor the queen may swap places with the knights</i> (Chess-64).<br>
+  knights </i> (Chess196). Thus, the king cannot immediately achieve a secure position. In yet another variant, <i>neither the king
+  nor the queen may swap places with the knights</i> (Chess64).<br>
   &nbsp;</p>
   <p class="container c2">Click this button to open a Regroupment Chess analysis board that can randomly create the 484
   positions. (Press the &ldquo;skip&rdquo; button if you prefer not to relocate.):<br>
@@ -84,7 +84,7 @@
   <br>
   <button type="button" onclick="RegroupmentChessNK.open()">Regroupment Chess analysis board B</button> 
   <script src="regroupmentchess-noknights.js"></script></p>
-  <p></p>
+  <p><a id="altC"></a></p>
   <p class="container c2">In this analysis board, neither the king nor the queen may swap with the knights, which
   randomly creates 64 positions:<br>
   <br>
