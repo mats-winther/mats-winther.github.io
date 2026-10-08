@@ -3,11 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Schweizersystem för schack direkt i webbläsaren.">
+<meta name="description" content="Schweiziskt lottningssystem för schack direkt i webbläsaren.">
 <meta name="author" content="Mats Winther">
 <link rel="canonical" href="https://mats-winther.github.io/swiss.htm">
-<title>Schweizersystem för turneringar</title>
+<title>Schweiziskt turneringssystem</title>
 <style>
+
+#round-count::-webkit-outer-spin-button,
+#round-count::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+#round-count {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+
   :root {
     --primary: #1e3a8a;
     --primary-hover: #1e40af;
@@ -30,6 +43,8 @@
   }
   textarea { resize: vertical; min-height: 160px; font-family: monospace; }
   .radio-group { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+  .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+  .radio-group .radio-item { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
   .rules-box {
     background: #eff6ff; border-left: 4px solid var(--accent); padding: 12px 16px; border-radius: 4px; margin: 16px 0; font-size: 13.5px; line-height: 1.5;
   }
@@ -81,7 +96,9 @@
     
     /* Göm alla modaler som standard vid utskrift */
     body.printing-modal .modal-overlay { display: none !important; }
-    body.printing-modal #wnt-modal { display: none !important; }
+
+    /* Hide all modals when printing pairings or final standings */
+    body:not(.printing-modal) .modal-overlay { display: none !important; }
 
     /* Visa ENDAST ställnings-modalen */
     body.printing-modal #standings-modal {
@@ -106,7 +123,7 @@
 <body>
 
 <div class="container">
-  <h1>Schweizersystem för turneringar</h1>
+  <h1>Schweiziskt turneringssystem</h1>
 
   <!-- Settings -->
   <div id="setup-section" class="settings-section">
@@ -125,62 +142,74 @@
     <div>
       <label>Färgfördelning i rond 1</label>
       <div class="radio-group">
-        <label><input type="radio" name="r1-color" value="higherWhite" checked> Högre seedad spelare har vit (startnr 1 har vit)</label>
-        <label><input type="radio" name="r1-color" value="alternate"> Alternerande färger (bord 1 vit, bord 2 svart...)</label>
+        <div class="radio-item"><input type="radio" name="r1-color" value="higherWhite" aria-label="Higher seeded has White" checked> 
+		Higher seeded has White (Seed #1 White)
+        </div>
+        <div class="radio-item"><input type="radio" name="r1-color" value="alternate" aria-label="Alternating colors"> 
+		Alternating colors (Board 1 White, Board 2 Black...)
+        </div>
       </div>
     </div>
 
     <div style="margin-top: 16px;">
-      <label>Särskiljning (ställning och lottning)</label>
+      <label>Särskiljningssystem (ställning och lottning)</label>
       <div class="radio-group">
-        <label><input type="radio" name="tiebreak" value="wnt" checked> WNT<sup class="wnt-asterisk" onclick="openWntModal(event)" title="Information om Winther-poäng">*</sup></label>
-        <label><input type="radio" name="tiebreak" value="buchholz"> Buchholz</label>
+        <div class="radio-item"><input type="radio" name="tiebreak" value="wnt" aria-label="WNT" checked> WNT<sup class="wnt-asterisk" onclick="openWntModal(event)" title="Information about Winther score">*</sup></div>
+        <div class="radio-item"><input type="radio" name="tiebreak" value="buchholz" aria-label="Buchholz"> Buchholz</div>
       </div>
     </div>
 
+    <div style="margin-top: 16px;">
+      <label class="checkbox-group" style="cursor: pointer; user-select: none;">
+        <input type="checkbox" id="randomize-rating-groups" style="width: auto; margin: 0; cursor: pointer;">
+        <span>Randomisera spelare inom varje ratinggrupp separat</span>
+      </label>
+    </div>
+
     <div class="rules-box">
-      <h3>Lottningssystem: Winther-acceleration</h3>
+      <h3>Lottningssystem: Winthers acceleration</h3>
       <ul>
-        <li><strong>Rond 1:</strong> Spelarna delas in i fyra grupper (kvadranter). K1 har vit mot K2 enligt rankingordningen, och på motsvarande sätt har K3 vit mot K4. (Detta gäller om antalet spelare är minst 16. Annars paras den övre halvan mot den undre halvan och vanlig schweizerlottning startar vid rond 2. Vid ojämna grupper justeras storlekarna automatiskt, och vid ett udda antal spelare får den lägst rankade frirond.)</li>
-        <li><strong>Rond 2:</strong> Den högst seedade vinnaren har svart mot den högst seedade vinnaren i den andra halvan. Den näst högst seedade vinnaren har svart mot nästa i den andra halvan, och så vidare.</li>
-        <li><strong>Rond 3+:</strong> Vanlig schweizerlottning börjar. Spelarna sorteras efter poäng, vald särskiljning (WNT eller Buchholz) och ursprunglig seedning. Lottningen görs uppifrån och ner.</li>
-        <li><strong>Färgfördelning:</strong> Spelaren med färre vitpartier får vit. Vid lika får den lägre seedade spelaren vit. Färgbalansen garanteras (färgskillnaden kan aldrig bli 3). Om färgbalansen kommer i konflikt med regeln om högst två i rad tillåts upp till tre partier i rad med samma färg.</li>
+        <li><strong>Rond 1:</strong> Spelarna delas in i fyra grupper (kvadranter). K1 tilldelas vit mot K2 enligt seedningsordning; likaså tilldelas K3 vit mot K4. (Detta gäller vid 16 eller fler spelare. Annars lottas övre halvan mot undre halvan, och schweizerlottning börjar vid rond 2. Vid ojämna grupper justeras storlekarna automatiskt, och vid udda antal spelare får den lägst rankade frirond.)</li>
+        <li><strong>Rond 2:</strong> Vinnarna från den första halvan möter vinnarna från den andra halvan enligt seedningsordningen. Färgerna växlar från rond 1. (I undantagsfall omkastas färgerna om den högre seedade spelaren hade svart i rond 1 och den lägre seedade spelaren hade vit.)</li>
+        <li><strong>Rond 3+:</strong> Schweizerlottning börjar. Spelarna sorteras efter poäng, vald särskiljning (WNT eller Buchholz) och ursprunglig seedning. Lottning sker uppifrån och ned.</li>
+        <li><strong>Färgfördelning:</strong> Spelaren med färre partier med vit får vit. Om lika får spelaren med lägst rating vit (eller lägre seedad vid samma rating). Färgbalans garanteras (färgskillnaden kan aldrig nå 3). Om färgbalansen krockar med 2-i-rad-regeln tillåts upp till tre partier i rad med samma färg.</li>
+        <li><strong>Randomisering:</strong> Om "Randomisera spelare" är markerad bevaras ratinggrupperna, men spelarna inom grupperna slumpas om. Detta ger större variation i första ronden för samma grupp klubbspelare. Om antalet spelare är udda tilldelas frironden slumpmässigt till en spelare i K4.</li>
       </ul>
     </div>
 
-    <label for="player-input">Spelarlista (Namn Rating, en per rad – sorteras automatiskt efter rating vid start)</label>
+    <label for="player-input">Spelardeltagare (Namn Rating, en per rad – sorteras automatiskt efter rating vid start)</label>
     <textarea id="player-input" placeholder="Magnus Carlsen 2830&#10;Hikaru Nakamura 2805..."></textarea>
 
     <div class="btn-bar">
       <input type="file" id="txt-file-input" accept=".txt" style="display:none">
       <input type="file" id="json-file-input" accept=".json" style="display:none">
       <button type="button" onclick="document.getElementById('txt-file-input').click()">Läs in .txt-fil</button>
-      <button type="button" onclick="document.getElementById('json-file-input').click()">Läs in turnering (JSON)</button>
+      <button type="button" onclick="document.getElementById('json-file-input').click()">Ladda turnering (JSON)</button>
       <button type="button" class="secondary" onclick="load32ClubPlayers()">32 klubbspelare</button>
       <button type="button" class="secondary" onclick="clearPlayerList()">Rensa</button>
-      <button type="button" onclick="startTournament()">Starta turneringen</button>
+      <button type="button" onclick="startTournament()">Starta turnering</button>
     </div>
   </div>
 
   <!-- Pairings Section -->
   <div id="pairings-section" style="display:none;">
     <h2 id="round-title">Lottning</h2>
-    <p class="no-print">Ange resultat och gå vidare till nästa rond.</p>
+    <p class="no-print">Mata in resultat och gå vidare till nästa rond.</p>
 
     <div class="btn-bar no-print">
       <button type="button" class="secondary" onclick="printPairings()">Skriv ut lottning</button>
       <button type="button" class="secondary" onclick="saveTournament()">Spara turnering</button>
       <button type="button" class="secondary" onclick="openStandingsModal()">Aktuell ställning</button>
-      <button type="button" class="danger" onclick="openWithdrawModal()">Spelare drar sig ur</button>
+      <button type="button" class="danger" onclick="openWithdrawModal()">Avanmäl spelare</button>
     </div>
 
     <table>
       <thead>
         <tr>
           <th style="width:50px;">Bord</th>
-          <th>Vit (Startnr / Rating)</th>
+          <th>Vit (Seed / Rating)</th>
           <th style="width:130px;">Resultat</th>
-          <th>Svart (Startnr / Rating)</th>
+          <th>Svart (Seed / Rating)</th>
         </tr>
       </thead>
       <tbody id="pairings-table-body"></tbody>
@@ -193,13 +222,13 @@
 
 <!-- Final Standings -->
   <div id="final-section" style="display:none;">
-    <h2 id="final-standings-title">Slutställning</h2>
+    <h2 id="final-standings-title">Slutresultat</h2>
 
     <table>
       <thead>
         <tr id="final-thead-row">
           <th>Plac.</th>
-          <th>Startnr</th>
+          <th>Seed</th>
           <th>Spelare</th>
           <th>Rating</th>
           <th>Poäng</th>
@@ -211,7 +240,7 @@
     </table>
 
     <div class="btn-bar no-print" style="margin-top:16px;">
-      <button type="button" onclick="printFinalStandings()">Skriv ut slutställning</button>
+      <button type="button" onclick="printFinalStandings()">Skriv ut slutresultat</button>
       <button type="button" class="secondary" onclick="saveTournament()">Spara turnering</button>
       <button type="button" class="secondary" onclick="restartTournament()">Starta ny turnering</button>
     </div>
@@ -227,7 +256,7 @@
       <thead>
         <tr id="modal-thead-row">
           <th>Plac.</th>
-          <th>Startnr</th>
+          <th>Seed</th>
           <th>Spelare</th>
           <th>Rating</th>
           <th>Poäng</th>
@@ -246,13 +275,13 @@
 <div id="withdraw-modal" class="modal-overlay">
   <div class="modal-box">
     <button class="close-btn" onclick="closeWithdrawModal()">&times;</button>
-    <h2>Spelare drar sig ur</h2>
-    <p>Välj en spelare som ska lämna turneringen. Om spelarens parti pågår just nu tilldelas motståndaren vinst på walkover (w.o.).</p>
+    <h2>Avanmäl spelare</h2>
+    <p>Välj spelare som ska utgå. Om spelarens parti pågår i nuvarande rond tilldöms motståndaren vinst på walkover (w.o.).</p>
     <div style="margin-bottom:14px;">
       <select id="withdraw-select"></select>
     </div>
     <div class="btn-bar">
-      <button type="button" class="danger" onclick="confirmWithdrawal()">Bekräfta utträde</button>
+      <button type="button" class="danger" onclick="confirmWithdrawal()">Bekräfta avanmälan</button>
       <button type="button" class="secondary" onclick="closeWithdrawModal()">Avbryt</button>
     </div>
   </div>
@@ -265,13 +294,13 @@
     <h2 style="margin-top: 0; color: var(--primary); font-size: 1.2rem;">Winther-poäng (WNT)</h2>
     <div style="font-family: monospace, monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.92rem; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; color: #0f172a;">Winther-poäng (WNT) = 100 × ∑ᵢ [ (Pᵢ / N) × (rᵢ + Pᵢ / (2N)) ]
 
-∑ᵢ = summan över alla mötta motståndare
-rᵢ = ditt resultat mot motståndare i (1, 0,5, 0)
-Pᵢ = motståndare i:s slutpoäng i turneringen
-N = turneringens totala antal ronder
-Pᵢ / N = motståndarens poängandel (kvot uttryckt som decimaltal mellan 0 och 1)</div>
+∑ᵢ = summa över alla mötta motståndare
+rᵢ = ditt resultat mot motståndare i (1, 0.5, 0)
+Pᵢ = motståndare i:s slutliga turneringspoäng
+N = totalt antal ronder i turneringen
+Pᵢ / N = motståndarens poängkvot (decimaltal mellan 0 och 1)</div>
     <p style="font-size: 0.95rem; line-height: 1.5; color: #334155; margin-bottom: 18px;">
-      När spelare står lika på poäng särskiljs de utifrån kvaliteten på det motstånd de har mött. Den här nya metoden ger en rättvisare bild av spelarnas prestationer än traditionella särskiljningssystem, och belönar konsekvent dem som möter de främsta spelarna. Se även: <a href="https://mats-winther.github.io/bg/chesspairing.htm" style="text-decoration:none;" target="_blank" title="Chess Pairings: A Review of Monrad, Swiss, and Berger">Chess pairings: a review of Monrad, Swiss, and Berger</a>.
+      När spelare slutar på samma poäng särskiljs de baserat på motståndets kvalitet. Denna metod ger en rättvisare bild av spelarprestationen än traditionella särskiljningssystem genom att konsekvent belöna dem som tävlat på toppborden. Se även: <a href="https://mats-winther.github.io/bg/chesspairing.htm" style="text-decoration:none;" target="_blank" title="Chess Pairings: A Review of Monrad, Swiss, and Berger">Chess pairings: a review of Monrad, Swiss, and Berger</a>.
     </p>
     <div class="btn-bar" style="justify-content: flex-end; margin-top: 0;">
       <button type="button" onclick="closeWntModal()">Stäng</button>
@@ -293,18 +322,14 @@ function escapeHtml(v) {
   ));
 }
 
-function fmtNum(v) {
-  return String(v).replace('.', ',');
-}
-
 function tiebreakHeaders() {
   return state.tieBreakSystem === 'wnt' ? ['WNT'] : ['Buchholz', 'S-B'];
 }
 
 function tiebreakCells(p) {
   return state.tieBreakSystem === 'wnt'
-    ? `<td>${fmtNum(p.wnt.toFixed(1))}</td>`
-    : `<td>${escapeHtml(fmtNum(p.buchholz))}</td><td>${escapeHtml(fmtNum(p.sonneborn))}</td>`;
+    ? `<td>${p.wnt.toFixed(1)}</td>`
+    : `<td>${escapeHtml(p.buchholz)}</td><td>${escapeHtml(p.sonneborn)}</td>`;
 }
 
 function fillHeaderRow(row, headers) {
@@ -316,6 +341,15 @@ function fillHeaderRow(row, headers) {
   });
 }
 
+function shuffleArray(arr) {
+  const res = [...arr];
+  for (let i = res.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [res[i], res[j]] = [res[j], res[i]];
+  }
+  return res;
+}
+
 let state = {
   name: '',
   totalRounds: 5,
@@ -323,6 +357,7 @@ let state = {
   finished: false,
   r1ColorOption: 'higherWhite',
   tieBreakSystem: 'wnt',
+  randomizeRatingGroups: false,
   players: [],
   rounds: []
 };
@@ -336,7 +371,7 @@ window.addEventListener('beforeprint', () => {
   } else {
     const tName = (state.name || 'Turnering').trim();
     if (document.getElementById('final-section').style.display === 'block') {
-      document.title = `${tName} - Slutställning`;
+      document.title = `${tName} - Slutresultat`;
     } else if (state.currentRound > 0) {
       document.title = `${tName} - Rond ${state.currentRound}`;
     }
@@ -346,6 +381,7 @@ window.addEventListener('beforeprint', () => {
 window.addEventListener('afterprint', () => {
   customPrintTitle = '';
   document.title = defaultDocTitle;
+  document.body.classList.remove('printing-modal');   // <-- new
 });
 
 function printPairings() {
@@ -363,12 +399,12 @@ function printStandings() {
   customPrintTitle = `${tName} - Ställning efter rond ${rd}`;
   document.body.classList.add('printing-modal');
   window.print();
-  document.body.classList.remove('printing-modal');
+  // no removal here; afterprint does it
 }
 
 function printFinalStandings() {
   const tName = (state.name || 'Turnering').trim();
-  customPrintTitle = `${tName} - Slutställning`;
+  customPrintTitle = `${tName} - Slutresultat`;
   window.print();
 }
 
@@ -416,8 +452,11 @@ document.getElementById('json-file-input').addEventListener('change', function(e
         });
       });
 
-// Ensure tieBreakSystem exists (backwards compatibility)
+      // Ensure settings exist (backwards compatibility)
       if (!state.tieBreakSystem) state.tieBreakSystem = 'wnt';
+      if (state.randomizeRatingGroups === undefined) state.randomizeRatingGroups = false;
+      const randCheckbox = document.getElementById('randomize-rating-groups');
+      if (randCheckbox) randCheckbox.checked = !!state.randomizeRatingGroups;
 
       if (state.finished || state.currentRound > state.totalRounds) {
         showFinalStandings();
@@ -428,7 +467,7 @@ document.getElementById('json-file-input').addEventListener('change', function(e
       // Hide the setup screen only after rendering succeeded
       document.getElementById('setup-section').style.display = 'none';
     } catch(err) {
-    alert('Fel vid inläsning av JSON-fil: ' + err.message);
+      alert('Kunde inte läsa in JSON-filen: ' + err.message);
     }
   };
   reader.readAsText(file);
@@ -458,9 +497,39 @@ function parsePlayers() {
     }
   });
 
+  // Base ranking: strictly by rating descending
   players.sort((a, b) => b.rating - a.rating);
 
-  return players.map((p, i) => ({
+  // If randomize notch is active, shuffle players within each rating group separately
+  const randomize = document.getElementById('randomize-rating-groups')?.checked;
+  let orderedPlayers = players;
+
+  if (randomize && players.length >= 4) {
+    const isOdd = players.length % 2 !== 0;
+    const numToPair = isOdd ? players.length - 1 : players.length;
+    const m = numToPair / 2;
+    const useQuadrants = numToPair >= 16;
+    const s1 = useQuadrants ? Math.ceil(m / 2) : m;
+    const s2 = useQuadrants ? Math.floor(m / 2) : 0;
+
+    let g1, g2, g3 = [], g4 = [];
+    if (useQuadrants) {
+      g1 = shuffleArray(players.slice(0, s1));
+      g2 = shuffleArray(players.slice(s1, 2 * s1));
+      g3 = shuffleArray(players.slice(2 * s1, 2 * s1 + s2));
+      // Lowest ranked player is included in Q4 when player count is odd
+      g4 = shuffleArray(players.slice(2 * s1 + s2));
+    } else {
+      g1 = shuffleArray(players.slice(0, s1));
+      // Lowest ranked player is included in the bottom half when player count is odd
+      g2 = shuffleArray(players.slice(s1));
+    }
+
+    orderedPlayers = [...g1, ...g2, ...g3, ...g4];
+  }
+
+  // Players are numbered according to the new order list
+  return orderedPlayers.map((p, i) => ({
     id: i + 1,
     seed: i + 1,
     name: p.name,
@@ -482,19 +551,20 @@ function startTournament() {
     return;
   }
 
-  state.name = document.getElementById('tournament-name').value || 'Schweizerturnering';
+  state.name = document.getElementById('tournament-name').value || 'Schweizisk turnering';
   const rounds = parseInt(document.getElementById('round-count').value, 10);
   if (!Number.isInteger(rounds) || rounds < 1) {
-    alert('Antalet ronder måste vara minst 1.');
+    alert('Antal ronder måste vara minst 1.');
     return;
   }
   if (rounds > parsed.length - 1) {
-    alert(`Med ${parsed.length} spelare kan högst ${parsed.length - 1} ronder spelas utan omkamper.`);
+    alert(`Med ${parsed.length} spelare kan högst ${parsed.length - 1} ronder spelas utan att samma spelare möts igen.`);
     return;
   }
   state.totalRounds = rounds;
   state.r1ColorOption = document.querySelector('input[name="r1-color"]:checked').value;
   state.tieBreakSystem = document.querySelector('input[name="tiebreak"]:checked').value;
+  state.randomizeRatingGroups = document.getElementById('randomize-rating-groups').checked;
   state.players = parsed;
   state.rounds = [];
   state.currentRound = 1;
@@ -511,13 +581,13 @@ function generateRound1() {
   let byePlayer = null;
   let playersToPair = [...activePlayers];
 
-  // If odd, lowest-ranked player receives a bye
+  // If odd, lowest-seeded player receives a bye (randomly from Q4 if randomized)
   if (n % 2 !== 0) {
     byePlayer = playersToPair.pop();
   }
 
   const m = playersToPair.length / 2;
-  const useQuadrants = playersToPair.length >= 16;   // threshold is a judgment call
+  const useQuadrants = playersToPair.length >= 16;
   const s1 = useQuadrants ? Math.ceil(m / 2) : m;
   const s2 = useQuadrants ? Math.floor(m / 2) : 0;
 
@@ -622,11 +692,19 @@ function generateRound2() {
       } else if (pAColorR1 === 'W' && pBColorR1 === 'B') {
         white = pB; black = pA; // pB had Black, so give pB White
       } else {
-        // If both had the same color in R1, fall back to seed preference
-        if (pA.seed < pB.seed) {
-          black = pA; white = pB;
+        // If both had the same color in R1, lowest rated player receives White
+        if (pA.rating !== pB.rating) {
+          if (pA.rating < pB.rating) {
+            white = pA; black = pB;
+          } else {
+            white = pB; black = pA;
+          }
         } else {
-          black = pB; white = pA;
+          if (pA.seed < pB.seed) {
+            black = pA; white = pB;
+          } else {
+            black = pB; white = pA;
+          }
         }
       }
 
@@ -637,11 +715,12 @@ function generateRound2() {
   });
 
   // 3. Remaining player count is now guaranteed to be even
-  const remaining = state.players.filter(p => !paired.has(p.id) && !p.withdrawn);
-  if (remaining.length > 0) {
-    const extra = pairRound3Plus(remaining);
-    extra.forEach(p => pairings.push({ ...p, board: board++ }));
-  }
+const remaining = state.players.filter(p => !paired.has(p.id) && !p.withdrawn);
+if (remaining.length > 0) {
+  const extra = pairRound3Plus(remaining);
+  if (extra === null) return false;      // <-- new
+  extra.forEach(p => pairings.push({ ...p, board: board++ }));
+}
 
   // 4. Add the bye pairing at the bottom board
   if (byePlayer) {
@@ -649,6 +728,7 @@ function generateRound2() {
   }
 
   state.rounds.push({ roundNum: 2, pairings });
+  return true;
 }
 
 // ============================================================================
@@ -715,6 +795,8 @@ function canAssignColors(whitePlayer, blackPlayer, maxStreak) {
 
 /**
  * Default color preference when both color orders are legal.
+ * The player with fewer White games receives White.
+ * If equal, the lowest rated player receives White.
  */
 function choosePreferredColor(p1, p2) {
   const s1 = getColorStats(p1);
@@ -722,6 +804,11 @@ function choosePreferredColor(p1, p2) {
 
   if (s1.whites < s2.whites) return { white: p1, black: p2 };
   if (s2.whites < s1.whites) return { white: p2, black: p1 };
+
+  // Lowest rated player receives White if white games are equal
+  if (p1.rating !== p2.rating) {
+    return p1.rating < p2.rating ? { white: p1, black: p2 } : { white: p2, black: p1 };
+  }
 
   return p1.seed > p2.seed ? { white: p1, black: p2 } : { white: p2, black: p1 };
 }
@@ -765,7 +852,6 @@ function getValidColorAssignment(p1, p2, maxStreakAllowed = 3) {
 }
 
 function pairRound3Plus(players) {
-
   const available = players
     .filter(p => !p.withdrawn)
     .sort(compareStandings);
@@ -839,20 +925,20 @@ function pairRound3Plus(players) {
     solution = solve(toPair, pass.streak, pass.relaxed);
     if (solution !== null) break;
   }
-  if (solution === null) solution = [];
+
+  if (solution === null) return null;
 
   if (byePairing) solution.push(byePairing);
   return solution.map((p, idx) => ({ board: idx + 1, ...p }));
 }
 
-
 function renderPairings() {
   document.getElementById('pairings-section').style.display = 'block';
-  document.getElementById('round-title').textContent = `${state.name} – Rond ${state.currentRound}, lottning`;
+  document.getElementById('round-title').textContent = `${state.name} – Lottning rond ${state.currentRound}`;
 
   const nextBtn = document.getElementById('next-round-btn');
   if (nextBtn) {
-    nextBtn.textContent = (state.currentRound >= state.totalRounds) ? 'Avsluta turneringen' : 'Nästa rond';
+    nextBtn.textContent = (state.currentRound >= state.totalRounds) ? 'Avsluta turnering' : 'Nästa rond';
   }
 
   const curRound = state.rounds[state.currentRound - 1];
@@ -866,12 +952,12 @@ function renderPairings() {
     boardTd.textContent = pair.board;
     tr.appendChild(boardTd);
 
-    const rematchTag = pair.rematch ? ' ⚠ omkamp' : '';
+    const rematchTag = pair.rematch ? ' ⚠ returmöte' : '';
 
     const whiteTd = document.createElement('td');
     whiteTd.textContent = pair.white
       ? `${pair.white.name} (${pair.white.seed} / ${pair.white.rating})${rematchTag}`
-      : 'FRI';
+      : 'FRIROND';
     tr.appendChild(whiteTd);
 
     const resultTd = document.createElement('td');
@@ -903,7 +989,7 @@ function renderPairings() {
     tr.appendChild(resultTd);
 
     const blackTd = document.createElement('td');
-    blackTd.textContent = pair.black ? `${pair.black.name} (${pair.black.seed} / ${pair.black.rating})` : 'FRI';
+    blackTd.textContent = pair.black ? `${pair.black.name} (${pair.black.seed} / ${pair.black.rating})` : 'FRIROND';
     tr.appendChild(blackTd);
 
     tbody.appendChild(tr);
@@ -914,7 +1000,7 @@ function submitRound() {
   const curRound = state.rounds[state.currentRound - 1];
   for (let p of curRound.pairings) {
     if (p.black && !p.result) {
-      alert(`Ange ett resultat för bord ${p.board}.`);
+      alert(`Vänligen ange ett resultat för bord ${p.board}.`);
       return;
     }
   }
@@ -926,7 +1012,6 @@ function submitRound() {
 
     if (!b) {
       if (w.withdrawn) {
-        // Withdrawn player on a bye: no point awarded
         pair.result = '0-0 (Utgått)';
         w.history.push({ round: state.currentRound, opponent: null, color: '-', result: '0-0' });
       } else {
@@ -936,9 +1021,8 @@ function submitRound() {
       return;
     }
 
-    // Walkovers don't count as a colour played
-    const cw = pair.forfeit ? '-' : 'W';
-    const cb = pair.forfeit ? '-' : 'B';
+    const cw = pair.forfeit ? '-' : 'V';
+    const cb = pair.forfeit ? '-' : 'S';
     const extra = pair.forfeit ? { forfeit: true } : {};
 
     w.opponents.push(b.id);
@@ -974,14 +1058,26 @@ function submitRound() {
     return;
   }
 
-  state.currentRound++;
-  if (state.currentRound === 2) {
-    generateRound2();
-  } else {
-    const pairings = pairRound3Plus(active);
-    state.rounds.push({ roundNum: state.currentRound, pairings });
+const nextRound = state.currentRound + 1;
+
+if (nextRound === 2) {
+  if (!generateRound2()) {
+    alert('Could not generate pairings for round 2. The tournament ends here.');
+    finishTournament();
+    return;
   }
-  renderPairings();
+} else {
+  const pairings = pairRound3Plus(active);
+  if (pairings === null) {
+    alert(`Could not generate pairings for round ${nextRound}. The tournament ends here.`);
+    finishTournament();
+    return;
+  }
+  state.rounds.push({ roundNum: nextRound, pairings });
+}
+
+state.currentRound = nextRound;
+renderPairings();
 }
 
 function recalculateTiebreaks() {
@@ -1005,13 +1101,11 @@ function recalculateTiebreaks() {
     p.sonneborn = sonneborn;
   });
 
-  // Calculate WNT (Winther Score) for all players
   calculateWNT();
 }
 
 /* --- WNT (WINTHER TIE-BREAK) --- */
 function calculateWNT() {
-  // Count only rounds whose results have been recorded
   const N = Math.max(0, ...state.players.map(p => (p.history || []).length));
   if (N === 0) {
     state.players.forEach(p => { p.wnt = 0; });
@@ -1022,18 +1116,16 @@ function calculateWNT() {
   state.players.forEach(p => {
     let sum = 0;
     (p.history || []).forEach(h => {
-      if (!h.opponent) return; // skip bye
+      if (!h.opponent) return;
       const opp = pMap.get(h.opponent);
       if (!opp) return;
 
-      // Determine result score for this player in this game
       let resultScore = 0;
       if (h.result === '1-0') resultScore = 1.0;
       else if (h.result === '0.5-0.5') resultScore = 0.5;
       else if (h.result === '0-1') resultScore = 0.0;
 
       const ratio = opp.score / N;
-      // WNT formula: 100 * sum( (P_i / N) * (r_i + P_i / (2N)) )
       sum += ratio * (resultScore + ratio / 2);
     });
     p.wnt = 100 * sum;
@@ -1060,12 +1152,12 @@ function showFinalStandings() {
   recalculateTiebreaks();
   document.getElementById('final-section').style.display = 'block';
 
-  const tName = (state.name || 'Schweizerturnering').trim();
-  document.getElementById('final-standings-title').textContent = `${tName} — Slutställning`;
+  const tName = (state.name || 'Schweizisk turnering').trim();
+  document.getElementById('final-standings-title').textContent = `${tName} — Slutresultat`;
 
   fillHeaderRow(
     document.getElementById('final-thead-row'),
-    ['Plac.', 'Startnr', 'Spelare', 'Rating', 'Poäng', ...tiebreakHeaders(), 'Färger']
+    ['Plac.', 'Seed', 'Spelare', 'Rating', 'Poäng', ...tiebreakHeaders(), 'Färger']
   );
 
   const tbody = document.getElementById('final-table-body');
@@ -1073,7 +1165,7 @@ function showFinalStandings() {
 
   getSortedStandings().forEach((p, idx) => {
     const colorHistory = (p.history || [])
-      .map(h => h.color === 'W' ? 'V' : (h.color === 'B' ? 'S' : '-'))
+      .map(h => (h.color && h.color !== '-') ? h.color : '-')
       .join('');
 
     const tr = document.createElement('tr');
@@ -1082,7 +1174,7 @@ function showFinalStandings() {
       <td>${escapeHtml(p.seed)}</td>
       <td>${escapeHtml(p.name)} ${p.withdrawn ? '(Utgått)' : ''}</td>
       <td>${escapeHtml(p.rating)}</td>
-      <td><strong>${escapeHtml(fmtNum(p.score))}</strong></td>
+      <td><strong>${escapeHtml(p.score)}</strong></td>
       ${tiebreakCells(p)}
       <td style="font-family: monospace; letter-spacing: 1px;">${escapeHtml(colorHistory)}</td>
     `;
@@ -1095,7 +1187,7 @@ function openStandingsModal() {
 
   fillHeaderRow(
     document.getElementById('modal-thead-row'),
-    ['Plac.', 'Startnr', 'Spelare', 'Rating', 'Poäng', ...tiebreakHeaders()]
+    ['Plac.', 'Seed', 'Spelare', 'Rating', 'Poäng', ...tiebreakHeaders()]
   );
 
   const tbody = document.getElementById('modal-standings-body');
@@ -1108,7 +1200,7 @@ function openStandingsModal() {
       <td>${escapeHtml(p.seed)}</td>
       <td>${escapeHtml(p.name)} ${p.withdrawn ? '(Utgått)' : ''}</td>
       <td>${escapeHtml(p.rating)}</td>
-      <td><strong>${escapeHtml(fmtNum(p.score))}</strong></td>
+      <td><strong>${escapeHtml(p.score)}</strong></td>
       ${tiebreakCells(p)}
     `;
     tbody.appendChild(tr);
@@ -1128,7 +1220,7 @@ function openWithdrawModal() {
   active.forEach(p => {
     const opt = document.createElement('option');
     opt.value = p.id;
-    opt.textContent = `${p.name} (Startnr ${p.seed}, Rating ${p.rating})`;
+    opt.textContent = `${p.name} (Seed #${p.seed}, Rating ${p.rating})`;
     sel.appendChild(opt);
   });
   document.getElementById('withdraw-modal').style.display = 'flex';
@@ -1166,21 +1258,18 @@ function confirmWithdrawal() {
       if (!isWhite && !isBlack) continue;
 
       if (!pair.black) {
-        // Withdrawn player held the bye: no free point
         pair.result = '0-0 (Utgått)';
       } else if (!pair.result) {
-        // Game not yet played: opponent wins by walkover, locked
         pair.result = isWhite ? '0-1' : '1-0';
         pair.forfeit = true;
       }
-      // If a result was already entered, leave it untouched
       break;
     }
   }
 
   closeWithdrawModal();
   renderPairings();
-  alert(`${player.name} har lämnat turneringen.`);
+  alert(`${player.name} har avanmälts från turneringen.`);
 }
 
 function saveTournament() {
@@ -1188,7 +1277,7 @@ function saveTournament() {
   const blob = new Blob([data], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  const suffix = state.finished ? 'slutstallning' : `rond_${state.currentRound}`;
+  const suffix = state.finished ? 'slutresultat' : `rond_${state.currentRound}`;
   a.href = url;
   a.download = `${state.name.replace(/[^\w\-]+/g, '_')}_${suffix}.json`;
   document.body.appendChild(a);

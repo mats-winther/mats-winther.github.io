@@ -8,6 +8,18 @@
 <link rel="canonical" href="https://mats-winther.github.io/swiss-eng.htm">
 <title>Swiss Tournament System</title>
 <style>
+
+#round-count::-webkit-outer-spin-button,
+#round-count::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+#round-count {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
   :root {
     --primary: #1e3a8a;
     --primary-hover: #1e40af;
@@ -30,6 +42,8 @@
   }
   textarea { resize: vertical; min-height: 160px; font-family: monospace; }
   .radio-group { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+  .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+  .radio-group .radio-item { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
   .rules-box {
     background: #eff6ff; border-left: 4px solid var(--accent); padding: 12px 16px; border-radius: 4px; margin: 16px 0; font-size: 13.5px; line-height: 1.5;
   }
@@ -81,7 +95,9 @@
     
     /* Göm alla modaler som standard vid utskrift */
     body.printing-modal .modal-overlay { display: none !important; }
-    body.printing-modal #wnt-modal { display: none !important; }
+
+   /* Hide all modals when printing pairings or final standings */
+    body:not(.printing-modal) .modal-overlay { display: none !important; }
 
     /* Visa ENDAST ställnings-modalen */
     body.printing-modal #standings-modal {
@@ -125,26 +141,39 @@
     <div>
       <label>Round 1 Color Allocation</label>
       <div class="radio-group">
-        <label><input type="radio" name="r1-color" value="higherWhite" checked> Higher seeded has White (Seed #1 White)</label>
-        <label><input type="radio" name="r1-color" value="alternate"> Alternating colors (Board 1 White, Board 2 Black...)</label>
+        <div class="radio-item"><input type="radio" name="r1-color" value="higherWhite" aria-label="Higher seeded has White" checked> 
+		Higher seeded has White (Seed #1 White)
+        </div>
+        <div class="radio-item"><input type="radio" name="r1-color" value="alternate" aria-label="Alternating colors"> 
+		Alternating colors (Board 1 White, Board 2 Black...)
+        </div>
       </div>
     </div>
 
     <div style="margin-top: 16px;">
       <label>Tie-break System (Standings and Pairings)</label>
-      <div class="radio-group">
-        <label><input type="radio" name="tiebreak" value="wnt" checked> WNT<sup class="wnt-asterisk" onclick="openWntModal(event)" title="Information about Winther score">*</sup></label>
-        <label><input type="radio" name="tiebreak" value="buchholz"> Buchholz</label>
+     <div class="radio-group">
+        <div class="radio-item"><input type="radio" name="tiebreak" value="wnt" aria-label="WNT" checked> WNT<sup class="wnt-asterisk" onclick="openWntModal(event)" title="Information about Winther score">*</sup></div>
+        <div class="radio-item"><input type="radio" name="tiebreak" value="buchholz" aria-label="Buchholz"> Buchholz</div>
       </div>
+    </div>
+
+    <div style="margin-top: 16px;">
+      <label class="checkbox-group" style="cursor: pointer; user-select: none;">
+        <input type="checkbox" id="randomize-rating-groups" style="width: auto; margin: 0; cursor: pointer;">
+        <span>Randomize players within each rating group separately</span>
+      </label>
     </div>
 
     <div class="rules-box">
       <h3>Pairing System: Winther Acceleration</h3>
       <ul>
-        <li><strong>Round 1:</strong> Players are divided into four groups (quadrants). Q1 is assigned White against Q2 following rating order; similarly, Q3 is assigned White against Q4. (This applies when there are 16 or more players. Otherwise, the top half is paired against the bottom half, and standard Swiss pairing is used from Round 2 onward. For uneven groups, sizes are adjusted automatically, and with an odd number of players, the lowest-ranked gets a bye.)</li>
-        <li><strong>Round 2:</strong> Highest-seeded winner plays Black against the highest-seeded winner in the other half. Second highest-seeded plays Black against the next in the other half, and so on.</li>
-        <li><strong>Round 3+:</strong> Standard Swiss pairings begin. Players are sorted by score, the selected tie-break (WNT or Buchholz), and initial seeding. Pairings are generated top-down.</li>
-        <li><strong>Color Allocation:</strong> The player with fewer White games receives White. If equal, the lower-seeded player receives White. Color balance is guaranteed (color difference can never reach 3). If color balance conflicts with the 2-in-a-row rule, up to three games in a row with the same color are permitted.</li>
+        <li><strong>Round 1:</strong> Players are divided into four groups (quadrants). Q1 is assigned White against Q2 following seeding order; similarly, Q3 is assigned White against Q4. (This applies when there are 16 or more players. Otherwise, the top half is paired against the bottom half, and Swiss pairing begins at Round 2. For uneven groups, sizes are adjusted automatically, and with an odd number of players, the lowest-rated gets a bye.)</li>
+        <li><strong>Round 2:</strong> Winners of the first half play winners of the second half in seeding order. Colors alternate from Round 1. (Exceptionally, if the higher-seeded player had Black in Round 1 and the lower-seeded player had White, the colors are reversed.)</li>
+        <li><strong>Round 3+:</strong> Swiss pairings begin. Players are sorted by score, the selected tie-break (WNT or Buchholz), and initial seeding. Pairings are generated top-down.</li>
+        <li><strong>Color Allocation:</strong> The player with fewer White games receives White. If equal, the lowest-rated player receives White (or lower-seeded if equal rating). Color balance is guaranteed (color difference can never reach 3). If color balance conflicts with the 2-in-a-row rule, up to three games in a row with the same color are permitted.</li>
+<li><strong>Randomization:</strong> If "Randomize players" is selected, the rating groups are preserved but shuffled, ensuring greater variety in first-round pairings for the same group of club players. If the number of players is uneven, the player receiving the BYE is selected at random from Q4.</li>
+
       </ul>
     </div>
 
@@ -312,6 +341,15 @@ function fillHeaderRow(row, headers) {
   });
 }
 
+function shuffleArray(arr) {
+  const res = [...arr];
+  for (let i = res.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [res[i], res[j]] = [res[j], res[i]];
+  }
+  return res;
+}
+
 let state = {
   name: '',
   totalRounds: 5,
@@ -319,6 +357,7 @@ let state = {
   finished: false,
   r1ColorOption: 'higherWhite',
   tieBreakSystem: 'wnt',
+  randomizeRatingGroups: false,
   players: [],
   rounds: []
 };
@@ -342,6 +381,7 @@ window.addEventListener('beforeprint', () => {
 window.addEventListener('afterprint', () => {
   customPrintTitle = '';
   document.title = defaultDocTitle;
+  document.body.classList.remove('printing-modal');   // <-- new
 });
 
 function printPairings() {
@@ -359,7 +399,7 @@ function printStandings() {
   customPrintTitle = `${tName} - Standings after round ${rd}`;
   document.body.classList.add('printing-modal');
   window.print();
-  document.body.classList.remove('printing-modal');
+  // no removal here; afterprint does it
 }
 
 function printFinalStandings() {
@@ -412,8 +452,11 @@ document.getElementById('json-file-input').addEventListener('change', function(e
         });
       });
 
-// Ensure tieBreakSystem exists (backwards compatibility)
+      // Ensure settings exist (backwards compatibility)
       if (!state.tieBreakSystem) state.tieBreakSystem = 'wnt';
+      if (state.randomizeRatingGroups === undefined) state.randomizeRatingGroups = false;
+      const randCheckbox = document.getElementById('randomize-rating-groups');
+      if (randCheckbox) randCheckbox.checked = !!state.randomizeRatingGroups;
 
       if (state.finished || state.currentRound > state.totalRounds) {
         showFinalStandings();
@@ -424,7 +467,7 @@ document.getElementById('json-file-input').addEventListener('change', function(e
       // Hide the setup screen only after rendering succeeded
       document.getElementById('setup-section').style.display = 'none';
     } catch(err) {
-    alert('Error loading JSON file: ' + err.message);
+      alert('Error loading JSON file: ' + err.message);
     }
   };
   reader.readAsText(file);
@@ -454,9 +497,39 @@ function parsePlayers() {
     }
   });
 
+  // Base ranking: strictly by rating descending
   players.sort((a, b) => b.rating - a.rating);
 
-  return players.map((p, i) => ({
+  // If randomize notch is active, shuffle players within each rating group separately
+  const randomize = document.getElementById('randomize-rating-groups')?.checked;
+  let orderedPlayers = players;
+
+  if (randomize && players.length >= 4) {
+    const isOdd = players.length % 2 !== 0;
+    const numToPair = isOdd ? players.length - 1 : players.length;
+    const m = numToPair / 2;
+    const useQuadrants = numToPair >= 16;
+    const s1 = useQuadrants ? Math.ceil(m / 2) : m;
+    const s2 = useQuadrants ? Math.floor(m / 2) : 0;
+
+    let g1, g2, g3 = [], g4 = [];
+    if (useQuadrants) {
+      g1 = shuffleArray(players.slice(0, s1));
+      g2 = shuffleArray(players.slice(s1, 2 * s1));
+      g3 = shuffleArray(players.slice(2 * s1, 2 * s1 + s2));
+      // Lowest ranked player is included in Q4 when player count is odd
+      g4 = shuffleArray(players.slice(2 * s1 + s2));
+    } else {
+      g1 = shuffleArray(players.slice(0, s1));
+      // Lowest ranked player is included in the bottom half when player count is odd
+      g2 = shuffleArray(players.slice(s1));
+    }
+
+    orderedPlayers = [...g1, ...g2, ...g3, ...g4];
+  }
+
+  // Players are numbered according to the new order list
+  return orderedPlayers.map((p, i) => ({
     id: i + 1,
     seed: i + 1,
     name: p.name,
@@ -491,6 +564,7 @@ function startTournament() {
   state.totalRounds = rounds;
   state.r1ColorOption = document.querySelector('input[name="r1-color"]:checked').value;
   state.tieBreakSystem = document.querySelector('input[name="tiebreak"]:checked').value;
+  state.randomizeRatingGroups = document.getElementById('randomize-rating-groups').checked;
   state.players = parsed;
   state.rounds = [];
   state.currentRound = 1;
@@ -507,13 +581,13 @@ function generateRound1() {
   let byePlayer = null;
   let playersToPair = [...activePlayers];
 
-  // If odd, lowest-ranked player receives a bye
+  // If odd, lowest-seeded player receives a bye (randomly from Q4 if randomized)
   if (n % 2 !== 0) {
     byePlayer = playersToPair.pop();
   }
 
   const m = playersToPair.length / 2;
-  const useQuadrants = playersToPair.length >= 16;   // threshold is a judgment call
+  const useQuadrants = playersToPair.length >= 16;
   const s1 = useQuadrants ? Math.ceil(m / 2) : m;
   const s2 = useQuadrants ? Math.floor(m / 2) : 0;
 
@@ -618,11 +692,19 @@ function generateRound2() {
       } else if (pAColorR1 === 'W' && pBColorR1 === 'B') {
         white = pB; black = pA; // pB had Black, so give pB White
       } else {
-        // If both had the same color in R1, fall back to seed preference
-        if (pA.seed < pB.seed) {
-          black = pA; white = pB;
+        // If both had the same color in R1, lowest rated player receives White
+        if (pA.rating !== pB.rating) {
+          if (pA.rating < pB.rating) {
+            white = pA; black = pB;
+          } else {
+            white = pB; black = pA;
+          }
         } else {
-          black = pB; white = pA;
+          if (pA.seed < pB.seed) {
+            black = pA; white = pB;
+          } else {
+            black = pB; white = pA;
+          }
         }
       }
 
@@ -633,11 +715,12 @@ function generateRound2() {
   });
 
   // 3. Remaining player count is now guaranteed to be even
-  const remaining = state.players.filter(p => !paired.has(p.id) && !p.withdrawn);
-  if (remaining.length > 0) {
-    const extra = pairRound3Plus(remaining);
-    extra.forEach(p => pairings.push({ ...p, board: board++ }));
-  }
+const remaining = state.players.filter(p => !paired.has(p.id) && !p.withdrawn);
+if (remaining.length > 0) {
+  const extra = pairRound3Plus(remaining);
+  if (extra === null) return false;      // <-- new
+  extra.forEach(p => pairings.push({ ...p, board: board++ }));
+}
 
   // 4. Add the bye pairing at the bottom board
   if (byePlayer) {
@@ -645,6 +728,7 @@ function generateRound2() {
   }
 
   state.rounds.push({ roundNum: 2, pairings });
+  return true;
 }
 
 // ============================================================================
@@ -711,6 +795,8 @@ function canAssignColors(whitePlayer, blackPlayer, maxStreak) {
 
 /**
  * Default color preference when both color orders are legal.
+ * The player with fewer White games receives White.
+ * If equal, the lowest rated player receives White.
  */
 function choosePreferredColor(p1, p2) {
   const s1 = getColorStats(p1);
@@ -718,6 +804,11 @@ function choosePreferredColor(p1, p2) {
 
   if (s1.whites < s2.whites) return { white: p1, black: p2 };
   if (s2.whites < s1.whites) return { white: p2, black: p1 };
+
+  // Lowest rated player receives White if white games are equal
+  if (p1.rating !== p2.rating) {
+    return p1.rating < p2.rating ? { white: p1, black: p2 } : { white: p2, black: p1 };
+  }
 
   return p1.seed > p2.seed ? { white: p1, black: p2 } : { white: p2, black: p1 };
 }
@@ -761,7 +852,6 @@ function getValidColorAssignment(p1, p2, maxStreakAllowed = 3) {
 }
 
 function pairRound3Plus(players) {
-
   const available = players
     .filter(p => !p.withdrawn)
     .sort(compareStandings);
@@ -835,12 +925,11 @@ function pairRound3Plus(players) {
     solution = solve(toPair, pass.streak, pass.relaxed);
     if (solution !== null) break;
   }
-  if (solution === null) solution = [];
+  if (solution === null) return null;
 
   if (byePairing) solution.push(byePairing);
   return solution.map((p, idx) => ({ board: idx + 1, ...p }));
 }
-
 
 function renderPairings() {
   document.getElementById('pairings-section').style.display = 'block';
@@ -922,7 +1011,6 @@ function submitRound() {
 
     if (!b) {
       if (w.withdrawn) {
-        // Withdrawn player on a bye: no point awarded
         pair.result = '0-0 (Withdrawn)';
         w.history.push({ round: state.currentRound, opponent: null, color: '-', result: '0-0' });
       } else {
@@ -932,7 +1020,6 @@ function submitRound() {
       return;
     }
 
-    // Walkovers don't count as a colour played
     const cw = pair.forfeit ? '-' : 'W';
     const cb = pair.forfeit ? '-' : 'B';
     const extra = pair.forfeit ? { forfeit: true } : {};
@@ -970,15 +1057,26 @@ function submitRound() {
     return;
   }
 
-  state.currentRound++;
-  if (state.currentRound === 2) {
-    generateRound2();
-  } else {
-    const pairings = pairRound3Plus(active);
-    state.rounds.push({ roundNum: state.currentRound, pairings });
+const nextRound = state.currentRound + 1;
+
+if (nextRound === 2) {
+  if (!generateRound2()) {
+    alert('Could not generate pairings for round 2. The tournament ends here.');
+    finishTournament();
+    return;
   }
-  renderPairings();
+} else {
+  const pairings = pairRound3Plus(active);
+  if (pairings === null) {
+    alert(`Could not generate pairings for round ${nextRound}. The tournament ends here.`);
+    finishTournament();
+    return;
+  }
+  state.rounds.push({ roundNum: nextRound, pairings });
 }
+
+state.currentRound = nextRound;
+renderPairings();}
 
 function recalculateTiebreaks() {
   const pMap = new Map(state.players.map(p => [p.id, p]));
@@ -1001,13 +1099,11 @@ function recalculateTiebreaks() {
     p.sonneborn = sonneborn;
   });
 
-  // Calculate WNT (Winther Score) for all players
   calculateWNT();
 }
 
 /* --- WNT (WINTHER TIE-BREAK) --- */
 function calculateWNT() {
-  // Count only rounds whose results have been recorded
   const N = Math.max(0, ...state.players.map(p => (p.history || []).length));
   if (N === 0) {
     state.players.forEach(p => { p.wnt = 0; });
@@ -1018,18 +1114,16 @@ function calculateWNT() {
   state.players.forEach(p => {
     let sum = 0;
     (p.history || []).forEach(h => {
-      if (!h.opponent) return; // skip bye
+      if (!h.opponent) return;
       const opp = pMap.get(h.opponent);
       if (!opp) return;
 
-      // Determine result score for this player in this game
       let resultScore = 0;
       if (h.result === '1-0') resultScore = 1.0;
       else if (h.result === '0.5-0.5') resultScore = 0.5;
       else if (h.result === '0-1') resultScore = 0.0;
 
       const ratio = opp.score / N;
-      // WNT formula: 100 * sum( (P_i / N) * (r_i + P_i / (2N)) )
       sum += ratio * (resultScore + ratio / 2);
     });
     p.wnt = 100 * sum;
@@ -1162,14 +1256,11 @@ function confirmWithdrawal() {
       if (!isWhite && !isBlack) continue;
 
       if (!pair.black) {
-        // Withdrawn player held the bye: no free point
         pair.result = '0-0 (Withdrawn)';
       } else if (!pair.result) {
-        // Game not yet played: opponent wins by walkover, locked
         pair.result = isWhite ? '0-1' : '1-0';
         pair.forfeit = true;
       }
-      // If a result was already entered, leave it untouched
       break;
     }
   }
