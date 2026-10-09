@@ -487,15 +487,40 @@ window.addEventListener('beforeprint', () => {
   }
 });
 
-window.addEventListener('afterprint', () => {
-  customPrintTitle = '';
-  document.title = defaultDocTitle;
-  document.body.classList.remove('printing-modal');
-});
+// Print state handling that tolerates asynchronous printing
+let printCleanupTimer = null;
+
+function applyPrintState(title, modalMode) {
+  clearTimeout(printCleanupTimer);
+  customPrintTitle = title;
+  document.title = title;                                   // don't rely on beforeprint alone
+  document.body.classList.toggle('printing-modal', modalMode); // always set explicitly
+}
+
+function cleanupPrintState() {
+  clearTimeout(printCleanupTimer);
+  // Delayed, so an early afterprint can't strip the state before the snapshot is rendered.
+  // Harmless if late: every print call resets the state first.
+  printCleanupTimer = setTimeout(() => {
+    customPrintTitle = '';
+    document.title = defaultDocTitle;
+    document.body.classList.remove('printing-modal');
+  }, 1000);
+}
+
+window.addEventListener('afterprint', cleanupPrintState);
+
+// Fallback for browsers where afterprint is missing or unreliable
+const printMql = window.matchMedia ? window.matchMedia('print') : null;
+if (printMql) {
+  const onPrintChange = e => { if (!e.matches) cleanupPrintState(); };
+  if (printMql.addEventListener) printMql.addEventListener('change', onPrintChange);
+  else if (printMql.addListener) printMql.addListener(onPrintChange);
+}
 
 function printPairings() {
   const tName = (state.name || 'Tournament').trim();
-  customPrintTitle = `${tName} - Round ${state.currentRound}`;
+  applyPrintState(`${tName} - Round ${state.currentRound}`, false);
   window.print();
 }
 
@@ -505,14 +530,13 @@ function printStandings() {
 
   const tName = (state.name || 'Tournament').trim();
   const rd = state.currentRound > 1 ? state.currentRound - 1 : 1;
-  customPrintTitle = `${tName} - Standings after round ${rd}`;
-  document.body.classList.add('printing-modal');
+  applyPrintState(`${tName} - Standings after round ${rd}`, true);
   window.print();
 }
 
 function printFinalStandings() {
   const tName = (state.name || 'Tournament').trim();
-  customPrintTitle = `${tName} - Final Standings`;
+  applyPrintState(`${tName} - Final Standings`, false);
   window.print();
 }
 

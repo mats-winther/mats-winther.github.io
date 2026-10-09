@@ -502,22 +502,48 @@ window.addEventListener('beforeprint', () => {
   } else {
     const tName = (state.name || 'Turnering').trim();
     if (document.getElementById('final-section').style.display === 'block') {
-      document.title = `${tName} - Slutställning`;
+      document.title = `${tName} - Slutresultat`;
     } else if (state.currentRound > 0) {
       document.title = `${tName} - Rond ${state.currentRound}`;
     }
   }
 });
 
-window.addEventListener('afterprint', () => {
-  customPrintTitle = '';
-  document.title = defaultDocTitle;
-  document.body.classList.remove('printing-modal');
-});
+// Hantering av utskriftsläge som tål asynkron utskrift
+let printCleanupTimer = null;
+
+function applyPrintState(title, modalMode) {
+  clearTimeout(printCleanupTimer);
+  customPrintTitle = title;
+  document.title = title;                                      // lita inte enbart på beforeprint
+  document.body.classList.toggle('printing-modal', modalMode); // sätt alltid uttryckligen
+}
+
+function cleanupPrintState() {
+  clearTimeout(printCleanupTimer);
+  // Fördröjd, så att ett för tidigt afterprint inte tar bort läget innan
+  // utskriftsbilden är renderad. Ofarligt om den kommer sent: varje
+  // utskrift återställer läget först.
+  printCleanupTimer = setTimeout(() => {
+    customPrintTitle = '';
+    document.title = defaultDocTitle;
+    document.body.classList.remove('printing-modal');
+  }, 1000);
+}
+
+window.addEventListener('afterprint', cleanupPrintState);
+
+// Reserv för webbläsare där afterprint saknas eller är opålitlig
+const printMql = window.matchMedia ? window.matchMedia('print') : null;
+if (printMql) {
+  const onPrintChange = e => { if (!e.matches) cleanupPrintState(); };
+  if (printMql.addEventListener) printMql.addEventListener('change', onPrintChange);
+  else if (printMql.addListener) printMql.addListener(onPrintChange);
+}
 
 function printPairings() {
   const tName = (state.name || 'Turnering').trim();
-  customPrintTitle = `${tName} - Rond ${state.currentRound}`;
+  applyPrintState(`${tName} - Rond ${state.currentRound}`, false);
   window.print();
 }
 
@@ -527,14 +553,13 @@ function printStandings() {
 
   const tName = (state.name || 'Turnering').trim();
   const rd = state.currentRound > 1 ? state.currentRound - 1 : 1;
-  customPrintTitle = `${tName} - Ställning efter rond ${rd}`;
-  document.body.classList.add('printing-modal');
+  applyPrintState(`${tName} - Ställning efter rond ${rd}`, true);
   window.print();
 }
 
 function printFinalStandings() {
   const tName = (state.name || 'Turnering').trim();
-  customPrintTitle = `${tName} - Slutställning`;
+  applyPrintState(`${tName} - Slutresultat`, false);
   window.print();
 }
 
