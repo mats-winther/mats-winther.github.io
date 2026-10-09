@@ -6,7 +6,8 @@
   <link href="style4.css" rel="stylesheet" type="text/css">
   <meta name="description" content=
   "En teknisk genomgång av lottning i schackturneringar med fokus på Monrad och Schweizer. Artikeln presenterar ett nytt schweizersystem som ett stabilt och rättvist alternativ för öppna turneringar.">
-
+<meta name="keywords" content=
+  "Monrad, Schweizer, Berger, Scheveningen, WNT, Klubbschweizer, Dutch, FIDE, Dubov, Lim, Burstein, Buchholz, Sonneborn-Berger">
   <style>
   a.c2 {float: left; margin-top:2px; margin-left:2px}
   a.c1 {float: left; margin-top:2px; margin-left:2px;}
@@ -198,9 +199,9 @@
     för mellanstarka spelare är att de pendlar mellan alltför starkt och alltför svagt motstånd: i en rond möter de en
     betydligt starkare spelare, i nästa en klart svagare, och därefter åter en alltför stark. Denna pendling förtar
     spelglädjen och ger en ojämn turneringsupplevelse. I mitt accelererade schweizersystem inträffar inte detta:
-    <a href="../swiss.htm" title=
-    "Program för schweizerlottning med Winther-accelerering">schweizersystem för turneringar</a>. Programmet har en
-    spärr som gör att risken att få samma färg tre gånger i rad är nästan obefintlig.<br>
+    <a href="../swiss.htm" title="Program för schweizerlottning med Winther-accelerering">schweizersystem för
+    turneringar</a>. Programmet har en spärr som gör att risken att få samma färg tre gånger i rad är nästan
+    obefintlig.<br>
     <br>
     <b>Accelererad schweizerlottning (Winther-accelerering)</b>:<br>
     <br>
@@ -229,15 +230,21 @@
     varandra. Generellt föredrar toppspelare svart mot svagare motstånd och vit mot starkare. Programmet tillgodoser
     detta genom att ge vit till den lägre rankade spelaren när antalet spelade vitpartier är lika. Programmet minimerar
     antalet spelare som får börja med två svartpartier. Normalt har högre seedad vit i första ronden, vilket gör att
-    detta inte kan inträffa för spelare i den första och den tredje fjärdedelen i startlistan. Det finns möjlighet att slumpa 
-	spelarna inom varje kvadrant, vilket ger större variation i lottningen av den första ronden för samma grupp klubbspelare.<br>
+    detta inte kan inträffa för spelare i den första och den tredje fjärdedelen i startlistan. Det finns möjlighet att
+    slumpa spelarna inom varje kvadrant, vilket ger större variation i lottningen av den första ronden för samma grupp
+    klubbspelare.<br>
     <br>
     Schweizerlottningens grundproblem är att den försöker åstadkomma en rättvis turnering inom ett begränsat antal
     ronder, utan att kunna använda det idealiska alla-mot-alla-formatet. Många schweizervarianter misslyckas med detta,
     särskilt när mellanskiktet pendlar mellan alltför starkt och alltför svagt motstånd, eller när färgfördelningen
     blir orimlig. Den föreslagna varianten är ett försök att förena enkelhet med stabilitet: de två första ronderna ger
     en kontrollerad accelerering där elitspelarna möter lägre rankade motståndare. Från rond tre möter spelare med
-    liknande rating allt oftare varandra, vilket ger turneringen en naturlig utveckling.</p>
+    liknande rating allt oftare varandra, vilket ger turneringen en naturlig utveckling.<br>
+    <br>
+    I mitt program <a href="../klubbschweizer.htm">Klubbschweizer</a> delas spelarna in i tre ratinggrupper som
+    randomiseras var för sig. Systemet kombinerar monradsystemets slumpmässighet med schweizersystemets sportsliga
+    rättvisa och passar därför särskilt bra för schackklubbar. Under de två första ronderna möter den starkaste gruppen
+    mellangruppen, medan den svagaste gruppen spelar inbördes. Därefter lottas hela startfältet som en enda grupp.</p>
     <p><span class="bigger">Schematisk översikt</span></p>
     <table class="c1">
       <thead>
@@ -434,6 +441,9 @@
     <br>
     Bursteins lottningssystem<br>
     <a href="../fide-burstein.htm">https://mats-winther.github.io/fide-burstein.htm</a><br>
+    <br>
+    Klubbschweizer<br>
+    <a href="../klubbschweizer.htm">https://mats-winther.github.io/klubbschweizer.htm</a><br>
     <br>
     Dubovs lottningssystem<br>
     <a href="../fide-dubov.htm">https://mats-winther.github.io/fide-dubov.htm</a><br>
