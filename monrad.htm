@@ -270,6 +270,21 @@
       border: 1px solid #fde68a;
     }
 
+    .resume-box {
+      display: none;
+      background: #fef9c3;
+      border-left: 4px solid #ca8a04;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin: 0 0 16px 0;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .resume-box .btn-group {
+      margin-top: 8px;
+    }
+
     /* Modaldialoger */
     .modal-overlay {
       position: fixed;
@@ -307,6 +322,17 @@
 
   <!-- 1. ANGE SPELARE -->
   <section id="section-setup" class="card">
+
+    <!-- Visas bara om en automatiskt sparad turnering finns i den här webbläsaren -->
+    <div id="resume-banner" class="resume-box">
+      <strong id="resume-text"></strong>
+      <div>Turneringen sparades automatiskt. Vill du fortsätta turneringen?</div>
+      <div class="btn-group">
+        <button type="button" onclick="resumeAutosave()">Fortsätt turneringen</button>
+        <button type="button" class="secondary" onclick="discardAutosave()">Kassera</button>
+      </div>
+    </div>
+
     <h2>1. Ange spelare</h2>
     
     <div style="margin-bottom: 16px;">
@@ -327,16 +353,16 @@
     <div class="tiebreak-selector">
       <span style="font-weight: 600; color: #334155;">Särskiljning:</span>
       <label>
-       <input type="radio" class="tb-radio" name="tb-choice-setup" value="wnt" checked         onchange="setTieBreak(this.value)">
-       <span>WNT<sup class="wnt-asterisk" onclick="openWntModal(event)"    title="Information om Winther-poäng">*</sup></span>
+       <input type="radio" class="tb-radio" name="tb-choice-setup" value="wnt" checked onchange="userSetTieBreak(this.value)">
+       <span>WNT<sup class="wnt-asterisk" onclick="openWntModal(event)" title="Information om Winther-poäng">*</sup></span>
       </label>
       <label>
-        <input type="radio" class="tb-radio" name="tb-choice-setup" value="cumulative" onchange="setTieBreak(this.value)">
-        Kumulativ (Progressiv)
+        <input type="radio" class="tb-radio" name="tb-choice-setup" value="cumulative" onchange="userSetTieBreak(this.value)">
+        Progressiv (Kumulativ)
       </label>
       <label>
-        <input type="radio" class="tb-radio" name="tb-choice-setup" value="buchholz" onchange="setTieBreak(this.value)">
-        Buchholz (Solkoff)
+        <input type="radio" class="tb-radio" name="tb-choice-setup" value="buchholz" onchange="userSetTieBreak(this.value)">
+        Buchholz
       </label>
     </div>
 
@@ -410,15 +436,15 @@
     <div class="tiebreak-selector" style="margin-top: 0; margin-bottom: 14px;">
       <span style="font-weight: 600; color: #334155;">Särskiljning:</span>
       <label>
-         <input type="radio" class="tb-radio" name="tb-choice-final" value="wnt" checked onchange="setTieBreak(this.value)">
+         <input type="radio" class="tb-radio" name="tb-choice-final" value="wnt" checked onchange="userSetTieBreak(this.value)">
          <span>WNT</span>
       </label>      
       <label>
-        <input type="radio" class="tb-radio" name="tb-choice-final" value="cumulative" onchange="setTieBreak(this.value)">
-        Kumulativ
+        <input type="radio" class="tb-radio" name="tb-choice-final" value="cumulative" onchange="userSetTieBreak(this.value)">
+        Progressiv
       </label>
       <label>
-        <input type="radio" class="tb-radio" name="tb-choice-final" value="buchholz" onchange="setTieBreak(this.value)">
+        <input type="radio" class="tb-radio" name="tb-choice-final" value="buchholz" onchange="userSetTieBreak(this.value)">
         Buchholz
       </label>
     </div>
@@ -452,7 +478,7 @@
     <div style="font-family: monospace, monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.92rem; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; color: #0f172a;">Winther-poäng (WNT) = 100 × ∑ᵢ [&nbsp;(Pᵢ&nbsp;/&nbsp;N)&nbsp;× (rᵢ&nbsp;+&nbsp;Pᵢ&nbsp;/&nbsp;(2N))&nbsp;]
 
 ∑ᵢ = summan över alla motståndare du mött
-rᵢ = ditt resultat mot motståndare i&nbsp; (1, 0,5, 0)
+rᵢ = ditt resultat mot motståndare i&nbsp; (1, ½, 0)
 Pᵢ = motståndare i:s slutpoäng i turneringen
 N = totalt antal ronder i turneringen
 Pᵢ / N = motståndarens poängandel (poängkvoten uttryckt som decimaltal mellan 0 och 1)</div>
@@ -491,6 +517,227 @@ Pᵢ / N = motståndarens poängandel (poängkvoten uttryckt som decimaltal mell
   let currentByePlayer = null;
   let roundHistory = [];
   let tieBreakSystem = "wnt"; // "wnt" (default), "cumulative" eller "buchholz"
+  let tournamentFinished = false;
+
+  /* ==========================================================================
+     AUTOSPARNING (localStorage)
+     ========================================================================== */
+
+  const AUTOSAVE_KEY = 'monradAutosave';
+
+  /**
+   * Bygger en serialiserbar ögonblicksbild av hela turneringen. Används både av
+   * knappen "Spara turnering" (JSON-fil) och av autosparningen.
+   * Resultat som angetts på borden (radioknappar) tas med.
+   */
+  function buildTournamentState() {
+    const pairingsData = (currentPairings || []).map((match, idx) => {
+      const checked = document.querySelector(`input[name="board_${idx + 1}"]:checked`);
+      return {
+        whiteId: match.white ? match.white.id : null,
+        blackId: match.black ? match.black.id : null,
+        result: checked ? checked.value : null
+      };
+    });
+
+    return {
+      fileSignature: "MONRAD_CHESS_SAVE",
+      savedAt: new Date().toISOString(),
+      tournamentName: tournamentName,
+      tieBreakSystem: tieBreakSystem,
+      currentRound: currentRound,
+      finished: tournamentFinished,
+      players: players,
+      currentPairings: pairingsData,
+      currentByePlayerId: currentByePlayer ? currentByePlayer.id : null,
+      roundHistory: roundHistory
+    };
+  }
+
+  /** Sparar turneringen i webbläsaren. Misslyckas tyst om lagring inte är tillgänglig. */
+  function autosave() {
+    if (!players || players.length === 0) return;   // skriv aldrig över en sparad turnering med en tom
+    try {
+      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(buildTournamentState()));
+    } catch (e) {
+      // Lagring kan vara avstängd (privat läge) eller full. "Spara turnering" fungerar ändå.
+    }
+  }
+
+  function clearAutosave() {
+    try { localStorage.removeItem(AUTOSAVE_KEY); } catch (e) {}
+  }
+
+  function readAutosave() {
+    try {
+      const raw = localStorage.getItem(AUTOSAVE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /** Vid sidladdning: erbjud att fortsätta om en autosparad turnering finns. */
+  function checkAutosave() {
+    const saved = readAutosave();
+    if (!saved) return;
+
+    if (!Array.isArray(saved.players) || saved.players.length === 0 || !saved.currentRound) {
+      clearAutosave();   // trasig eller tom: kassera
+      return;
+    }
+
+    const label = (saved.tournamentName || '').trim() || 'Turnering';
+    document.getElementById('resume-text').textContent = saved.finished
+      ? `Sparad turnering hittades: "${label}" (avslutad).`
+      : `Sparad turnering hittades: "${label}" (rond ${saved.currentRound}).`;
+    document.getElementById('resume-banner').style.display = 'block';
+  }
+
+  function resumeAutosave() {
+    const saved = readAutosave();
+    if (!saved) {
+      alert('Den sparade turneringen kunde inte läsas.');
+      document.getElementById('resume-banner').style.display = 'none';
+      return;
+    }
+    if (loadTournamentObject(saved, true)) {
+      document.getElementById('resume-banner').style.display = 'none';
+    }
+  }
+
+  function discardAutosave() {
+    if (!confirm('Kassera den sparade turneringen? Det går inte att ångra.')) return;
+    clearAutosave();
+    document.getElementById('resume-banner').style.display = 'none';
+  }
+
+  /* ==========================================================================
+     INLÄSNING AV TURNERINGSOBJEKT (används av JSON-filer och autosparning)
+     ========================================================================== */
+
+  /**
+   * Validerar ett inläst turneringsobjekt, gör det till aktuellt tillstånd och visar det.
+   * Returnerar true vid lyckad inläsning. Vid fel återställs det tidigare tillståndet.
+   */
+  function loadTournamentObject(data, silent) {
+    const prev = {
+      tournamentName, players, currentRound, currentPairings,
+      currentByePlayer, roundHistory, tieBreakSystem, tournamentFinished
+    };
+
+    try {
+      if (!data || !Array.isArray(data.players) || data.players.length === 0 || !data.currentRound) {
+        throw new Error("Ogiltigt format på sparfilen.");
+      }
+
+      tournamentName = data.tournamentName || "";
+      document.getElementById("input-tournament-name").value = tournamentName;
+      updateTournamentTitles();
+
+      players = data.players.map(p => ({
+        ...p,
+        withdrawn: !!p.withdrawn,
+        matchResults: p.matchResults || [],
+        wnt: p.wnt || 0
+      }));
+      currentRound = data.currentRound;
+      roundHistory = data.roundHistory || [];
+      tournamentFinished = !!data.finished;
+
+      // Återskapa matchResults om turneringen sparats med äldre version
+      if (roundHistory && roundHistory.length > 0) {
+        const needsReconstruct = players.some(p => !p.matchResults || p.matchResults.length === 0);
+        if (needsReconstruct) {
+          players.forEach(p => p.matchResults = []);
+          roundHistory.forEach(r => {
+            r.matches.forEach(m => {
+              const w = players.find(p => (m.whiteId && p.id === m.whiteId) || p.name === m.whiteName);
+              const b = players.find(p => (m.blackId && p.id === m.blackId) || p.name === m.blackName);
+              if (w && b) {
+                let wRes = 0, bRes = 0;
+                if (m.result === "1 - 0") { wRes = 1.0; bRes = 0.0; }
+                else if (m.result === "½ - ½") { wRes = 0.5; bRes = 0.5; }
+                else if (m.result === "0 - 1") { wRes = 0.0; bRes = 1.0; }
+                w.matchResults.push({ oppId: b.id, score: wRes });
+                b.matchResults.push({ oppId: w.id, score: bRes });
+              }
+            });
+          });
+        }
+      }
+
+      setTieBreak(data.tieBreakSystem || "wnt");
+
+      currentByePlayer = data.currentByePlayerId
+        ? players.find(p => p.id === data.currentByePlayerId) || null
+        : null;
+
+      currentPairings = [];
+      const savedPairings = data.currentPairings || [];
+      for (let pair of savedPairings) {
+        const white = players.find(p => p.id === pair.whiteId);
+        const black = players.find(p => p.id === pair.blackId);
+        if (white && black) {
+          currentPairings.push({ white, black });
+        }
+      }
+
+      if (tournamentFinished) {
+        document.getElementById("section-round").classList.add("hidden");
+        document.getElementById("section-standings").classList.add("hidden");
+        document.getElementById("section-final").classList.remove("hidden");
+        renderFinalStandings();
+      } else {
+        document.getElementById("section-final").classList.add("hidden");
+        document.getElementById("section-round").classList.remove("hidden");
+        document.getElementById("section-standings").classList.remove("hidden");
+
+        document.getElementById("round-title").innerText = `Rond ${currentRound}`;
+        renderRoundView();
+
+        savedPairings.forEach((pair, idx) => {
+          if (pair.result) {
+            const radio = document.querySelector(`input[name="board_${idx + 1}"][value="${pair.result}"]`);
+            if (radio) radio.checked = true;
+          }
+        });
+
+        renderStandings();
+      }
+
+      // Dölj startsidan först när visningen lyckats
+      document.getElementById("section-setup").classList.add("hidden");
+      autosave();
+
+      if (!silent) {
+        alert(tournamentFinished
+          ? "Den avslutade turneringen har lästs in!"
+          : `Turneringen har lästs in vid Rond ${currentRound}!`);
+      }
+      return true;
+    } catch (err) {
+      // Återställ det tidigare tillståndet vid fel
+      tournamentName = prev.tournamentName;
+      players = prev.players;
+      currentRound = prev.currentRound;
+      currentPairings = prev.currentPairings;
+      currentByePlayer = prev.currentByePlayer;
+      roundHistory = prev.roundHistory;
+      tournamentFinished = prev.tournamentFinished;
+      setTieBreak(prev.tieBreakSystem);
+      updateTournamentTitles();
+
+      // Dölj halvritade sektioner så att startsidan förblir användbar
+      document.getElementById("section-round").classList.add("hidden");
+      document.getElementById("section-standings").classList.add("hidden");
+      document.getElementById("section-final").classList.add("hidden");
+      document.getElementById("section-setup").classList.remove("hidden");
+
+      alert("Kunde inte läsa in sparfilen: " + err.message);
+      return false;
+    }
+  }
 
   function updateTournamentTitles() {
     const displayName = tournamentName.trim();
@@ -514,6 +761,12 @@ Pᵢ / N = motståndarens poängandel (poängkvoten uttryckt som decimaltal mell
     if (!document.getElementById("section-final").classList.contains("hidden")) {
       renderFinalStandings();
     }
+  }
+
+  /** Anropas när användaren ändrar särskiljning (inte vid inläsning av fil). */
+  function userSetTieBreak(val) {
+    setTieBreak(val);
+    autosave();
   }
 
   function openWntModal(e) {
@@ -571,89 +824,16 @@ Pᵢ / N = motståndarens poängandel (poängkvoten uttryckt som decimaltal mell
 
     const reader = new FileReader();
     reader.onload = function(e) {
+      let data;
       try {
-        const data = JSON.parse(e.target.result);
-        if (!data.players || !data.currentRound) {
-          throw new Error("Ogiltigt format på sparfilen.");
-        }
-
-        tournamentName = data.tournamentName || "";
-        document.getElementById("input-tournament-name").value = tournamentName;
-        updateTournamentTitles();
-
-        players = data.players.map(p => ({
-          ...p,
-          withdrawn: !!p.withdrawn,
-          matchResults: p.matchResults || [],
-          wnt: p.wnt || 0
-        }));
-        currentRound = data.currentRound;
-        roundHistory = data.roundHistory || [];
-        
-        // Återskapa matchResults om turneringen sparats med äldre version
-        if (roundHistory && roundHistory.length > 0) {
-          const needsReconstruct = players.some(p => !p.matchResults || p.matchResults.length === 0);
-          if (needsReconstruct) {
-            players.forEach(p => p.matchResults = []);
-            roundHistory.forEach(r => {
-              r.matches.forEach(m => {
-                const w = players.find(p => (m.whiteId && p.id === m.whiteId) || p.name === m.whiteName);
-                const b = players.find(p => (m.blackId && p.id === m.blackId) || p.name === m.blackName);
-                if (w && b) {
-                  let wRes = 0, bRes = 0;
-                  if (m.result === "1 - 0") { wRes = 1.0; bRes = 0.0; }
-                  else if (m.result === "½ - ½") { wRes = 0.5; bRes = 0.5; }
-                  else if (m.result === "0 - 1") { wRes = 0.0; bRes = 1.0; }
-                  w.matchResults.push({ oppId: b.id, score: wRes });
-                  b.matchResults.push({ oppId: w.id, score: bRes });
-                }
-              });
-            });
-          }
-        }
-
-        if (data.tieBreakSystem) {
-          setTieBreak(data.tieBreakSystem);
-        } else {
-          setTieBreak("wnt");
-        }
-
-        currentByePlayer = data.currentByePlayerId
-          ? players.find(p => p.id === data.currentByePlayerId) || null
-          : null;
-
-        currentPairings = [];
-        const savedPairings = data.currentPairings || [];
-        for (let pair of savedPairings) {
-          const white = players.find(p => p.id === pair.whiteId);
-          const black = players.find(p => p.id === pair.blackId);
-          if (white && black) {
-            currentPairings.push({ white, black });
-          }
-        }
-
-        document.getElementById("section-setup").classList.add("hidden");
-        document.getElementById("section-final").classList.add("hidden");
-        document.getElementById("section-round").classList.remove("hidden");
-        document.getElementById("section-standings").classList.remove("hidden");
-
-        document.getElementById("round-title").innerText = `Rond ${currentRound}`;
-        renderRoundView();
-
-        savedPairings.forEach((pair, idx) => {
-          if (pair.result) {
-            const radio = document.querySelector(`input[name="board_${idx + 1}"][value="${pair.result}"]`);
-            if (radio) radio.checked = true;
-          }
-        });
-
-        renderStandings();
-        alert(`Turneringen har lästs in vid Rond ${currentRound}!`);
+        data = JSON.parse(e.target.result);
       } catch (err) {
         alert("Kunde inte läsa in sparfilen: " + err.message);
-      } finally {
         event.target.value = "";
+        return;
       }
+      loadTournamentObject(data, false);
+      event.target.value = "";
     };
     reader.readAsText(file, "UTF-8");
   }
@@ -664,26 +844,7 @@ Pᵢ / N = motståndarens poängandel (poängkvoten uttryckt som decimaltal mell
       return;
     }
 
-    const pairingsData = currentPairings.map((match, idx) => {
-      const checked = document.querySelector(`input[name="board_${idx + 1}"]:checked`);
-      return {
-        whiteId: match.white ? match.white.id : null,
-        blackId: match.black ? match.black.id : null,
-        result: checked ? checked.value : null
-      };
-    });
-
-    const tournamentState = {
-      fileSignature: "MONRAD_CHESS_SAVE",
-      savedAt: new Date().toISOString(),
-      tournamentName: tournamentName,
-      tieBreakSystem: tieBreakSystem,
-      currentRound: currentRound,
-      players: players,
-      currentPairings: pairingsData,
-      currentByePlayerId: currentByePlayer ? currentByePlayer.id : null,
-      roundHistory: roundHistory
-    };
+    const tournamentState = buildTournamentState();
 
     const jsonStr = JSON.stringify(tournamentState, null, 2);
     const blob = new Blob([jsonStr], { type: "application/json" });
@@ -791,11 +952,12 @@ Moa Lundin`;
 
     currentRound = 1;
     roundHistory = [];
+    tournamentFinished = false;
     document.getElementById("section-setup").classList.add("hidden");
     document.getElementById("section-round").classList.remove("hidden");
     document.getElementById("section-standings").classList.remove("hidden");
 
-    lotRound();
+    lotRound();   // autosparar när lottningen är klar
   }
 
   /* --- STRYK SPELARE --- */
@@ -852,6 +1014,7 @@ Moa Lundin`;
     });
 
     renderStandings();
+    autosave();   // före meddelandena, som blockerar sidan
 
     const remainingActive = players.filter(p => !p.withdrawn);
     if (remainingActive.length < 2) {
@@ -910,6 +1073,7 @@ Moa Lundin`;
 
     renderRoundView();
     renderStandings();
+    autosave();   // ny rond är klar: behåll den om sidan laddas om
   }
 
   function generateMonradPairings(pool) {
@@ -983,15 +1147,15 @@ Moa Lundin`;
         <td>
           <div class="result-selector">
             <label>
-              <input type="radio" name="board_${boardNum}" value="1-0" required>
+              <input type="radio" name="board_${boardNum}" value="1-0" required onchange="autosave()">
               <span>1 - 0</span>
             </label>
             <label>
-              <input type="radio" name="board_${boardNum}" value="0.5-0.5">
+              <input type="radio" name="board_${boardNum}" value="0.5-0.5" onchange="autosave()">
               <span>½ - ½</span>
             </label>
             <label>
-              <input type="radio" name="board_${boardNum}" value="0-1">
+              <input type="radio" name="board_${boardNum}" value="0-1" onchange="autosave()">
               <span>0 - 1</span>
             </label>
           </div>
@@ -1119,7 +1283,7 @@ Moa Lundin`;
     }
 
     currentRound++;
-    lotRound();
+    lotRound();   // autosparar
   }
 
   function calculateBuchholz() {
@@ -1223,8 +1387,8 @@ Moa Lundin`;
     if (tieBreakSystem === "buchholz") {
       tbLabel = "Buchholz";
     } else if (tieBreakSystem === "cumulative") {
-      tbLabel = "Kumulativ";
-       }    
+      tbLabel = "Progressiv";
+    }
     document.getElementById("th-tiebreak").innerText = tbLabel;
 
     const tbody = document.getElementById("final-tbody");
@@ -1323,15 +1487,19 @@ Moa Lundin`;
       }
     }
 
+    tournamentFinished = true;
+
     document.getElementById("section-round").classList.add("hidden");
     document.getElementById("section-standings").classList.add("hidden");
     document.getElementById("section-final").classList.remove("hidden");
 
     renderFinalStandings();
+    autosave();
   }
 
   function resetTournament() {
-    if (confirm("Är du säker på att du vill starta en ny turnering?")) {
+    if (confirm("Är du säker på att du vill starta en ny turnering? Den automatiskt sparade kopian i den här webbläsaren tas bort. Använd först \"Spara turnering\" om du vill behålla en fil.")) {
+      clearAutosave();
       location.reload();
     }
   }
@@ -1539,7 +1707,7 @@ Moa Lundin`;
     if (tieBreakSystem === "buchholz") {
       tbLabel = "Buchholz";
     } else if (tieBreakSystem === "cumulative") {
-      tbLabel = "Kumulativ";
+      tbLabel = "Progressiv";
     }
     let finalHtml = `
       <h1>${tournamentTitle} — Slutställning</h1>
@@ -1580,6 +1748,9 @@ Moa Lundin`;
 
     openPrintPage(`${tournamentTitle} - Slutställning`, finalHtml);
   }
+
+  // Vid sidladdning: erbjud att fortsätta en autosparad turnering, om det finns någon
+  checkAutosave();
 </script>
 
 </body>

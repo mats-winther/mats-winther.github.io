@@ -49,6 +49,10 @@
   }
   .rules-box h3 { margin: 0 0 6px 0; font-size: 14px; color: var(--primary); }
   .rules-box ul { margin: 0; padding-left: 18px; }
+  .resume-box {
+    display: none; background: #fef9c3; border-left: 4px solid #ca8a04; padding: 12px 16px; border-radius: 4px; margin: 16px 0; font-size: 14px; line-height: 1.5;
+  }
+  .resume-box .btn-bar { margin-top: 8px; }
 .wnt-asterisk {
   color: var(--accent);
   font-weight: bold;
@@ -126,6 +130,17 @@
 
   <!-- Settings -->
   <div id="setup-section" class="settings-section">
+
+    <!-- Shown only if an autosaved tournament exists in this browser -->
+    <div id="resume-banner" class="resume-box">
+      <strong id="resume-text"></strong>
+      <div>The tournament was saved automatically in this browser. Would you like to continue it?</div>
+      <div class="btn-bar">
+        <button type="button" onclick="resumeAutosave()">Resume Tournament</button>
+        <button type="button" class="secondary" onclick="discardAutosave()">Discard</button>
+      </div>
+    </div>
+
     <h2>Tournament Settings</h2>
     <div class="settings-grid">
       <div>
@@ -312,6 +327,7 @@ Pᵢ / N = opponent's score share (ratio expressed as a decimal between 0 and 1)
 
 function finishTournament() {
   state.finished = true;
+  autosave();
   document.getElementById('pairings-section').style.display = 'none';
   showFinalStandings();
 }
@@ -365,6 +381,146 @@ let state = {
 let defaultDocTitle = document.title;
 let customPrintTitle = '';
 
+// ============================================================================
+// AUTOSAVE (localStorage)
+// ============================================================================
+
+// NOTE: This key must differ from the one used by the Club Swiss page,
+// because both pages live on the same origin and would otherwise
+// overwrite each other's saved tournament.
+const AUTOSAVE_KEY = 'swissAutosave';
+
+/** Saves the current state in the browser. Fails silently if storage is unavailable. */
+function autosave() {
+  try {
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
+  } catch (e) {
+    // Storage may be disabled (private mode) or full. The manual "Save Tournament" still works.
+  }
+}
+
+function clearAutosave() {
+  try { localStorage.removeItem(AUTOSAVE_KEY); } catch (e) {}
+}
+
+function readAutosave() {
+  try {
+    const raw = localStorage.getItem(AUTOSAVE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+/** On page load: offer to resume if an autosaved tournament exists. */
+function checkAutosave() {
+  const saved = readAutosave();
+  if (!saved) return;
+
+  if (!Array.isArray(saved.players) || !Array.isArray(saved.rounds) || saved.players.length === 0) {
+    clearAutosave();   // corrupt or empty: discard
+    return;
+  }
+
+  const done = saved.finished || saved.currentRound > saved.totalRounds;
+  const label = saved.name || 'Tournament';
+  document.getElementById('resume-text').textContent = done
+    ? `Saved tournament found: "${label}" (finished).`
+    : `Saved tournament found: "${label}" (round ${saved.currentRound} of ${saved.totalRounds}).`;
+  document.getElementById('resume-banner').style.display = 'block';
+}
+
+function resumeAutosave() {
+  const saved = readAutosave();
+  if (!saved) {
+    alert('The saved tournament could not be read.');
+    document.getElementById('resume-banner').style.display = 'none';
+    return;
+  }
+  if (loadTournamentObject(saved)) {
+    document.getElementById('resume-banner').style.display = 'none';
+  }
+}
+
+function discardAutosave() {
+  if (!confirm('Discard the saved tournament? This cannot be undone.')) return;
+  clearAutosave();
+  document.getElementById('resume-banner').style.display = 'none';
+}
+
+// ============================================================================
+// LOADING A TOURNAMENT OBJECT (used by JSON file loading and autosave resume)
+// ============================================================================
+
+/**
+ * Validates a parsed tournament object, installs it as the live state and renders it.
+ * Returns true on success. On any failure the previous state is restored.
+ */
+function loadTournamentObject(loaded) {
+  const previousState = state;
+  try {
+    if (!loaded || !Array.isArray(loaded.players) || !Array.isArray(loaded.rounds)) {
+      throw new Error('Not a valid tournament file.');
+    }
+
+    // Fill in fields that may be missing in old or hand-edited files
+    loaded.players.forEach(p => {
+      p.history = p.history || [];
+      p.opponents = p.opponents || [];
+      p.score = p.score || 0;
+      p.wnt = p.wnt || 0;
+      p.buchholz = p.buchholz || 0;
+      p.sonneborn = p.sonneborn || 0;
+      p.withdrawn = !!p.withdrawn;
+    });
+
+    // Backwards compatibility
+    if (!loaded.tieBreakSystem) loaded.tieBreakSystem = 'wnt';
+    if (loaded.randomizeRatingGroups === undefined) loaded.randomizeRatingGroups = false;
+    if (!loaded.r1ColorOption) loaded.r1ColorOption = 'higherWhite';
+
+    // Re-link player object references to maintain integrity
+    const pMap = new Map(loaded.players.map(p => [p.id, p]));
+    loaded.rounds.forEach(r => {
+      (r.pairings || []).forEach(pair => {
+        if (pair.white && pMap.has(pair.white.id)) pair.white = pMap.get(pair.white.id);
+        if (pair.black && pMap.has(pair.black.id)) pair.black = pMap.get(pair.black.id);
+      });
+    });
+
+    const isFinished = loaded.finished || loaded.currentRound > loaded.totalRounds;
+    if (!isFinished) {
+      const cur = loaded.rounds[loaded.currentRound - 1];
+      if (!cur || !Array.isArray(cur.pairings)) {
+        throw new Error('The file has no pairings for the current round.');
+      }
+    }
+
+    state = loaded;
+
+    const randCheckbox = document.getElementById('randomize-rating-groups');
+    if (randCheckbox) randCheckbox.checked = !!state.randomizeRatingGroups;
+
+    if (isFinished) {
+      showFinalStandings();
+    } else {
+      renderPairings();
+    }
+
+    // Hide the setup screen only after rendering succeeded
+    document.getElementById('setup-section').style.display = 'none';
+    autosave();
+    return true;
+  } catch (err) {
+    state = previousState;   // restore the previous state on any failure
+    // Hide any half-rendered sections so the setup screen stays usable
+    document.getElementById('pairings-section').style.display = 'none';
+    document.getElementById('final-section').style.display = 'none';
+    alert('Error loading tournament: ' + err.message);
+    return false;
+  }
+}
+
 window.addEventListener('beforeprint', () => {
   if (customPrintTitle) {
     document.title = customPrintTitle;
@@ -378,15 +534,40 @@ window.addEventListener('beforeprint', () => {
   }
 });
 
-window.addEventListener('afterprint', () => {
-  customPrintTitle = '';
-  document.title = defaultDocTitle;
-  document.body.classList.remove('printing-modal');   // <-- new
-});
+// Print state handling that tolerates asynchronous printing
+let printCleanupTimer = null;
+
+function applyPrintState(title, modalMode) {
+  clearTimeout(printCleanupTimer);
+  customPrintTitle = title;
+  document.title = title;                                   // don't rely on beforeprint alone
+  document.body.classList.toggle('printing-modal', modalMode); // always set explicitly
+}
+
+function cleanupPrintState() {
+  clearTimeout(printCleanupTimer);
+  // Delayed, so an early afterprint can't strip the state before the snapshot is rendered.
+  // Harmless if late: every print call resets the state first.
+  printCleanupTimer = setTimeout(() => {
+    customPrintTitle = '';
+    document.title = defaultDocTitle;
+    document.body.classList.remove('printing-modal');
+  }, 1000);
+}
+
+window.addEventListener('afterprint', cleanupPrintState);
+
+// Fallback for browsers where afterprint is missing or unreliable
+const printMql = window.matchMedia ? window.matchMedia('print') : null;
+if (printMql) {
+  const onPrintChange = e => { if (!e.matches) cleanupPrintState(); };
+  if (printMql.addEventListener) printMql.addEventListener('change', onPrintChange);
+  else if (printMql.addListener) printMql.addListener(onPrintChange);
+}
 
 function printPairings() {
   const tName = (state.name || 'Tournament').trim();
-  customPrintTitle = `${tName} - Round ${state.currentRound}`;
+  applyPrintState(`${tName} - Round ${state.currentRound}`, false);
   window.print();
 }
 
@@ -396,15 +577,13 @@ function printStandings() {
 
   const tName = (state.name || 'Tournament').trim();
   const rd = state.currentRound > 1 ? state.currentRound - 1 : 1;
-  customPrintTitle = `${tName} - Standings after round ${rd}`;
-  document.body.classList.add('printing-modal');
+  applyPrintState(`${tName} - Standings after round ${rd}`, true);
   window.print();
-  // no removal here; afterprint does it
 }
 
 function printFinalStandings() {
   const tName = (state.name || 'Tournament').trim();
-  customPrintTitle = `${tName} - Final Standings`;
+  applyPrintState(`${tName} - Final Standings`, false);
   window.print();
 }
 
@@ -440,35 +619,14 @@ document.getElementById('json-file-input').addEventListener('change', function(e
   if (!file) return;
   const reader = new FileReader();
   reader.onload = ev => {
+    let loaded;
     try {
-      state = JSON.parse(ev.target.result);
-
-      // Re-link player object references to maintain integrity
-      const pMap = new Map(state.players.map(p => [p.id, p]));
-      (state.rounds || []).forEach(r => {
-        (r.pairings || []).forEach(pair => {
-          if (pair.white && pMap.has(pair.white.id)) pair.white = pMap.get(pair.white.id);
-          if (pair.black && pMap.has(pair.black.id)) pair.black = pMap.get(pair.black.id);
-        });
-      });
-
-      // Ensure settings exist (backwards compatibility)
-      if (!state.tieBreakSystem) state.tieBreakSystem = 'wnt';
-      if (state.randomizeRatingGroups === undefined) state.randomizeRatingGroups = false;
-      const randCheckbox = document.getElementById('randomize-rating-groups');
-      if (randCheckbox) randCheckbox.checked = !!state.randomizeRatingGroups;
-
-      if (state.finished || state.currentRound > state.totalRounds) {
-        showFinalStandings();
-      } else {
-        renderPairings();
-      }
-
-      // Hide the setup screen only after rendering succeeded
-      document.getElementById('setup-section').style.display = 'none';
-    } catch(err) {
+      loaded = JSON.parse(ev.target.result);
+    } catch (err) {
       alert('Error loading JSON file: ' + err.message);
+      return;
     }
+    loadTournamentObject(loaded);
   };
   reader.readAsText(file);
   e.target.value = '';
@@ -572,6 +730,7 @@ function startTournament() {
 
   document.getElementById('setup-section').style.display = 'none';
   generateRound1();
+  autosave();
   renderPairings();
 }
 
@@ -975,7 +1134,10 @@ function renderPairings() {
         <option value="0.5-0.5" ${pair.result === '0.5-0.5' ? 'selected' : ''}>½-½</option>
         <option value="0-1" ${pair.result === '0-1' ? 'selected' : ''}>0-1</option>
       `;
-      select.onchange = e => { pair.result = e.target.value; };
+      select.onchange = e => {
+        pair.result = e.target.value;
+        autosave();   // keep results entered so far if the page is refreshed
+      };
       screenSpan.appendChild(select);
     }
 
@@ -1046,7 +1208,7 @@ function submitRound() {
   recalculateTiebreaks();
 
   if (state.currentRound >= state.totalRounds) {
-    finishTournament();
+    finishTournament();   // autosaves
     return;
   }
 
@@ -1057,26 +1219,28 @@ function submitRound() {
     return;
   }
 
-const nextRound = state.currentRound + 1;
+  const nextRound = state.currentRound + 1;
 
-if (nextRound === 2) {
-  if (!generateRound2()) {
-    alert('Could not generate pairings for round 2. The tournament ends here.');
-    finishTournament();
-    return;
+  if (nextRound === 2) {
+    if (!generateRound2()) {
+      alert('Could not generate pairings for round 2. The tournament ends here.');
+      finishTournament();
+      return;
+    }
+  } else {
+    const pairings = pairRound3Plus(active);
+    if (pairings === null) {
+      alert(`Could not generate pairings for round ${nextRound}. The tournament ends here.`);
+      finishTournament();
+      return;
+    }
+    state.rounds.push({ roundNum: nextRound, pairings });
   }
-} else {
-  const pairings = pairRound3Plus(active);
-  if (pairings === null) {
-    alert(`Could not generate pairings for round ${nextRound}. The tournament ends here.`);
-    finishTournament();
-    return;
-  }
-  state.rounds.push({ roundNum: nextRound, pairings });
+
+  state.currentRound = nextRound;
+  autosave();
+  renderPairings();
 }
-
-state.currentRound = nextRound;
-renderPairings();}
 
 function recalculateTiebreaks() {
   const pMap = new Map(state.players.map(p => [p.id, p]));
@@ -1265,6 +1429,7 @@ function confirmWithdrawal() {
     }
   }
 
+  autosave();   // before the alert, which blocks the page
   closeWithdrawModal();
   renderPairings();
   alert(`${player.name} has been withdrawn from the tournament.`);
@@ -1285,8 +1450,13 @@ function saveTournament() {
 }
 
 function restartTournament() {
+  if (!confirm('Start a new tournament? The automatically saved copy in this browser will be removed. Use "Save Tournament" first if you want to keep a file.')) return;
+  clearAutosave();
   location.reload();
 }
+
+// On page load: offer to resume an autosaved tournament, if any
+checkAutosave();
 </script>
 </body>
 </html>

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Monrad pairing system for chess directly in the browser with WNT tie-break.">
   <meta name="author" content="Mats Winther">
-  <link rel="canonical" href="https://mats-winther.github.io/monrad.htm">
+  <link rel="canonical" href="https://mats-winther.github.io/monrad-eng.htm">
   <title>Monrad Pairing System for Chess</title>
   <style>
     :root {
@@ -270,6 +270,21 @@
       border: 1px solid #fde68a;
     }
 
+    .resume-box {
+      display: none;
+      background: #fef9c3;
+      border-left: 4px solid #ca8a04;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin: 0 0 16px 0;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .resume-box .btn-group {
+      margin-top: 8px;
+    }
+
     /* Modal Dialogs */
     .modal-overlay {
       position: fixed;
@@ -290,6 +305,11 @@
       width: 100%;
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
       border: 1px solid var(--border);
+margin: auto;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
     }
 
     .hidden {
@@ -307,6 +327,17 @@
 
   <!-- 1. ENTER PLAYERS -->
   <section id="section-setup" class="card">
+
+    <!-- Shown only if an autosaved tournament exists in this browser -->
+    <div id="resume-banner" class="resume-box">
+      <strong id="resume-text"></strong>
+      <div>The tournament was saved automatically in this browser. Would you like to continue it?</div>
+      <div class="btn-group">
+        <button type="button" onclick="resumeAutosave()">Resume Tournament</button>
+        <button type="button" class="secondary" onclick="discardAutosave()">Discard</button>
+      </div>
+    </div>
+
     <h2>1. Enter Players</h2>
     
     <div style="margin-bottom: 16px;">
@@ -327,15 +358,15 @@
     <div class="tiebreak-selector">
       <span style="font-weight: 600; color: #334155;">Tie-break:</span>
       <label>
-       <input type="radio" class="tb-radio" name="tb-choice-setup" value="wnt" checked onchange="setTieBreak(this.value)">
+       <input type="radio" class="tb-radio" name="tb-choice-setup" value="wnt" checked onchange="userSetTieBreak(this.value)">
        <span>WNT<sup class="wnt-asterisk" onclick="openWntModal(event)" title="Information about Winther score">*</sup></span>
       </label>
       <label>
-        <input type="radio" class="tb-radio" name="tb-choice-setup" value="cumulative" onchange="setTieBreak(this.value)">
-        Cumulative (Progressive)
+        <input type="radio" class="tb-radio" name="tb-choice-setup" value="cumulative" onchange="userSetTieBreak(this.value)">
+        Progressive (Cumulative)
       </label>
       <label>
-        <input type="radio" class="tb-radio" name="tb-choice-setup" value="buchholz" onchange="setTieBreak(this.value)">
+        <input type="radio" class="tb-radio" name="tb-choice-setup" value="buchholz" onchange="userSetTieBreak(this.value)">
         Buchholz (Solkoff)
       </label>
     </div>
@@ -410,15 +441,15 @@
     <div class="tiebreak-selector" style="margin-top: 0; margin-bottom: 14px;">
       <span style="font-weight: 600; color: #334155;">Tie-break:</span>
       <label>
-         <input type="radio" class="tb-radio" name="tb-choice-final" value="wnt" checked onchange="setTieBreak(this.value)">
+         <input type="radio" class="tb-radio" name="tb-choice-final" value="wnt" checked onchange="userSetTieBreak(this.value)">
          <span>WNT</span>
       </label>      
       <label>
-        <input type="radio" class="tb-radio" name="tb-choice-final" value="cumulative" onchange="setTieBreak(this.value)">
-        Cumulative
+        <input type="radio" class="tb-radio" name="tb-choice-final" value="cumulative" onchange="userSetTieBreak(this.value)">
+        Progressive
       </label>
       <label>
-        <input type="radio" class="tb-radio" name="tb-choice-final" value="buchholz" onchange="setTieBreak(this.value)">
+        <input type="radio" class="tb-radio" name="tb-choice-final" value="buchholz" onchange="userSetTieBreak(this.value)">
         Buchholz
       </label>
     </div>
@@ -452,7 +483,7 @@
     <div style="font-family: monospace, monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.92rem; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; color: #0f172a;">Winther Score (WNT) = 100 × ∑ᵢ [ (Pᵢ / N) × (rᵢ + Pᵢ / (2N)) ]
 
 ∑ᵢ = sum over all opponents faced
-rᵢ = your result against opponent i (1, 0.5, 0)
+rᵢ = your result against opponent i (1, ½, 0)
 Pᵢ = opponent i's final tournament score
 N = total number of rounds in the tournament
 Pᵢ / N = opponent's score share (ratio expressed as a decimal between 0 and 1)</div>
@@ -491,6 +522,227 @@ Pᵢ / N = opponent's score share (ratio expressed as a decimal between 0 and 1)
   let currentByePlayer = null;
   let roundHistory = [];
   let tieBreakSystem = "wnt"; // "wnt" (default), "cumulative", or "buchholz"
+  let tournamentFinished = false;
+
+  /* ==========================================================================
+     AUTOSAVE (localStorage)
+     ========================================================================== */
+
+  const AUTOSAVE_KEY = 'monradAutosave';
+
+  /**
+   * Builds a serializable snapshot of the whole tournament. Used both by the
+   * manual "Save tournament" button (JSON file) and by the autosave.
+   * Results entered on the board (radio buttons) are included.
+   */
+  function buildTournamentState() {
+    const pairingsData = (currentPairings || []).map((match, idx) => {
+      const checked = document.querySelector(`input[name="board_${idx + 1}"]:checked`);
+      return {
+        whiteId: match.white ? match.white.id : null,
+        blackId: match.black ? match.black.id : null,
+        result: checked ? checked.value : null
+      };
+    });
+
+    return {
+      fileSignature: "MONRAD_CHESS_SAVE",
+      savedAt: new Date().toISOString(),
+      tournamentName: tournamentName,
+      tieBreakSystem: tieBreakSystem,
+      currentRound: currentRound,
+      finished: tournamentFinished,
+      players: players,
+      currentPairings: pairingsData,
+      currentByePlayerId: currentByePlayer ? currentByePlayer.id : null,
+      roundHistory: roundHistory
+    };
+  }
+
+  /** Saves the current tournament in the browser. Fails silently if storage is unavailable. */
+  function autosave() {
+    if (!players || players.length === 0) return;   // never overwrite a saved tournament with an empty one
+    try {
+      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(buildTournamentState()));
+    } catch (e) {
+      // Storage may be disabled (private mode) or full. The manual "Save tournament" still works.
+    }
+  }
+
+  function clearAutosave() {
+    try { localStorage.removeItem(AUTOSAVE_KEY); } catch (e) {}
+  }
+
+  function readAutosave() {
+    try {
+      const raw = localStorage.getItem(AUTOSAVE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /** On page load: offer to resume if an autosaved tournament exists. */
+  function checkAutosave() {
+    const saved = readAutosave();
+    if (!saved) return;
+
+    if (!Array.isArray(saved.players) || saved.players.length === 0 || !saved.currentRound) {
+      clearAutosave();   // corrupt or empty: discard
+      return;
+    }
+
+    const label = (saved.tournamentName || '').trim() || 'Tournament';
+    document.getElementById('resume-text').textContent = saved.finished
+      ? `Saved tournament found: "${label}" (finished).`
+      : `Saved tournament found: "${label}" (round ${saved.currentRound}).`;
+    document.getElementById('resume-banner').style.display = 'block';
+  }
+
+  function resumeAutosave() {
+    const saved = readAutosave();
+    if (!saved) {
+      alert('The saved tournament could not be read.');
+      document.getElementById('resume-banner').style.display = 'none';
+      return;
+    }
+    if (loadTournamentObject(saved, true)) {
+      document.getElementById('resume-banner').style.display = 'none';
+    }
+  }
+
+  function discardAutosave() {
+    if (!confirm('Discard the saved tournament? This cannot be undone.')) return;
+    clearAutosave();
+    document.getElementById('resume-banner').style.display = 'none';
+  }
+
+  /* ==========================================================================
+     LOADING A TOURNAMENT OBJECT (used by JSON file loading and autosave resume)
+     ========================================================================== */
+
+  /**
+   * Validates a parsed tournament object, installs it as the live state and renders it.
+   * Returns true on success. On any failure the previous state is restored.
+   */
+  function loadTournamentObject(data, silent) {
+    const prev = {
+      tournamentName, players, currentRound, currentPairings,
+      currentByePlayer, roundHistory, tieBreakSystem, tournamentFinished
+    };
+
+    try {
+      if (!data || !Array.isArray(data.players) || data.players.length === 0 || !data.currentRound) {
+        throw new Error("Invalid save file format.");
+      }
+
+      tournamentName = data.tournamentName || "";
+      document.getElementById("input-tournament-name").value = tournamentName;
+      updateTournamentTitles();
+
+      players = data.players.map(p => ({
+        ...p,
+        withdrawn: !!p.withdrawn,
+        matchResults: p.matchResults || [],
+        wnt: p.wnt || 0
+      }));
+      currentRound = data.currentRound;
+      roundHistory = data.roundHistory || [];
+      tournamentFinished = !!data.finished;
+
+      // Reconstruct matchResults if saved with an older version
+      if (roundHistory && roundHistory.length > 0) {
+        const needsReconstruct = players.some(p => !p.matchResults || p.matchResults.length === 0);
+        if (needsReconstruct) {
+          players.forEach(p => p.matchResults = []);
+          roundHistory.forEach(r => {
+            r.matches.forEach(m => {
+              const w = players.find(p => (m.whiteId && p.id === m.whiteId) || p.name === m.whiteName);
+              const b = players.find(p => (m.blackId && p.id === m.blackId) || p.name === m.blackName);
+              if (w && b) {
+                let wRes = 0, bRes = 0;
+                if (m.result === "1 - 0") { wRes = 1.0; bRes = 0.0; }
+                else if (m.result === "½ - ½") { wRes = 0.5; bRes = 0.5; }
+                else if (m.result === "0 - 1") { wRes = 0.0; bRes = 1.0; }
+                w.matchResults.push({ oppId: b.id, score: wRes });
+                b.matchResults.push({ oppId: w.id, score: bRes });
+              }
+            });
+          });
+        }
+      }
+
+      setTieBreak(data.tieBreakSystem || "wnt");
+
+      currentByePlayer = data.currentByePlayerId
+        ? players.find(p => p.id === data.currentByePlayerId) || null
+        : null;
+
+      currentPairings = [];
+      const savedPairings = data.currentPairings || [];
+      for (let pair of savedPairings) {
+        const white = players.find(p => p.id === pair.whiteId);
+        const black = players.find(p => p.id === pair.blackId);
+        if (white && black) {
+          currentPairings.push({ white, black });
+        }
+      }
+
+      if (tournamentFinished) {
+        document.getElementById("section-round").classList.add("hidden");
+        document.getElementById("section-standings").classList.add("hidden");
+        document.getElementById("section-final").classList.remove("hidden");
+        renderFinalStandings();
+      } else {
+        document.getElementById("section-final").classList.add("hidden");
+        document.getElementById("section-round").classList.remove("hidden");
+        document.getElementById("section-standings").classList.remove("hidden");
+
+        document.getElementById("round-title").innerText = `Round ${currentRound}`;
+        renderRoundView();
+
+        savedPairings.forEach((pair, idx) => {
+          if (pair.result) {
+            const radio = document.querySelector(`input[name="board_${idx + 1}"][value="${pair.result}"]`);
+            if (radio) radio.checked = true;
+          }
+        });
+
+        renderStandings();
+      }
+
+      // Hide the setup screen only after rendering succeeded
+      document.getElementById("section-setup").classList.add("hidden");
+      autosave();
+
+      if (!silent) {
+        alert(tournamentFinished
+          ? "Finished tournament loaded!"
+          : `Tournament loaded at Round ${currentRound}!`);
+      }
+      return true;
+    } catch (err) {
+      // Restore the previous state on any failure
+      tournamentName = prev.tournamentName;
+      players = prev.players;
+      currentRound = prev.currentRound;
+      currentPairings = prev.currentPairings;
+      currentByePlayer = prev.currentByePlayer;
+      roundHistory = prev.roundHistory;
+      tournamentFinished = prev.tournamentFinished;
+      setTieBreak(prev.tieBreakSystem);
+      updateTournamentTitles();
+
+      // Hide any half-rendered sections so the setup screen stays usable
+      document.getElementById("section-round").classList.add("hidden");
+      document.getElementById("section-standings").classList.add("hidden");
+      document.getElementById("section-final").classList.add("hidden");
+      document.getElementById("section-setup").classList.remove("hidden");
+
+      alert("Could not load tournament: " + err.message);
+      return false;
+    }
+  }
 
   function updateTournamentTitles() {
     const displayName = tournamentName.trim();
@@ -514,6 +766,12 @@ Pᵢ / N = opponent's score share (ratio expressed as a decimal between 0 and 1)
     if (!document.getElementById("section-final").classList.contains("hidden")) {
       renderFinalStandings();
     }
+  }
+
+  /** Called when the user changes the tie-break radio buttons (not when loading a file). */
+  function userSetTieBreak(val) {
+    setTieBreak(val);
+    autosave();
   }
 
   function openWntModal(e) {
@@ -571,89 +829,16 @@ Pᵢ / N = opponent's score share (ratio expressed as a decimal between 0 and 1)
 
     const reader = new FileReader();
     reader.onload = function(e) {
+      let data;
       try {
-        const data = JSON.parse(e.target.result);
-        if (!data.players || !data.currentRound) {
-          throw new Error("Invalid save file format.");
-        }
-
-        tournamentName = data.tournamentName || "";
-        document.getElementById("input-tournament-name").value = tournamentName;
-        updateTournamentTitles();
-
-        players = data.players.map(p => ({
-          ...p,
-          withdrawn: !!p.withdrawn,
-          matchResults: p.matchResults || [],
-          wnt: p.wnt || 0
-        }));
-        currentRound = data.currentRound;
-        roundHistory = data.roundHistory || [];
-        
-        // Reconstruct matchResults if saved with an older version
-        if (roundHistory && roundHistory.length > 0) {
-          const needsReconstruct = players.some(p => !p.matchResults || p.matchResults.length === 0);
-          if (needsReconstruct) {
-            players.forEach(p => p.matchResults = []);
-            roundHistory.forEach(r => {
-              r.matches.forEach(m => {
-                const w = players.find(p => (m.whiteId && p.id === m.whiteId) || p.name === m.whiteName);
-                const b = players.find(p => (m.blackId && p.id === m.blackId) || p.name === m.blackName);
-                if (w && b) {
-                  let wRes = 0, bRes = 0;
-                  if (m.result === "1 - 0") { wRes = 1.0; bRes = 0.0; }
-                  else if (m.result === "½ - ½") { wRes = 0.5; bRes = 0.5; }
-                  else if (m.result === "0 - 1") { wRes = 0.0; bRes = 1.0; }
-                  w.matchResults.push({ oppId: b.id, score: wRes });
-                  b.matchResults.push({ oppId: w.id, score: bRes });
-                }
-              });
-            });
-          }
-        }
-
-        if (data.tieBreakSystem) {
-          setTieBreak(data.tieBreakSystem);
-        } else {
-          setTieBreak("wnt");
-        }
-
-        currentByePlayer = data.currentByePlayerId
-          ? players.find(p => p.id === data.currentByePlayerId) || null
-          : null;
-
-        currentPairings = [];
-        const savedPairings = data.currentPairings || [];
-        for (let pair of savedPairings) {
-          const white = players.find(p => p.id === pair.whiteId);
-          const black = players.find(p => p.id === pair.blackId);
-          if (white && black) {
-            currentPairings.push({ white, black });
-          }
-        }
-
-        document.getElementById("section-setup").classList.add("hidden");
-        document.getElementById("section-final").classList.add("hidden");
-        document.getElementById("section-round").classList.remove("hidden");
-        document.getElementById("section-standings").classList.remove("hidden");
-
-        document.getElementById("round-title").innerText = `Round ${currentRound}`;
-        renderRoundView();
-
-        savedPairings.forEach((pair, idx) => {
-          if (pair.result) {
-            const radio = document.querySelector(`input[name="board_${idx + 1}"][value="${pair.result}"]`);
-            if (radio) radio.checked = true;
-          }
-        });
-
-        renderStandings();
-        alert(`Tournament loaded at Round ${currentRound}!`);
+        data = JSON.parse(e.target.result);
       } catch (err) {
         alert("Could not load save file: " + err.message);
-      } finally {
         event.target.value = "";
+        return;
       }
+      loadTournamentObject(data, false);
+      event.target.value = "";
     };
     reader.readAsText(file, "UTF-8");
   }
@@ -664,26 +849,7 @@ Pᵢ / N = opponent's score share (ratio expressed as a decimal between 0 and 1)
       return;
     }
 
-    const pairingsData = currentPairings.map((match, idx) => {
-      const checked = document.querySelector(`input[name="board_${idx + 1}"]:checked`);
-      return {
-        whiteId: match.white ? match.white.id : null,
-        blackId: match.black ? match.black.id : null,
-        result: checked ? checked.value : null
-      };
-    });
-
-    const tournamentState = {
-      fileSignature: "MONRAD_CHESS_SAVE",
-      savedAt: new Date().toISOString(),
-      tournamentName: tournamentName,
-      tieBreakSystem: tieBreakSystem,
-      currentRound: currentRound,
-      players: players,
-      currentPairings: pairingsData,
-      currentByePlayerId: currentByePlayer ? currentByePlayer.id : null,
-      roundHistory: roundHistory
-    };
+    const tournamentState = buildTournamentState();
 
     const jsonStr = JSON.stringify(tournamentState, null, 2);
     const blob = new Blob([jsonStr], { type: "application/json" });
@@ -791,11 +957,12 @@ Ethan Adams`;
 
     currentRound = 1;
     roundHistory = [];
+    tournamentFinished = false;
     document.getElementById("section-setup").classList.add("hidden");
     document.getElementById("section-round").classList.remove("hidden");
     document.getElementById("section-standings").classList.remove("hidden");
 
-    lotRound();
+    lotRound();   // autosaves when the pairings are ready
   }
 
   /* --- WITHDRAW PLAYER --- */
@@ -852,6 +1019,7 @@ Ethan Adams`;
     });
 
     renderStandings();
+    autosave();   // before the alerts, which block the page
 
     const remainingActive = players.filter(p => !p.withdrawn);
     if (remainingActive.length < 2) {
@@ -910,6 +1078,7 @@ Ethan Adams`;
 
     renderRoundView();
     renderStandings();
+    autosave();   // new round is ready: keep it if the page is refreshed
   }
 
   function generateMonradPairings(pool) {
@@ -983,15 +1152,15 @@ Ethan Adams`;
         <td>
           <div class="result-selector">
             <label>
-              <input type="radio" name="board_${boardNum}" value="1-0" required>
+              <input type="radio" name="board_${boardNum}" value="1-0" required onchange="autosave()">
               <span>1 - 0</span>
             </label>
             <label>
-              <input type="radio" name="board_${boardNum}" value="0.5-0.5">
+              <input type="radio" name="board_${boardNum}" value="0.5-0.5" onchange="autosave()">
               <span>½ - ½</span>
             </label>
             <label>
-              <input type="radio" name="board_${boardNum}" value="0-1">
+              <input type="radio" name="board_${boardNum}" value="0-1" onchange="autosave()">
               <span>0 - 1</span>
             </label>
           </div>
@@ -1119,7 +1288,7 @@ Ethan Adams`;
     }
 
     currentRound++;
-    lotRound();
+    lotRound();   // autosaves
   }
 
   function calculateBuchholz() {
@@ -1223,7 +1392,7 @@ Ethan Adams`;
     if (tieBreakSystem === "buchholz") {
       tbLabel = "Buchholz";
     } else if (tieBreakSystem === "cumulative") {
-      tbLabel = "Cumulative";
+      tbLabel = "Progressive";
     }    
     document.getElementById("th-tiebreak").innerText = tbLabel;
 
@@ -1323,15 +1492,19 @@ Ethan Adams`;
       }
     }
 
+    tournamentFinished = true;
+
     document.getElementById("section-round").classList.add("hidden");
     document.getElementById("section-standings").classList.add("hidden");
     document.getElementById("section-final").classList.remove("hidden");
 
     renderFinalStandings();
+    autosave();
   }
 
   function resetTournament() {
-    if (confirm("Are you sure you want to start a new tournament?")) {
+    if (confirm("Are you sure you want to start a new tournament? The automatically saved copy in this browser will be removed. Use \"Save tournament\" first if you want to keep a file.")) {
+      clearAutosave();
       location.reload();
     }
   }
@@ -1539,7 +1712,7 @@ Ethan Adams`;
     if (tieBreakSystem === "buchholz") {
       tbLabel = "Buchholz";
     } else if (tieBreakSystem === "cumulative") {
-      tbLabel = "Cumulative";
+      tbLabel = "Progressive";
     }
     let finalHtml = `
       <h1>${tournamentTitle} — Final Standings</h1>
@@ -1580,6 +1753,9 @@ Ethan Adams`;
 
     openPrintPage(`${tournamentTitle} - Final Standings`, finalHtml);
   }
+
+  // On page load: offer to resume an autosaved tournament, if any
+  checkAutosave();
 </script>
 
 </body>
