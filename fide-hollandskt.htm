@@ -551,46 +551,29 @@ a { color:var(--blue); }
   <h2>Om denna implementation</h2>
 
   <p>
-    Experimentell referensimplementation av FIDE:s holländska regler som
-    träder i kraft 1 februari 2026. Den är inte godkänd av FIDE och får inte
-    behandlas som en certifierad lottningskontroll.
+    Detta är en experimentell referensimplementation av FIDE:s holländska system (C.04.3) enligt regelverket som gäller från 1 februari 2026. Den är inte godkänd av FIDE och bör inte användas som certifierad lottningskontroll.
   </p>
 
   <p>
-    Sökningen är bracket-lokal, med den specificerade C8-förhandsblicken.
-    Avbrutna beräkningar publicerar aldrig en preliminär bästa lottning.
-    Lottningssökningar använder fasta gränser på 30 sekunder och 2 000 000 arbetsenheter.
-  </p>
-
+Sökningen sker bracket för bracket. Förhandsblicken enligt kriterium C8 är specificerad. Sökningarna har fasta gränser på 30 sekunder och 2 000 000 arbetsenheter. Om en sökning avbryts publiceras ingen preliminär lottning, bara en fullständigt beräknad. Oparade nedflyttade spelare (MDP) får en återflyttningsmarkör som är större än varje faktisk poängskillnad. Det följer konventionen i TEC:s anteckningar till regler.</p>
   <p>
-    Anmälan stängs automatiskt när den första ronden har genererats
-    framgångsrikt. Befintliga spelare kan därefter utgå eller återinsättas
-    mellan ronder. Nya spelare kan inte läggas till efter att anmälan stängts.
+    Anmälan stängs automatiskt när den första ronden har lottats. Därefter kan inga nya spelare läggas till. Befintliga spelare kan utgå eller återinsättas mellan ronder.
   </p>
-
   <p>
     Slutresultatet rangordnas efter poäng, Buchholz Cut 1 (BH-1), Buchholz (BH)
     och Sonneborn-Berger (SB). Spelare som fortfarande är lika delar placering.
-    TPN används endast för att ordna likaplacerade rader.
+    Startnumret (TPN) används bara för att ordna raderna inbördes.
   </p>
 
   <p>
-    Särskiljningsberäkningarna implementerar de individuella schweiziska
-    bestämmelserna i FIDE:s regler för särspel och särskiljning som träder
-    i kraft 1 mars 2026, inklusive justerade motståndarpoäng, dummy-poängtak
+    Särskiljningen följer de individuella bestämmelserna för schweizerturneringar i FIDE:s regler för särspel och särskiljning, som gäller från 1 mars 2026. Dessa  inkluderar justerade motståndarpoäng, dummy-poängtak
     för ospelade ronder och undantaget för frivillig ospelad rond i BH-1.
   </p>
 
   <p>
-    Vid poängsättning 3 / 1 / 0 använder SB de faktiska poäng som spelats mot
-    varje motståndare. Saknade historiska poster behandlas som begärda
-    nollpoängsfrironder. Begärda remivärden och nollpoängs-avbrott behandlas
+    Vid poängsättning 3 / 1 / 0 räknar SB de faktiska poäng som spelats mot
+    varje motståndare. Saknade historiska poster behandlas som begärda frironder med noll poäng. Begärda remivärden och nollpoängs-avbrott behandlas
     som frivilliga ospelade ronder.
-  </p>
-
-  <p>
-    Oparade MDP:er använder en återflyttningsmarkör som är större än varje
-    faktisk poängskillnad, enligt konventionen som förklaras i TEC-anteckningarna.
   </p>
 
   <p>
