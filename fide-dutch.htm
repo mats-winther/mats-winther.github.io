@@ -1752,10 +1752,12 @@ function Dutch2026Core() {
 
       let best = null;
       let ordinal = 0;
+      let cap = null;
       let proof = "exhausted-with-safe-pruning";
 
       function canWin(partialPairs) {
-        if (!best) return true;
+        const limit = best ? best.value.slice(0,4) : cap;
+        if (!limit) return true;
 
         const partial = [0,0,0,0];
 
@@ -1765,27 +1767,38 @@ function Dutch2026Core() {
           }
         }
 
-        return compareArrays(
-          partial,best.value.slice(0,4)
-        ) <= 0;
+        return compareArrays(partial,limit) <= 0;
       }
 
-      for (const candidate of bracketCandidates(ctx,high,canWin)) {
-        tick();
-        ordinal++;
+      // Optimistic passes first. Relax the cap only if nothing is found.
+      const caps = [
+        [lowerBound[0],lowerBound[1],lowerBound[2],Infinity],
+        [lowerBound[0],lowerBound[1],lowerBound[2]+1,Infinity],
+        null                       // original behaviour as last resort
+      ];
 
-        if (!acceptableDown(candidate.down)) continue;
+      for (const c of caps) {
+        cap = c;
 
-        const value = quality(ctx,candidate);
+        for (const candidate of bracketCandidates(ctx,high,canWin)) {
+          tick();
+          ordinal++;
 
-        if (!best || compareQuality(value,best.value) < 0) {
-          best = {...candidate,value,ordinal};
+          if (!acceptableDown(candidate.down)) continue;
+
+          const value = quality(ctx,candidate);
+
+          if (!best || compareQuality(value,best.value) < 0) {
+            best = {...candidate,value,ordinal};
+          }
+
+          if (compareQuality(best.value,lowerBound) === 0) {
+            proof = "lower-bound-attained";
+            break;
+          }
         }
 
-        if (compareQuality(best.value,lowerBound) === 0) {
-          proof = "lower-bound-attained";
-          break;
-        }
+        if (best) break;
       }
 
       if (!best) {
