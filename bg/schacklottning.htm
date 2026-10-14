@@ -6,8 +6,9 @@
   <link href="style4.css" rel="stylesheet" type="text/css">
   <meta name="description" content=
   "En teknisk genomgång av lottning i schackturneringar med fokus på Monrad och Schweizer. Artikeln presenterar ett nytt schweizersystem som ett stabilt och rättvist alternativ för öppna turneringar.">
-<meta name="keywords" content=
+  <meta name="keywords" content=
   "Monrad, Schweizer, Berger, Scheveningen, WNT, Klubbschweizer, Dutch, FIDE, Dubov, Lim, Burstein, Buchholz, Sonneborn-Berger">
+
   <style>
   a.c2 {float: left; margin-top:2px; margin-left:2px}
   a.c1 {float: left; margin-top:2px; margin-left:2px;}
@@ -82,11 +83,11 @@
     "Monrad&nbsp;lottningsprogram">Monrads lottningssystem</a>. Programmet introducerar en ny särskiljningsmetod som
     alternativt förval: för varje parti, ta motståndarens slutresultat som ett decimaltal mellan 0 och 1 (till exempel
     0,8 vid 80% av maxpoängen). Kvadrera det för att öka skillnaden. Multiplicera sedan med resultatet mot just den
-    spelaren, vilket ger full utdelning vid vinst, hälften vid remi. Den andra termen ger även viss utdelning vid förlust,
-    speciellt mot en framgångsrik spelare. Multiplicera slutligen med hundra för att slippa decimaltal. Jag kallar det
-    preliminärt WNT, ett namn bildat av bokstäverna i mitt efternamn. Hittills har alla särskiljningsmetoder (Buchholz,
-    Sonneborn-Berger etc.) utformats efter principen att de enkelt ska kunna beräknas för hand. Resultatet är en
-    trubbig särskiljning. Det finns ingen anledning att hålla fast vid detta i dag.</p>
+    spelaren, vilket ger full utdelning vid vinst, hälften vid remi. Den andra termen ger även viss utdelning vid
+    förlust, speciellt mot en framgångsrik spelare. Multiplicera slutligen med hundra för att slippa decimaltal. Jag
+    kallar det preliminärt WNT, ett namn bildat av bokstäverna i mitt efternamn. Hittills har alla särskiljningsmetoder
+    (Buchholz, Sonneborn-Berger etc.) utformats efter principen att de enkelt ska kunna beräknas för hand. Resultatet
+    är en trubbig särskiljning. Det finns ingen anledning att hålla fast vid detta i dag.</p>
     <blockquote>
       <br>
       <div class="container">
@@ -313,9 +314,11 @@
     spelare med bäst resultat möter varandra mot slutet av turneringen.<br>
     <br>
     Jag har skapat en experimentell version här: <a href="../fide-hollandskt.htm">holländskt&nbsp;lottningssystem</a>.
-    Programmet är inte giltigt för elo-turneringar eftersom det inte verifierats. Om programmet visar sig fungera kan
-    man ändå använda det för blixt och snabbschack, men då bör lottningen benämnas &ldquo;modifierad holländsk&rdquo;
-    eller liknande. Programmet kan användas för att testa algoritmen, som enligt GPT-Sol (AI) fungerar korrekt.<br>
+    Av allt att döma fungerar det korrekt. En turnering med 32 spelare över nio ronder simulerades. GPT-Sol-6.1 och
+    Claude-Sonnet-5.5 analyserade turneringsfilerna för att verifiera att lottningen i varje rond följde FIDE:s
+    specifikationer. Båda modellerna bedömde att lottningen var korrekt i samtliga nio ronder. En PDF med analyserna
+    finns <a href="https://drive.google.com/file/d/1rh6cbWCTKffYym9fQ0SHIIdo-Vd7TWZ9/view?usp=drive_link" title=
+    "AI-analys av programfunktion.">här</a>.<br>
     <br>
     I det holländska systemet är två svarta partier i rad helt normalt. Tre svarta i rad är i regel förbjudet, med
     sällsynta undantag i sista ronden. Fyra svarta i rad är aldrig möjligt. En spelare kan i vissa fall avsluta
