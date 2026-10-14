@@ -520,6 +520,35 @@ Pᵢ / N = motståndarens poängandel (poängkvoten uttryckt som decimaltal mell
   let tieBreakSystem = "wnt"; // "wnt" (default), "cumulative" eller "buchholz"
   let tournamentFinished = false;
 
+function getSwedishTimestamp() {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Stockholm",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(now);
+
+  const value = Object.fromEntries(parts.map(p => [p.type, p.value]));
+  const localAsUtc = Date.UTC(
+    Number(value.year), Number(value.month) - 1, Number(value.day),
+    Number(value.hour), Number(value.minute), Number(value.second)
+  );
+  const offsetMinutes = Math.round((localAsUtc - now.getTime()) / 60000);
+  const sign = offsetMinutes >= 0 ? "+" : "-";
+  const offset = Math.abs(offsetMinutes);
+  const offsetText =
+    `${sign}${String(Math.floor(offset / 60)).padStart(2, "0")}:` +
+    `${String(offset % 60).padStart(2, "0")}`;
+
+  return `${value.year}-${value.month}-${value.day}T${value.hour}:` +
+    `${value.minute}:${value.second}${offsetText}`;
+}
+
   /* ==========================================================================
      AUTOSPARNING (localStorage)
      ========================================================================== */
@@ -543,7 +572,7 @@ Pᵢ / N = motståndarens poängandel (poängkvoten uttryckt som decimaltal mell
 
     return {
       fileSignature: "MONRAD_CHESS_SAVE",
-      savedAt: new Date().toISOString(),
+      savedAt: getSwedishTimestamp(),
       tournamentName: tournamentName,
       tieBreakSystem: tieBreakSystem,
       currentRound: currentRound,
@@ -577,6 +606,21 @@ Pᵢ / N = motståndarens poängandel (poängkvoten uttryckt som decimaltal mell
       return null;
     }
   }
+
+function toggleRoundResult(radio) {
+  const group = document.querySelectorAll(`input[name="${radio.name}"]`);
+  const wasSelected = radio.dataset.wasSelected === "true";
+
+  group.forEach(r => r.dataset.wasSelected = "false");
+
+  if (wasSelected) {
+    radio.checked = false; // Clicking it again clears the result
+  } else {
+    radio.dataset.wasSelected = "true";
+  }
+
+  autosave();
+}
 
   /** Vid sidladdning: erbjud att fortsätta om en autosparad turnering finns. */
   function checkAutosave() {
@@ -700,7 +744,10 @@ Pᵢ / N = motståndarens poängandel (poängkvoten uttryckt som decimaltal mell
         savedPairings.forEach((pair, idx) => {
           if (pair.result) {
             const radio = document.querySelector(`input[name="board_${idx + 1}"][value="${pair.result}"]`);
-            if (radio) radio.checked = true;
+            if (radio) {
+  		radio.checked = true;
+  		radio.dataset.wasSelected = "true";
+	    }
           }
         });
 
@@ -1010,7 +1057,10 @@ Moa Lundin`;
     savedResults.forEach((val, idx) => {
       if (val) {
         const radio = document.querySelector(`input[name="board_${idx + 1}"][value="${val}"]`);
-        if (radio) radio.checked = true;
+        if (radio) {
+  	  radio.checked = true;
+  	  radio.dataset.wasSelected = "true";
+	}
       }
     });
 
@@ -1148,15 +1198,15 @@ Moa Lundin`;
         <td>
           <div class="result-selector">
             <label>
-              <input type="radio" name="board_${boardNum}" value="1-0" required onchange="autosave()">
+              <input type="radio" name="board_${boardNum}" value="1-0" required onclick="toggleRoundResult(this)">
               <span>1 - 0</span>
             </label>
             <label>
-              <input type="radio" name="board_${boardNum}" value="0.5-0.5" onchange="autosave()">
+              <input type="radio" name="board_${boardNum}" value="0.5-0.5" onclick="toggleRoundResult(this)">
               <span>½ - ½</span>
             </label>
             <label>
-              <input type="radio" name="board_${boardNum}" value="0-1" onchange="autosave()">
+              <input type="radio" name="board_${boardNum}" value="0-1" onclick="toggleRoundResult(this)">
               <span>0 - 1</span>
             </label>
           </div>

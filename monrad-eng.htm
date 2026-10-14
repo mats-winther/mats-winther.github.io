@@ -583,6 +583,21 @@ Pᵢ / N = opponent's score share (ratio expressed as a decimal between 0 and 1)
     }
   }
 
+function toggleRoundResult(radio) {
+  const group = document.querySelectorAll(`input[name="${radio.name}"]`);
+  const wasSelected = radio.dataset.wasSelected === "true";
+
+  group.forEach(r => r.dataset.wasSelected = "false");
+
+  if (wasSelected) {
+    radio.checked = false; // Clicking it again clears the result
+  } else {
+    radio.dataset.wasSelected = "true";
+  }
+
+  autosave();
+}
+
   /** On page load: offer to resume if an autosaved tournament exists. */
   function checkAutosave() {
     const saved = readAutosave();
@@ -705,7 +720,10 @@ Pᵢ / N = opponent's score share (ratio expressed as a decimal between 0 and 1)
         savedPairings.forEach((pair, idx) => {
           if (pair.result) {
             const radio = document.querySelector(`input[name="board_${idx + 1}"][value="${pair.result}"]`);
-            if (radio) radio.checked = true;
+            if (radio) {
+  		radio.checked = true;
+  		radio.dataset.wasSelected = "true";
+	    }
           }
         });
 
@@ -1015,7 +1033,10 @@ Ethan Adams`;
     savedResults.forEach((val, idx) => {
       if (val) {
         const radio = document.querySelector(`input[name="board_${idx + 1}"][value="${val}"]`);
-        if (radio) radio.checked = true;
+        if (radio) {
+  	  radio.checked = true;
+  	  radio.dataset.wasSelected = "true";
+	}
       }
     });
 
@@ -1153,15 +1174,15 @@ Ethan Adams`;
         <td>
           <div class="result-selector">
             <label>
-              <input type="radio" name="board_${boardNum}" value="1-0" required onchange="autosave()">
+              <input type="radio" name="board_${boardNum}" value="1-0" required onclick="toggleRoundResult(this)">
               <span>1 - 0</span>
             </label>
             <label>
-              <input type="radio" name="board_${boardNum}" value="0.5-0.5" onchange="autosave()">
+              <input type="radio" name="board_${boardNum}" value="0.5-0.5" onclick="toggleRoundResult(this)">
               <span>½ - ½</span>
             </label>
             <label>
-              <input type="radio" name="board_${boardNum}" value="0-1" onchange="autosave()">
+              <input type="radio" name="board_${boardNum}" value="0-1" onclick="toggleRoundResult(this)">
               <span>0 - 1</span>
             </label>
           </div>
