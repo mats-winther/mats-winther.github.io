@@ -367,7 +367,7 @@ margin: auto;
       </label>
       <label>
         <input type="radio" class="tb-radio" name="tb-choice-setup" value="buchholz" onchange="userSetTieBreak(this.value)">
-        Buchholz (Solkoff)
+        Buchholz Cut-1 (bye: 0-point opponent)
       </label>
     </div>
 
@@ -450,7 +450,7 @@ margin: auto;
       </label>
       <label>
         <input type="radio" class="tb-radio" name="tb-choice-final" value="buchholz" onchange="userSetTieBreak(this.value)">
-        Buchholz
+        Buchholz (Cut-1)
       </label>
     </div>
 
@@ -1313,15 +1313,29 @@ Ethan Adams`;
     lotRound();   // autosaves
   }
 
-  function calculateBuchholz() {
-    const map = new Map(players.map(p => [p.id, p]));
-    players.forEach(p => {
-      p.buchholz = p.opponents.reduce((sum, oppId) => {
-        const opp = map.get(oppId);
-        return sum + (opp ? opp.score : 0);
-      }, 0);
-    });
-  }
+function calculateBuchholz() {
+  const map = new Map(players.map(p => [p.id, p]));
+  players.forEach(p => {
+    // Build the list of opponent scores, INCLUDING a 0 for the bye.
+    const opponentScores = p.opponents
+      .map(oppId => map.get(oppId))
+      .filter(opp => opp)
+      .map(opp => opp.score);
+
+    // Optional: count the bye as a 0-point opponent so Cut-1 removes it
+    if (p.hasHadBye) {
+      opponentScores.push(0);   // bye counts as a 0-point opponent
+    }
+
+    // Cut-1: drop the lowest opponent score.
+    if (opponentScores.length > 1) {
+      const lowest = Math.min(...opponentScores);
+      opponentScores.splice(opponentScores.indexOf(lowest), 1);
+    }
+
+    p.buchholz = opponentScores.reduce((sum, s) => sum + s, 0);
+  });
+}
 
   /* --- WNT (WINTHER TIE-BREAK) --- */
   function calculateWNT() {
@@ -1412,7 +1426,7 @@ Ethan Adams`;
 
     let tbLabel = "WNT";
     if (tieBreakSystem === "buchholz") {
-      tbLabel = "Buchholz";
+      tbLabel = "Buchholz (Cut-1)";
     } else if (tieBreakSystem === "cumulative") {
       tbLabel = "Progressive";
     }    
@@ -1732,7 +1746,7 @@ Ethan Adams`;
     const tournamentTitle = tournamentName.trim() ? tournamentName.trim() : "Monrad Chess Tournament";
     let tbLabel = "Winther";
     if (tieBreakSystem === "buchholz") {
-      tbLabel = "Buchholz";
+      tbLabel = "Buchholz (Cut-1)";
     } else if (tieBreakSystem === "cumulative") {
       tbLabel = "Progressive";
     }
