@@ -315,6 +315,23 @@ margin: auto;
     .hidden {
       display: none !important;
     }
+
+   .match-history-table {
+     table-layout: fixed;
+     width: 100%;
+   }
+
+   .match-history-table th:nth-child(1),
+   .match-history-table td:nth-child(1) { width: 60px; }
+
+   .match-history-table th:nth-child(2),
+   .match-history-table td:nth-child(2) { width: auto; }
+
+   .match-history-table th:nth-child(3),
+   .match-history-table td:nth-child(3) { width: 140px; }
+
+   .match-history-table th:nth-child(4),
+   .match-history-table td:nth-child(4) { width: auto; }
   </style>
 </head>
 <body>
@@ -1468,7 +1485,7 @@ function calculateBuchholz() {
     roundHistory.forEach(r => {
       html += `
         <h3>Round ${r.round}</h3>
-        <table>
+  	 <table class="match-history-table">
           <thead>
             <tr>
               <th style="width: 55px;">Board</th>
@@ -1636,6 +1653,15 @@ function calculateBuchholz() {
       color: white;
       border-color: #1e3a8a;
     }
+    .match-history-table {
+      table-layout: fixed;
+      width: 100%;
+    }
+    .match-history-table th:nth-child(1),
+    .match-history-table td:nth-child(1) { width: 60px; }
+    .match-history-table th:nth-child(3),
+    .match-history-table td:nth-child(3) { width: 140px; }
+
     @media print {
       .toolbar {
         display: none !important;
