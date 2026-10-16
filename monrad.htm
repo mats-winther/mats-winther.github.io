@@ -114,6 +114,16 @@
       resize: vertical;
     }
 
+.rematch-badge {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
     .btn-group {
       display: flex;
       gap: 10px;
@@ -1094,76 +1104,158 @@ Moa Lundin`;
 
   /* --- MONRADS LOTTMETOD OCH RONDSKAPANDE --- */
 
-  function lotRound() {
-    document.getElementById("round-title").innerText = `Rond ${currentRound}`;
+function lotRound() {
+  document.getElementById("round-title").innerText = `Round ${currentRound}`;
 
-    let pool = players.filter(p => !p.withdrawn);
+  const pool = players.filter(p => !p.withdrawn);
 
-    if (pool.length < 2) {
-      alert("Färre än 2 aktiva spelare återstår. Turneringen avslutas.");
-      finishTournamentEarly();
-      return;
+  if (pool.length < 2) {
+    alert("Fewer than 2 active players remain. The tournament is ending.");
+    finishTournamentEarly();
+    return;
+  }
+
+  pool.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return a.originalPos - b.originalPos;
+  });
+
+  pool.forEach((p, idx) => {
+    p.currentPos = idx + 1;
+  });
+
+  currentByePlayer = null;
+  let pairings = null;
+  let rematchesNeeded = false;
+
+  if (pool.length % 2 === 0) {
+    // 1. Try to find a pairing with no rematches
+    pairings = generateMonradPairings(pool, false);
+
+    // 2. Fallback: allow rematches if no strict pairing exists
+    if (!pairings) {
+      rematchesNeeded = true;
+      pairings = generateMonradPairings(pool, true);
+    }
+  } else {
+    // Bye candidates: lowest-ranked players without a previous bye first,
+    // then lowest-ranked overall as a last resort.
+    let candidates = pool.slice().reverse().filter(p => !p.hasHadBye);
+    if (candidates.length === 0) candidates = pool.slice().reverse();
+
+    // 1. Try each bye candidate until one leaves a strictly pairable pool
+    for (const c of candidates) {
+      const rest = pool.filter(p => p !== c);
+      const result = generateMonradPairings(rest, false);
+      if (result) {
+        currentByePlayer = c;
+        pairings = result;
+        break;
+      }
     }
 
-    pool.sort((a, b) => {
-      if (b.score !== a.score) {
-        return b.score - a.score;
-      }
-      return a.originalPos - b.originalPos;
-    });
-
-    pool.forEach((p, idx) => {
-      p.currentPos = idx + 1;
-    });
-
-    currentByePlayer = null;
-
-    if (pool.length % 2 !== 0) {
-      for (let i = pool.length - 1; i >= 0; i--) {
-        if (!pool[i].hasHadBye) {
-          currentByePlayer = pool[i];
-          pool.splice(i, 1);
+    // 2. Fallback: allow rematches among the remaining players
+    if (!pairings) {
+      rematchesNeeded = true;
+      for (const c of candidates) {
+        const rest = pool.filter(p => p !== c);
+        const result = generateMonradPairings(rest, true);
+        if (result) {
+          currentByePlayer = c;
+          pairings = result;
           break;
         }
       }
-      if (!currentByePlayer && pool.length > 0) {
-        currentByePlayer = pool.pop();
-      }
     }
-
-    currentPairings = generateMonradPairings(pool);
-
-    if (!currentPairings) {
-      alert("Kunde inte lotta fler ronder utan att spelare möts igen. Turneringen avslutas.");
-      finishTournamentEarly();
-      return;
-    }
-
-    renderRoundView();
-    renderStandings();
-    autosave();   // ny rond är klar: behåll den om sidan laddas om
   }
 
-  function generateMonradPairings(pool) {
-    function solve(remaining) {
-      if (remaining.length === 0) return [];
+  if (!pairings) {
+    alert("Could not generate pairings. The tournament is ending.");
+    finishTournamentEarly();
+    return;
+  }
 
-      const p1 = remaining[0];
-      for (let i = 1; i < remaining.length; i++) {
-        const p2 = remaining[i];
-        if (!p1.opponents.includes(p2.id)) {
-          const nextRemaining = remaining.filter((p, idx) => idx !== 0 && idx !== i);
-          const subResult = solve(nextRemaining);
-          if (subResult !== null) {
-            const match = determineColors(p1, p2);
-            return [match, ...subResult];
-          }
+  currentPairings = pairings;
+  renderRoundView();
+  renderStandings();
+  autosave();
+
+  if (rematchesNeeded) {
+    const actualRematches = pairings.filter(m => m.white.opponents.includes(m.black.id)).length;
+    if (actualRematches > 0) {
+      alert(`Rond ${currentRound} info:\nAlla unika möten har redan spelats eller kunde inte lottas utan ett återmöte. Ronden har därför lottats med återmöten enligt monradprincipen.`);
+    }
+  }
+}
+
+function generateMonradPairings(pool, allowRematch = true) {
+  if (!pool || pool.length === 0) return [];
+  if (pool.length % 2 !== 0) return null;
+
+  // 1. Strict search: only pairs that have never met
+  function solveStrict(remaining) {
+    if (remaining.length === 0) return [];
+
+    const p1 = remaining[0];
+    for (let i = 1; i < remaining.length; i++) {
+      const p2 = remaining[i];
+      if (!p1.opponents.includes(p2.id)) {
+        const next = remaining.filter((p, idx) => idx !== 0 && idx !== i);
+        const sub = solveStrict(next);
+        if (sub !== null) {
+          return [determineColors(p1, p2), ...sub];
         }
       }
-      return null;
     }
-    return solve(pool);
+    return null;
   }
+
+  const strictResult = solveStrict(pool);
+  if (strictResult !== null) {
+    return strictResult;
+  }
+
+  if (!allowRematch) {
+    return null;
+  }
+
+  // 2. Fallback: allow rematches, but prefer:
+  //    a) fewest previous encounters between the two players
+  //    b) smallest gap in current standings position
+  function solveWithRematches(remaining) {
+    if (remaining.length === 0) return [];
+
+    const p1 = remaining[0];
+    const candidates = [];
+
+    for (let i = 1; i < remaining.length; i++) {
+      const p2 = remaining[i];
+      const encounters = p1.opponents.filter(id => id === p2.id).length;
+      candidates.push({
+        p2: p2,
+        index: i,
+        encounters: encounters,
+        rankDist: i
+      });
+    }
+
+    candidates.sort((c1, c2) => {
+      if (c1.encounters !== c2.encounters) return c1.encounters - c2.encounters;
+      return c1.rankDist - c2.rankDist;
+    });
+
+    for (const cand of candidates) {
+      const next = remaining.filter((p, idx) => idx !== 0 && idx !== cand.index);
+      const sub = solveWithRematches(next);
+      if (sub !== null) {
+        return [determineColors(p1, cand.p2), ...sub];
+      }
+    }
+    return null;
+  }
+
+  return solveWithRematches(pool);
+}
 
   function determineColors(pA, pB) {
     const pLow = pA.currentPos < pB.currentPos ? pA : pB;
@@ -1199,19 +1291,25 @@ Moa Lundin`;
     const tbody = document.getElementById("pairings-tbody");
     tbody.innerHTML = "";
 
-    currentPairings.forEach((match, idx) => {
-      const boardNum = idx + 1;
-      const tr = document.createElement("tr");
+  currentPairings.forEach((match, idx) => {
+  const boardNum = idx + 1;
+  const isRematch = match.white.opponents.includes(match.black.id);
+  const rematchBadge = isRematch
+    ? `<span class="rematch-badge" title="Dessa spelare har redan mötts i en tidigare rond.">Rematch</span>`
+    : "";
 
-      tr.innerHTML = `
-        <td style="font-weight: bold; color: #64748b;">${boardNum}</td>
-        <td>
-          <div class="player-box">
-            <span class="piece-icon piece-white" title="Vit"></span>
-            <strong>${getPlayerDisplayName(match.white)}</strong>
-            <span class="score-badge">${formatPoints(match.white.score)}</span>
-          </div>
-        </td>
+  const tr = document.createElement("tr");
+
+  tr.innerHTML = `
+    <td style="font-weight: bold; color: #64748b;">${boardNum}</td>
+    <td>
+      <div class="player-box">
+        <span class="piece-icon piece-white" title="Vit"></span>
+        <strong>${getPlayerDisplayName(match.white)}</strong>
+        <span class="score-badge">${formatPoints(match.white.score)}</span>
+        ${rematchBadge}
+      </div>
+    </td>
         <td>
           <div class="result-selector">
             <label>
