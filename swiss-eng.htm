@@ -1018,16 +1018,16 @@ function pairRound3Plus(players) {
   let byePairing = null;
   let toPair = [...available];
 
-  // Assign bye from the bottom if odd number of players
-  if (toPair.length % 2 !== 0) {
-    let byeIdx = -1;
-    for (let i = toPair.length - 1; i >= 0; i--) {
-      const hadBye = (toPair[i].history || []).some(h => h.opponent === null);
-      if (!hadBye) { byeIdx = i; break; }
-    }
-    if (byeIdx === -1) byeIdx = toPair.length - 1;
-    const byePlayer = toPair.splice(byeIdx, 1)[0];
-    byePairing = { white: byePlayer, black: null, result: '1-0 (Bye)' };
+  // Bye candidates (indexes into `available`): lowest-ranked without a
+  // previous bye first, then the rest. null = no bye needed.
+  const hadBye = p => (p.history || []).some(h => h.opponent === null);
+  let byeCandidates = [null];
+  if (available.length % 2 !== 0) {
+    const idxs = available.map((_, i) => i).reverse();
+    byeCandidates = [
+      ...idxs.filter(i => !hadBye(available[i])),
+      ...idxs.filter(i =>  hadBye(available[i]))
+    ].slice(0, 6);   // cap the search effort
   }
 
   const NODE_LIMIT = 100000;
@@ -1078,12 +1078,25 @@ function pairRound3Plus(players) {
     { streak: 3, relaxed: false },  // allow 3 in a row for colour balance
     { streak: 3, relaxed: true }    // last resort: rematches / colour rules bent
   ];
+
+  outer:
   for (const pass of passes) {
+   for (const bi of byeCandidates) {
+    const toPair = (bi === null)
+      ? [...available]
+      : available.filter((_, i) => i !== bi);
     nodes = 0;
     failed = new Set();
     solution = solve(toPair, pass.streak, pass.relaxed);
-    if (solution !== null) break;
+    if (solution !== null) {
+      if (bi !== null) {
+        byePairing = { white: available[bi], black: null, result: '1-0 (Frirond)' };
+      }
+      break outer;
+    }
+   }
   }
+
   if (solution === null) return null;
 
   if (byePairing) solution.push(byePairing);
