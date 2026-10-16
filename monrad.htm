@@ -1295,7 +1295,7 @@ function generateMonradPairings(pool, allowRematch = true) {
   const boardNum = idx + 1;
   const isRematch = match.white.opponents.includes(match.black.id);
   const rematchBadge = isRematch
-    ? `<span class="rematch-badge" title="Dessa spelare har redan mötts i en tidigare rond.">Rematch</span>`
+    ? `<span class="rematch-badge" title="Dessa spelare har redan mötts i en tidigare rond.">Returmöte</span>`
     : "";
 
   const tr = document.createElement("tr");
