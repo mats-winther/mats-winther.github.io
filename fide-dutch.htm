@@ -1015,37 +1015,43 @@ function Dutch2026Core() {
       return visit(ordered(list));
     }
 
+function canRemoveForBye(list, score) {
+  for (const i of list) {
+    tick();
+    if (
+      eligible(i) &&
+      players[i].score === score &&
+      perfectMatching(list.filter(j => j !== i))
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
     phase = "Establishing C4 and the minimum feasible bye score";
     let byeScore = null;
 
-    if (N % 2) {
-      const possibleScores = [...new Set(
-        ids.filter(eligible).map(i => players[i].score)
-      )].sort((a,b) => a-b);
+if (N % 2) {
+  const possibleScores = [...new Set(
+    ids.filter(eligible).map(i => players[i].score)
+  )].sort((a, b) => a - b);
 
-      outer:
-      for (const score of possibleScores) {
-        for (const i of ids) {
-          tick();
+  for (const score of possibleScores) {
+    if (canRemoveForBye(ids, score)) {
+      byeScore = score;
+      break;
+    }
+  }
 
-          if (
-            eligible(i) &&
-            players[i].score === score &&
-            perfectMatching(ids.filter(j => j !== i))
-          ) {
-            byeScore = score;
-            break outer;
-          }
-        }
-      }
-
-      if (byeScore === null) {
-        throw fault(
-          "NO_LEGAL_COMPLETION",
-          "No complete round satisfying C1–C3 and bye eligibility exists."
-        );
-      }
-    } else if (!perfectMatching(ids)) {
+  if (byeScore === null) {
+    throw fault(
+      "NO_LEGAL_COMPLETION",
+      "Ingen komplett rond som uppfyller C1–C3 och frirondsbehörighet finns."
+    );
+  }
+} else if (!perfectMatching(ids)) {
       throw fault(
         "NO_LEGAL_COMPLETION",
         "No complete round satisfying C1–C3 exists."
@@ -1054,36 +1060,23 @@ function Dutch2026Core() {
 
     const completionMemo = new Map();
 
-    function canComplete(list) {
-      const xs = ordered(list);
-      const key = xs.join(",");
+function canComplete(list) {
+  const xs = ordered(list);
+  const key = xs.join(",");
 
-      if (completionMemo.has(key)) {
-        return completionMemo.get(key);
-      }
+  if (completionMemo.has(key)) return completionMemo.get(key);
 
-      let answer = false;
+  let answer = false;
 
-      if (!(xs.length % 2)) {
-        answer = perfectMatching(xs);
-      } else if (byeScore !== null) {
-        for (const i of xs) {
-          tick();
+  if (!(xs.length % 2)) {
+    answer = perfectMatching(xs);
+  } else if (byeScore !== null) {
+    answer = canRemoveForBye(xs, byeScore);
+  }
 
-          if (
-            eligible(i) &&
-            players[i].score === byeScore &&
-            perfectMatching(xs.filter(j => j !== i))
-          ) {
-            answer = true;
-            break;
-          }
-        }
-      }
-
-      completionMemo.set(key, answer);
-      return answer;
-    }
+  completionMemo.set(key, answer);
+  return answer;
+}
 
     const groups = [];
 
@@ -2174,7 +2167,7 @@ const LEGACY_STORAGE_KEY = "experimental_fide_dutch_2026_en";
 
 const FIXED_SEARCH_LIMITS = Object.freeze({
   seconds:30,
-  nodes:2000000
+  nodes:10000000
 });
 
 const TITLE_WEIGHTS = {
