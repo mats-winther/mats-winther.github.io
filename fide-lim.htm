@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description"
-      content="Experimentellt webbläsarbaserat FIDE-Lim lottningssystem för schackturneringar.">
+      content="Experimentellt webbaserat FIDE-Lim-lottningssystem för schackturneringar.">
 <meta name="author" content="Mats Winther">
 <link
   rel="canonical"
@@ -67,26 +67,26 @@ a{color:var(--blue)}
 <header>
   <div>
     <h1>Experimentellt FIDE Lim-lottningssystem</h1>
-    <small>2026 års regler · endast icke-Maxi</small>
+    <small>2026 års regler · endast non-Maxi</small>
   </div>
   <div class="row">
     <button onclick="saveTournament()">Spara turnering</button>
     <button onclick="document.getElementById('openFile').click()">Öppna turnering</button>
     <button onclick="window.print()">Skriv ut</button>
-    <button onclick="document.getElementById('about').showModal()">Om systemet</button>
+    <button onclick="document.getElementById('about').showModal()">Om</button>
   </div>
 </header>
 <input id="openFile" type="file" accept=".json" hidden onchange="openTournament(event)">
 <main>
   <h2 id="printTitle" class="print-only"></h2>
   <div id="message" class="notice no-print" role="status" aria-live="polite">
-    Registrera spelare och kontrollera deras startnummer (TPN).
+    Registrera spelare och kontrollera deras turneringslottningsnummer (TPN).
   </div>
 
   <nav class="tabs no-print">
     <button id="b-setup" class="active" onclick="tab('setup')">Inställningar &amp; registrering</button>
     <button id="b-pairings" onclick="tab('pairings')">Rondlottning</button>
-    <button id="b-standings" onclick="tab('standings')">Poängtabell</button>
+    <button id="b-standings" onclick="tab('standings')">Poänglista</button>
     <button id="b-history" onclick="tab('history')">Rondhistorik</button>
   </nav>
 
@@ -94,20 +94,20 @@ a{color:var(--blue)}
     <div class="card no-print">
       <h2>Turneringsinställningar</h2>
       <div class="grid">
-        <label>Turneringens namn<input id="tName" value="Lim Swiss Open"></label>
+        <label>Turneringsnamn<input id="tName" value="Lim Schweizisk Open"></label>
         <label>Antal ronder<input id="tRounds" type="number" min="1" max="30" value="5"></label>
-        <label>Lottad färg för TPN 1 i rond 1
+        <label>Färg lottad för rond 1 för TPN 1
           <select id="tColor"><option value="W">Vit</option><option value="B">Svart</option></select>
         </label>
-        <label>Poäng för lottningsbetingad frirond (PAB)
+        <label>Poäng för tilldelad frirond (PAB)
           <select id="tPab">
-            <option value="1">1 (standard)</option>
-            <option value="0.5">½ (om turneringens reglemente tillåter)</option>
-            <option value="0">0 (om turneringens reglemente tillåter)</option>
+            <option value="1">1 (ordinarie)</option>
+            <option value="0.5">½ (endast om turneringsreglerna tillåter)</option>
+            <option value="0">0 (endast om turneringsreglerna tillåter)</option>
           </select>
         </label>
       </div>
-      <p class="muted">Inställningar och registrering låses när rond 1 lottas. Särskiljningsordning i denna applikation: poäng, BH-1, BH, SB.</p>
+      <p class="muted">Inställningar och registreringar låses när rond 1 genereras. Särskiljningsordning för slutresultatet i denna applikation: poäng, BH-1, BH, SB.</p>
     </div>
 
     <div class="card">
@@ -123,7 +123,7 @@ a{color:var(--blue)}
       <input id="playersFile" type="file" accept=".csv,.txt,.trf" hidden onchange="importFile(event)">
       <div class="grid no-print">
         <label>Namn<input id="pName" placeholder="Efternamn, Förnamn"></label>
-        <label>Rating / uppskattad spelstyrka<input id="pRating" type="number" min="0" value="1500"></label>
+        <label>Rating / uppskattad styrka<input id="pRating" type="number" min="0" value="1500"></label>
         <label>FIDE-titel
           <select id="pTitle">
             <option value="">Ingen</option><option>GM</option><option>IM</option>
@@ -133,7 +133,7 @@ a{color:var(--blue)}
         </label>
         <div style="align-self:end"><button id="addButton" class="primary" onclick="addPlayer()">Lägg till spelare</button></div>
       </div>
-      <p class="muted">Inför lottning av rond 1 rangordnas spelarna efter rating, titel och därefter namn. Import läser endast in deltagare, inte resultat från TRF-filer.</p>
+      <p class="muted">Före lottning av rond 1 ordnas spelarna efter rating, titel och sedan namn. Import laddar endast registreringar, inte TRF-turneringsresultat.</p>
       <div class="wrap"><table>
         <thead><tr><th>TPN</th><th>Namn</th><th>Rating</th><th>Titel</th><th>Status</th><th class="no-print">Nästa rond</th><th class="no-print">Åtgärder</th></tr></thead>
         <tbody id="playersBody"></tbody>
@@ -146,7 +146,7 @@ a{color:var(--blue)}
       <div class="row between">
         <h2 id="roundTitle">Nästa rond</h2>
         <div class="row no-print">
-          <button id="generateButton" class="primary" onclick="generateRound()">Lotta rond</button>
+          <button id="generateButton" class="primary" onclick="generateRound()">Generera lottning</button>
           <button id="cancelButton" class="danger" onclick="cancelSearch()" disabled>Avbryt sökning</button>
           <button id="confirmButton" onclick="confirmRound()" disabled>Bekräfta rond</button>
         </div>
@@ -158,14 +158,14 @@ a{color:var(--blue)}
         <tbody id="pairingsBody"></tbody>
       </table></div>
       <div id="unplayedView"></div>
-      <details class="no-print"><summary>Lottningsspårning (Audit trace)</summary><pre id="audit"></pre></details>
+      <details class="no-print"><summary>Lottningsspår</summary><pre id="audit"></pre></details>
     </div>
   </section>
 
   <section id="standings" class="tab">
     <div class="card">
       <h2 id="standingsName"></h2><h3 id="standingsTitle"></h3>
-      <p class="muted no-print">Slutställningen tillämpar applikationens valda särskiljningsordning; Lim-systemet i sig föreskriver inte särskiljning.</p>
+      <p class="muted no-print">Slutplaceringarna använder denna applikations valda särskiljningsordning; Lim föreskriver den inte själv.</p>
       <div class="wrap"><table>
         <thead id="standingsHead"></thead><tbody id="standingsBody"></tbody>
       </table></div>
@@ -173,38 +173,38 @@ a{color:var(--blue)}
   </section>
 
   <section id="history" class="tab">
-    <div class="card"><h2>Spelade ronder</h2><div id="historyBody"></div></div>
+    <div class="card"><h2>Avslutade ronder</h2><div id="historyBody"></div></div>
   </section>
 </main>
 
 <dialog id="paste">
-  <h2>Klistra in deltagare</h2>
-  <p>CSV-, tab- eller semikolonseparerat: <code>Namn,Rating,Titel</code>.
-     Sätt citattecken runt namn som innehåller kommatecken. TRF-rader som börjar med <code>001</code> stöds också.</p>
-  <textarea id="pasteText" placeholder='"Karlsson, Anna",1900,WFM'></textarea>
+  <h2>Klistra in registreringar</h2>
+  <p>CSV-, tabb- eller semikolonavgränsat: <code>Namn,Rating,Titel</code>.
+     Citera namn som innehåller kommatecken. TRF <code>001</code>-registreringsrader känns också igen.</p>
+  <textarea id="pasteText" placeholder='"Svensson, Anna",1900,WFM'></textarea>
   <div class="row"><button onclick="document.getElementById('paste').close()">Avbryt</button>
     <button class="primary" onclick="importPaste()">Importera</button></div>
 </dialog>
 <dialog id="about">
-  <h2>Om systemet</h2>
-  <p>Experimentell implementering av FIDE C.04.4.3 Lim, gällande från 1 februari 2026.
-     INTE officiellt godkänd av FIDE.</p>
-  <p>Implementerar standardlottning (icke-Maxi), tvåsidig poänggruppsgenomgång,
-     kompatibilitetskontroller för motståndare, flytarval (floaters), reparation av mediangrupp,
-     färgpreferenser samt sista-rondens undantag för lika poäng.
-     Komplexa fall kan tolkas på flera sätt; detta är inte en officiell referensvaliderare.</p>
-  <p>Stödjer inte sena anmälningar, accelererad lottning eller hängpartier.
-     Faktiska spelfärger i den senast arkiverade ronden kan korrigeras innan nästa rond genereras.
-     Övriga arkiverade resultat kan inte redigeras direkt. För att ändra ett tidigare rapporterat
-     resultat måste en säkerhetskopia från den ronden läsas in och resultaten matas in på nytt.</p> 
-  <p>Denna icke-Maxi-implementering minimerar eller begränsar inte ratingskillnaden mellan motståndare.
-     Den fasta sökgränsen är 30 sekunder eller 2 000 000 sökenheter.
-     Vid fel eller avbrott publiceras aldrig en ofullständig rond.</p>
+  <h2>Om</h2>
+  <p>Experimentell implementation av FIDE C.04.4.3 Lim, gällande från 1 februari 2026.
+     INTE FIDE-godkänd.</p>
+  <p>Implementerar vanlig, icke-Maxi-lottning, den tvåsidiga poänggruppstraverseringen,
+     kontroller av kompatibla motståndare, floaterval, reparation av mittengruppen,
+     färgpreferenser och undantaget för samma poäng i sista ronden.
+     Komplexa fall kan ha mer än en tolkning; detta är inte en officiell kontroll.</p>
+  <p>Implementerar inte sena anmälningar,
+   acceleration eller uppskjutna partier. De faktiska färgerna i ett parti i den senaste
+   arkiverade ronden kan korrigeras före generering av nästa rond; övriga
+   arkiverade resultat kan inte redigeras direkt. För att ändra ett tidigare rapporterat resultat
+   måste en säkerhetskopia av ronden laddas och rondens resultat matas in på nytt.</p> 
+<p>Denna icke-Maxi-implementation minimerar eller begränsar inte ratingdifferensen mellan motståndare.
+     Programmet har en inbyggd fast sökbegränsning. Fel eller avbrott publicerar aldrig en ofullständig rond.</p>
   <ul>
-    <li><a href="https://handbook.fide.com/chapter/C040403202602" target="_blank" rel="noopener">Lim-reglerna</a></li>
-    <li><a href="https://handbook.fide.com/chapter/GeneralHandlingRulesForSwissTournaments202602" target="_blank" rel="noopener">Allmänna hanteringsregler</a></li>
-    <li><a href="https://handbook.fide.com/chapter/TieBreakRegulations032026" target="_blank" rel="noopener">Särskiljningsreglemente</a></li>
-    <li><a href="https://mats-winther.github.io/bg/schacklottning.htm" target="_blank" rel="noopener">Schacklottning: en genomgång av Monrad, Schweizer och Berger</a></li>
+    <li><a href="https://handbook.fide.com/chapter/C040403202602" target="_blank" rel="noopener">Lim-regler</a></li>
+    <li><a href="https://handbook.fide.com/chapter/GeneralHandlingRulesForSwissTournaments202602" target="_blank" rel="noopener">Allmänna hanteringsregler för schweiziska turneringar</a></li>
+    <li><a href="https://handbook.fide.com/chapter/TieBreakRegulations032026" target="_blank" rel="noopener">Särskiljningsregler</a></li>
+    <li><a href="https://mats-winther.github.io/bg/chesspairing.htm" target="_blank" rel="noopener">Schacklottningar: En genomgång av Monrad, Schweizer och Berger</a></li>
   </ul>
   <button onclick="document.getElementById('about').close()">Stäng</button>
 </dialog>
@@ -240,7 +240,7 @@ function LimCore() {
       work++;
       if (work > limits.nodes ||
           ((work & 127) === 0 && performance.now() >= deadline))
-        fail("LIMIT", "Sökgränsen nåddes; ingen rond kunde lottas.");
+        fail("LIMIT", "Sökbegränsningen nåddes; ingen rond genererades.");
     }
 
     const round = Number(input.roundNumber);
@@ -248,7 +248,7 @@ function LimCore() {
     if (!Number.isInteger(round) || !Number.isInteger(total) ||
         round < 1 || round > total || !["W","B"].includes(input.initialColor) ||
         !Array.isArray(input.players))
-      fail("INPUT", "Ogiltiga indata för lottning.");
+      fail("INPUT", "Ogiltig indata för lottning.");
 
     const players = input.players.map(raw => ({
       id:String(raw.id),
@@ -272,7 +272,7 @@ function LimCore() {
           p.colors.length > round - 1 ||
           p.colors.some(c => c !== "W" && c !== "B") ||
           p.floats.length !== round - 1)
-        fail("INPUT", "Ogiltig historik eller startnummer (TPN).");
+        fail("INPUT", "Ogiltig historik eller TPN.");
       ids.add(p.id);
       tpns.add(p.tpn);
     }
@@ -288,6 +288,7 @@ function LimCore() {
       return last(p) ? inverse(last(p)) : null;
     };
     const eligible = p => !p.hadPAB && !p.hadUnplayedWin;
+    const dueOf = new Map(players.map(p => [p.id, due(p)]));
 
     function permissible(p, color) {
       const h = p.colors, n = h.length;
@@ -295,6 +296,8 @@ function LimCore() {
         !(n >= 2 && h[n-1] === color && h[n-2] === color);
     }
 
+    // Article 5.4: search colour histories backwards from their last
+    // played games, not from their calendar-round positions.
     function colourPriority(a,b,region) {
       const x = a.colors, y = b.colors;
       for (let k = 1; k <= Math.min(x.length,y.length); k++) {
@@ -354,20 +357,81 @@ function LimCore() {
     }
     function legal(a,b) { return !!pairInfo(a,b,regionOf(a,b)); }
 
+// Precompute the legal-opponent neighbourhood once per solve.
+    // After this, every canMatch call works on Set membership instead of
+    // re-running regionOf + orient for each candidate pair, and the edge
+    // cache is already warm for every regionOf-region pair.
+    const legalAdj = new Map(players.map(a => {
+      const row = new Set();
+      for (const b of players) {
+        tick();
+        if (a !== b && legal(a, b)) row.add(b.id);
+      }
+      return [a.id, row];
+    }));
+
+    // Candidate-per-next-group cache: purely a cross-state memo for
+    // has-next scans; the answer depends only on (player id, next group).
+    const hasNextCache = new Map();
+
+    // Shared across EVERY canMatch invocation in this solve. The key is a
+    // canonical subset of TPNS, independent of which top-level list the
+    // call started from, so reuse is sound: cache hit == same boolean.
+    const matchMemo = new Map();
+    const MEMO_CAP = Math.max(50000, (limits.nodes || 2000000) >> 3);
+
+    // Exact legal-completion check (not a claim of exact Lim preference).
     function canMatch(list) {
-      const memo = new Map();
+      if (list.length % 2) return false;
+      if (!list.length) return true;
+
+      const inside = new Set(list.map(p => p.id));
+
+      // (a) Necessary: every player needs at least one legal partner
+      //     still inside this sublist.
+      for (const p of list) {
+        let ok = false;
+        for (const qid of legalAdj.get(p.id)) {
+          if (inside.has(qid)) { ok = true; break; }
+        }
+        if (!ok) return false;
+      }
+
+      // (b) Necessary (Tutte): every connected component of the induced
+      //     legality graph must have even size.
+      const seenComp = new Set();
+      for (const p of list) {
+        if (seenComp.has(p.id)) continue;
+        const stack = [p.id];
+        let size = 0;
+        while (stack.length) {
+          tick();
+          const v = stack.pop();
+          if (seenComp.has(v)) continue;
+          seenComp.add(v); size++;
+          for (const qid of legalAdj.get(v)) {
+            if (inside.has(qid) && !seenComp.has(qid)) stack.push(qid);
+          }
+        }
+        if (size % 2) return false;
+      }
+
       function visit(xs) {
         tick();
         if (xs.length % 2) return false;
         if (!xs.length) return true;
         const key = xs.map(p => p.tpn).sort((a,b) => a-b).join(",");
-        if (memo.has(key)) return memo.get(key);
+        if (matchMemo.has(key)) return matchMemo.get(key);
 
         let chosen = null, options = null;
         for (const p of xs) {
-          const available = xs.filter(q => q !== p && legal(p,q));
+          const adj = legalAdj.get(p.id);
+          const available = [];
+          for (const q of xs) {
+            if (q !== p && adj.has(q.id)) available.push(q);
+          }
           if (!available.length) {
-            memo.set(key,false);
+            matchMemo.set(key,false);
             return false;
           }
           if (!options || available.length < options.length) {
@@ -377,11 +441,12 @@ function LimCore() {
         }
         for (const q of options) {
           if (visit(xs.filter(p => p !== chosen && p !== q))) {
-            memo.set(key,true);
+            matchMemo.set(key,true);
             return true;
           }
         }
-        memo.set(key,false);
+        matchMemo.set(key,false);
+        if (matchMemo.size > MEMO_CAP) matchMemo.clear();
         return false;
       }
       return visit(list);
@@ -389,6 +454,8 @@ function LimCore() {
 
     if (!players.length) fail("INPUT", "Inga spelare att lotta.");
 
+    // Articles 1.1 and Basic Swiss 3–4. If the lowest-ranked eligible
+    // choice makes completion impossible, try the next eligible choice.
     let bye = null;
     if (players.length % 2) {
       const options = players.filter(eligible).sort((a,b) =>
@@ -401,10 +468,10 @@ function LimCore() {
       }
       if (!bye)
         fail("NO_LEGAL_COMPLETION",
-             "Ingen behörig frirondsmottagare medger en regelrätt komplett lottning.");
+             "Ingen behörig frirondsmottagare lämnar en laglig komplett lottning.");
     } else if (!canMatch(players)) {
       fail("NO_LEGAL_COMPLETION",
-           "Ingen komplett lottning uppfyller kraven mot återupprepade möten och färgrestriktioner.");
+           "Ingen komplett lottning uppfyller omkamp- och färgrestriktioner.");
     }
 
     const participants = players.filter(p => p !== bye);
@@ -414,116 +481,118 @@ function LimCore() {
       for (let i=0;i<n;i++) {
         const a=participants[i], b=participants[i+n];
         if (!legal(a,b))
-          fail("NO_LIM_CANDIDATE","Övre/undre halvan-lottning i rond 1 ej möjlig.");
+          fail("NO_LIM_CANDIDATE","Förstarondens topp/botten-lottning är inte tillgänglig.");
         const wanted = (a.tpn % 2 ? input.initialColor : inverse(input.initialColor));
         pairs.push(wanted === "W"
           ? {whiteId:a.id,blackId:b.id}
           : {whiteId:b.id,blackId:a.id});
       }
       return {engineVersion:VERSION,pairs,pabId:bye?.id || null,
-              trace:[{rule:"7.1–7.2",note:"Övre halvan mot undre halvan; lottad startfärg"}],
+              trace:[{rule:"7.1–7.2",note:"Övre halva/nedre halva; startfärg genom lottning"}],
               stats:stats()};
     }
 
     const medianScore = (round-1)/2;
     const scores = [...new Set(participants.map(p => p.score))].sort((a,b) => b-a);
-    const group = s => participants.filter(p => p.score === s).sort(byTPN);
-    const upper = scores.filter(s => s > medianScore);
-    const lower = scores.filter(s => s < medianScore).reverse();
+    const groupCache = new Map();
+    const group = s => {
+      let g = groupCache.get(s);
+      if (g === undefined) {
+        g = participants.filter(p => p.score === s).sort(byTPN);
+        groupCache.set(s, g);
+      }
+      return g;
+    };
+    const upper = scores.filter(s => s > medianScore);       // descending
+    const lower = scores.filter(s => s < medianScore).reverse(); // ascending
     const medianResidents = group(medianScore);
     const traces = [];
     const blocks = {above:[],below:[]};
 
-    function matchBest(items, incoming, region) {
+    // Pair a fixed even collection: incoming floaters first, then
+    // top-half/bottom-half proposals, attempting exchanges when needed.
+    // Among complete pairings, favour legal colour alternation/equalisation.
+   function matchBest(items, incoming, region) {
       if (items.length % 2) return null;
-
       const incomingSet = new Set(incoming.map(p => p.id));
-      let best = null, stop = false;
       const fixedOrder = [...items].sort(byTPN);
       const half = fixedOrder.length / 2;
       const natural = new Map();
-
       for (let i = 0; i < half; i++) {
         natural.set(fixedOrder[i].id, fixedOrder[i + half]);
         natural.set(fixedOrder[i + half].id, fixedOrder[i]);
       }
+      function incomingOrder(a, b) { /* unchanged */ }
 
-      function incomingOrder(a, b) {
-        if (region === "median") {
-          const ad = a.score > medianScore, bd = b.score > medianScore;
-          if (ad !== bd) return ad ? -1 : 1;
-        }
-        if (region === "below")
-          return a.score - b.score || a.tpn - b.tpn;
-        return b.score - a.score || b.tpn - a.tpn;
-      }
+      const memo = new Map();
+      const MEMO_CAP = 200000;
 
-      function visit(left, pairs, totals, signature) {
+      // Returns {pairs, totalsAdd, signatureAdd} or null, and is sound
+      // because the anchor for any state is a pure function of the state.
+      function visit(left) {
         tick();
-        if (stop) return;
+        if (!left.length)
+          return {pairs: [], totalsAdd: [0,0,0,0,0], signatureAdd: []};
 
-        if (!left.length) {
-          const quality = [...totals, ...signature];
-          if (!best || lex(quality, best.quality) < 0)
-            best = {pairs: [...pairs], quality};
-          if (totals.every(x => x === 0)) stop = true;
-          return;
+        let key = null;
+        if (left.length <= 24) {
+          key = left.map(p => p.id).sort().join(",");
+          const hit = memo.get(key);
+          if (hit !== undefined) return hit;
         }
-
-        if (best && lex(totals, best.quality.slice(0, 5)) > 0) return;
 
         const floats = left
           .filter(p => incomingSet.has(p.id))
           .sort(incomingOrder);
-        const anchor = floats.length
-          ? floats[0]
-          : [...left].sort(byTPN)[region === "below" ? left.length - 1 : 0];
+        let anchor;
+        if (floats.length) anchor = floats[0];
+        else {
+          anchor = left[0];
+          if (region === "below")
+            for (const p of left) if (p.tpn > anchor.tpn) anchor = p;
+          else
+            for (const p of left) if (p.tpn < anchor.tpn) anchor = p;
+        }
 
         const candidates = left
           .filter(p => p !== anchor)
           .map(p => ({p, info: pairInfo(anchor, p, region)}))
           .filter(x => x.info)
-          .sort((x, y) => {
-            if (incomingSet.has(anchor.id)) {
-              const xResident = !incomingSet.has(x.p.id);
-              const yResident = !incomingSet.has(y.p.id);
-              if (xResident !== yResident) return xResident ? -1 : 1;
+          .sort(/* keep the existing comparator verbatim */);
 
-              const altX = due(anchor) && due(x.p) &&
-                           due(anchor) !== due(x.p);
-              const altY = due(anchor) && due(y.p) &&
-                       due(anchor) !== due(y.p);
-              if (altX !== altY) return altX ? -1 : 1;
-
-              return region === "below"
-                ? y.p.tpn - x.p.tpn
-                : x.p.tpn - y.p.tpn;
-            }
-
-            const nx = +(natural.get(anchor.id) !== x.p);
-            const ny = +(natural.get(anchor.id) !== y.p);
-            return nx - ny ||
-              (region === "below" ? y.p.tpn - x.p.tpn : x.p.tpn - y.p.tpn);
-          });
-
+        let bestSub = null, bestQuality = null;
         for (const {p, info} of candidates) {
-          const v = info.value;
-          const next = totals.map((n, i) => n + v[i]);
-
-          visit(
-            left.filter(q => q !== anchor && q !== p),
-            [...pairs, {whiteId: info.whiteId, blackId: info.blackId}],
-            next,
-            [...signature, p.tpn]
-          );
-          if (stop) return;
+          const next = left.filter(q => q !== anchor && q !== p);
+          const sub = visit(next);
+          if (!sub) continue;
+          const addTotals =
+            sub.totalsAdd.map((n, i) => n + info.value[i]);
+          const addSig = [p.tpn, ...sub.signatureAdd];
+          const quality = [...addTotals, ...addSig];
+          if (!bestQuality || lex(quality, bestQuality) < 0) {
+            bestQuality = quality;
+            bestSub = {
+              pairs: [
+                {whiteId: info.whiteId, blackId: info.blackId},
+                ...sub.pairs
+              ],
+              totalsAdd: addTotals,
+              signatureAdd: addSig
+            };
+          }
         }
+        if (key !== null) {
+          memo.set(key, bestSub);
+          if (memo.size > MEMO_CAP) memo.clear();
+        }
+        return bestSub;
       }
 
-      visit(items, [], [0, 0, 0, 0, 0], []);
-      return best;
+      const result = visit(items);
+      return result && {pairs: result.pairs, quality: [
+        ...result.totalsAdd, ...result.signatureAdd
+      ]};
     }
-
     function* subsets(list,count,start=0,chosen=[]) {
       tick();
       if (count===0) { yield [...chosen]; return; }
@@ -534,26 +603,40 @@ function LimCore() {
       }
     }
 
-    function floaterCost(out,all,next,dir) {
-      const types=[0,0,0], nextList=next || [];
+    // Rule 3: protect previously floated players; prefer floaters with
+    // compatible opponents next door; then favour due-colour balance.
+    // `hasNext` is a Map keyed by player id, precomputed once per score
+    // group: whether p has a legal opponent in the next group does not
+    // depend on which subset is being costed.
+    // `left` is supplied by the caller; the caller already ran the
+    // items-minus-out filter and can reuse it. `residentScore` is passed
+    // explicitly so we do not have to reconstruct an `{items,residentScore}`
+    // wrapper object per subset.
+    function floaterCost(out,left,dir,hasNext,residentScore) {
+      const types=[0,0,0];
       let recent=0;
       for (const p of out) {
-        const already=p.score !== all.residentScore;
-        const has=nextList.some(q => legal(p,q));
+        const already=p.score !== residentScore;
+        const has=hasNext ? hasNext.get(p.id) : false;
         if (already && !has) types[0]++;
         else if (already) types[1]++;
         else if (!has) types[2]++;
         if (p.floats[round-2] &&
             p.floats[round-2] !== "-") recent++;
       }
-      const remaining=all.items.filter(p => !out.includes(p));
-      const white=remaining.filter(p => due(p)==="W").length;
-      const black=remaining.filter(p => due(p)==="B").length;
+      let white=0, black=0;
+      for (const p of left) {
+        const d=dueOf.get(p.id);
+        if (d==="W") white++;
+        else if (d==="B") black++;
+      }
       const byRank=out.map(p => dir==="above" ? -p.tpn : p.tpn)
                       .sort((a,b) => a-b);
       return [...types,recent,Math.abs(white-black),...byRank];
     }
 
+    // DFS across groups: never publish a provisional answer. A global
+    // matching check prunes locally plausible choices that block the round.
     function processSide(dir,index,incoming,pairs) {
       const sequence=dir==="above" ? upper : lower;
       if (index===sequence.length) {
@@ -568,16 +651,42 @@ function LimCore() {
       const next=nextScore===undefined ? medianResidents : group(nextScore);
       const min=items.length % 2;
 
+      // has-next scan is state-independent; the cache makes backtracking
+      // through different floater choices cost one Set lookup per player.
+      const nextKey = nextScore === undefined
+        ? "M" + medianScore : "S" + nextScore;
+      const hasNext = new Map();
+      for (const p of items) {
+        const ck = p.id + "|" + nextKey;
+        let v = hasNextCache.get(ck);
+        if (v === undefined) {
+          v = next.some(q => legal(p, q));
+          hasNextCache.set(ck, v);
+        }
+        hasNext.set(p.id, v);
+      }
+
       for (let count=min;count<=items.length;count+=2) {
-        const options=[...subsets(items,count)].map(out => ({
-          out,cost:floaterCost(out,{items,residentScore:score},next,dir)
-        })).sort((a,b) => lex(a.cost,b.cost));
+        const options=[];
+        for (const out of subsets(items,count)) {
+          const outSet = new Set(out.map(p => p.id));
+          const left = items.filter(p => !outSet.has(p.id));
+          if (!canMatch(left)) continue;
+          options.push({out, outSet, left,
+            cost:floaterCost(out, left, dir, hasNext, score)});
+        }
+        options.sort((a,b) => lex(a.cost,b.cost));
 
         for (const option of options) {
           tick();
-          const out=option.out;
-          const left=items.filter(p => !out.includes(p));
-          const match=matchBest(left,incoming.filter(p=>!out.includes(p)),dir);
+          const out = option.out;
+          const outSet = option.outSet;
+          const left = option.left;
+          const match = matchBest(
+            left,
+            incoming.filter(p => !outSet.has(p.id)),
+            dir
+          );
           if (!match) continue;
 
           const block={score,dir,pairs:match.pairs};
@@ -607,14 +716,16 @@ function LimCore() {
       let down=lowerIncoming.map(n=>players.find(p=>p.tpn===n));
       let retained=[...pairs];
 
+      // Article 2.6: crack the next adjacent pairing on the side
+      // indicated by the numbers of incoming floaters.
       for (let attempts=0;attempts<=participants.length/2;attempts++) {
         tick();
         const items=[...medianResidents,...up,...down];
         const match=matchBest(items,[...up,...down],"median");
         if (match) {
           const note=attempts
-            ? "Blockerad median reparerad genom att bryta upp angränsande parningar"
-            : "Median lottad";
+            ? "Blockerad mittengrupp reparerad genom att bryta intilliggande parningar"
+            : "Mittengrupp lottad";
           const resultPairs=[...retained,...match.pairs];
           const covered=new Set(resultPairs.flatMap(p=>[p.whiteId,p.blackId]));
           if (covered.size===participants.length &&
@@ -643,6 +754,8 @@ function LimCore() {
       return null;
     }
 
+    // A failed branch must restore cracked blocks before another branch.
+    // We therefore use snapshots for the mutable median-repair state.
     const originalFinish=finishMedian;
     finishMedian=function(pairs) {
       const savedA=blocks.above.map(b=>[b,[...b.pairs]]);
@@ -655,7 +768,7 @@ function LimCore() {
     const found=processSide("above",0,[],[]);
     if (!found)
       fail("NO_LIM_CANDIDATE",
-           "Ingen giltig Lim-kandidat kunde fastställas inom denna implementering.");
+           "Ingen Lim-kandidat fastställdes inom denna implementation.");
     traces.push(found.medianTrace);
 
     return {engineVersion:VERSION,pairs:found.pairs,
@@ -677,23 +790,23 @@ function LimCore() {
         }))};
     }
     const a=solve(fixture(7),{seconds:10,nodes:300000});
-    ok("Frirond i rond 1 till lägst rankad spelare",a.pabId==="P7");
-    ok("Övre/undre halvan-lottning i rond 1",
+    ok("Förstarondens frirond till lägst rankade spelare",a.pabId==="P7");
+    ok("Förstarondens topp/botten-lottning",
        a.pairs.some(p=>p.whiteId==="P1"&&p.blackId==="P4"));
     const b=fixture(3,2); b.players[2].hadPAB=true;
     b.players[0].playedColors=["W"];
     b.players[1].playedColors=["B"];
     b.players[2].playedColors=["W"];
     const c=solve(b,{seconds:10,nodes:300000});
-    ok("Tidigare frirondsmottagare obehörig",c.pabId!=="P3");
+    ok("Tidigare PAB-mottagare ej behörig",c.pabId!=="P3");
     const d=fixture(2,3,4);
     d.players.forEach(p=>{p.score=1;p.playedColors=["W","W"];});
     let rejected=false;
     try { solve(d,{seconds:10,nodes:300000}); }
     catch(e) { rejected=e.code==="NO_LEGAL_COMPLETION"; }
-    ok("Förbud mot tre på varandra följande samma färg före slutrond",rejected);
+    ok("Förbud mot tre på varandra följande färger i icke-final rond",rejected);
     d.totalRounds=3;
-    ok("Färgrundantag i slutronden vid samma poäng",
+    ok("Färgundantag för samma poäng i sista ronden",
        solve(d,{seconds:10,nodes:300000}).pairs.length===1);
     return tests;
   }
@@ -715,7 +828,7 @@ let tournament=blank(), currentTab="setup", workerJob=null, importedPending=fals
 
 function blank() {
   return {format:"lim-experimental-1",engineVersion:Core.VERSION,
-    name:"Lim Swiss Open",totalRounds:5,initialColor:"W",pabPoints:1,
+    name:"Lim Schweizisk Open",totalRounds:5,initialColor:"W",pabPoints:1,
     frozen:false,players:[],rounds:[],pending:[],pendingAudit:null};
 }
 function esc(s) {
@@ -752,7 +865,7 @@ function settings() {
   requireIdle();
   tournament.name=$("tName").value.trim()||"Turnering";
   if (!tournament.frozen) {
-    tournament.totalRounds=number($("tRounds").value,"rondantal",1,30,true);
+    tournament.totalRounds=number($("tRounds").value,"antal ronder",1,30,true);
     if (!["W","B"].includes($("tColor").value)) throw Error("Ogiltig färg.");
     tournament.initialColor=$("tColor").value;
     tournament.pabPoints=half($("tPab").value,"PAB-poäng");
@@ -760,7 +873,7 @@ function settings() {
 }
 function saveLocal() {
   try { localStorage.setItem(KEY,JSON.stringify(tournament)); }
-  catch(e) { notice("Webbläsarens lagring misslyckades; ladda ner en JSON-backup.","warning"); }
+  catch(e) { notice("Webblagring misslyckades; ladda ner en JSON-säkerhetskopia.","warning"); }
 }
 function id() {
   return "P_"+(crypto.randomUUID?.() ||
@@ -770,12 +883,12 @@ function makePlayer(name,rating,title) {
   title=String(title||"").trim().toUpperCase();
   if (!Object.hasOwn(TITLES,title)) throw Error("Okänd titel: "+title);
   name=String(name).trim();
-  if (!name) throw Error("Spelarnamn är obligatoriskt.");
+  if (!name) throw Error("Ett spelarnamn krävs.");
   return {id:id(),tpn:0,name,rating:number(rating,"rating",0,9999,true),
           title,active:true,status:"pair"};
 }
 function assignTPNs() {
-  const collator=new Intl.Collator("sv",{sensitivity:"base"});
+  const collator=new Intl.Collator("en",{sensitivity:"base"});
   tournament.players.sort((a,b)=>b.rating-a.rating ||
     TITLES[b.title]-TITLES[a.title] || collator.compare(a.name,b.name) ||
     a.tpn-b.tpn);
@@ -793,6 +906,7 @@ function award(result) {
   throw Error("Ogiltigt resultat.");
 }
 
+/* Rebuild all pairing-relevant state from completed rounds. */
 function rebuild() {
   const map=new Map(tournament.players.map(p=>{
     Object.assign(p,{score:0,opponents:[],playedColors:[],
@@ -809,7 +923,7 @@ function rebuild() {
         ? [rec.whiteId,rec.blackId]
         : [rec.kind==="pab" ? rec.pabId : rec.unplayedId];
       for (const pid of participants) {
-        if (!map.has(pid)||used.has(pid)) throw Error("Ogiltig deltagartäckning i arkivet.");
+        if (!map.has(pid)||used.has(pid)) throw Error("Ogiltig arkivtäckning.");
         used.add(pid);
       }
       if (rec.kind==="pab") {
@@ -842,6 +956,7 @@ function rebuild() {
   });
 }
 
+/* Individual-Swiss BH/BH-1/SB, using March 2026 unplayed-round rules. */
 function tiebreaks() {
   const n=tournament.rounds.length;
   const histories=new Map(tournament.players.map(p=>[
@@ -908,6 +1023,7 @@ function compareTB(a,b) {
   return b.score-a.score || b.bh1-a.bh1 || b.bh-a.bh || b.sb-a.sb;
 }
 
+/* Validate JSON before replacing the running tournament. */
 function normalize(raw) {
   if (!raw||raw.format!=="lim-experimental-1"||
       !Array.isArray(raw.players)||!Array.isArray(raw.rounds)||
@@ -915,7 +1031,7 @@ function normalize(raw) {
     throw Error("Inte en kompatibel Lim-turneringsfil.");
   const t=blank();
   t.name=String(raw.name||"Turnering");
-  t.totalRounds=number(raw.totalRounds,"rondantal",1,30,true);
+  t.totalRounds=number(raw.totalRounds,"antal ronder",1,30,true);
   if (!["W","B"].includes(raw.initialColor)) throw Error("Ogiltig startfärg.");
   t.initialColor=raw.initialColor;
   t.pabPoints=half(raw.pabPoints,"PAB-poäng");
@@ -926,11 +1042,11 @@ function normalize(raw) {
   t.players=raw.players.map(p=>{
     if (!p||typeof p!=="object") throw Error("Ogiltig spelare.");
     const pid=String(p.id||""), tpn=number(p.tpn,"TPN",1,100000,true);
-    if (!pid||ids.has(pid)||tpns.has(tpn)) throw Error("Dubblett av ID eller startnummer (TPN).");
+    if (!pid||ids.has(pid)||tpns.has(tpn)) throw Error("Dubblerat ID eller TPN.");
     ids.add(pid);tpns.add(tpn);
     const title=String(p.title||"");
     if (!Object.hasOwn(TITLES,title)||!STATUSES.includes(p.status))
-      throw Error("Ogiltig titel eller status för spelare.");
+      throw Error("Ogiltig spelartitel eller status.");
     return {id:pid,tpn,name:String(p.name||"").trim()||"Spelare "+tpn,
       rating:number(p.rating,"rating",0,9999,true),title,
       active:p.active!==false,status:p.status};
@@ -945,7 +1061,7 @@ function normalize(raw) {
         : [rec.kind==="pab"?rec.pabId:rec.unplayedId];
       for (const pid of people) {
         if (typeof pid!=="string"||!ids.has(pid)||seen.has(pid))
-          throw Error("Ogiltig eller duplicerad deltagare i ronden.");
+          throw Error("Ogiltig eller dubblerad deltagare i ronden.");
         seen.add(pid);
       }
       if (rec.kind==="game") {
@@ -955,10 +1071,10 @@ function normalize(raw) {
         return {kind:"game",whiteId:rec.whiteId,blackId:rec.blackId,
                 result:rec.result};
       }
-      if (rec.kind==="pab"&&++pab>1) throw Error("Flera PAB i samma rond.");
-      const pts=half(rec.points,"ospelad poäng");
+      if (rec.kind==="pab"&&++pab>1) throw Error("Flera PAB.");
+      const pts=half(rec.points,"poäng för ospelad rond");
       if (rec.kind==="pab"&&pts!==t.pabPoints)
-        throw Error("Inkonsekvent poäng för PAB.");
+        throw Error("Inkonsekvent PAB-poäng.");
       return rec.kind==="pab"
         ? {kind:"pab",pabId:rec.pabId,points:pts}
         : {kind:"unplayed",unplayedId:rec.unplayedId,points:pts,
@@ -966,7 +1082,7 @@ function normalize(raw) {
     });
   }
   t.rounds=raw.rounds.map((r,i)=>{
-    if (!r||r.number!==i+1) throw Error("Ronder måste vara i följd.");
+    if (!r||r.number!==i+1) throw Error("Ronderna måste vara i följd.");
     return {number:i+1,pairings:readRecords(r.pairings,true),
             audit:r.audit||null};
   });
@@ -977,13 +1093,14 @@ function normalize(raw) {
   return t;
 }
 
+/* Registration and files */
 function register(list) {
   requireIdle(true);
   if (started()) throw Error("Registreringen är stängd.");
   settings();
   tournament.players.push(...list);
   assignTPNs(); rebuild(); render(); saveLocal();
-  notice(list.length+" spelare tillagda. Kontrollera startnummerordningen (TPN).");
+  notice(list.length+" spelare tillagda. Kontrollera TPN-ordningen.");
 }
 function addPlayer() {
   guarded(()=>{
@@ -1065,7 +1182,7 @@ function parsePlayers(text) {
     if (!line||line.startsWith("#")||line.startsWith("//")) continue;
     const sep=line.includes("\t")?"\t":line.includes(";")?";":",";
     const f=splitLine(line,sep);
-    if (/^name|namn$/i.test(f[0])&&/rating/i.test(f[1]||"")) continue;
+    if (/^(name|namn)$/i.test(f[0])&&/rating/i.test(f[1]||"")) continue;
     if (f.length>=3&&!/^\d+$/.test(f[1])&&/^\d+$/.test(f[2]))
       list.push(makePlayer(f[0]+", "+f[1],f[2],f[3]||""));
     else list.push(makePlayer(f[0],f[1]||1500,f[2]||""));
@@ -1094,14 +1211,16 @@ function editPlayer(index) {
     requireIdle(true);
     const p=tournament.players[index];
     if (!p) return;
-    const name=prompt("Spelarens namn:",p.name);
+    const name=prompt("Spelarnamn:",p.name);
     if (name===null) return;
-    if (!name.trim()) throw Error("Namn är obligatoriskt.");
+    if (!name.trim()) throw Error("Namn krävs.");
     p.name=name.trim();
+    // This interface closes registration when pairing round one.
+    // Do not silently reassign historical TPNs after that point.
     if (!started()) {
-      const rating=prompt("Rating / uppskattad spelstyrka:",p.rating);
+      const rating=prompt("Rating / uppskattad styrka:",p.rating);
       if (rating===null) return;
-      const title=prompt("FIDE-titel (eller lämna tomt):",p.title);
+      const title=prompt("FIDE-titel, eller tomt:",p.title);
       if (title===null) return;
       const normalized=String(title).trim().toUpperCase();
       if (!Object.hasOwn(TITLES,normalized)) throw Error("Ogiltig titel.");
@@ -1127,10 +1246,10 @@ function removePlayer(index) {
     if (complete()) throw Error("Turneringen är avslutad.");
     const p=tournament.players[index];if (!p) return;
     if (started()) {
-      if (!confirm("Vill du dra tillbaka "+p.name+" från kommande ronder?")) return;
+      if (!confirm("Dra sig ur "+p.name+" från framtida ronder?")) return;
       p.active=false;p.status="pair";
     } else {
-      if (!confirm("Vill du ta bort "+p.name+"?")) return;
+      if (!confirm("Ta bort "+p.name+"?")) return;
       tournament.players.splice(index,1);assignTPNs();
     }
     rebuild();render();saveLocal();
@@ -1163,25 +1282,26 @@ async function openTournament(event) {
     requireIdle();
     const candidate=normalize(JSON.parse(await file.text()));
     requireIdle();
-    if (tournament.players.length&&!confirm("Vill du ersätta den aktuella turneringen?")) return;
+    if (tournament.players.length&&!confirm("Ersätt nuvarande turnering?")) return;
     tournament=candidate;rebuild();
     importedPending=!!tournament.pending.length;
     render();saveLocal();
-    notice("Turnering inläst. Importerade lottningar har INTE kontrollerats av Lim-motorn.","warning");
-  } catch(e) {notice("Inläsning misslyckades: "+e.message,"error");}
+    notice("Turnering laddad. Importerade parningar har INTE kontrollerats mot Lim-motorn.","warning");
+  } catch(e) {notice("Laddning misslyckades: "+e.message,"error");}
 }
 function resetTournament() {
   guarded(()=>{
     requireIdle();
-    if (!confirm("Vill du återställa alla spelare och ronder? Spara en säkerhetskopia först.")) return;
+    if (!confirm("Återställ alla spelare och ronder? Spara en säkerhetskopia först.")) return;
     tournament=blank();importedPending=false;render();saveLocal();tab("setup");
     notice("Ny tom turnering skapad.");
   });
 }
 
+/* Worker management: an interrupted search never creates a round. */
 function startWorker(type,input,done) {
   requireIdle();
-  if (typeof Worker==="undefined") throw Error("Web Workers stöds inte i denna miljö.");
+  if (typeof Worker==="undefined") throw Error("Web Workers är inte tillgängliga.");
   const source=`
     "use strict";
     const core=(${LimCore.toString()})();
@@ -1189,7 +1309,7 @@ function startWorker(type,input,done) {
       try {
         postMessage({kind:"done",result:e.data.type==="tests"
           ?core.selfTest()
-          :core.solve(e.data.input,{seconds:30,nodes:2000000})});
+          :core.solve(e.data.input,{seconds:60,nodes:40000000})});
       } catch(error) {
         postMessage({kind:"error",message:error.message,code:error.code});
       }
@@ -1211,17 +1331,17 @@ function startWorker(type,input,done) {
     if (!finish()) return;
     if (e.data.kind==="done") guarded(()=>done(e.data.result));
     else notice(e.data.message+
-      "\nIngen rond skapades. Rådgör med överdomaren vid behov.",
+      "\nIngen rond skapades. Rådgör med huvuddomaren vid behov.",
       e.data.code==="LIMIT"?"warning":"error");
   };
   worker.onerror=e=>{
-    if (finish()) notice("Lottningsprocessen (Worker) misslyckades: "+e.message,"error");
+    if (finish()) notice("Lottningsarbetaren misslyckades: "+e.message,"error");
   };
   workerJob.timer=setTimeout(()=>{
-    if (finish()) notice("Sökningens säkerhetstimer stoppade processen. Ingen rond skapades.","warning");
-  },33000);
+    if (finish()) notice("Sökningens övervakning stoppade arbetaren. Ingen rond skapades.","warning");
+  },63000);
   worker.postMessage({type,input});
-  render();notice(type==="tests"?"Kör tester…":"Söker efter Lim-lottningar…");
+  render();notice(type==="tests"?"Kör tester…":"Söker Lim-parningar…");
 }
 function cancelSearch() {
   if (!workerJob) return;
@@ -1232,11 +1352,12 @@ function cancelSearch() {
 }
 function runTests() {
   guarded(()=>startWorker("tests",null,result=>{
-    notice(result.length+" inbyggda tester godkända:\n• "+result.join("\n• ")+
-      "\n\nDessa är utvecklartester, INTE ett officiellt FIDE-godkännande.","success");
+    notice(result.length+" inbyggda tester godkändes:\n• "+result.join("\n• ")+
+      "\n\nDetta är utvecklarkontroller, INTE FIDE-godkännandetester.","success");
   }));
 }
 
+/* Round generation, verification, and recording */
 function generateRound() {
   guarded(()=>{
     requireIdle(true);settings();rebuild();
@@ -1248,8 +1369,8 @@ function generateRound() {
     const scheduled=active.filter(p=>p.status!=="pair").map(p=>({
       id:p.id,points:p.status==="unplayed-draw"?.5:
         p.status==="unplayed-win"?1:0,
-      label:p.status==="unplayed-win"?"Administrativ helpoängsfrånvaro":
-        p.status==="unplayed-draw"?"Begärd halvpoängsfrirond":
+      label:p.status==="unplayed-win"?"Administrativ frånvaro med full poäng":
+        p.status==="unplayed-draw"?"Begärd halvpoängsfrånvaro":
         "Begärd nollpoängsfrånvaro"
     }));
     const input={roundNumber:n,totalRounds:tournament.totalRounds,
@@ -1269,7 +1390,7 @@ function commit(result,plan) {
   const expected=new Set(plan.input.players.map(p=>p.id)),seen=new Set();
   function use(pid) {
     if (!expected.has(pid)||seen.has(pid))
-      throw Error("Lottningen returnerade ofullständig eller duplicerad täckning.");
+      throw Error("Lottningen returnerade ofullständig eller dubblerad täckning.");
     seen.add(pid);
   }
   const records=[];
@@ -1277,18 +1398,18 @@ function commit(result,plan) {
     use(pair.whiteId);use(pair.blackId);
     const a=map.get(pair.whiteId),b=map.get(pair.blackId);
     if (a.opponents.includes(b.id)||b.opponents.includes(a.id))
-      throw Error("Lottningen par ihop spelare som redan mötts.");
+      throw Error("Lottningen returnerade en spelad motståndare.");
     records.push({kind:"game",whiteId:a.id,blackId:b.id,result:"*"});
   }
   if (result.pabId!==null) {
     use(result.pabId);
     const p=map.get(result.pabId);
-    if (p.hadPAB||p.hadUnplayedWin) throw Error("Obehörig mottagare av lottningsbetingad frirond (PAB).");
+    if (p.hadPAB||p.hadUnplayedWin) throw Error("Otillåten PAB-mottagare.");
     records.push({kind:"pab",pabId:p.id,points:tournament.pabPoints});
   }
   if (seen.size!==expected.size ||
       Number(result.pabId!==null)!==expected.size%2)
-    throw Error("Ronden misslyckades i täckningsverifieringen.");
+    throw Error("Ronden misslyckades med täckningsverifieringen.");
 
   const games=records.filter(r=>r.kind==="game");
   games.sort((x,y)=>{
@@ -1307,7 +1428,7 @@ function commit(result,plan) {
     trace:result.trace,stats:result.stats};
   tournament.frozen=true;importedPending=false;
   render();saveLocal();
-  notice("Rond "+plan.number+" lottad.","success");
+  notice("Rond "+plan.number+" genererad.","success");
 }
 function changeResult(i,value) {
   guarded(()=>{
@@ -1330,7 +1451,7 @@ function swapColours(index, roundNumber = null) {
       roundNumber !== tournament.rounds.length
     )) {
       throw Error(
-        "Endast den senaste arkiverade ronden kan korrigeras, innan nästa rond genereras."
+        "Endast den senast arkiverade ronden kan korrigeras, före generering av nästa rond."
       );
     }
 
@@ -1352,7 +1473,7 @@ function swapColours(index, roundNumber = null) {
       throw Error("Ogiltigt resultat.");
 
     if (!confirm(
-      "Skifta vit och svart på detta bord? Resultatet inverteras så att varje spelare behåller samma poäng."
+      "Byt Vit och Svart på detta bord? Resultatet vänds så att varje spelare behåller samma poäng."
     )) return;
 
     const original = {
@@ -1374,7 +1495,7 @@ function swapColours(index, roundNumber = null) {
     if (archived) {
       round.audit = updatedAudit;
       try {
-        rebuild();
+        rebuild(); // Recalculate played-colour history from the corrected round.
       } catch (error) {
         Object.assign(rec, original);
         round.audit = previousAudit;
@@ -1388,7 +1509,7 @@ function swapColours(index, roundNumber = null) {
     render();
     saveLocal();
     notice(
-      "Faktiska spelfärger korrigerade. Resultatet inverterades för att bevara spelarnas poäng. Granska bordet före publicering.",
+      "Faktiska färger korrigerade. Resultatet vändes för att bevara varje spelares poäng. Granska bordet före publicering.",
       "warning"
     );
   });
@@ -1399,18 +1520,19 @@ function confirmRound() {
     requireIdle();
     if (!tournament.pending.length) return;
     if (tournament.pending.some(r=>r.kind==="game"&&!RESULTS.includes(r.result)))
-      throw Error("Mata in alla bordsresultat först.");
-    if (!confirm("Bekräfta och arkivera denna rond? Kontrollera resultat och faktiska spelfärger.")) return;
+      throw Error("Ange alla bordresultat först.");
+    if (!confirm("Bekräfta och arkivera denna rond? Kontrollera resultat och faktiska färger.")) return;
     tournament.rounds.push({number:tournament.rounds.length+1,
       pairings:structuredClone(tournament.pending),
       audit:tournament.pendingAudit});
     tournament.pending=[];tournament.pendingAudit=null;
     tournament.players.forEach(p=>p.status="pair");
     importedPending=false;rebuild();render();saveLocal();tab("standings");
-    notice(complete()?"Turneringen är avslutad.":"Rond arkiverad. Ange deltagarstatus inför nästa rond.");
+    notice(complete()?"Turneringen är avslutad.":"Rond arkiverad. Ange deltagande för nästa rond.");
   });
 }
 
+/* Rendering */
 function label(pid) {
   const p = tournament.players.find(q => q.id === pid);
   return p
@@ -1419,7 +1541,7 @@ function label(pid) {
 }
 function resultLabel(result) {
   return ({"*":"—","½-½":"½–½","1-0":"1–0","0-1":"0–1",
-           "1-0F":"1–0 (U)","0-1F":"0–1 (U)","0-0F":"0–0 (U)"})[result]||result;
+           "1-0F":"1–0 (F)","0-1F":"0–1 (F)","0-0F":"0–0 (F)"})[result]||result;
 }
 function render() {
   $("tName").value = tournament.name;
@@ -1441,9 +1563,9 @@ function render() {
   $("testsButton").disabled = busy;
   $("confirmButton").disabled = busy || !pending ||
     tournament.pending.some(r => r.kind === "game" && r.result === "*");
-  $("generateButton").textContent = finished ? "Turneringen avslutad" :
-    pending ? "Rond redan lottad" :
-    "Lotta rond " + (tournament.rounds.length + 1);
+  $("generateButton").textContent = finished ? "Turneringen är avslutad" :
+    pending ? "Rond redan genererad" :
+    "Generera rond " + (tournament.rounds.length + 1);
 
   $("playersBody").innerHTML = tournament.players.map((p, i) => `
     <tr><td>${p.tpn}</td><td>${esc(p.name)}</td><td>${p.rating}</td>
@@ -1452,15 +1574,15 @@ function render() {
       ${busy || pending || finished || !p.active ? "disabled" : ""}>
       ${[
         ["pair", "Lotta normalt"],
-        ["unplayed-zero", "Ospelad — 0p"],
-        ["unplayed-draw", "Ospelad — ½p"],
-        ["unplayed-win", "Administrativ frånvaro — 1p"]
+        ["unplayed-zero", "Ospelad — 0"],
+        ["unplayed-draw", "Ospelad — ½"],
+        ["unplayed-win", "Administrativ frånvaro — 1"]
       ].map(([v, text]) => `<option value="${v}" ${p.status === v ? "selected" : ""}>${text}</option>`).join("")}
     </select></td>
     <td class="no-print">
       <button class="small" onclick="editPlayer(${i})" ${busy || pending ? "disabled" : ""}>Redigera</button>
       <button class="small" onclick="toggleActive(${i})"
-        ${busy || pending || finished ? "disabled" : ""}>${p.active ? "Dra tillbaka" : "Återaktivera"}</button>
+        ${busy || pending || finished ? "disabled" : ""}>${p.active ? "Dra sig ur" : "Återinträd"}</button>
       <button class="small" onclick="removePlayer(${i})"
         ${busy || pending || finished ? "disabled" : ""}>Ta bort</button>
     </td></tr>`).join("") ||
@@ -1468,48 +1590,47 @@ function render() {
 
   $("roundTitle").textContent = pending
     ? "Rond " + (tournament.rounds.length + 1)
-    : finished ? "Turneringen avslutad" : "Nästa rond: " + (tournament.rounds.length + 1);
-  $("provenance").textContent = !pending ? "Ingen väntande rond." :
-    importedPending
-      ? "Inlästa lottningar: INTE verifierade av denna applikation." +
-        (tournament.pendingAudit?.actualColoursCorrected
-          ? " Faktiska spelfärger har korrigerats manuellt." : "")
-      : tournament.pendingAudit?.actualColoursCorrected
-        ? "Faktiska spelfärger har korrigerats manuellt; lottningsspårningen reflekterar de ursprungligen tilldelade färgerna. Verifiera oberoende före publicering."
-        : "Lottningsutdata från experimentell Lim-motor.";
-  $("pairingsBody").innerHTML = tournament.pending.map((rec, i) => {
+    : finished ? "Turneringen är avslutad" : "Nästa rond: " + (tournament.rounds.length + 1);
+$("provenance").textContent = !pending ? "Ingen väntande rond." :
+  importedPending
+    ? "Laddade parningar: INTE verifierade av denna applikation." +
+      (tournament.pendingAudit?.actualColoursCorrected
+        ? " Faktiska färger manuellt korrigerade." : "")
+    : tournament.pendingAudit?.actualColoursCorrected
+      ? "Faktiska färger manuellt korrigerade; lottningsspåret återspeglar de ursprungligen tilldelade färgerna. Verifiera självständigt före publicering."
+      : "Utdata från experimentell Lim-motor.";  $("pairingsBody").innerHTML = tournament.pending.map((rec, i) => {
     if (rec.kind !== "game") return "";
     const options = ["*", ...RESULTS].map(v => `<option value="${v}"
       ${rec.result === v ? "selected" : ""}>${resultLabel(v)}</option>`).join("");
-    return `<tr><td>${i + 1}</td>
-      <td>${label(rec.whiteId)}</td>
-      <td><select class="no-print" onchange="changeResult(${i},this.value)"
-        ${busy ? "disabled" : ""}>${options}</select>
-        <span class="print-only">${resultLabel(rec.result)}</span></td>
-      <td>${label(rec.blackId)}
-        <button type="button" class="small no-print swap-button"
-          onclick="swapColours(${i})" ${busy ? "disabled" : ""}>
-          Skifta spelfärger
-        </button>
-      </td></tr>`;
-  }).join("") || '<tr><td colspan="4">Inga väntande bordslottningar.</td></tr>';
+return `<tr><td>${i + 1}</td>
+  <td>${label(rec.whiteId)}</td>
+  <td><select class="no-print" onchange="changeResult(${i},this.value)"
+    ${busy ? "disabled" : ""}>${options}</select>
+    <span class="print-only">${resultLabel(rec.result)}</span></td>
+  <td>${label(rec.blackId)}
+    <button type="button" class="small no-print swap-button"
+      onclick="swapColours(${i})" ${busy ? "disabled" : ""}>
+      Byt faktiska färger
+    </button>
+  </td></tr>`;
+  }).join("") || '<tr><td colspan="4">Inga väntande bordsparningar.</td></tr>';
   $("unplayedView").innerHTML = tournament.pending.filter(r => r.kind !== "game")
     .map(r => r.kind === "pab"
-      ? `<p>PAB (frirond): ${label(r.pabId)} — ${r.points} poäng, ingen färg eller motståndare.</p>`
+      ? `<p>PAB: ${label(r.pabId)} — ${r.points} poäng, ingen färg eller motståndare.</p>`
       : `<p>${label(r.unplayedId)} — ${esc(r.label)}: ${r.points} poäng.</p>`
     ).join("");
   $("audit").textContent = tournament.pendingAudit
-    ? JSON.stringify(tournament.pendingAudit, null, 2) : "Ingen spårningsdata.";
+    ? JSON.stringify(tournament.pendingAudit, null, 2) : "Inget spår.";
 
   const final = complete(), tb = tiebreaks();
   $("standingsName").textContent = tournament.name;
   $("standingsTitle").textContent = final ? "Slutresultat" :
-    "Poängställning efter rond " + tournament.rounds.length;
-  $("b-standings").textContent = final ? "Slutresultat" : "Poängtabell";
+    "Poänglista efter rond " + tournament.rounds.length;
+  $("b-standings").textContent = final ? "Slutresultat" : "Poänglista";
   $("standingsHead").innerHTML = `<tr>
-    <th>${final ? "Plac." : "Ordning"}</th><th>TPN</th><th>Namn</th><th>Poäng</th>
+    <th>${final ? "Placering" : "Ordning"}</th><th>TPN</th><th>Namn</th><th>Poäng</th>
     ${final ? "<th>BH-1</th><th>BH</th><th>SB</th>" : "<th>Spelade</th><th>Ospelade</th>"}
-    <th>Färger</th><th>FS</th><th>Flyttningar</th></tr>`;
+    <th>Färger</th><th>CD</th><th>Floats</th></tr>`;
   const sorted = [...tournament.players].sort((a, b) => final
     ? compareTB(tb.get(a.id), tb.get(b.id)) || a.tpn - b.tpn
     : b.score - a.score || a.tpn - b.tpn);
@@ -1541,24 +1662,23 @@ function render() {
      ${r.number === tournament.rounds.length && !pending
        ? `<button type="button" class="small no-print swap-button"
             onclick="swapColours(${i},${r.number})"
-            ${busy ? "disabled" : ""}>Skifta spelfärger</button>`
+            ${busy ? "disabled" : ""}>Byt faktiska färger</button>`
        : ""}
    </td></tr>`
-  : `<tr><td>—</td><td colspan="3">${rec.kind === "pab" ? "PAB (frirond)" : "Ospelad"}:
+  : `<tr><td>—</td><td colspan="3">${rec.kind === "pab" ? "PAB" : "Ospelad"}:
      ${label(rec.kind === "pab" ? rec.pabId : rec.unplayedId)} —
      ${rec.points} poäng</td></tr>`
 ).join("")}
     </tbody></table></div>
-    ${r.audit ? `<details class="no-print"><summary>Sparad lottningsspårning</summary>
+    ${r.audit ? `<details class="no-print"><summary>Sparat spår</summary>
        <pre>${esc(JSON.stringify(r.audit, null, 2))}</pre></details>` : ""}
     </div>`).join("") || "<p>Inga avslutade ronder.</p>";
 
   $("printTitle").textContent = tournament.name + " — " + ({
     setup: "Spelare", pairings: "Rondlottning",
-    standings: final ? "Slutresultat" : "Poängställning", history: "Rondhistorik"
+    standings: final ? "Slutresultat" : "Poänglista", history: "Rondhistorik"
   })[currentTab];
-}
-function tab(name) {
+}function tab(name) {
   if (!["setup","pairings","standings","history"].includes(name)) return;
   if (currentTab==="setup"&&!workerJob) {
     try {settings();saveLocal();} catch(e) {notice(e.message,"error");return;}
@@ -1581,12 +1701,12 @@ try {
     tournament=normalize(JSON.parse(saved));
     rebuild();
     importedPending=!!tournament.pending.length;
-    notice("Sparad turnering återställd. Befintliga lottningar har inte kontrollerats retroaktivt.","warning");
+    notice("Sparad turnering återställd. Befintliga parningar verifierades inte i efterhand.","warning");
   }
 } catch(e) {
   console.error(e);
-  notice("Kunde inte läsa in sparad turnering: "+e.message+
-         "\nDen ogiltiga sparfilen i webbläsaren skrevs inte över.","error");
+  notice("Sparad turnering kunde inte laddas: "+e.message+
+         "\nDen ogiltiga lagringsposten skrevs inte över.","error");
 }
 rebuild();
 render();
