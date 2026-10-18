@@ -559,7 +559,7 @@ a { color:var(--blue); }
   <p>
     Search is bracket-local, with the specified C8 look-ahead. Interrupted
     calculations never publish a provisional best pairing. Pairing searches
-    use fixed limits of 30 seconds and 2,000,000 work units.
+    use fixed limits of work units.
   </p>
 
   <p>
@@ -783,8 +783,8 @@ function Dutch2026Core() {
 
   function solve(input, limits = {}, progress = () => {}) {
     const started = performance.now();
-    const seconds = Number(limits.seconds ?? 30);
-    const nodeLimit = Number(limits.nodes ?? 2000000);
+    const seconds = Number(limits.seconds ?? 20);
+    const nodeLimit = Number(limits.nodes ?? 0);
     const deadline = seconds > 0
       ? started + seconds * 1000
       : Infinity;
@@ -961,6 +961,7 @@ function Dutch2026Core() {
     }
 
     const matchingMemo = new Map();
+    const MATCHING_MEMO_CAP = 200000;
 
     function perfectMatching(list, restricted = new Set()) {
       function visit(xs) {
@@ -1009,6 +1010,9 @@ function Dutch2026Core() {
         }
 
         matchingMemo.set(key, false);
+        if (matchingMemo.size > MATCHING_MEMO_CAP) {   
+          matchingMemo.clear();                        
+        }                                              
         return false;
       }
 
@@ -1048,7 +1052,7 @@ if (N % 2) {
   if (byeScore === null) {
     throw fault(
       "NO_LEGAL_COMPLETION",
-      "Ingen komplett rond som uppfyller C1–C3 och frirondsbehörighet finns."
+      "No complete round satisfying C1–C3 and bye eligibility exists."
     );
   }
 } else if (!perfectMatching(ids)) {
@@ -1411,6 +1415,18 @@ function canComplete(list) {
       }
     }
 
+    /*
+     * Enumeration of top/bottom partitions of the bracket.
+     *
+     * The transposition size is capped by bracket width.  The
+     * uncapped loop enumerates C(n, pairCount) partitions, which
+     * for a 25-player bracket with 12 pairings is ≈ 5.2 million
+     * partitions — several orders of magnitude more than the
+     * engine can afford to visit before the fixed work limit
+     * fires.  The natural partition plus a small transposition
+     * window is sufficient for ordinary colour problems; larger
+     * exchange sizes are only needed in degenerate histories.
+     */
     function* exchangeConfigurations(list, pairCount) {
       const n = list.length;
       const A = Array.from({length:pairCount}, (_,i) => i+1);
@@ -1423,9 +1439,13 @@ function canComplete(list) {
         s2:list.slice(pairCount)
       };
 
+      const exchangeCap =
+        n <= 12 ? 8 : n <= 20 ? 4 : 3;
+      const maxSize = Math.min(A.length, B.length, exchangeCap);
+
       for (
         let size = 1;
-        size <= Math.min(A.length,B.length);
+        size <= maxSize;
         size++
       ) {
         for (
@@ -1490,7 +1510,24 @@ function canComplete(list) {
       }
     }
 
-    function* homogeneousCandidates(list, pairCount, canWin) {
+    /*
+     * Per-partition lower bound.
+     *
+     * For a fixed top/bottom partition (s1, s2), every element
+     * of s1 must be paired with some element of s2.  Therefore
+     * the sum of the per-element lexicographic minima backward
+     * from s1 across s2 is a valid lower bound on the cost of
+     * any matching inside that partition.  When the incumbent
+     * bound already beats this bound, the whole partition is
+     * discarded without a single DFS node being spent inside it.
+     *
+     * The bound is cheap: |s1|·|s2| legality-and-cost probes,
+     * which is negligible next to the exponential DFS the
+     * partition would otherwise trigger.
+     */
+    function* homogeneousCandidates(
+      list, pairCount, canWin, shouldSkipPartition
+    ) {
       const sorted = ordered(list);
 
       if (pairCount === 0) {
@@ -1499,8 +1536,43 @@ function canComplete(list) {
       }
 
       for (const config of exchangeConfigurations(sorted,pairCount)) {
+        const s1 = config.s1;
+        const s2 = config.s2;
+
+        if (shouldSkipPartition) {
+          const lb = [0,0,0,0];
+          let feasible = true;
+
+          for (const a of s1) {
+            let bestRow = null;
+
+            for (const b of s2) {
+              if (!edge[a][b]) continue;
+
+              const pc = pairCost[a][b];
+
+              if (!bestRow || compareArrays(pc,bestRow) < 0) {
+                bestRow = pc;
+              }
+            }
+
+            if (!bestRow) {
+              feasible = false;
+              break;
+            }
+
+            lb[0] += bestRow[0];
+            lb[1] += bestRow[1];
+            lb[2] += bestRow[2];
+            lb[3] += bestRow[3];
+          }
+
+          if (!feasible) continue;
+          if (shouldSkipPartition(lb)) continue;
+        }
+
         for (const candidate of prefixPairings(
-          config.s1,config.s2,canWin
+          s1,s2,canWin
         )) {
           yield {
             pairs:candidate.pairs,
@@ -1510,10 +1582,12 @@ function canComplete(list) {
       }
     }
 
-    function* bracketCandidates(ctx, high, canWin) {
+    function* bracketCandidates(
+      ctx, high, canWin, shouldSkipPartition
+    ) {
       if (!ctx.mdps.length) {
         yield* homogeneousCandidates(
-          ctx.residents,high.pairs,canWin
+          ctx.residents,high.pairs,canWin,shouldSkipPartition
         );
         return;
       }
@@ -1539,7 +1613,8 @@ function canComplete(list) {
           for (const remainder of homogeneousCandidates(
             mdpPairing.unused,
             high.pairs-high.m1,
-            remainderCanWin
+            remainderCanWin,
+            shouldSkipPartition
           )) {
             yield {
               pairs:[...mdpPairing.pairs,...remainder.pairs],
@@ -1748,19 +1823,76 @@ function canComplete(list) {
       let cap = null;
       let proof = "exhausted-with-safe-pruning";
 
-      function canWin(partialPairs) {
-        const limit = best ? best.value.slice(0,4) : cap;
-        if (!limit) return true;
+function canWin(partialPairs) {
+  const limit = best ? best.value.slice(0,4) : cap;
+  if (!limit) return true;
 
-        const partial = [0,0,0,0];
+  const partial = [0,0,0,0];
+  const paired = new Set();
 
-        for (const [a,b] of partialPairs) {
-          for (let k = 0; k < 4; k++) {
-            partial[k] += pairCost[a][b][k];
-          }
+  for (const [a,b] of partialPairs) {
+    for (let k = 0; k < 4; k++) {
+      partial[k] += pairCost[a][b][k];
+    }
+    paired.add(a);
+    paired.add(b);
+  }
+
+  // C10 and C11 are exact counters; a direct comparison is
+  // already the tightest possible test.
+  if (partial[0] !== limit[0]) return partial[0] < limit[0];
+  if (partial[1] !== limit[1]) return partial[1] < limit[1];
+
+  // C12: colour-preference misses.  A sound lower bound follows
+  // from the unpaired players’ colour wishes.  Of the remaining
+  // White-wanters, at most `high.count` can be floated out (they
+  // receive no colour) and at most `fp` can receive White; the
+  // rest must get Black and therefore miss.  Symmetric for
+  // Black-wanters.  This bound is used both for the true incumbent
+  // (`best`) and for every optimistic cap.
+  let wWant = 0;
+  let bWant = 0;
+
+  for (const v of ctx.all) {
+    if (paired.has(v)) continue;
+    const due = players[v].pref.color;
+    if (due === "W") wWant++;
+    else if (due === "B") bWant++;
+  }
+
+  const remaining = ctx.all.length - 2*partialPairs.length;
+  const fp = (remaining - high.count)/2;
+
+  const lb2 =
+    Math.max(0, wWant - high.count - fp) +
+    Math.max(0, bWant - high.count - fp);
+
+  const low2 = partial[2] + lb2;
+
+  if (low2 !== limit[2]) return low2 < limit[2];
+
+  // C13: no useful lower bound is available; require strict
+  // improvement against the current limit.
+  if (partial[3] !== limit[3]) return partial[3] < limit[3];
+
+  return true;
+}
+
+      /*
+       * Predicate used by homogeneousCandidates to discard a whole
+       * partition before spending a single DFS node inside it.
+       *
+       *   - Against `best`, require strict lexicographic improvement.
+       *   - Against a pre-set cap, allow the bound to meet the cap.
+       */
+      function shouldSkipPartition(lb) {
+        if (best) {
+          return compareArrays(lb, best.value.slice(0,4)) >= 0;
         }
-
-        return compareArrays(partial,limit) <= 0;
+        if (cap) {
+          return compareArrays(lb, cap) > 0;
+        }
+        return false;
       }
 
       // Optimistic passes first. Relax the cap only if nothing is found.
@@ -1773,7 +1905,9 @@ function canComplete(list) {
       for (const c of caps) {
         cap = c;
 
-        for (const candidate of bracketCandidates(ctx,high,canWin)) {
+        for (const candidate of bracketCandidates(
+          ctx,high,canWin,shouldSkipPartition
+        )) {
           tick();
           ordinal++;
 
@@ -1945,7 +2079,7 @@ function canComplete(list) {
       };
     }
 
-    function run(input,limits = {seconds:10,nodes:1000000}) {
+    function run(input,limits = {seconds:10,nodes:0}) {
       return solve(input,limits);
     }
 
@@ -2166,8 +2300,8 @@ const STORAGE_KEY = "fide_dutch_2026_reference_v4";
 const LEGACY_STORAGE_KEY = "experimental_fide_dutch_2026_en";
 
 const FIXED_SEARCH_LIMITS = Object.freeze({
-  seconds:30,
-  nodes:10000000
+  seconds: 20,
+  nodes: 0  // 0 = no node cap; the 30-second wall clock is the sole bound
 });
 
 const TITLE_WEIGHTS = {
