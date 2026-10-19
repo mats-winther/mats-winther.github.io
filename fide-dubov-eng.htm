@@ -3956,11 +3956,19 @@ const PLAYED_RESULTS =
     "0-1"
   ]);
 
-let tournament =
-  emptyTournament();
+let tournament = emptyTournament();
 
 let currentTab = "setup";
 let job = null;
+
+/* Cached id -> player lookup, rebuilt whenever the roster changes. */
+let playersById = new Map();
+
+function rebuildPlayersIndex() {
+  playersById = new Map(
+    tournament.players.map(player => [player.id, player])
+  );
+}
 
 function $(id) {
   return document.getElementById(id);
@@ -5901,11 +5909,7 @@ function playerDisplay(
   id,
   withScore = false
 ) {
-  const player =
-    tournament.players.find(
-      item =>
-        item.id === id
-    );
+  const player = playersById.get(id);
 
   if (!player) {
     return "Unknown";
@@ -6471,9 +6475,9 @@ function updatePrintTitle() {
 
 function showTab(id) {
   currentTab = id;
+  document.body.dataset.tab = id;
 
-  document.body.dataset.tab =
-    id;
+  rebuildPlayersIndex();
 
   for (
     const name of [
@@ -6547,6 +6551,8 @@ function printHistoricalRound(
 }
 
 function renderAll() {
+  rebuildPlayersIndex();
+
   renderSettings();
   renderPlayers();
   renderPairings();

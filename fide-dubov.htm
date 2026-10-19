@@ -709,6 +709,10 @@ a { color:var(--accent); }
 <script>
 "use strict";
 
+function $(id) {
+  return document.getElementById(id);
+}
+
 /* ========================================================================== */
 /* DUBOV PAIRING CORE                                                         */
 /* ========================================================================== */
@@ -3958,14 +3962,18 @@ const PLAYED_RESULTS =
     "0-1"
   ]);
 
-let tournament =
-  emptyTournament();
+let tournament = emptyTournament();
 
 let currentTab = "setup";
 let job = null;
 
-function $(id) {
-  return document.getElementById(id);
+/* Cached id -> player lookup, rebuilt whenever the roster changes. */
+let playersById = new Map();
+
+function rebuildPlayersIndex() {
+  playersById = new Map(
+    tournament.players.map(player => [player.id, player])
+  );
 }
 
 function emptyTournament() {
@@ -5165,6 +5173,59 @@ function looksLikeRating(value) {
   );
 }
 
+function splitDelimitedLine(line, delimiter) {
+  const fields = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < line.length; index++) {
+    const character = line[index];
+
+    if (inQuotes) {
+      if (character === '"') {
+        if (line[index + 1] === '"') {
+          field += '"';
+          index++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        field += character;
+      }
+    } else if (character === '"') {
+      inQuotes = true;
+    } else if (character === delimiter) {
+      fields.push(field.trim());
+      field = "";
+    } else {
+      field += character;
+    }
+  }
+
+  fields.push(field.trim());
+  return fields;
+}
+
+function looksLikeRating(value) {
+  if (value === null || value === undefined) {
+    return false;
+  }
+
+  const text = String(value).trim();
+
+  if (!text) {
+    return false;
+  }
+
+  const number = Number(text);
+
+  return (
+    Number.isFinite(number) &&
+    number >= 1 &&
+    number <= 9999
+  );
+}
+
 function parsePlayersText(text) {
   const lines = String(text)
     .replace(/^\uFEFF/, "")
@@ -5279,7 +5340,7 @@ function parsePlayersText(text) {
     } catch (error) {
       // A single bad row no longer aborts the whole import.
       console.warn(
-        "Skipping malformed player row:",
+        "Hoppar över ogiltig spelarrad:",
         rawLine,
         "—",
         error.message
@@ -5902,14 +5963,10 @@ function playerDisplay(
   id,
   withScore = false
 ) {
-  const player =
-    tournament.players.find(
-      item =>
-        item.id === id
-    );
+  const player = playersById.get(id);
 
   if (!player) {
-    return "Okänd";
+    return "Unknown";
   }
 
   return (
@@ -5918,7 +5975,7 @@ function playerDisplay(
     `(${player.rating})` +
     (
       withScore
-        ? ` <span class="badge">${player.score} p</span>`
+        ? ` <span class="badge">${player.score} pts</span>`
         : ""
     )
   );
@@ -6479,9 +6536,9 @@ function updatePrintTitle() {
 
 function showTab(id) {
   currentTab = id;
+  document.body.dataset.tab = id;
 
-  document.body.dataset.tab =
-    id;
+  rebuildPlayersIndex();
 
   for (
     const name of [
@@ -6555,6 +6612,8 @@ function printHistoricalRound(
 }
 
 function renderAll() {
+  rebuildPlayersIndex();
+
   renderSettings();
   renderPlayers();
   renderPairings();
