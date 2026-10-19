@@ -5112,82 +5112,177 @@ function loadSamplePlayers() {
   });
 }
 
+function splitDelimitedLine(line, delimiter) {
+  const fields = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < line.length; index++) {
+    const character = line[index];
+
+    if (inQuotes) {
+      if (character === '"') {
+        if (line[index + 1] === '"') {
+          field += '"';
+          index++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        field += character;
+      }
+    } else if (character === '"') {
+      inQuotes = true;
+    } else if (character === delimiter) {
+      fields.push(field.trim());
+      field = "";
+    } else {
+      field += character;
+    }
+  }
+
+  fields.push(field.trim());
+  return fields;
+}
+
+function looksLikeRating(value) {
+  if (value === null || value === undefined) {
+    return false;
+  }
+
+  const text = String(value).trim();
+
+  if (!text) {
+    return false;
+  }
+
+  const number = Number(text);
+
+  return (
+    Number.isFinite(number) &&
+    number >= 1 &&
+    number <= 9999
+  );
+}
+
 function parsePlayersText(text) {
-  const lines =
-    text.split(/\r?\n/);
+  const lines = String(text)
+    .replace(/^\uFEFF/, "")
+    .split(/\r?\n/);
 
   const list = [];
 
-  for (const line of lines) {
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+
     if (
-      !line.trim() ||
-      line
-        .trimStart()
-        .startsWith("#")
+      !line ||
+      line.startsWith("#") ||
+      line.startsWith("//")
     ) {
       continue;
     }
 
+    // TRF06 registration line.
     if (/^001 /.test(line)) {
-      const name =
-        line
-          .slice(14, 47)
-          .trim();
-
-      const importedRating =
-        Number(
-          line
-            .slice(48, 52)
-            .trim()
-        );
-
+      const name = line.slice(14, 47).trim();
+      const importedRating = Number(line.slice(48, 52).trim());
       const rating =
-        Number.isFinite(
-          importedRating
-        ) &&
-        importedRating > 0
+        Number.isFinite(importedRating) && importedRating > 0
           ? importedRating
           : 1500;
+      const title = line.slice(10, 13).trim();
 
-      const title =
-        line
-          .slice(10, 13)
-          .trim();
-
-      list.push(
-        makePlayer(
-          name,
-          rating,
-          title
-        )
-      );
-
+      list.push(makePlayer(name, rating, title));
       continue;
     }
 
-    const parts =
-      line
-        .split(/[,;\t]/)
-        .map(part =>
-          part
-            .trim()
-            .replace(
-              /^"|"$/g,
-              ""
-            )
-        );
+    // Detect the field delimiter for this line.  Prefer tab and
+    // semicolon over comma so that names containing commas stay
+    // intact when the writer used a safer separator.
+    let delimiter = null;
+    let parts;
 
-    if (parts.length >= 2) {
-      list.push(
-        makePlayer(
-          parts[0],
-          String(
-            parts[1] || ""
-          ).trim()
-            ? parts[1]
-            : 1500,
-          parts[2] || ""
-        )
+    if (line.includes("\t")) {
+      delimiter = "\t";
+      parts = splitDelimitedLine(line, "\t");
+    } else if (line.includes(";")) {
+      delimiter = ";";
+      parts = splitDelimitedLine(line, ";");
+    } else if (line.includes(",")) {
+      delimiter = ",";
+      parts = splitDelimitedLine(line, ",");
+    } else {
+      delimiter = " ";
+      parts = line.split(/\s+/);
+    }
+
+    if (parts.length < 2) {
+      continue;
+    }
+
+    // Skip common header rows such as "Name, Rating, Title".
+    if (
+      /^(name|player|spelare)$/i.test(parts[0]) ||
+      /^(rating|elo|rating or provisional rating)$/i.test(
+        parts[1] || ""
+      )
+    ) {
+      continue;
+    }
+
+    // Locate the first field that looks like a rating.  Every
+    // field before it is part of the name, every field after it
+    // is treated as the title.
+    let ratingIndex = -1;
+
+    for (
+      let index = 1;
+      index < parts.length;
+      index++
+    ) {
+      if (looksLikeRating(parts[index])) {
+        ratingIndex = index;
+        break;
+      }
+    }
+
+    const joinName = delimiter === " " ? " " : ", ";
+
+    let name;
+    let rating;
+    let title;
+
+    if (ratingIndex === -1) {
+      // No numeric rating was found on this line.  Keep the
+      // player but fall back to a provisional rating.
+      name = parts.join(joinName).trim();
+      rating = 1500;
+      title = "";
+    } else {
+      name =
+        parts
+          .slice(0, ratingIndex)
+          .join(joinName)
+          .trim() || parts[0];
+
+      rating = Number(parts[ratingIndex]);
+      title = parts[ratingIndex + 1] || "";
+    }
+
+    if (!name) {
+      continue;
+    }
+
+    try {
+      list.push(makePlayer(name, rating, title));
+    } catch (error) {
+      // A single bad row no longer aborts the whole import.
+      console.warn(
+        "Skipping malformed player row:",
+        rawLine,
+        "—",
+        error.message
       );
     }
   }
