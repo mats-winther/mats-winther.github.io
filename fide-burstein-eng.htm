@@ -368,7 +368,7 @@ a { color:var(--blue); }
 
     <div class="card">
       <div class="row between">
-        <h2>Players (<span id="playerCount">0</span>)</h2>
+        <h2>Players (<span id="playerCount">0 / 50</span>)</h2>
 
         <div class="row no-print">
           <button id="importButton"
@@ -428,6 +428,7 @@ a { color:var(--blue); }
         are ranked by Buchholz, then Sonneborn-Berger, then ascending TPN.
         Importing a TRF here imports registration fields only, not its
         tournament history.
+        The participant list is limited to 50 players.
       </p>
 
       <div class="table-wrap">
@@ -594,6 +595,10 @@ a { color:var(--blue); }
   Once a round is confirmed, an incorrectly recorded result can be 
   corrected through the GUI, provided that a tournament backup was 
   previously created using the "Save Tournament" function.
+</p>
+
+<p>
+  <b>Note:</b> The maximum number of participants is 50.
 </p>
 
   <p>
@@ -793,8 +798,8 @@ function Dutch2026Core() {
 
   function solve(input, limits = {}, progress = () => {}) {
     const started = performance.now();
-    const seconds = Number(limits.seconds ?? 20);
-    const nodeLimit = Number(limits.nodes ?? 0);
+    const seconds = Number(limits.seconds ?? 30);
+    const nodeLimit = Number(limits.nodes ?? 8000000);
     const deadline = seconds > 0
       ? started + seconds * 1000
       : Infinity;
@@ -970,20 +975,121 @@ function Dutch2026Core() {
       }
     }
 
+    /*
+     * Neighbour lists mirroring edge[][]. They exist only so the
+     * matching DFS can iterate over legal opponents in
+     * O(neighbours) instead of scanning the whole sublist.
+     */
+    const adjacency = Array.from({length:N}, () => []);
+    for (let i = 0; i < N; i++) {
+      for (let j = 0; j < N; j++) {
+        if (i !== j && edge[i][j]) adjacency[i].push(j);
+      }
+    }
+
     const matchingMemo = new Map();
     const MATCHING_MEMO_CAP = 200000;
 
+    /*
+     * Absolute-completion matching test used for C4 and
+     * pairing-allocated-bye feasibility.
+     *
+     * Two cheap, sound necessary-condition filters run before
+     * the recursive DFS:
+     *
+     *   (a) every remaining player must still have at least one
+     *       legal partner inside the sublist; and
+     *   (b) every connected component of the induced legality
+     *       graph must have even size (Tutte's necessary test).
+     *
+     * Both filters can only reject a sublist, never accept one,
+     * so the returned answer is identical to the unpruned DFS.
+     */
     function perfectMatching(list, restricted = new Set()) {
+      const restrictedSize = restricted.size;
+
+      function allowed(i, j) {
+        if (!edge[i][j]) return false;
+        if (restrictedSize && restricted.has(i) && restricted.has(j)) {
+          return false;
+        }
+        return true;
+      }
+
       function visit(xs) {
         tick();
         if (!xs.length) return true;
         if (xs.length % 2) return false;
 
-        const key = xs.join(",") + "/" +
-          xs.filter(i => restricted.has(i)).join(",");
+        let key = xs.join(",");
+        if (restrictedSize) {
+          key += "/";
+          for (const i of xs) if (restricted.has(i)) key += i + ",";
+        }
 
         if (matchingMemo.has(key)) {
           return matchingMemo.get(key);
+        }
+
+        const inside = new Set(xs);
+
+        /* (a) every player must have a legal partner present */
+        for (const i of xs) {
+          let ok = false;
+          for (const j of adjacency[i]) {
+            if (inside.has(j) && allowed(i, j)) { ok = true; break; }
+          }
+          if (!ok) {
+            matchingMemo.set(key, false);
+            return false;
+          }
+        }
+
+        /* (b) decompose into components; odd-size component ⇒ no matching */
+        const seenComponent = new Set();
+        const components    = [];
+
+        for (const start of xs) {
+          if (seenComponent.has(start)) continue;
+
+          const stack   = [start];
+          const members = [];
+          seenComponent.add(start);
+
+          while (stack.length) {
+            tick();
+            const v = stack.pop();
+            members.push(v);
+
+            for (const w of adjacency[v]) {
+              if (inside.has(w) && !seenComponent.has(w) && allowed(v, w)) {
+                seenComponent.add(w);
+                stack.push(w);
+              }
+            }
+          }
+
+          if (members.length % 2) {
+            matchingMemo.set(key, false);
+            return false;
+          }
+
+          components.push(members);
+        }
+
+        /* (c) solve each component independently when disconnected */
+        if (components.length > 1) {
+          let allMatch = true;
+
+          for (const comp of components) {
+            if (!visit([...comp].sort(numericSort))) {
+              allMatch = false;
+              break;
+            }
+          }
+
+          matchingMemo.set(key, allMatch);
+          return allMatch;
         }
 
         let chosen = -1;
@@ -992,11 +1098,10 @@ function Dutch2026Core() {
         for (const i of xs) {
           tick();
 
-          const possible = xs.filter(j =>
-            i !== j &&
-            edge[i][j] &&
-            !(restricted.has(i) && restricted.has(j))
-          );
+          const possible = [];
+          for (const j of xs) {
+            if (j !== i && allowed(i, j)) possible.push(j);
+          }
 
           if (!possible.length) {
             matchingMemo.set(key, false);
@@ -1020,9 +1125,9 @@ function Dutch2026Core() {
         }
 
         matchingMemo.set(key, false);
-        if (matchingMemo.size > MATCHING_MEMO_CAP) {   
-          matchingMemo.clear();                        
-        }                                              
+        if (matchingMemo.size > MATCHING_MEMO_CAP) {
+          matchingMemo.clear();
+        }
         return false;
       }
 
@@ -1179,27 +1284,28 @@ function canComplete(list) {
         remaining[i] = remaining[i+1] + gs[i].ids.length;
       }
 
-      function* visit(index, needed, profile) {
+      const profile = [];
+
+      function* visit(index, needed) {
         tick();
 
         if (index === gs.length) {
-          if (needed === 0) yield profile;
+          if (needed === 0) yield profile.slice();
           return;
         }
 
         const minimum = Math.max(0, needed - remaining[index+1]);
         const maximum = Math.min(needed, gs[index].ids.length);
+        const score = gs[index].score;
 
         for (let take = minimum; take <= maximum; take++) {
-          yield* visit(
-            index+1,
-            needed-take,
-            [...profile, ...new Array(take).fill(gs[index].score)]
-          );
+          for (let t = 0; t < take; t++) profile.push(score);
+          yield* visit(index+1, needed-take);
+          for (let t = 0; t < take; t++) profile.pop();
         }
       }
 
-      yield* visit(0, count, []);
+      yield* visit(0, count);
     }
 
     function* setsWithScores(list, profile) {
@@ -1210,22 +1316,34 @@ function canComplete(list) {
         counts.set(score, (counts.get(score) || 0) + 1);
       }
 
-      function* visit(index, chosen) {
+      const chosen = [];
+
+      function* visit(index) {
         tick();
 
         if (index === gs.length) {
-          yield chosen;
+          yield chosen.slice();
           return;
         }
 
         const count = counts.get(gs[index].score) || 0;
+        const ids = gs[index].ids;
 
-        for (const part of combinations(gs[index].ids, count)) {
-          yield* visit(index+1, [...chosen, ...part]);
+        function* pick(start, remaining) {
+          tick();
+          if (remaining === 0) { yield* visit(index + 1); return; }
+          for (let i = start; i <= ids.length - remaining; i++) {
+            chosen.push(ids[i]);
+            yield* pick(i + 1, remaining - 1);
+            chosen.pop();
+          }
         }
+
+        if (count === 0) yield* visit(index + 1);
+        else yield* pick(0, count);
       }
 
-      yield* visit(0, []);
+      yield* visit(0);
     }
 
     function futureOK(ctx, down) {
@@ -1436,6 +1554,10 @@ function canComplete(list) {
      * fires.  The natural partition plus a small transposition
      * window is sufficient for ordinary colour problems; larger
      * exchange sizes are only needed in degenerate histories.
+     *
+     * The reversed-A array and the outgoing combinations are
+     * hoisted so they are computed once per exchange size
+     * rather than once per (size, difference) pair.
      */
     function* exchangeConfigurations(list, pairCount) {
       const n = list.length;
@@ -1452,24 +1574,31 @@ function canComplete(list) {
       const exchangeCap =
         n <= 12 ? 8 : n <= 20 ? 4 : 3;
       const maxSize = Math.min(A.length, B.length, exchangeCap);
+      const ARev = Array.from({length:pairCount}, (_,i) => pairCount - i);
 
       for (
         let size = 1;
         size <= maxSize;
         size++
       ) {
+        const outgoings = [];
+        for (const arr of combinations(ARev, size)) {
+          outgoings.push({
+            arr,
+            set: new Set(arr),
+            sum: arr.reduce((a,b) => a+b, 0)
+          });
+        }
+
         for (
           let difference = size*size;
           difference <= size*(n-size);
           difference++
         ) {
-          for (const outgoing of combinations([...A].reverse(), size)) {
-            const sum = outgoing.reduce((a,b) => a+b,0);
-
+          for (const { arr: outgoing, set: outSet, sum } of outgoings) {
             for (const incoming of sumCombinations(B,size,sum+difference)) {
               tick();
 
-              const outSet = new Set(outgoing);
               const inSet = new Set(incoming);
 
               const s1 = [
@@ -2089,7 +2218,7 @@ function canWin(partialPairs) {
       };
     }
 
-    function run(input,limits = {seconds:10,nodes:0}) {
+    function run(input,limits = {seconds:30,nodes:8000000}) {
       return solve(input,limits);
     }
 
@@ -3325,6 +3454,9 @@ if (playerCount % 2) {
     /*
      * Profiles are produced in C6 order: the lexicographically
      * smallest descending score sequence comes first.
+     *
+     * A shared push/pop buffer avoids per-step array copies; the
+     * yielded value is a fresh slice, so consumers can retain it.
      */
     function* scoreProfiles(list, count) {
       const scoregroups = groupedScores(list);
@@ -3342,12 +3474,14 @@ if (playerCount % 2) {
           scoregroups[i].ids.length;
       }
 
-      function* visit(index, needed, profile) {
+      const profile = [];
+
+      function* visit(index, needed) {
         tick();
 
         if (index === scoregroups.length) {
           if (needed === 0) {
-            yield profile;
+            yield profile.slice();
           }
           return;
         }
@@ -3362,27 +3496,26 @@ if (playerCount % 2) {
           scoregroups[index].ids.length
         );
 
+        const score = scoregroups[index].score;
+
         for (
           let take = minimum;
           take <= maximum;
           take++
         ) {
-          yield* visit(
-            index + 1,
-            needed - take,
-            [
-              ...profile,
-              ...new Array(take).fill(
-                scoregroups[index].score
-              )
-            ]
-          );
+          for (let t = 0; t < take; t++) profile.push(score);
+          yield* visit(index + 1, needed - take);
+          for (let t = 0; t < take; t++) profile.pop();
         }
       }
 
-      yield* visit(0, count, []);
+      yield* visit(0, count);
     }
 
+    /*
+     * Same shared-buffer trick as scoreProfiles; the yielded
+     * value is a fresh slice.
+     */
     function* setsWithScores(list, profile) {
       const scoregroups = groupedScores(list);
       const counts = new Map();
@@ -3394,31 +3527,39 @@ if (playerCount % 2) {
         );
       }
 
-      function* visit(index, chosen) {
+      const chosen = [];
+
+      function* visit(index) {
         tick();
 
         if (index === scoregroups.length) {
-          yield chosen;
+          yield chosen.slice();
           return;
         }
 
         const count =
           counts.get(scoregroups[index].score) || 0;
 
-        for (
-          const part of combinations(
-            scoregroups[index].ids,
-            count
-          )
-        ) {
-          yield* visit(
-            index + 1,
-            [...chosen, ...part]
-          );
+        const ids = scoregroups[index].ids;
+
+        function* pick(start, remaining) {
+          tick();
+          if (remaining === 0) {
+            yield* visit(index + 1);
+            return;
+          }
+          for (let i = start; i <= ids.length - remaining; i++) {
+            chosen.push(ids[i]);
+            yield* pick(i + 1, remaining - 1);
+            chosen.pop();
+          }
         }
+
+        if (count === 0) yield* visit(index + 1);
+        else yield* pick(0, count);
       }
 
-      yield* visit(0, []);
+      yield* visit(0);
     }
 
     function futureOK(ctx, down) {
@@ -3626,6 +3767,10 @@ if (playerCount % 2) {
      *
      * For each lowest unassigned BSN, real opponents are tried
      * in descending BSN order, followed by virtual BSN zero.
+     *
+     * A `start` hint is propagated so every DFS node scans from
+     * the first position that can possibly be unassigned,
+     * replacing the O(total) prefix scan with O(1).
      */
 function* orderedPairings(ctx, pairCount, canWin, floaterScores) {
   const list = ctx.all;
@@ -3636,12 +3781,12 @@ function* orderedPairings(ctx, pairCount, canWin, floaterScores) {
   const pairs = [];
   const down  = [];
 
-  function* visit(pairsMade, floatsMade, currentCost, pendingScores) {
+  function* visit(pairsMade, floatsMade, currentCost, pendingScores, start) {
     tick();
     if (!canWin(currentCost)) return;
 
     let position = -1;
-    for (let i = 0; i < total; i++) {
+    for (let i = start; i < total; i++) {
       if (!used[i]) { position = i; break; }
     }
 
@@ -3670,7 +3815,7 @@ function* orderedPairings(ctx, pairCount, canWin, floaterScores) {
 
         yield* visit(pairsMade + 1, floatsMade,
                     currentCost + colorMiss[first][second],
-                    pendingScores);
+                    pendingScores, position + 1);
 
         pairs.pop();
         used[opponentPosition] = false;
@@ -3688,7 +3833,8 @@ function* orderedPairings(ctx, pairCount, canWin, floaterScores) {
         const remaining = pendingScores.slice();
         remaining.splice(slot, 1);
         down.push(first);
-        yield* visit(pairsMade, floatsMade + 1, currentCost, remaining);
+        yield* visit(pairsMade, floatsMade + 1, currentCost,
+                    remaining, position + 1);
         down.pop();
       }
     }
@@ -3696,7 +3842,7 @@ function* orderedPairings(ctx, pairCount, canWin, floaterScores) {
     used[position] = false;
   }
 
-  yield* visit(0, 0, 0, [...floaterScores]);
+  yield* visit(0, 0, 0, [...floaterScores], 0);
 }
 
     function selectBracket(index, incoming) {
@@ -4231,6 +4377,13 @@ const FIXED_SEARCH_LIMITS = Object.freeze({
   seconds:30,
   nodes:8000000
 });
+
+/*
+ * Hard upper bound on the number of registered participants.
+ * Enforced when players are added, when a tournament file is
+ * loaded, and reflected in the setup UI.
+ */
+const MAX_PLAYERS = 50;
 
 const TITLE_WEIGHTS = {
   GM:8,IM:7,WGM:6,FM:5,WIM:4,CM:3,WFM:2,WCM:1,"":0
@@ -5132,6 +5285,13 @@ function normalizeTournament(raw) {
     );
   }
 
+  if (raw.players.length > MAX_PLAYERS) {
+    throw new Error(
+      "The tournament file contains " + raw.players.length +
+      " players, which exceeds the limit of " + MAX_PLAYERS + "."
+    );
+  }
+
 const historical =
   Array.isArray(raw.rounds) &&
   raw.rounds.length > 0;
@@ -5544,6 +5704,16 @@ function canRegister() {
 function admitPlayers(list) {
   canRegister();
   applySettings();
+
+  const prospective = tournament.players.length + list.length;
+
+  if (prospective > MAX_PLAYERS) {
+    throw new Error(
+      "The tournament is limited to " + MAX_PLAYERS +
+      " participants. Currently " + tournament.players.length +
+      " registered; attempted to add " + list.length + "."
+    );
+  }
 
   let order = nextRegistrationOrder();
 
@@ -6419,11 +6589,13 @@ $("listStatus").textContent = (
   $("registrationHint").textContent = tournament.listClosed
     ? "Registration is closed. Existing players may be withdrawn or " +
       "reinstated between rounds."
-    : "Players are initially ordered by rating, title, and name.";
+    : "Players are initially ordered by rating, title, and name. " +
+      "The participant list is limited to " + MAX_PLAYERS + " players.";
 }
 
 function renderPlayers() {
-  $("playerCount").textContent = tournament.players.length;
+  $("playerCount").textContent =
+    tournament.players.length + " / " + MAX_PLAYERS;
 
   const pending = tournament.activePairings.length > 0;
   const finished = tournamentComplete();
@@ -6780,16 +6952,33 @@ function updateControls() {
     tournamentStarted() ||
     finished;
 
-  for (const id of [
-    "addButton","importButton","pasteButton","sampleButton"
-  ]) {
-    $(id).disabled = registrationBlocked;
-  }
+  /*
+   * Registration controls are additionally disabled when the
+   * participant limit has been reached. The sample-list button
+   * is disabled whenever adding 32 more players would exceed it.
+   */
+  const atPlayerLimit =
+    tournament.players.length >= MAX_PLAYERS;
+
+  const sampleWouldOverflow =
+    tournament.players.length + 32 > MAX_PLAYERS;
+
+  $("addButton").disabled =
+    registrationBlocked || atPlayerLimit;
+
+  $("importButton").disabled =
+    registrationBlocked || atPlayerLimit;
+
+  $("pasteButton").disabled =
+    registrationBlocked || atPlayerLimit;
+
+  $("sampleButton").disabled =
+    registrationBlocked || sampleWouldOverflow;
 
   for (const id of [
     "pName","pRating","pTitle"
   ]) {
-    $(id).disabled = registrationBlocked;
+    $(id).disabled = registrationBlocked || atPlayerLimit;
   }
 
   for (const id of [
