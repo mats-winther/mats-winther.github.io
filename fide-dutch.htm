@@ -367,7 +367,7 @@ a { color:var(--blue); }
 
     <div class="card">
       <div class="row between">
-        <h2>Players (<span id="playerCount">0</span>)</h2>
+        <h2>Players (<span id="playerCount">0 / 50</span>)</h2>
 
         <div class="row no-print">
           <button id="importButton"
@@ -425,6 +425,7 @@ a { color:var(--blue); }
         Review the initial rating/title/name order. Stored TPNs, not
         standings tie-breaks, drive pairing. Importing a TRF here imports
         registration fields only, not its tournament history.
+        The participant list is limited to 50 players.
       </p>
 
       <div class="table-wrap">
@@ -592,10 +593,16 @@ a { color:var(--blue); }
     Unpaired MDPs use a refloat-gap marker greater than every actual score
     gap, following the convention explained in the TEC annotations.
   </p>
+
+  <p>
+    <b>Note:</b> The maximum number of participants is 50.
+  </p>
+
   <p>
     Once a round is confirmed, an incorrectly recorded result can be corrected through the GUI, 
     provided that a tournament backup was previously created using the "Save Tournament" function.
   </p>
+
   <p>
     Not implemented: acceleration, arbitrary additional pairing restrictions,
     adjournments, or an administrative workflow for altering published
@@ -960,6 +967,16 @@ function Dutch2026Core() {
       }
     }
 
+    /*
+     * Per-player colour-wish lookup, hoisted out of the bracket search.
+     *   colorWant[v] = +1 if v wants White, -1 if it wants Black, 0 otherwise.
+     */
+    const colorWant = new Int8Array(N);
+    for (let i = 0; i < N; i++) {
+      const c = players[i].pref.color;
+      colorWant[i] = c === "W" ? 1 : c === "B" ? -1 : 0;
+    }
+
     const matchingMemo = new Map();
     const MATCHING_MEMO_CAP = 200000;
 
@@ -1010,52 +1027,51 @@ function Dutch2026Core() {
         }
 
         matchingMemo.set(key, false);
-        if (matchingMemo.size > MATCHING_MEMO_CAP) {   
-          matchingMemo.clear();                        
-        }                                              
+        if (matchingMemo.size > MATCHING_MEMO_CAP) {
+          matchingMemo.clear();
+        }
         return false;
       }
 
       return visit(ordered(list));
     }
 
-function canRemoveForBye(list, score) {
-  for (const i of list) {
-    tick();
-    if (
-      eligible(i) &&
-      players[i].score === score &&
-      perfectMatching(list.filter(j => j !== i))
-    ) {
-      return true;
+    function canRemoveForBye(list, score) {
+      for (const i of list) {
+        tick();
+        if (
+          eligible(i) &&
+          players[i].score === score &&
+          perfectMatching(list.filter(j => j !== i))
+        ) {
+          return true;
+        }
+      }
+      return false;
     }
-  }
-  return false;
-}
-
 
     phase = "Establishing C4 and the minimum feasible bye score";
     let byeScore = null;
 
-if (N % 2) {
-  const possibleScores = [...new Set(
-    ids.filter(eligible).map(i => players[i].score)
-  )].sort((a, b) => a - b);
+    if (N % 2) {
+      const possibleScores = [...new Set(
+        ids.filter(eligible).map(i => players[i].score)
+      )].sort((a, b) => a - b);
 
-  for (const score of possibleScores) {
-    if (canRemoveForBye(ids, score)) {
-      byeScore = score;
-      break;
-    }
-  }
+      for (const score of possibleScores) {
+        if (canRemoveForBye(ids, score)) {
+          byeScore = score;
+          break;
+        }
+      }
 
-  if (byeScore === null) {
-    throw fault(
-      "NO_LEGAL_COMPLETION",
-      "No complete round satisfying C1–C3 and bye eligibility exists."
-    );
-  }
-} else if (!perfectMatching(ids)) {
+      if (byeScore === null) {
+        throw fault(
+          "NO_LEGAL_COMPLETION",
+          "No complete round satisfying C1–C3 and bye eligibility exists."
+        );
+      }
+    } else if (!perfectMatching(ids)) {
       throw fault(
         "NO_LEGAL_COMPLETION",
         "No complete round satisfying C1–C3 exists."
@@ -1064,23 +1080,23 @@ if (N % 2) {
 
     const completionMemo = new Map();
 
-function canComplete(list) {
-  const xs = ordered(list);
-  const key = xs.join(",");
+    function canComplete(list) {
+      const xs = ordered(list);
+      const key = xs.join(",");
 
-  if (completionMemo.has(key)) return completionMemo.get(key);
+      if (completionMemo.has(key)) return completionMemo.get(key);
 
-  let answer = false;
+      let answer = false;
 
-  if (!(xs.length % 2)) {
-    answer = perfectMatching(xs);
-  } else if (byeScore !== null) {
-    answer = canRemoveForBye(xs, byeScore);
-  }
+      if (!(xs.length % 2)) {
+        answer = perfectMatching(xs);
+      } else if (byeScore !== null) {
+        answer = canRemoveForBye(xs, byeScore);
+      }
 
-  completionMemo.set(key, answer);
-  return answer;
-}
+      completionMemo.set(key, answer);
+      return answer;
+    }
 
     const groups = [];
 
@@ -1415,18 +1431,6 @@ function canComplete(list) {
       }
     }
 
-    /*
-     * Enumeration of top/bottom partitions of the bracket.
-     *
-     * The transposition size is capped by bracket width.  The
-     * uncapped loop enumerates C(n, pairCount) partitions, which
-     * for a 25-player bracket with 12 pairings is ≈ 5.2 million
-     * partitions — several orders of magnitude more than the
-     * engine can afford to visit before the fixed work limit
-     * fires.  The natural partition plus a small transposition
-     * window is sufficient for ordinary colour problems; larger
-     * exchange sizes are only needed in degenerate histories.
-     */
     function* exchangeConfigurations(list, pairCount) {
       const n = list.length;
       const A = Array.from({length:pairCount}, (_,i) => i+1);
@@ -1439,9 +1443,7 @@ function canComplete(list) {
         s2:list.slice(pairCount)
       };
 
-      const exchangeCap =
-        n <= 12 ? 8 : n <= 20 ? 4 : 3;
-      const maxSize = Math.min(A.length, B.length, exchangeCap);
+      const maxSize = Math.min(A.length, B.length);
 
       for (
         let size = 1;
@@ -1479,16 +1481,80 @@ function canComplete(list) {
       }
     }
 
+    /*
+     * Per-partition suffix bounds on remaining C12 (p2) and C13 (p3).
+     *
+     * For a fixed top/bottom split (s1, s2), every s1[i] must be paired
+     * with some b ∈ s2 (i.e. an assignment-problem relaxation of the
+     * matching).  Define
+     *
+     *     m2[i] = min_{b legal, b ∈ s2} pairCost[s1[i]][b][2]
+     *     m3[i] = min_{b legal, b ∈ s2} pairCost[s1[i]][b][3]
+     *
+     * Then for any partial DFS state at depth `position`,
+     *
+     *     Σ_{i ≥ position} m2[i]     (resp. m3)
+     *
+     * is a valid lower bound on the additional p2 (resp. p3) of any
+     * completion, because the unavailable-second set only *removes*
+     * candidates and never lowers the per-element minimum.  These
+     * arrays are computed once per partition and consumed at every
+     * node of the DFS.
+     */
+    function computeSuffixBounds(s1, s2) {
+      const n = s1.length;
+      const suf2 = new Array(n + 1).fill(0);
+      const suf3 = new Array(n + 1).fill(0);
+
+      for (let i = n - 1; i >= 0; i--) {
+        tick();
+
+        const row = s1[i];
+        let m2 = Infinity;
+        let m3 = Infinity;
+
+        for (let k = 0; k < s2.length; k++) {
+          const b = s2[k];
+          if (!edge[row][b]) continue;
+          const pc = pairCost[row][b];
+          if (pc[2] < m2) m2 = pc[2];
+          if (pc[3] < m3) m3 = pc[3];
+          if (m2 === 0 && m3 === 0) break;
+        }
+
+        suf2[i] = suf2[i + 1] + (m2 === Infinity ? 0 : m2);
+        suf3[i] = suf3[i + 1] + (m3 === Infinity ? 0 : m3);
+      }
+
+      return { suf2, suf3 };
+    }
+
+    /*
+     * Depth-first pairing of s1 into s2.
+     *
+     * `sums` is the mutable accumulator threaded through recursion
+     * (pair-cost row and colour-wish tallies).  `dfsUsed` is a shared
+     * Uint8Array keyed by player index; the DFS sets it on descend and
+     * clears it on backtrack.  Because the same buffer is reused across
+     * every partition of a bracket, the DFS never allocates.
+     *
+     * `suffixMinP2` / `suffixMinP3` are the partition pre-bounds; they
+     * are consumed by canWin() as an assignment-relaxation prune.
+     */
     function* prefixPairings(
-      s1, s2, canWin, position = 0, used = new Set(), pairs = []
+      s1, s2, canWin, sums, dfsUsed,
+      suffixMinP2, suffixMinP3,
+      position = 0, pairs = []
     ) {
       tick();
-      if (!canWin(pairs)) return;
+      if (!canWin(position, suffixMinP2, suffixMinP3)) return;
 
       if (position === s1.length) {
         yield {
           pairs:[...pairs],
-          unused:s2.filter(i => !used.has(i))
+          // s2 is derived from an ordered list, so filtering already
+          // yields ascending order — no re-sort at the leaf.
+          unused:s2.filter(i => !dfsUsed[i])
         };
         return;
       }
@@ -1496,37 +1562,48 @@ function canComplete(list) {
       const first = s1[position];
 
       for (const second of s2) {
-        if (used.has(second) || !edge[first][second]) continue;
+        if (dfsUsed[second] || !edge[first][second]) continue;
 
-        used.add(second);
+        dfsUsed[second] = 1;
         pairs.push([first,second]);
 
+        const pc = pairCost[first][second];
+        const wa = colorWant[first];
+        const wb = colorWant[second];
+
+        sums.p0 += pc[0];
+        sums.p1 += pc[1];
+        sums.p2 += pc[2];
+        sums.p3 += pc[3];
+        if (wa ===  1) sums.pairedW++;
+        else if (wa === -1) sums.pairedB++;
+        if (wb ===  1) sums.pairedW++;
+        else if (wb === -1) sums.pairedB++;
+        sums.count++;
+
         yield* prefixPairings(
-          s1,s2,canWin,position+1,used,pairs
+          s1, s2, canWin, sums, dfsUsed,
+          suffixMinP2, suffixMinP3,
+          position+1, pairs
         );
 
+        sums.p0 -= pc[0];
+        sums.p1 -= pc[1];
+        sums.p2 -= pc[2];
+        sums.p3 -= pc[3];
+        if (wa ===  1) sums.pairedW--;
+        else if (wa === -1) sums.pairedB--;
+        if (wb ===  1) sums.pairedW--;
+        else if (wb === -1) sums.pairedB--;
+        sums.count--;
+
         pairs.pop();
-        used.delete(second);
+        dfsUsed[second] = 0;
       }
     }
 
-    /*
-     * Per-partition lower bound.
-     *
-     * For a fixed top/bottom partition (s1, s2), every element
-     * of s1 must be paired with some element of s2.  Therefore
-     * the sum of the per-element lexicographic minima backward
-     * from s1 across s2 is a valid lower bound on the cost of
-     * any matching inside that partition.  When the incumbent
-     * bound already beats this bound, the whole partition is
-     * discarded without a single DFS node being spent inside it.
-     *
-     * The bound is cheap: |s1|·|s2| legality-and-cost probes,
-     * which is negligible next to the exponential DFS the
-     * partition would otherwise trigger.
-     */
     function* homogeneousCandidates(
-      list, pairCount, canWin, shouldSkipPartition
+      list, pairCount, canWin, shouldSkipPartition, sums, dfsUsed
     ) {
       const sorted = ordered(list);
 
@@ -1571,23 +1648,25 @@ function canComplete(list) {
           if (shouldSkipPartition(lb)) continue;
         }
 
+        const { suf2, suf3 } = computeSuffixBounds(s1, s2);
+
         for (const candidate of prefixPairings(
-          s1,s2,canWin
+          s1, s2, canWin, sums, dfsUsed, suf2, suf3
         )) {
           yield {
             pairs:candidate.pairs,
-            down:ordered(candidate.unused)
+            down:candidate.unused // already sorted
           };
         }
       }
     }
 
     function* bracketCandidates(
-      ctx, high, canWin, shouldSkipPartition
+      ctx, high, canWin, shouldSkipPartition, sums, dfsUsed
     ) {
       if (!ctx.mdps.length) {
         yield* homogeneousCandidates(
-          ctx.residents,high.pairs,canWin,shouldSkipPartition
+          ctx.residents,high.pairs,canWin,shouldSkipPartition,sums,dfsUsed
         );
         return;
       }
@@ -1604,17 +1683,27 @@ function canComplete(list) {
           continue;
         }
 
-        for (const mdpPairing of prefixPairings(
-          selected,ctx.residents,canWin
-        )) {
-          const remainderCanWin = pairs =>
-            canWin([...mdpPairing.pairs,...pairs]);
+        // Anchor-phase suffix bounds: MDP → resident assignment only.
+        // The remaining resident→resident work uses its own bound,
+        // computed inside homogeneousCandidates.
+        const { suf2, suf3 } = computeSuffixBounds(
+          selected, ctx.residents
+        );
 
+        for (const mdpPairing of prefixPairings(
+          selected,ctx.residents,canWin,sums,dfsUsed,suf2,suf3
+        )) {
+          // dfsUsed is deliberately shared: the anchor's marks cover
+          // only residents already mated with MDPs, and the remainder
+          // DFS restricts itself to the *unmarked* subset (mdpPairing.unused),
+          // so the two phases cannot collide on any index.
           for (const remainder of homogeneousCandidates(
             mdpPairing.unused,
             high.pairs-high.m1,
-            remainderCanWin,
-            shouldSkipPartition
+            canWin,
+            shouldSkipPartition,
+            sums,
+            dfsUsed
           )) {
             yield {
               pairs:[...mdpPairing.pairs,...remainder.pairs],
@@ -1782,6 +1871,17 @@ function canComplete(list) {
       const ctx = bracketContext(index,incoming);
       phase = "Optimizing bracket at score " + ctx.score;
 
+      let totalW = 0, totalB = 0;
+
+      for (const v of ctx.all) {
+        const c = colorWant[v];
+        if (c ===  1) totalW++;
+        else if (c === -1) totalB++;
+      }
+
+      let bestLimitCache  = null;
+      let bestValueCache  = null;
+
       const high = highFor(index,incoming);
 
       if (!high) {
@@ -1823,71 +1923,73 @@ function canComplete(list) {
       let cap = null;
       let proof = "exhausted-with-safe-pruning";
 
-function canWin(partialPairs) {
-  const limit = best ? best.value.slice(0,4) : cap;
-  if (!limit) return true;
+      // Mutable accumulator for the DFS path.
+      const sums = {
+        p0:0, p1:0, p2:0, p3:0,
+        pairedW:0, pairedB:0, count:0
+      };
 
-  const partial = [0,0,0,0];
-  const paired = new Set();
+      // One player-index-keyed DFS visited buffer for the whole bracket.
+      // Reset per cap pass: the tight-cap pass can abandon a generator
+      // mid-backtrack, so we cannot assume the buffer returns to zero
+      // on its own.
+      const dfsUsed = new Uint8Array(N);
 
-  for (const [a,b] of partialPairs) {
-    for (let k = 0; k < 4; k++) {
-      partial[k] += pairCost[a][b][k];
-    }
-    paired.add(a);
-    paired.add(b);
-  }
+      function canWin(position, suffixMinP2, suffixMinP3) {
+        let limit;
 
-  // C10 and C11 are exact counters; a direct comparison is
-  // already the tightest possible test.
-  if (partial[0] !== limit[0]) return partial[0] < limit[0];
-  if (partial[1] !== limit[1]) return partial[1] < limit[1];
+        if (best) {
+          if (best.value !== bestValueCache) {
+            bestValueCache = best.value;
+            bestLimitCache = [
+              best.value[0], best.value[1],
+              best.value[2], best.value[3]
+            ];
+          }
+          limit = bestLimitCache;
+        } else {
+          limit = cap;
+        }
 
-  // C12: colour-preference misses.  A sound lower bound follows
-  // from the unpaired players’ colour wishes.  Of the remaining
-  // White-wanters, at most `high.count` can be floated out (they
-  // receive no colour) and at most `fp` can receive White; the
-  // rest must get Black and therefore miss.  Symmetric for
-  // Black-wanters.  This bound is used both for the true incumbent
-  // (`best`) and for every optimistic cap.
-  let wWant = 0;
-  let bWant = 0;
+        if (!limit) return true;
 
-  for (const v of ctx.all) {
-    if (paired.has(v)) continue;
-    const due = players[v].pref.color;
-    if (due === "W") wWant++;
-    else if (due === "B") bWant++;
-  }
+        const p0 = sums.p0, p1 = sums.p1;
+        const p2 = sums.p2, p3 = sums.p3;
 
-  const remaining = ctx.all.length - 2*partialPairs.length;
-  const fp = (remaining - high.count)/2;
+        if (p0 !== limit[0]) return p0 < limit[0];
+        if (p1 !== limit[1]) return p1 < limit[1];
 
-  const lb2 =
-    Math.max(0, wWant - high.count - fp) +
-    Math.max(0, bWant - high.count - fp);
+        const wWant = totalW - sums.pairedW;
+        const bWant = totalB - sums.pairedB;
+        const remaining = ctx.all.length - 2 * sums.count;
+        const fp = (remaining - high.count) / 2;
 
-  const low2 = partial[2] + lb2;
+        const lb2 =
+          Math.max(0, wWant - high.count - fp) +
+          Math.max(0, bWant - high.count - fp);
 
-  if (low2 !== limit[2]) return low2 < limit[2];
+        // Stronger of the color-capacity bound and the assignment
+        // relaxation suffix bound; both are valid lower bounds.
+        const p2Remaining = Math.max(lb2, suffixMinP2[position]);
+        const low2 = p2 + p2Remaining;
+        if (low2 !== limit[2]) return low2 < limit[2];
 
-  // C13: no useful lower bound is available; require strict
-  // improvement against the current limit.
-  if (partial[3] !== limit[3]) return partial[3] < limit[3];
+        const low3 = p3 + suffixMinP3[position];
+        if (low3 !== limit[3]) return low3 < limit[3];
 
-  return true;
-}
+        return true;
+      }
 
-      /*
-       * Predicate used by homogeneousCandidates to discard a whole
-       * partition before spending a single DFS node inside it.
-       *
-       *   - Against `best`, require strict lexicographic improvement.
-       *   - Against a pre-set cap, allow the bound to meet the cap.
-       */
       function shouldSkipPartition(lb) {
         if (best) {
-          return compareArrays(lb, best.value.slice(0,4)) >= 0;
+          if (best.value !== bestValueCache) {
+            bestValueCache = best.value;
+            bestLimitCache = [
+              best.value[0], best.value[1],
+              best.value[2], best.value[3]
+            ];
+          }
+          return compareArrays(lb, bestLimitCache) > 0;
         }
         if (cap) {
           return compareArrays(lb, cap) > 0;
@@ -1895,18 +1997,21 @@ function canWin(partialPairs) {
         return false;
       }
 
-      // Optimistic passes first. Relax the cap only if nothing is found.
       const caps = [
         [lowerBound[0],lowerBound[1],lowerBound[2],Infinity],
         [lowerBound[0],lowerBound[1],lowerBound[2]+1,Infinity],
-        null                       // original behaviour as last resort
+        null
       ];
 
       for (const c of caps) {
         cap = c;
 
+        sums.p0 = sums.p1 = sums.p2 = sums.p3 = 0;
+        sums.pairedW = sums.pairedB = sums.count = 0;
+        dfsUsed.fill(0);
+
         for (const candidate of bracketCandidates(
-          ctx,high,canWin,shouldSkipPartition
+          ctx,high,canWin,shouldSkipPartition,sums,dfsUsed
         )) {
           tick();
           ordinal++;
@@ -2303,6 +2408,13 @@ const FIXED_SEARCH_LIMITS = Object.freeze({
   seconds: 20,
   nodes: 0  // 0 = no node cap; the 30-second wall clock is the sole bound
 });
+
+/*
+ * Hard upper bound on the number of registered participants.
+ * Enforced when players are added, when a tournament file is
+ * loaded, and reflected in the setup UI.
+ */
+const MAX_PLAYERS = 50;
 
 const TITLE_WEIGHTS = {
   GM:8,IM:7,WGM:6,FM:5,WIM:4,CM:3,WFM:2,WCM:1,"":0
@@ -3026,6 +3138,13 @@ function normalizeTournament(raw) {
     );
   }
 
+  if (raw.players.length > MAX_PLAYERS) {
+    throw new Error(
+      "The tournament file contains " + raw.players.length +
+      " players, which exceeds the limit of " + MAX_PLAYERS + "."
+    );
+  }
+
   if (
     raw.acceleration ||
     (raw.restrictions || []).length ||
@@ -3426,6 +3545,16 @@ function canRegister() {
 function admitPlayers(list) {
   canRegister();
   applySettings();
+
+  const prospective = tournament.players.length + list.length;
+
+  if (prospective > MAX_PLAYERS) {
+    throw new Error(
+      "The tournament is limited to " + MAX_PLAYERS +
+      " participants. Currently " + tournament.players.length +
+      " registered; attempted to add " + list.length + "."
+    );
+  }
 
   let order = nextRegistrationOrder();
 
@@ -4274,11 +4403,13 @@ function renderSettings() {
   $("registrationHint").textContent = tournament.listClosed
     ? "Registration is closed. Existing players may be withdrawn or " +
       "reinstated between rounds."
-    : "Players are initially ordered by rating, title, and name.";
+    : "Players are initially ordered by rating, title, and name. " +
+      "The participant list is limited to " + MAX_PLAYERS + " players.";
 }
 
 function renderPlayers() {
-  $("playerCount").textContent = tournament.players.length;
+  $("playerCount").textContent =
+    tournament.players.length + " / " + MAX_PLAYERS;
 
   const pending = tournament.activePairings.length > 0;
   const finished = tournamentComplete();
@@ -4626,16 +4757,33 @@ function updateControls() {
     tournamentStarted() ||
     finished;
 
-  for (const id of [
-    "addButton","importButton","pasteButton","sampleButton"
-  ]) {
-    $(id).disabled = registrationBlocked;
-  }
+  /*
+   * Registration controls are additionally disabled when the
+   * participant limit has been reached. The sample-list button
+   * is disabled whenever adding 32 more players would exceed it.
+   */
+  const atPlayerLimit =
+    tournament.players.length >= MAX_PLAYERS;
+
+  const sampleWouldOverflow =
+    tournament.players.length + 32 > MAX_PLAYERS;
+
+  $("addButton").disabled =
+    registrationBlocked || atPlayerLimit;
+
+  $("importButton").disabled =
+    registrationBlocked || atPlayerLimit;
+
+  $("pasteButton").disabled =
+    registrationBlocked || atPlayerLimit;
+
+  $("sampleButton").disabled =
+    registrationBlocked || sampleWouldOverflow;
 
   for (const id of [
     "pName","pRating","pTitle"
   ]) {
-    $(id).disabled = registrationBlocked;
+    $(id).disabled = registrationBlocked || atPlayerLimit;
   }
 
   for (const id of [

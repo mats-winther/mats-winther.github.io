@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description"
-      content="Experimentellt webbläsarbaserat FIDE-holländskt lottningssystem med Buchholz- och Sonneborn-Berger-beräkningar.">
+      content="Experimentellt webbläsarbaserat FIDE Dutch-ssystem med Buchholz- och Sonneborn-Berger-beräkningar.">
 <meta name="author" content="Mats Winther">
 <link
   rel="canonical"
   href="https://mats-winther.github.io/fide-hollandskt.htm"
 >
 
-<title>Experimentellt FIDE-holländskt lottningssystem</title>
+<title>Experimentellt FIDE Dutch-lottningssystem</title>
 
 <style>
 :root {
@@ -269,9 +269,9 @@ a { color:var(--blue); }
 
 <header>
   <div>
-    <h1>Experimentellt FIDE-holländskt lottningssystem</h1>
+    <h1>Experimentellt FIDE Dutch-lottningssystem</h1>
     <div class="subtitle">
-      2026 års regler · strikt referenssökning · inte FIDE-godkänt
+      2026 års regler · strikt referenssökning · ej FIDE-godkänt
     </div>
   </div>
 
@@ -296,24 +296,24 @@ a { color:var(--blue); }
 <main>
   <div id="printHeading" class="print-only">
     <h2 id="printTitle"></h2>
-    <p>Experimentell implementation — verifiera lottningen oberoende.</p>
+    <p>Experimentell implementation — verifiera turneringsparningar oberoende.</p>
   </div>
 
   <div id="message" class="notice no-print"
        role="status" aria-live="polite">
-    Registrera spelare och granska den inledande färgtilldelningen samt
-    TPN-listan. Inställningarna sparas automatiskt.
+    Registrera spelare och granska den inledande färgtilldelningen och
+    TPN-listan. Inställningar sparas automatiskt.
   </div>
 
   <nav class="tabs no-print">
     <button id="tabButton-setup" class="active" onclick="showTab('setup')">
-      Inställningar och anmälan
+      Inställningar och registrering
     </button>
     <button id="tabButton-pairings" onclick="showTab('pairings')">
       Rondlottning
     </button>
     <button id="tabButton-standings" onclick="showTab('standings')">
-      Poänglista
+      Ställning
     </button>
     <button id="tabButton-history" onclick="showTab('history')">
       Rondhistorik
@@ -325,7 +325,7 @@ a { color:var(--blue); }
       <h2>Turneringsinställningar</h2>
 
       <div class="grid">
-        <label>Turneringens namn
+        <label>Turneringsnamn
           <input id="tName" value="FIDE Swiss Open 2026">
         </label>
 
@@ -335,40 +335,40 @@ a { color:var(--blue); }
 
         <label>Färgtilldelning (rond 1)
           <select id="tColor">
-            <option value="W" selected>Första spelaren vit</option>
-            <option value="B">Första spelaren svart</option>
+            <option value="W" selected>1:a spelaren vit</option>
+            <option value="B">1:a spelaren svart</option>
           </select>
         </label>
 
-        <label>Poäng för vinst / remi / förlust
+        <label>Poäng vinst / remi / förlust
           <select id="tPoints">
             <option value="1,0.5,0">1 / ½ / 0</option>
             <option value="3,1,0">3 / 1 / 0</option>
           </select>
         </label>
 
-        <label>Poäng för lottad frirond
+        <label>Poäng för tilldelad frirond (PAB)
           <input id="tPab" type="number" min="0" step="0.5" value="1">
         </label>
       </div>
 
       <p id="listStatus" class="muted"></p>
       <p class="muted">
-        Inställningarna sparas automatiskt. Anmälan stängs när den
-        första ronden har skapats. Poängsystem, inledande färg och
+        Inställningar sparas automatiskt. Registreringen stängs när den
+        första ronden har genererats. Poängsystem, inledande färg och
         antal ronder låses därefter.
       </p>
       <p class="muted">
         Slutplacering: poäng, BH-1, BH, sedan SB.
         Spelare som fortfarande är lika delar placering; TPN styr endast
-        deras visningsordning. Avvikande frirondpoäng måste godkännas av
+        visningsordningen. Avvikande frirondspoäng måste godkännas i
         turneringsbestämmelserna.
       </p>
     </div>
 
     <div class="card">
       <div class="row between">
-        <h2>Spelare (<span id="playerCount">0</span>)</h2>
+        <h2>Spelare (<span id="playerCount">0 / 50</span>)</h2>
 
         <div class="row no-print">
           <button id="importButton"
@@ -380,7 +380,7 @@ a { color:var(--blue); }
             Klistra in spelare
           </button>
           <button id="sampleButton" onclick="loadSamplePlayers()">
-            32 exempeldeltagare
+            32 exempelspelare
           </button>
           <button id="resetButton" class="danger" onclick="resetTournament()">
             Återställ
@@ -424,8 +424,9 @@ a { color:var(--blue); }
       <p id="registrationHint" class="muted no-print"></p>
       <p class="muted no-print">
         Granska den inledande ordningen efter rating/titel/namn. Lagrade
-        TPN – inte särskiljning i tabellen – styr lottningen. Import av en
-        TRF här importerar endast anmälningsfält, inte turneringshistoriken.
+        TPN:er, inte ställningens särskiljning, styr parningen. Import av
+        en TRF här importerar endast registreringsfält, inte
+        turneringshistorik. Deltagarlistan är begränsad till 50 spelare.
       </p>
 
       <div class="table-wrap">
@@ -450,11 +451,11 @@ a { color:var(--blue); }
   <section id="pairings" class="tab">
     <div class="card">
       <div class="row between">
-        <h2 id="roundTitle">Rondlottning</h2>
+        <h2 id="roundTitle">Rondparningar</h2>
 
         <div class="row no-print">
           <button id="pairButton" class="primary" onclick="generateRound()">
-            Skapa lottning
+            Generera parningar
           </button>
           <button id="cancelButton" class="danger"
                   onclick="cancelSearch()" disabled>
@@ -501,7 +502,7 @@ a { color:var(--blue); }
   <section id="standings" class="tab">
     <div class="card">
       <h2 id="scoreTournamentName"></h2>
-      <h3 id="scoreTitle">Poänglista</h3>
+      <h3 id="scoreTitle">Ställning</h3>
 
       <div id="standingsNotice" class="notice no-print"></div>
 
@@ -519,9 +520,10 @@ a { color:var(--blue); }
       <h2>Avslutade ronder</h2>
 
       <p class="muted">
-        Importerad eller tidigare skapad lottning certifieras inte i
-        efterhand av detta program. Arkivet är källan för poäng, spelade
-        färger, motståndare, float-historik och särskiljningsberäkningar.
+        Importerade eller tidigare genererade parningar certifieras inte
+        i efterhand av denna applikation. Arkivet är källan för poäng,
+        spelade färger, motståndare, flödeshistorik och
+        särskiljningsberäkningar.
       </p>
 
       <div id="historyBody"></div>
@@ -532,14 +534,14 @@ a { color:var(--blue); }
 <dialog id="pasteDialog">
   <h2>Klistra in anmälningslista</h2>
   <p class="muted">
-    CSV, tabbseparerad eller semikolonseparerad:
+    CSV, tabbseparerad eller semikolonavgränsad:
     <code>Namn, Rating, Titel</code>.
-    Sätt citattecken runt namn som innehåller kommatecken, eller använd
+    Omge namn med kommatecken med citattecken, eller använd
     <code>Efternamn, Förnamn, Rating, Titel</code>.
-    TRF06-anmälningsfält känns också igen.
+    TRF06-registreringsfält känns också igen.
   </p>
   <textarea id="pasteText"
-            placeholder='"Andersson, Anna", 1900, WFM'></textarea>
+            placeholder='"Smith, Jane", 1900, WFM'></textarea>
   <div class="row" style="justify-content:flex-end;margin-top:.8rem">
     <button onclick="document.getElementById('pasteDialog').close()">
       Avbryt
@@ -552,65 +554,72 @@ a { color:var(--blue); }
   <h2>Om denna implementation</h2>
 
   <p>
-    Experimentell referensimplementation av FIDE:s holländska regler
-    gällande från 1 februari 2026. Den är inte FIDE-godkänd och får inte
-    behandlas som en certifierad lottningskontroll.
+    Experimentell referensimplementation av FIDE:s Dutch-regler gällande från 1 februari 2026. Den är inte FIDE-godkänd och ska inte
+    betraktas som en certifierad lottningskontroll.
   </p>
 
   <p>
-    Sökningen är lokal per poänggrupp, med specificerad C8-förhandsgranskning.
-    Avbrutna beräkningar publicerar aldrig en preliminär bästa lottning.
-    Lottningssökningar använder fasta gränser för arbetsenheter.
+    Sökningen är lokal per grupp, med specificerad C8-förutblick.
+    Avbrutna beräkningar publicerar aldrig en preliminär bästa parning.
+    Parningssökningar använder fasta gränser för arbetsenheter.
   </p>
 
   <p>
-    Anmälan stängs automatiskt när första ronden har skapats. Befintliga
-    spelare kan därefter tas ut eller återinsättas mellan ronder. Nya
-    spelare kan inte läggas till efter att anmälan har stängt.
+    Registreringen stängs automatiskt när den första ronden har
+    genererats. Befintliga spelare kan därefter strykas eller
+    återinsättas mellan ronder. Nya spelare kan inte läggas till efter
+    att registreringen har stängts.
   </p>
 
   <p>
-    Slutresultat rangordnas efter poäng, Buchholz Cut 1 (BH-1), Buchholz
-    (BH) och Sonneborn-Berger (SB). Spelare som fortfarande är lika delar
-    placering. TPN används endast för att sortera rader med samma värde.
+    Slutresultat rangordnas efter poäng, Buchholz Cut 1 (BH-1),
+    Buchholz (BH) och Sonneborn-Berger (SB). Spelare som fortfarande
+    är lika delar placering. TPN används endast för att ordna lika
+    rader.
   </p>
 
   <p>
-    Särskiljningsberäkningar implementerar de individuella schweiziska
-    bestämmelserna i FIDE:s regler för särspel och särskiljning gällande
-    från 1 mars 2026, inklusive justerade motståndarpoäng, dummy-poängtak
-    för ospelade ronder och undantaget för frivilligt ospelad rond vid BH-1.
+    Särskiljningsberäkningar implementerar bestämmelserna i FIDE:s regler för särspel och särskiljning med
+    verkan från 1 mars 2026, inklusive justerade motståndarpoäng,
+    dummy-poängtak för ospelade ronder och undantaget för frivilligt
+    ospelad rond för BH-1.
   </p>
 
   <p>
-    Med 3/1/0-poäng använder SB de faktiska poäng som tagits mot varje
-    motståndare. Saknade historiska poster behandlas som begärda
-    nollpoängs-frironder. Begärda remi- och nollpoängs-frånvaron behandlas
-    som frivilligt ospelade ronder.
+    Med 3 / 1 / 0-poäng använder SB de faktiska poäng som uppnåtts mot
+    varje motståndare. Saknade historiska poster behandlas som begärda
+    nollpoängsronder. Begärda remivärden och nollpoängsfrånvaro
+    behandlas som frivilligt ospelade ronder.
   </p>
 
   <p>
-    Oparade MDP använder en omlottningsmarkör som är större än varje
+    Oparade MDP:er använder en återflödesmarkör som är större än varje
     faktisk poängskillnad, enligt konventionen som förklaras i
-    TEC-annoteringarna.
+    TEC-kommentarerna.
   </p>
+
+  <p>
+    <b>Obs:</b> Det maximala antalet deltagare är 50.
+  </p>
+
   <p>
     När en rond har bekräftats kan ett felaktigt registrerat resultat
-    korrigeras via gränssnittet, förutsatt att en turneringsbackup
-    tidigare har skapats med funktionen "Spara turnering".
+    korrigeras via gränssnittet, förutsatt att en säkerhetskopia av
+    turneringen tidigare har skapats med funktionen "Spara turnering".
   </p>
+
   <p>
-    Ej implementerat: acceleration, godtyckliga ytterligare
-    lottningsrestriktioner, uppskjutna partier eller ett administrativt
-    arbetsflöde för att ändra publicerad lottning och korrigera arkiverade
-    resultat. De inbyggda testerna är utvecklarnas regressionstester, inte
-    den officiella FIDE-godkännande-sviten.
+    Inte implementerat: acceleration, godtyckliga ytterligare
+    parningsbegränsningar, uppskjutna partier eller ett administrativt
+    arbetsflöde för att ändra publicerade parningar och korrigera
+    arkiverade resultat. De inbyggda testerna är utvecklarnas
+    regressionstester, inte FIDE:s officiella godkännandetester.
   </p>
 
   <ul>
     <li>
       <a href="https://handbook.fide.com/chapter/C0403202602"
-         target="_blank" rel="noopener">Officiella holländska reglerna</a>
+         target="_blank" rel="noopener">Officiella Dutch-regler</a>
     </li>
     <li>
       <a href="https://handbook.fide.com/chapter/GeneralHandlingRulesForSwissTournaments202602"
@@ -622,7 +631,7 @@ a { color:var(--blue); }
     </li>
     <li>
       <a href="https://tec.fide.com/wp-content/uploads/2026/08/AnnotatedDutch-V2026.pdf"
-         target="_blank" rel="noopener">TEC-annoteringar</a>
+         target="_blank" rel="noopener">TEC-värdade kommentarer</a>
     </li>
   </ul>
 
@@ -689,7 +698,7 @@ function Dutch2026Core() {
       throw fault(
         "INPUT",
         "Motstridiga absoluta färgkrav i historiken för TPN " +
-        player.tpn + ". Åtgärda den underliggande turneringsdatan."
+        player.tpn + ". Åtgärda underliggande turneringsdata."
       );
     }
 
@@ -801,7 +810,7 @@ function Dutch2026Core() {
     }
 
     let nodes = 0;
-    let phase = "Förbereder lottningsdata";
+    let phase = "Förbereder parningsdata";
     let lastProgress = started;
 
     function tick() {
@@ -841,13 +850,13 @@ function Dutch2026Core() {
       !["W","B"].includes(context.initialColor) ||
       !Array.isArray(input.players)
     ) {
-      throw fault("INPUT", "Ogiltig lottningskontext.");
+      throw fault("INPUT", "Ogiltig parningskontext.");
     }
 
     if (input.acceleration || (input.restrictions || []).length) {
       throw fault(
         "INPUT",
-        "Acceleration och extra restriktioner stöds inte."
+        "Acceleration och extra begränsningar stöds inte."
       );
     }
 
@@ -883,7 +892,7 @@ function Dutch2026Core() {
       ) {
         throw fault(
           "INPUT",
-          "Ogiltigt tillstånd för en spelare, bland annat TPN " + p.tpn + "."
+          "Ogiltigt tillstånd för en spelare, inklusive TPN " + p.tpn + "."
         );
       }
 
@@ -964,6 +973,16 @@ function Dutch2026Core() {
       }
     }
 
+    /*
+     * Per-player colour-wish lookup, hoisted out of the bracket search.
+     *   colorWant[v] = +1 if v wants White, -1 if it wants Black, 0 otherwise.
+     */
+    const colorWant = new Int8Array(N);
+    for (let i = 0; i < N; i++) {
+      const c = players[i].pref.color;
+      colorWant[i] = c === "W" ? 1 : c === "B" ? -1 : 0;
+    }
+
     const matchingMemo = new Map();
     const MATCHING_MEMO_CAP = 200000;
 
@@ -1014,77 +1033,77 @@ function Dutch2026Core() {
         }
 
         matchingMemo.set(key, false);
-        if (matchingMemo.size > MATCHING_MEMO_CAP) {   
-          matchingMemo.clear();                        
-        }                                              
+        if (matchingMemo.size > MATCHING_MEMO_CAP) {
+          matchingMemo.clear();
+        }
         return false;
       }
 
       return visit(ordered(list));
     }
 
-function canRemoveForBye(list, score) {
-  for (const i of list) {
-    tick();
-    if (
-      eligible(i) &&
-      players[i].score === score &&
-      perfectMatching(list.filter(j => j !== i))
-    ) {
-      return true;
+    function canRemoveForBye(list, score) {
+      for (const i of list) {
+        tick();
+        if (
+          eligible(i) &&
+          players[i].score === score &&
+          perfectMatching(list.filter(j => j !== i))
+        ) {
+          return true;
+        }
+      }
+      return false;
     }
-  }
-  return false;
-}
 
-
-    phase = "Fastställer C4 och minsta möjliga frirondpoäng";
+    phase = "Fastställer C4 och minsta möjliga frirondspoäng";
     let byeScore = null;
 
-if (N % 2) {
-  const possibleScores = [...new Set(
-    ids.filter(eligible).map(i => players[i].score)
-  )].sort((a, b) => a - b);
+    if (N % 2) {
+      const possibleScores = [...new Set(
+        ids.filter(eligible).map(i => players[i].score)
+      )].sort((a, b) => a - b);
 
-  for (const score of possibleScores) {
-    if (canRemoveForBye(ids, score)) {
-      byeScore = score;
-      break;
-    }
-  }
+      for (const score of possibleScores) {
+        if (canRemoveForBye(ids, score)) {
+          byeScore = score;
+          break;
+        }
+      }
 
-  if (byeScore === null) {
-    throw fault(
-      "NO_LEGAL_COMPLETION",
-      "Det finns ingen komplett rond som uppfyller C1–C3 och frirondskvalifikation."
-    );
-  }
-} else if (!perfectMatching(ids)) {
+      if (byeScore === null) {
+        throw fault(
+          "NO_LEGAL_COMPLETION",
+          "Ingen fullständig rond som uppfyller C1–C3 och " +
+          "frirondsbehörighet finns."
+        );
+      }
+    } else if (!perfectMatching(ids)) {
       throw fault(
         "NO_LEGAL_COMPLETION",
-        "Det finns ingen komplett rond som uppfyller C1–C3."
+        "Ingen fullständig rond som uppfyller C1–C3 finns."
       );
     }
 
     const completionMemo = new Map();
 
-function canComplete(list) {
-  const xs = ordered(list);
-  const key = xs.join(",");
+    function canComplete(list) {
+      const xs = ordered(list);
+      const key = xs.join(",");
 
-  if (completionMemo.has(key)) return completionMemo.get(key);
+      if (completionMemo.has(key)) return completionMemo.get(key);
 
-  let answer = false;
+      let answer = false;
 
-  if (!(xs.length % 2)) {
-    answer = perfectMatching(xs);
-  } else if (byeScore !== null) {
-    answer = canRemoveForBye(xs, byeScore);
-  }
+      if (!(xs.length % 2)) {
+        answer = perfectMatching(xs);
+      } else if (byeScore !== null) {
+        answer = canRemoveForBye(xs, byeScore);
+      }
 
-  completionMemo.set(key, answer);
-  return answer;
-}
+      completionMemo.set(key, answer);
+      return answer;
+    }
 
     const groups = [];
 
@@ -1336,8 +1355,8 @@ function canComplete(list) {
       if (!best) {
         throw fault(
           "NO_DUTCH_CANDIDATE",
-          "Ingen kandidat för nästa grupp kunde fastställas. " +
-          "Ingen lottning returneras."
+          "Ingen kandidat för nästa grupp fastställdes. " +
+          "Ingen parning returneras."
         );
       }
 
@@ -1379,7 +1398,7 @@ function canComplete(list) {
       if (!Number.isFinite(best)) {
         throw fault(
           "NO_DUTCH_CANDIDATE",
-          "Ingen C9-kompatibel kandidat kunde fastställas."
+          "Ingen C9-kompatibel kandidat fastställdes."
         );
       }
 
@@ -1419,18 +1438,6 @@ function canComplete(list) {
       }
     }
 
-    /*
-     * Enumeration of top/bottom partitions of the bracket.
-     *
-     * The transposition size is capped by bracket width.  The
-     * uncapped loop enumerates C(n, pairCount) partitions, which
-     * for a 25-player bracket with 12 pairings is ≈ 5.2 million
-     * partitions — several orders of magnitude more than the
-     * engine can afford to visit before the fixed work limit
-     * fires.  The natural partition plus a small transposition
-     * window is sufficient for ordinary colour problems; larger
-     * exchange sizes are only needed in degenerate histories.
-     */
     function* exchangeConfigurations(list, pairCount) {
       const n = list.length;
       const A = Array.from({length:pairCount}, (_,i) => i+1);
@@ -1443,9 +1450,7 @@ function canComplete(list) {
         s2:list.slice(pairCount)
       };
 
-      const exchangeCap =
-        n <= 12 ? 8 : n <= 20 ? 4 : 3;
-      const maxSize = Math.min(A.length, B.length, exchangeCap);
+      const maxSize = Math.min(A.length, B.length);
 
       for (
         let size = 1;
@@ -1483,16 +1488,80 @@ function canComplete(list) {
       }
     }
 
+    /*
+     * Per-partition suffix bounds on remaining C12 (p2) and C13 (p3).
+     *
+     * For a fixed top/bottom split (s1, s2), every s1[i] must be paired
+     * with some b ∈ s2 (i.e. an assignment-problem relaxation of the
+     * matching).  Define
+     *
+     *     m2[i] = min_{b legal, b ∈ s2} pairCost[s1[i]][b][2]
+     *     m3[i] = min_{b legal, b ∈ s2} pairCost[s1[i]][b][3]
+     *
+     * Then for any partial DFS state at depth `position`,
+     *
+     *     Σ_{i ≥ position} m2[i]     (resp. m3)
+     *
+     * is a valid lower bound on the additional p2 (resp. p3) of any
+     * completion, because the unavailable-second set only *removes*
+     * candidates and never lowers the per-element minimum.  These
+     * arrays are computed once per partition and consumed at every
+     * node of the DFS.
+     */
+    function computeSuffixBounds(s1, s2) {
+      const n = s1.length;
+      const suf2 = new Array(n + 1).fill(0);
+      const suf3 = new Array(n + 1).fill(0);
+
+      for (let i = n - 1; i >= 0; i--) {
+        tick();
+
+        const row = s1[i];
+        let m2 = Infinity;
+        let m3 = Infinity;
+
+        for (let k = 0; k < s2.length; k++) {
+          const b = s2[k];
+          if (!edge[row][b]) continue;
+          const pc = pairCost[row][b];
+          if (pc[2] < m2) m2 = pc[2];
+          if (pc[3] < m3) m3 = pc[3];
+          if (m2 === 0 && m3 === 0) break;
+        }
+
+        suf2[i] = suf2[i + 1] + (m2 === Infinity ? 0 : m2);
+        suf3[i] = suf3[i + 1] + (m3 === Infinity ? 0 : m3);
+      }
+
+      return { suf2, suf3 };
+    }
+
+    /*
+     * Depth-first pairing of s1 into s2.
+     *
+     * `sums` is the mutable accumulator threaded through recursion
+     * (pair-cost row and colour-wish tallies).  `dfsUsed` is a shared
+     * Uint8Array keyed by player index; the DFS sets it on descend and
+     * clears it on backtrack.  Because the same buffer is reused across
+     * every partition of a bracket, the DFS never allocates.
+     *
+     * `suffixMinP2` / `suffixMinP3` are the partition pre-bounds; they
+     * are consumed by canWin() as an assignment-relaxation prune.
+     */
     function* prefixPairings(
-      s1, s2, canWin, position = 0, used = new Set(), pairs = []
+      s1, s2, canWin, sums, dfsUsed,
+      suffixMinP2, suffixMinP3,
+      position = 0, pairs = []
     ) {
       tick();
-      if (!canWin(pairs)) return;
+      if (!canWin(position, suffixMinP2, suffixMinP3)) return;
 
       if (position === s1.length) {
         yield {
           pairs:[...pairs],
-          unused:s2.filter(i => !used.has(i))
+          // s2 is derived from an ordered list, so filtering already
+          // yields ascending order — no re-sort at the leaf.
+          unused:s2.filter(i => !dfsUsed[i])
         };
         return;
       }
@@ -1500,37 +1569,48 @@ function canComplete(list) {
       const first = s1[position];
 
       for (const second of s2) {
-        if (used.has(second) || !edge[first][second]) continue;
+        if (dfsUsed[second] || !edge[first][second]) continue;
 
-        used.add(second);
+        dfsUsed[second] = 1;
         pairs.push([first,second]);
 
+        const pc = pairCost[first][second];
+        const wa = colorWant[first];
+        const wb = colorWant[second];
+
+        sums.p0 += pc[0];
+        sums.p1 += pc[1];
+        sums.p2 += pc[2];
+        sums.p3 += pc[3];
+        if (wa ===  1) sums.pairedW++;
+        else if (wa === -1) sums.pairedB++;
+        if (wb ===  1) sums.pairedW++;
+        else if (wb === -1) sums.pairedB++;
+        sums.count++;
+
         yield* prefixPairings(
-          s1,s2,canWin,position+1,used,pairs
+          s1, s2, canWin, sums, dfsUsed,
+          suffixMinP2, suffixMinP3,
+          position+1, pairs
         );
 
+        sums.p0 -= pc[0];
+        sums.p1 -= pc[1];
+        sums.p2 -= pc[2];
+        sums.p3 -= pc[3];
+        if (wa ===  1) sums.pairedW--;
+        else if (wa === -1) sums.pairedB--;
+        if (wb ===  1) sums.pairedW--;
+        else if (wb === -1) sums.pairedB--;
+        sums.count--;
+
         pairs.pop();
-        used.delete(second);
+        dfsUsed[second] = 0;
       }
     }
 
-    /*
-     * Per-partition lower bound.
-     *
-     * For a fixed top/bottom partition (s1, s2), every element
-     * of s1 must be paired with some element of s2.  Therefore
-     * the sum of the per-element lexicographic minima backward
-     * from s1 across s2 is a valid lower bound on the cost of
-     * any matching inside that partition.  When the incumbent
-     * bound already beats this bound, the whole partition is
-     * discarded without a single DFS node being spent inside it.
-     *
-     * The bound is cheap: |s1|·|s2| legality-and-cost probes,
-     * which is negligible next to the exponential DFS the
-     * partition would otherwise trigger.
-     */
     function* homogeneousCandidates(
-      list, pairCount, canWin, shouldSkipPartition
+      list, pairCount, canWin, shouldSkipPartition, sums, dfsUsed
     ) {
       const sorted = ordered(list);
 
@@ -1575,23 +1655,25 @@ function canComplete(list) {
           if (shouldSkipPartition(lb)) continue;
         }
 
+        const { suf2, suf3 } = computeSuffixBounds(s1, s2);
+
         for (const candidate of prefixPairings(
-          s1,s2,canWin
+          s1, s2, canWin, sums, dfsUsed, suf2, suf3
         )) {
           yield {
             pairs:candidate.pairs,
-            down:ordered(candidate.unused)
+            down:candidate.unused // already sorted
           };
         }
       }
     }
 
     function* bracketCandidates(
-      ctx, high, canWin, shouldSkipPartition
+      ctx, high, canWin, shouldSkipPartition, sums, dfsUsed
     ) {
       if (!ctx.mdps.length) {
         yield* homogeneousCandidates(
-          ctx.residents,high.pairs,canWin,shouldSkipPartition
+          ctx.residents,high.pairs,canWin,shouldSkipPartition,sums,dfsUsed
         );
         return;
       }
@@ -1608,17 +1690,27 @@ function canComplete(list) {
           continue;
         }
 
-        for (const mdpPairing of prefixPairings(
-          selected,ctx.residents,canWin
-        )) {
-          const remainderCanWin = pairs =>
-            canWin([...mdpPairing.pairs,...pairs]);
+        // Anchor-phase suffix bounds: MDP → resident assignment only.
+        // The remaining resident→resident work uses its own bound,
+        // computed inside homogeneousCandidates.
+        const { suf2, suf3 } = computeSuffixBounds(
+          selected, ctx.residents
+        );
 
+        for (const mdpPairing of prefixPairings(
+          selected,ctx.residents,canWin,sums,dfsUsed,suf2,suf3
+        )) {
+          // dfsUsed is deliberately shared: the anchor's marks cover
+          // only residents already mated with MDPs, and the remainder
+          // DFS restricts itself to the *unmarked* subset (mdpPairing.unused),
+          // so the two phases cannot collide on any index.
           for (const remainder of homogeneousCandidates(
             mdpPairing.unused,
             high.pairs-high.m1,
-            remainderCanWin,
-            shouldSkipPartition
+            canWin,
+            shouldSkipPartition,
+            sums,
+            dfsUsed
           )) {
             yield {
               pairs:[...mdpPairing.pairs,...remainder.pairs],
@@ -1786,12 +1878,23 @@ function canComplete(list) {
       const ctx = bracketContext(index,incoming);
       phase = "Optimerar grupp vid poäng " + ctx.score;
 
+      let totalW = 0, totalB = 0;
+
+      for (const v of ctx.all) {
+        const c = colorWant[v];
+        if (c ===  1) totalW++;
+        else if (c === -1) totalB++;
+      }
+
+      let bestLimitCache  = null;
+      let bestValueCache  = null;
+
       const high = highFor(index,incoming);
 
       if (!high) {
         throw fault(
           "NO_DUTCH_CANDIDATE",
-          "Ingen gruppkandidat kunde fastställas vid poäng " +
+          "Ingen gruppkandidat fastställdes vid poäng " +
           ctx.score + "."
         );
       }
@@ -1827,71 +1930,73 @@ function canComplete(list) {
       let cap = null;
       let proof = "exhausted-with-safe-pruning";
 
-function canWin(partialPairs) {
-  const limit = best ? best.value.slice(0,4) : cap;
-  if (!limit) return true;
+      // Mutable accumulator for the DFS path.
+      const sums = {
+        p0:0, p1:0, p2:0, p3:0,
+        pairedW:0, pairedB:0, count:0
+      };
 
-  const partial = [0,0,0,0];
-  const paired = new Set();
+      // One player-index-keyed DFS visited buffer for the whole bracket.
+      // Reset per cap pass: the tight-cap pass can abandon a generator
+      // mid-backtrack, so we cannot assume the buffer returns to zero
+      // on its own.
+      const dfsUsed = new Uint8Array(N);
 
-  for (const [a,b] of partialPairs) {
-    for (let k = 0; k < 4; k++) {
-      partial[k] += pairCost[a][b][k];
-    }
-    paired.add(a);
-    paired.add(b);
-  }
+      function canWin(position, suffixMinP2, suffixMinP3) {
+        let limit;
 
-  // C10 and C11 are exact counters; a direct comparison is
-  // already the tightest possible test.
-  if (partial[0] !== limit[0]) return partial[0] < limit[0];
-  if (partial[1] !== limit[1]) return partial[1] < limit[1];
+        if (best) {
+          if (best.value !== bestValueCache) {
+            bestValueCache = best.value;
+            bestLimitCache = [
+              best.value[0], best.value[1],
+              best.value[2], best.value[3]
+            ];
+          }
+          limit = bestLimitCache;
+        } else {
+          limit = cap;
+        }
 
-  // C12: colour-preference misses.  A sound lower bound follows
-  // from the unpaired players’ colour wishes.  Of the remaining
-  // White-wanters, at most `high.count` can be floated out (they
-  // receive no colour) and at most `fp` can receive White; the
-  // rest must get Black and therefore miss.  Symmetric for
-  // Black-wanters.  This bound is used both for the true incumbent
-  // (`best`) and for every optimistic cap.
-  let wWant = 0;
-  let bWant = 0;
+        if (!limit) return true;
 
-  for (const v of ctx.all) {
-    if (paired.has(v)) continue;
-    const due = players[v].pref.color;
-    if (due === "W") wWant++;
-    else if (due === "B") bWant++;
-  }
+        const p0 = sums.p0, p1 = sums.p1;
+        const p2 = sums.p2, p3 = sums.p3;
 
-  const remaining = ctx.all.length - 2*partialPairs.length;
-  const fp = (remaining - high.count)/2;
+        if (p0 !== limit[0]) return p0 < limit[0];
+        if (p1 !== limit[1]) return p1 < limit[1];
 
-  const lb2 =
-    Math.max(0, wWant - high.count - fp) +
-    Math.max(0, bWant - high.count - fp);
+        const wWant = totalW - sums.pairedW;
+        const bWant = totalB - sums.pairedB;
+        const remaining = ctx.all.length - 2 * sums.count;
+        const fp = (remaining - high.count) / 2;
 
-  const low2 = partial[2] + lb2;
+        const lb2 =
+          Math.max(0, wWant - high.count - fp) +
+          Math.max(0, bWant - high.count - fp);
 
-  if (low2 !== limit[2]) return low2 < limit[2];
+        // Stronger of the color-capacity bound and the assignment
+        // relaxation suffix bound; both are valid lower bounds.
+        const p2Remaining = Math.max(lb2, suffixMinP2[position]);
+        const low2 = p2 + p2Remaining;
+        if (low2 !== limit[2]) return low2 < limit[2];
 
-  // C13: no useful lower bound is available; require strict
-  // improvement against the current limit.
-  if (partial[3] !== limit[3]) return partial[3] < limit[3];
+        const low3 = p3 + suffixMinP3[position];
+        if (low3 !== limit[3]) return low3 < limit[3];
 
-  return true;
-}
+        return true;
+      }
 
-      /*
-       * Predicate used by homogeneousCandidates to discard a whole
-       * partition before spending a single DFS node inside it.
-       *
-       *   - Against `best`, require strict lexicographic improvement.
-       *   - Against a pre-set cap, allow the bound to meet the cap.
-       */
       function shouldSkipPartition(lb) {
         if (best) {
-          return compareArrays(lb, best.value.slice(0,4)) >= 0;
+          if (best.value !== bestValueCache) {
+            bestValueCache = best.value;
+            bestLimitCache = [
+              best.value[0], best.value[1],
+              best.value[2], best.value[3]
+            ];
+          }
+          return compareArrays(lb, bestLimitCache) > 0;
         }
         if (cap) {
           return compareArrays(lb, cap) > 0;
@@ -1899,18 +2004,21 @@ function canWin(partialPairs) {
         return false;
       }
 
-      // Optimistic passes first. Relax the cap only if nothing is found.
       const caps = [
         [lowerBound[0],lowerBound[1],lowerBound[2],Infinity],
         [lowerBound[0],lowerBound[1],lowerBound[2]+1,Infinity],
-        null                       // original behaviour as last resort
+        null
       ];
 
       for (const c of caps) {
         cap = c;
 
+        sums.p0 = sums.p1 = sums.p2 = sums.p3 = 0;
+        sums.pairedW = sums.pairedB = sums.count = 0;
+        dfsUsed.fill(0);
+
         for (const candidate of bracketCandidates(
-          ctx,high,canWin,shouldSkipPartition
+          ctx,high,canWin,shouldSkipPartition,sums,dfsUsed
         )) {
           tick();
           ordinal++;
@@ -1935,7 +2043,7 @@ function canWin(partialPairs) {
       if (!best) {
         throw fault(
           "NO_DUTCH_CANDIDATE",
-          "Ingen valbar kandidat kunde fastställas vid poäng " +
+          "Ingen valbar kandidat fastställdes vid poäng " +
           ctx.score + "."
         );
       }
@@ -2011,7 +2119,8 @@ function canWin(partialPairs) {
       if (!edge[a][b] || covered.has(a) || covered.has(b)) {
         throw fault(
           "INTERNAL",
-          "Slutlig kontroll av partilaglighet eller unikhet misslyckades."
+          "Slutlig kontroll av parningsgiltighet eller unikhet " +
+          "misslyckades."
         );
       }
 
@@ -2028,7 +2137,7 @@ function canWin(partialPairs) {
 
     if (pabIndex !== null) {
       if (covered.has(pabIndex)) {
-        throw fault("INTERNAL","Dubbel frirondsmottagare.");
+        throw fault("INTERNAL","Dubblerad frirondsmottagare.");
       }
       covered.add(pabIndex);
     }
@@ -2096,7 +2205,7 @@ function canWin(partialPairs) {
     test("Vanlig udda första rond",() => {
       const result = run(fixture(15));
 
-      check(result.pabId === "P15","Förväntade att TPN 15 skulle få frirond.");
+      check(result.pabId === "P15","Förväntade TPN 15 som frirondsmottagare.");
 
       for (let i = 1; i <= 7; i++) {
         check(
@@ -2112,18 +2221,18 @@ function canWin(partialPairs) {
         result.pairs.some(p =>
           p.whiteId === "P1" && p.blackId === "P8"
         ),
-        "Felaktig inledande färg i första ronden."
+        "Felaktig vit färg i första ronden."
       );
 
       check(
         result.pairs.some(p =>
           p.whiteId === "P9" && p.blackId === "P2"
         ),
-        "Felaktig inledande färg för jämnt TPN."
+        "Felaktig svart färg för jämn TPN."
       );
     });
 
-    test("Kanonisk ordning för lika ställning",() => {
+    test("Kanonisk ordning vid lika",() => {
       const input = fixture(4,3,5);
 
       input.players.forEach(p => {
@@ -2136,7 +2245,7 @@ function canWin(partialPairs) {
       check(
         JSON.stringify(opponents(result)) ===
           JSON.stringify(["P1-P3","P2-P4"]),
-        "Förväntade den naturliga kandidaten över-/underhalva."
+        "Förväntade den naturliga övre halva / nedre halva-kandidaten."
       );
     });
 
@@ -2172,7 +2281,7 @@ function canWin(partialPairs) {
 
       check(
         refused,
-        "Samma absoluta preferenser bör förbjuda denna lottning."
+        "Lika absoluta preferenser ska förbjuda denna parning."
       );
 
       input.totalRounds = 3;
@@ -2183,7 +2292,7 @@ function canWin(partialPairs) {
       );
     });
 
-    test("C4 kan kräva extra nedflottningar",() => {
+    test("C4 kan kräva extra nedflöden",() => {
       const input = fixture(4,2,5);
       input.players[0].score = 1;
       input.players[1].score = 1;
@@ -2194,15 +2303,15 @@ function canWin(partialPairs) {
 
       check(
         result.trace[0].MaxPairs === 0,
-        "Övre gruppen måste lämna båda spelarna tillgängliga."
+        "Den övre gruppen måste lämna båda spelarna tillgängliga."
       );
       check(
         result.pairs.length === 2,
-        "Förväntade komplett parning över poänggränsen."
+        "Förväntade fullständig parning över poänggränsen."
       );
     });
 
-    test("C5 väljer lägsta möjliga poäng",() => {
+    test("C5 väljer minsta möjliga poäng",() => {
       const input = fixture(3,2,5);
       input.players[0].score = 1;
       input.players[2].score = 1;
@@ -2214,7 +2323,7 @@ function canWin(partialPairs) {
 
       check(
         result.pabId === "P3" && result.byeScore === 1,
-        "Felaktigt val av frirondspoäng."
+        "Felaktigt val av möjlig frirondspoäng."
       );
     });
 
@@ -2224,7 +2333,8 @@ function canWin(partialPairs) {
 
       check(
         run(input).pabId === "P2",
-        "Förväntade att TPN 2, inte TPN 3 (tidigare frånvarande), skulle få frirond."
+        "Förväntade TPN 2, inte den tidigare frånvarande TPN 3, " +
+        "som frirondsmottagare."
       );
     });
 
@@ -2247,7 +2357,7 @@ function canWin(partialPairs) {
       check(
         JSON.stringify(result.trace[0].downfloaters) ===
           JSON.stringify([1]),
-        "Förväntade att TPN 1 skulle lösa nästa grupps inkompatibilitet."
+        "Förväntade TPN 1 för att lösa nästa grupps inkompatibilitet."
       );
     });
 
@@ -2263,7 +2373,8 @@ function canWin(partialPairs) {
 
       check(
         run(input).pabId === "P1",
-        "Den skyddade MDP:n bör paras i stället för att flyttas ned till frirond."
+        "Den skyddade MDP:n ska paras i stället för att nedflödas " +
+        "till frironden."
       );
     });
 
@@ -2307,6 +2418,13 @@ const FIXED_SEARCH_LIMITS = Object.freeze({
   seconds: 20,
   nodes: 0  // 0 = no node cap; the 30-second wall clock is the sole bound
 });
+
+/*
+ * Hard upper bound on the number of registered participants.
+ * Enforced when players are added, when a tournament file is
+ * loaded, and reflected in the setup UI.
+ */
+const MAX_PLAYERS = 50;
 
 const TITLE_WEIGHTS = {
   GM:8,IM:7,WGM:6,FM:5,WIM:4,CM:3,WFM:2,WCM:1,"":0
@@ -2387,12 +2505,13 @@ function guarded(fn) {
 
 function requireIdle(requireNoPending = false) {
   if (job) {
-    throw new Error("Vänta på eller avbryt den pågående sökningen.");
+    throw new Error("Vänta på eller avbryt den aktuella sökningen.");
   }
 
   if (requireNoPending && tournament.activePairings.length) {
     throw new Error(
-      "En rond har redan skapats. Deltagande och TPN kan inte ändras nu."
+      "En rond har redan genererats. Deltagande och TPN:er " +
+      "kan inte ändras nu."
     );
   }
 }
@@ -2412,7 +2531,7 @@ function numberValue(
     n > maximum ||
     (integer && !Number.isSafeInteger(n))
   ) {
-    throw new Error("Ogiltigt värde: " + label + ".");
+    throw new Error("Ogiltig " + label + ".");
   }
 
   return n;
@@ -2422,7 +2541,7 @@ function halfPointValue(value,label,maximum) {
   const n = numberValue(value,label,0,maximum);
 
   if (!Number.isInteger(n*2)) {
-    throw new Error(label + " måste använda halvpoängssteg.");
+    throw new Error(label + " måste användas i halvpoängssteg.");
   }
 
   return n;
@@ -2537,7 +2656,7 @@ function applySettings() {
     changes.lossPoints = loss;
 
     changes.pabPoints = halfPointValue(
-      $("tPab").value,"frirondpoäng",win
+      $("tPab").value,"PAB-poäng",win
     );
   }
 
@@ -2819,7 +2938,7 @@ function calculateTiebreaks(t = tournament) {
 
         if (!Number.isFinite(scheduledScore)) {
           throw new Error(
-            "En walkover-post har ingen giltig schemalagd motståndare."
+            "En walkover-post saknar giltig schemalagd motståndare."
           );
         }
 
@@ -2829,7 +2948,9 @@ function calculateTiebreaks(t = tournament) {
       }
 
       if (!Number.isFinite(opponentScore)) {
-        throw new Error("Ogiltig motståndarpoäng i särskiljningsberäkning.");
+        throw new Error(
+          "Ogiltig motståndarpoäng i särskiljningsberäkningen."
+        );
       }
 
       const sbContribution = opponentScore*entry.award;
@@ -2936,7 +3057,7 @@ function runTiebreakTests() {
     equal(v.get("B").sb,.25,"B SB");
   });
 
-  test("Dummy-tak för walkover och VUR-undantag för BH-1",() => {
+  test("Walkover-dummytak och BH-1-undantag för VUR",() => {
     const t = fixture(["A","B","C","D"],[
       [game("A","B","1-0F"),game("C","D","1-0")],
       [game("A","C","1-0"),game("B","D","1-0")]
@@ -2944,13 +3065,13 @@ function runTiebreakTests() {
 
     const v = calculateTiebreaks(t);
 
-    equal(v.get("A").bh,2,"BH för vinnare genom walkover");
-    equal(v.get("A").sb,2,"SB för vinnare genom walkover");
-    equal(v.get("B").bh,1,"BH för förlorare genom walkover");
-    equal(v.get("B").bh1,0,"BH-1 för förlorare genom walkover");
+    equal(v.get("A").bh,2,"BH för walkover-vinnare");
+    equal(v.get("A").sb,2,"SB för walkover-vinnare");
+    equal(v.get("B").bh,1,"BH för walkover-förlorare");
+    equal(v.get("B").bh1,0,"BH-1 för walkover-förlorare");
   });
 
-  test("Avslutande begärda frironder justerar motståndarnas poäng",() => {
+  test("Efterföljande begärda frironder justerar motståndarnas poäng",() => {
     const t = fixture(["A","B","C","D"],[
       [game("A","B","1-0"),game("C","D","1-0")],
       [game("A","C","1-0")]
@@ -2960,11 +3081,11 @@ function runTiebreakTests() {
 
     equal(v.get("B").adjustedScore,.5,"Justerad poäng för utgången B");
     equal(v.get("D").adjustedScore,.5,"Justerad poäng för utgången D");
-    equal(v.get("A").bh,1.5,"A BH efter justering för utgång");
-    equal(v.get("C").sb,.5,"C SB efter justering för utgång");
+    equal(v.get("A").bh,1.5,"A BH efter utträdesjustering");
+    equal(v.get("C").sb,.5,"C SB efter utträdesjustering");
   });
 
-  test("Dummy-poäng utan walkover begränsas till turneringens remipoäng",() => {
+  test("Icke-walkover-dummypoäng begränsas till turneringens remipoäng",() => {
     const t = fixture(["A"],[
       [{
         kind:"pab",pabId:"A",awardedPoints:1
@@ -2979,10 +3100,10 @@ function runTiebreakTests() {
 
     const v = calculateTiebreaks(t).get("A");
 
-    equal(v.score,3,"Full frirondpoäng");
-    equal(v.bh,4.5,"Begränsad BH för frirond");
-    equal(v.bh1,3,"Begränsad BH-1 för frirond");
-    equal(v.sb,4.5,"Begränsad SB för frirond");
+    equal(v.score,3,"Full frirondspoäng");
+    equal(v.bh,4.5,"Begränsad frironds-BH");
+    equal(v.bh1,3,"Begränsad frironds-BH-1");
+    equal(v.sb,4.5,"Begränsad frironds-SB");
   });
 
   test("SB använder faktiska 3 / 1 / 0-poäng",() => {
@@ -2999,16 +3120,16 @@ function runTiebreakTests() {
     equal(v.sb,12,"Fotbolls-SB");
   });
 
-  test("BH-1 med en rond skär bort sitt enda bidrag",() => {
+  test("En enrondig BH-1 skär bort sitt enda bidrag",() => {
     const t = fixture(["A","B"],[
       [game("A","B","0.5-0.5")]
     ]);
 
     const v = calculateTiebreaks(t);
 
-    equal(v.get("A").bh,.5,"BH med en rond");
-    equal(v.get("A").bh1,0,"BH-1 med en rond");
-    equal(v.get("A").sb,.25,"SB med en rond");
+    equal(v.get("A").bh,.5,"Enrondig BH");
+    equal(v.get("A").bh1,0,"Enrondig BH-1");
+    equal(v.get("A").sb,.25,"Enrondig SB");
   });
 
   return passed;
@@ -3029,14 +3150,21 @@ function normalizeTournament(raw) {
     );
   }
 
+  if (raw.players.length > MAX_PLAYERS) {
+    throw new Error(
+      "Turneringsfilen innehåller " + raw.players.length +
+      " spelare, vilket överskrider gränsen på " + MAX_PLAYERS + "."
+    );
+  }
+
   if (
     raw.acceleration ||
     (raw.restrictions || []).length ||
     (raw.pairingRestrictions || []).length
   ) {
     throw new Error(
-      "Detta program stöder inte acceleration eller " +
-      "ytterligare lottningsrestriktioner."
+      "Denna applikation stöder inte acceleration eller " +
+      "ytterligare parningsbegränsningar."
     );
   }
 
@@ -3064,7 +3192,8 @@ function normalizeTournament(raw) {
     !["W","B"].includes(raw.initialColor)
   ) {
     throw new Error(
-      "En befintlig turnering måste innehålla sin inledande färgtilldelning."
+      "En befintlig turnering måste innehålla sin inledande " +
+      "färgtilldelning."
     );
   }
 
@@ -3088,7 +3217,7 @@ function normalizeTournament(raw) {
   }
 
   t.pabPoints = halfPointValue(
-    raw.pabPoints ?? t.winPoints,"frirondpoäng",t.winPoints
+    raw.pabPoints ?? t.winPoints,"PAB-poäng",t.winPoints
   );
 
   const ids = new Set();
@@ -3102,7 +3231,7 @@ function normalizeTournament(raw) {
     const id = String(p.id || "");
 
     if (!id || ids.has(id)) {
-      throw new Error("Saknat eller dubbelt spelar-ID.");
+      throw new Error("Saknat eller dubblerat spelar-ID.");
     }
     ids.add(id);
 
@@ -3117,7 +3246,7 @@ function normalizeTournament(raw) {
       tpn < 1 ||
       tpns.has(tpn)
     ) {
-      throw new Error("Ogiltig eller dubbel TPN.");
+      throw new Error("Ogiltig eller dubblerad TPN.");
     }
     tpns.add(tpn);
 
@@ -3155,14 +3284,16 @@ function normalizeTournament(raw) {
         throw new Error("Rondposten refererar till en okänd spelare.");
       }
       if (used.has(id)) {
-        throw new Error("En spelare förekommer två gånger i samma rond.");
+        throw new Error(
+          "En spelare förekommer två gånger i samma rond."
+        );
       }
       used.add(id);
     }
 
     return list.map(record => {
       if (!record || typeof record !== "object") {
-        throw new Error("Ogiltig lottningspost.");
+        throw new Error("Ogiltig parningspost.");
       }
 
       const kind = record.kind || (
@@ -3211,7 +3342,7 @@ function normalizeTournament(raw) {
 
         if (award !== t.pabPoints) {
           throw new Error(
-            "PAB-poäng måste vara konstanta genom turneringen."
+            "PAB-poäng måste vara konstanta under hela turneringen."
           );
         }
 
@@ -3242,7 +3373,7 @@ function normalizeTournament(raw) {
         };
       }
 
-      throw new Error("Lottningspostens typ stöds inte.");
+      throw new Error("Parningsposttypen stöds inte.");
     });
   }
 
@@ -3281,7 +3412,7 @@ function normalizeTournament(raw) {
     t.rounds.length >= t.totalRounds
   ) {
     throw new Error(
-      "En väntande rond överskrider turneringens planerade längd."
+      "En väntande rond överskrider den planerade turneringslängden."
     );
   }
 
@@ -3292,7 +3423,7 @@ function normalizeTournament(raw) {
     t.currentRound,
     numberValue(
       raw.highestPairedRound ?? t.currentRound,
-      "högsta lottade rond",
+      "högsta parade rond",
       0,
       t.totalRounds,
       true
@@ -3329,8 +3460,8 @@ function autoSave() {
   } catch (error) {
     console.error(error);
     message(
-      "Automatisk webblagring misslyckades. " +
-      "Ladda ner en JSON-backup av turneringen.",
+      "Automatisk webbläsarlagring misslyckades. " +
+      "Ladda ner en JSON-säkerhetskopia av turneringen.",
       "warning"
     );
   }
@@ -3363,7 +3494,7 @@ function saveTournament() {
 
     setTimeout(() => URL.revokeObjectURL(url),1000);
 
-    message("Turneringen sparad som JSON...");
+    message("Turneringens JSON sparad...");
   });
 }
 
@@ -3398,8 +3529,8 @@ async function loadTournamentFile(event) {
 
     message(
       "Turneringen inläst. Poäng, historik och särskiljningsvärden " +
-      "byggdes upp från arkiverade ronder. " +
-      "Befintlig lottning har inte verifierats oberoende.",
+      "byggdes om från arkiverade ronder. " +
+      "Befintliga parningar har inte verifierats oberoende.",
       "warning"
     );
   } catch (error) {
@@ -3417,7 +3548,7 @@ function canRegister() {
 
   if (tournament.listClosed || tournamentStarted()) {
     throw new Error(
-      "Anmälan är stängd eftersom första ronden har lottats."
+      "Registreringen är stängd eftersom den första ronden har parats."
     );
   }
 
@@ -3429,6 +3560,16 @@ function canRegister() {
 function admitPlayers(list) {
   canRegister();
   applySettings();
+
+  const prospective = tournament.players.length + list.length;
+
+  if (prospective > MAX_PLAYERS) {
+    throw new Error(
+      "Turneringen är begränsad till " + MAX_PLAYERS +
+      " deltagare. För närvarande " + tournament.players.length +
+      " registrerade; försökte lägga till " + list.length + "."
+    );
+  }
 
   let order = nextRegistrationOrder();
 
@@ -3643,7 +3784,7 @@ function editPlayer(index) {
     const p = tournament.players[index];
     if (!p) return;
 
-    const name = prompt("Spelarens namn:",p.name);
+    const name = prompt("Spelarnamn:",p.name);
     if (name === null) return;
 
     if (!name.trim()) {
@@ -3683,9 +3824,9 @@ function editPlayer(index) {
 
     message(
       canReassign
-        ? "Spelardata uppdaterade; granska de omtilldelade TPN."
-        : "Namn uppdaterat. TPN bevarades eftersom rond fyra " +
-          "redan har lottats."
+        ? "Spelardata uppdaterade; granska de omtilldelade TPN:erna."
+        : "Namnet uppdaterat. TPN:erna bevarades eftersom rond fyra " +
+          "redan har parats."
     );
   });
 }
@@ -3721,7 +3862,7 @@ function removePlayer(index) {
     if (!p) return;
 
     if (tournamentStarted()) {
-      if (!confirm("Ta ut " + p.name + " från kommande ronder?")) {
+      if (!confirm("Stryk " + p.name + " från framtida ronder?")) {
         return;
       }
       p.active = false;
@@ -3762,7 +3903,8 @@ function resetTournament() {
     requireIdle();
 
     if (!confirm(
-      "Återställ alla spelare och ronder? Ladda ner en backup först om det behövs."
+      "Återställ alla spelare och ronder? Ladda ner en " +
+      "säkerhetskopia först om det behövs."
     )) {
       return;
     }
@@ -3877,11 +4019,11 @@ function launchWorker(type,input,onSuccess) {
         data.message +
         (
           limit
-            ? "\nOptimum kunde inte fastställas inom de fasta gränserna. " +
+            ? "\nOptimum fastställdes inte inom de fasta gränserna. " +
               "Ingen rond skapades. Använd en oberoende verifierad " +
-              "lottningsmotor för denna ställning."
-            : "\nIngen ny rond skapades. Granska datan och rådgör " +
-              "vid behov med tävlingsledaren."
+              "parningsmotor för denna ställning."
+            : "\nIngen ny rond skapades. Granska data och rådgör " +
+              "vid behov med huvuddomaren."
         ),
         limit ? "warning" : "error"
       );
@@ -3903,7 +4045,7 @@ function launchWorker(type,input,onSuccess) {
       if (!finish()) return;
 
       message(
-        "Sökningens övervakare stoppade workern. Ingen rond skapades.",
+        "Sökningens watchdog stoppade workern. Ingen rond skapades.",
         "warning"
       );
     },limits.seconds*1000+3000);
@@ -3914,7 +4056,7 @@ function launchWorker(type,input,onSuccess) {
   message(
     type === "tests"
       ? "Kör utvecklarnas regressionstester…"
-      : "Söker efter den föreskrivna lottningen…"
+      : "Söker efter den föreskrivna parningen…"
   );
 
   worker.postMessage({type,input,limits});
@@ -3945,9 +4087,9 @@ function runRegressionTests() {
       const tests = [...result.tests,...tieTests];
 
       message(
-        tests.length + " utvecklar-regressionstester godkändes:\n" +
+        tests.length + " utvecklarregressionstester godkändes:\n" +
         tests.map(name => "• "+name).join("\n") +
-        "\n\nDessa är inte FIDE-godkännande-tester.",
+        "\n\nDessa är inte FIDE-godkännandetester.",
         "success"
       );
     });
@@ -4057,7 +4199,8 @@ function commitRound(result,plan) {
   function mark(id) {
     if (!expected.has(id) || covered.has(id)) {
       throw new Error(
-        "Den returnerade lottningen har ogiltig eller dubbel spelartäckning."
+        "Den returnerade parningen har ogiltig eller dubblerad " +
+        "spelartäckning."
       );
     }
     covered.add(id);
@@ -4082,7 +4225,7 @@ function commitRound(result,plan) {
 
     if (assigned.white.id !== w.id) {
       throw new Error(
-        "Returnerade färger klarade inte omkontroll av tilldelningen."
+        "Returnerade färger klarade inte omkontrollen av tilldelningen."
       );
     }
   }
@@ -4175,7 +4318,7 @@ function commitRound(result,plan) {
 
   message(
     "Rond " + plan.roundNumber + " skapad. " +
-    (plan.roundNumber === 1 ? "Anmälan är nu stängd. " : ""),
+    (plan.roundNumber === 1 ? "Registreringen är nu stängd. " : ""),
     "success"
   );
 }
@@ -4211,7 +4354,7 @@ function confirmRound() {
       r => r.kind === "game" && !RESULTS.includes(r.result)
     )) {
       throw new Error(
-        "Ange resultat för varje bord innan du bekräftar."
+        "Ange alla bordresultat innan du bekräftar."
       );
     }
 
@@ -4247,8 +4390,8 @@ function confirmRound() {
 
     message(
       tournamentComplete()
-        ? "Turneringen avslutad. Slutresultatet inkluderar Buchholz Cut 1, Buchholz, Sonneborn-Berger och färgdifferens."
-        : "Rond bekräftad. Deltagande för nästa rond kan nu uppdateras."
+        ? "Turneringen är avslutad. Slutställningen inkluderar Buchholz cut 1, Buchholz, Sonneborn-Berger och färgskillnad."
+        : "Rond bekräftad. Deltagandet för nästa rond kan nu uppdateras."
     );
   });
 }
@@ -4271,17 +4414,19 @@ function renderSettings() {
   $("tPab").value = tournament.pabPoints;
 
   $("listStatus").textContent = tournament.listClosed
-    ? "Deltagarlistan är stängd."
-    : "Deltagarlistan är öppen tills första ronden har lottats.";
+    ? "Deltagarlistan stängd."
+    : "Deltagarlistan öppen till dess att den första ronden har parats.";
 
   $("registrationHint").textContent = tournament.listClosed
-    ? "Anmälan är stängd. Befintliga spelare kan tas ut eller " +
+    ? "Registreringen är stängd. Befintliga spelare kan strykas eller " +
       "återinsättas mellan ronder."
-    : "Spelare ordnas initialt efter rating, titel och namn.";
+    : "Spelare ordnas initialt efter rating, titel och namn. " +
+      "Deltagarlistan är begränsad till " + MAX_PLAYERS + " spelare.";
 }
 
 function renderPlayers() {
-  $("playerCount").textContent = tournament.players.length;
+  $("playerCount").textContent =
+    tournament.players.length + " / " + MAX_PLAYERS;
 
   const pending = tournament.activePairings.length > 0;
   const finished = tournamentComplete();
@@ -4290,7 +4435,7 @@ function renderPlayers() {
 
   $("playersBody").innerHTML = tournament.players.map((p,index) => {
     const options = [
-      ["pair","Lotta normalt"],
+      ["pair","Para normalt"],
       ["unplayed-zero","Ospelad — förlustvärde"],
       ["unplayed-draw","Ospelad — remivärde"],
       ["unplayed-win","Ospelad — vinstvärde"]
@@ -4307,7 +4452,7 @@ function renderPlayers() {
         <td>${escapeHtml(p.name)}</td>
         <td>${p.rating}</td>
         <td>${escapeHtml(p.title || "—")}</td>
-        <td>${p.active ? "Aktiv" : "Uttagen"}</td>
+        <td>${p.active ? "Aktiv" : "Struknen"}</td>
         <td class="no-print">
           <select onchange="setStatus(${index},this.value)"
             ${participationBlocked || !p.active ? "disabled" : ""}>
@@ -4321,7 +4466,7 @@ function renderPlayers() {
           </button>
           <button class="small" onclick="toggleActive(${index})"
             ${participationBlocked ? "disabled" : ""}>
-            ${p.active ? "Ta ut" : "Återinsätt"}
+            ${p.active ? "Stryk" : "Återinsätt"}
           </button>
           <button class="small" onclick="removePlayer(${index})"
             ${participationBlocked ? "disabled" : ""}>
@@ -4356,7 +4501,7 @@ function playerLabel(id,withScore = false) {
   return `[${p.tpn}] <strong>${escapeHtml(p.name)}</strong>` +
     (
       withScore
-        ? ` <span class="badge">${points(p.score)} p</span>`
+        ? ` <span class="badge">${points(p.score)} poäng</span>`
         : ""
     );
 }
@@ -4374,9 +4519,9 @@ function renderPairings() {
   $("roundProvenance").textContent = !hasRound
     ? "Ingen väntande rond."
     : pendingImported
-      ? "Inläst lottning. Detta program har inte verifierat att det " +
-        "är den föreskrivna holländska lottningen."
-      : "Skapad av den experimentella strikta referensmotorn. ";
+      ? "Laddad parning. Denna applikation har inte verifierat att " +
+        "det är den föreskrivna Dutch-parningen."
+      : "Genererad av den experimentella strikta referensmotorn. ";
 
   const games = [];
   const unplayed = [];
@@ -4442,7 +4587,7 @@ function renderPairings() {
       <td colspan="4">
         ${hasRound
           ? "Inga bordspartier i denna rond."
-          : "Inga väntande bordspartier."}
+          : "Inga väntande bordsparningar."}
       </td>
     </tr>`;
 
@@ -4460,21 +4605,21 @@ function renderStandings() {
   $("scoreTournamentName").textContent = tournament.name;
 
   $("scoreTitle").textContent = final
-    ? "Slutresultat"
-    : "Poänglista efter rond " + tournament.rounds.length;
+    ? "Slutställning"
+    : "Ställning efter rond " + tournament.rounds.length;
 
   $("tabButton-standings").textContent = final
-    ? "Slutresultat"
-    : "Poänglista";
+    ? "Slutställning"
+    : "Ställning";
 
   $("standingsNotice").textContent = final
-    ? "Placering: poäng → BH-1 → BH → SB. Spelare som fortfarande är " +
-      "lika delar placering; TPN styr endast visningsordningen. " +
-      "Särskiljningen inkluderar den konfigurerade hanteringen av " +
+    ? "Placering: poäng → BH-1 → BH → SB. Spelare som fortfarande " +
+      "är lika delar placering; TPN styr endast visningsordningen. " +
+      "Särskiljningen omfattar den konfigurerade behandlingen av " +
       "ospelade ronder."
-    : "Aktuell lista sorterad efter poäng, sedan TPN. När turneringen " +
-      "avslutas visar Slutresultat BH-1, BH och SB och använder dem i " +
-      "den ordningen för att skilja spelare med samma poäng.";
+    : "Aktuell lista sorterad efter poäng, sedan TPN. Vid " +
+      "turneringens slut visar Slutställningen BH-1, BH och SB och " +
+      "använder dem i den ordningen för att särskilja lika poäng.";
 
   $("standingsHead").innerHTML = `
     <tr>
@@ -4490,8 +4635,8 @@ function renderStandings() {
           : `<th>Spelade</th><th>Ospelade</th>`
       }
       <th>Färger per rond</th>
-      <th>FD</th>
-      <th>Float per rond</th>
+      <th>CD</th>
+      <th>Flöden per rond</th>
     </tr>
   `;
 
@@ -4525,7 +4670,7 @@ function renderStandings() {
         <td>${p.tpn}</td>
         <td>
           ${escapeHtml(p.name)}
-          ${p.active ? "" : " (uttagen)"}
+          ${p.active ? "" : " (struken)"}
         </td>
         <td><strong>${points(tb.score)}</strong></td>
         ${
@@ -4630,16 +4775,33 @@ function updateControls() {
     tournamentStarted() ||
     finished;
 
-  for (const id of [
-    "addButton","importButton","pasteButton","sampleButton"
-  ]) {
-    $(id).disabled = registrationBlocked;
-  }
+  /*
+   * Registration controls are additionally disabled when the
+   * participant limit has been reached. The sample-list button
+   * is disabled whenever adding 32 more players would exceed it.
+   */
+  const atPlayerLimit =
+    tournament.players.length >= MAX_PLAYERS;
+
+  const sampleWouldOverflow =
+    tournament.players.length + 32 > MAX_PLAYERS;
+
+  $("addButton").disabled =
+    registrationBlocked || atPlayerLimit;
+
+  $("importButton").disabled =
+    registrationBlocked || atPlayerLimit;
+
+  $("pasteButton").disabled =
+    registrationBlocked || atPlayerLimit;
+
+  $("sampleButton").disabled =
+    registrationBlocked || sampleWouldOverflow;
 
   for (const id of [
     "pName","pRating","pTitle"
   ]) {
-    $(id).disabled = registrationBlocked;
+    $(id).disabled = registrationBlocked || atPlayerLimit;
   }
 
   for (const id of [
@@ -4669,8 +4831,8 @@ function updateControls() {
     : finished
       ? "Turneringen avslutad"
       : pending
-        ? "Rond redan skapad"
-        : "Skapa rond " + (tournament.rounds.length+1);
+        ? "Rond redan genererad"
+        : "Generera rond " + (tournament.rounds.length+1);
 
   renderPlayers();
 }
@@ -4679,11 +4841,11 @@ function updatePrintTitle() {
   const labels = {
     setup:"Spelarlista",
     pairings:tournament.activePairings.length
-      ? "Rond "+tournament.currentRound+" lottning"
-      : "Rondlottning",
+      ? "Rond "+tournament.currentRound+"-parningar"
+      : "Rondparningar",
     standings:tournamentComplete()
-      ? "Slutresultat"
-      : "Poänglista efter rond "+tournament.rounds.length,
+      ? "Slutställning"
+      : "Ställning efter rond "+tournament.rounds.length,
     history:"Rondhistorik"
   };
 
@@ -4790,9 +4952,9 @@ window.addEventListener("beforeprint",() => {
     console.error(error);
 
     message(
-      "Den sparade turneringen kunde inte läsas in: " +
+      "Lagrad turnering kunde inte läsas in: " +
       error.message +
-      "\nDen ogiltiga sparade filen har inte skrivits över.",
+      "\nDen ogiltiga lagrade filen har inte skrivits över.",
       "error"
     );
   }
@@ -4804,17 +4966,18 @@ window.addEventListener("beforeprint",() => {
     message(
       (
         legacy
-          ? "Läste in den tidigare applikationens sparade turnering. "
+          ? "Läste in föregående applikations sparade turnering. "
           : "Sparad turnering återställd. "
       ) +
-      "Poäng, historik och särskiljningsvärden byggdes upp från " +
+      "Poäng, historik och särskiljningsvärden byggdes om från " +
       "arkiverade ronder. " +
       (
         tournament.listClosed
-          ? "Anmälan är stängd eftersom turneringen har startat. "
-          : "Anmälan är öppen tills första ronden har lottats. "
+          ? "Registreringen är stängd eftersom turneringen har startat. "
+          : "Registreringen förblir öppen till dess att den första " +
+            "ronden har parats. "
       ) +
-      "Befintlig lottning verifieras inte i efterhand.",
+      "Befintliga parningar verifieras inte i efterhand.",
       "warning"
     );
   }
