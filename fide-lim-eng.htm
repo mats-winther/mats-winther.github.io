@@ -232,7 +232,7 @@ function LimCore() {
     return a.length - b.length;
   }
 
-  function solve(input, limits = {seconds:30,nodes:2000000}) {
+  function solve(input, limits = {seconds:20,nodes:2000000}) {
     const started = performance.now();
     const deadline = started + limits.seconds * 1000;
     let work = 0;
@@ -512,27 +512,102 @@ function LimCore() {
     // Pair a fixed even collection: incoming floaters first, then
     // top-half/bottom-half proposals, attempting exchanges when needed.
     // Among complete pairings, favour legal colour alternation/equalisation.
-   function matchBest(items, incoming, region) {
+function matchBest(items, incoming, region) {
       if (items.length % 2) return null;
+      if (!items.length) return { pairs: [] };
+
       const incomingSet = new Set(incoming.map(p => p.id));
-      const fixedOrder = [...items].sort(byTPN);
-      const half = fixedOrder.length / 2;
-      const natural = new Map();
-      for (let i = 0; i < half; i++) {
-        natural.set(fixedOrder[i].id, fixedOrder[i + half]);
-        natural.set(fixedOrder[i + half].id, fixedOrder[i]);
+      const ordered = [...items].sort(byTPN);
+      const floaterList = incoming.slice();               // preserve incoming order
+      const residentList = ordered.filter(p => !incomingSet.has(p.id));
+
+      // Pair each incoming floater with the nearest available resident:
+      // top-down for "above"/"median", bottom-up for "below".
+      function placeFloaters() {
+        const pairs = [];
+        const work = residentList.slice();
+        for (const f of floaterList) {
+          let idx = -1;
+          if (region === "below") {
+            for (let i = work.length - 1; i >= 0; i--) {
+              if (pairInfo(f, work[i], region)) { idx = i; break; }
+            }
+          } else {
+            for (let i = 0; i < work.length; i++) {
+              if (pairInfo(f, work[i], region)) { idx = i; break; }
+            }
+          }
+          if (idx === -1) return null;
+          const r = work[idx];
+          const info = pairInfo(f, r, region);
+          pairs.push({ whiteId: info.whiteId, blackId: info.blackId });
+          work.splice(idx, 1);
+        }
+        return { pairs, rest: work };
       }
-      function incomingOrder(a, b) { /* unchanged */ }
 
+      // ---- Strategy 1: floaters first, then natural top/bottom resident pairing.
+      {
+        const placed = placeFloaters();
+        if (placed) {
+          const h = placed.rest.length / 2;
+          let ok = true;
+          for (let i = 0; i < h; i++) {
+            const info = pairInfo(placed.rest[i], placed.rest[i + h], region);
+            if (!info) { ok = false; break; }
+            placed.pairs.push({ whiteId: info.whiteId, blackId: info.blackId });
+          }
+          if (ok) return { pairs: placed.pairs };
+        }
+      }
+
+      // ---- Strategy 2: floaters first, then bipartite matching of residents
+      // so a rematch on one "diagonal" can be resolved by exchanging partners
+      // while still pairing top-half vs bottom-half.
+      {
+        const placed = placeFloaters();
+        if (placed) {
+          const h = placed.rest.length / 2;
+          const top = placed.rest.slice(0, h);
+          const bot = placed.rest.slice(h);
+          const matchR = new Array(h).fill(-1);          // bot index -> top index
+          function augment(i, seen) {
+            for (let j = 0; j < h; j++) {
+              if (seen[j]) continue;
+              if (!pairInfo(top[i], bot[j], region)) continue;
+              seen[j] = true;
+              if (matchR[j] === -1 || augment(matchR[j], seen)) {
+                matchR[j] = i;
+                return true;
+              }
+            }
+            return false;
+          }
+          let ok = true;
+          for (let i = 0; i < h; i++) {
+            const seen = new Array(h).fill(false);
+            if (!augment(i, seen)) { ok = false; break; }
+          }
+          if (ok) {
+            const topToBot = new Array(h).fill(-1);
+            for (let j = 0; j < h; j++) topToBot[matchR[j]] = j;
+            for (let i = 0; i < h; i++) {
+              const info = pairInfo(top[i], bot[topToBot[i]], region);
+              placed.pairs.push({ whiteId: info.whiteId, blackId: info.blackId });
+            }
+            return { pairs: placed.pairs };
+          }
+        }
+      }
+
+      // ---- Fallback: exhaustive search with memoization.
       const memo = new Map();
-      const MEMO_CAP = 200000;
+      const MEMO_CAP = 500000;
 
-      // Returns {pairs, totalsAdd, signatureAdd} or null, and is sound
-      // because the anchor for any state is a pure function of the state.
       function visit(left) {
         tick();
         if (!left.length)
-          return {pairs: [], totalsAdd: [0,0,0,0,0], signatureAdd: []};
+          return { pairs: [], totalsAdd: [0, 0, 0, 0, 0], signatureAdd: [] };
 
         let key = null;
         if (left.length <= 24) {
@@ -541,9 +616,7 @@ function LimCore() {
           if (hit !== undefined) return hit;
         }
 
-        const floats = left
-          .filter(p => incomingSet.has(p.id))
-          .sort(incomingOrder);
+        const floats = left.filter(p => incomingSet.has(p.id));
         let anchor;
         if (floats.length) anchor = floats[0];
         else {
@@ -556,12 +629,11 @@ function LimCore() {
 
         const candidates = left
           .filter(p => p !== anchor)
-          .map(p => ({p, info: pairInfo(anchor, p, region)}))
-          .filter(x => x.info)
-          .sort(/* keep the existing comparator verbatim */);
+          .map(p => ({ p, info: pairInfo(anchor, p, region) }))
+          .filter(x => x.info);
 
         let bestSub = null, bestQuality = null;
-        for (const {p, info} of candidates) {
+        for (const { p, info } of candidates) {
           const next = left.filter(q => q !== anchor && q !== p);
           const sub = visit(next);
           if (!sub) continue;
@@ -573,7 +645,7 @@ function LimCore() {
             bestQuality = quality;
             bestSub = {
               pairs: [
-                {whiteId: info.whiteId, blackId: info.blackId},
+                { whiteId: info.whiteId, blackId: info.blackId },
                 ...sub.pairs
               ],
               totalsAdd: addTotals,
@@ -589,10 +661,9 @@ function LimCore() {
       }
 
       const result = visit(items);
-      return result && {pairs: result.pairs, quality: [
-        ...result.totalsAdd, ...result.signatureAdd
-      ]};
+      return result && { pairs: result.pairs };
     }
+
     function* subsets(list,count,start=0,chosen=[]) {
       tick();
       if (count===0) { yield [...chosen]; return; }
