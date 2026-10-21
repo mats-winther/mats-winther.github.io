@@ -368,7 +368,7 @@ a { color:var(--blue); }
 
     <div class="card">
       <div class="row between">
-        <h2>Players (<span id="playerCount">0</span>)</h2>
+        <h2>Players (<span id="playerCount">0 / 60</span>)</h2>
 
         <div class="row no-print">
           <button id="importButton"
@@ -427,7 +427,7 @@ a { color:var(--blue); }
         pairing order. After seeding, players within each Burstein bracket
         are ranked by Buchholz, then Sonneborn-Berger, then ascending TPN.
         Importing a TRF here imports registration fields only, not its
-        tournament history.
+        tournament history. The participant list is limited to 60 players.
       </p>
 
       <div class="table-wrap">
@@ -589,6 +589,10 @@ a { color:var(--blue); }
   Pairing searches use fixed time and node limits.
   An interrupted search never publishes a provisional pairing.
   Large or difficult positions may still exceed the search limits.
+</p>
+
+<p>
+  <b>Note:</b> The maximum number of participants is 60.
 </p>
 
 <p>
@@ -3637,7 +3641,7 @@ function solve(input, limits = {}, progress = () => {}) {
   ) {
     const started = performance.now();
     const seconds = Number(limits.seconds ?? 30);
-    const nodeLimit = Number(limits.nodes ?? 8000000);
+    const nodeLimit = Number(limits.nodes ?? 0);
 
     const deadline = seconds > 0
       ? started + seconds * 1000
@@ -5426,7 +5430,7 @@ function* referenceOrderedPairings(ctx, pairCount, canWin, floaterScores) {
       input,
       limits = {
         seconds:30,
-        nodes:8000000
+        nodes:0
       }
     ) {
       return solve(input, limits);
@@ -5684,13 +5688,13 @@ test(
         for (let index = 0; index < cases.length; index++) {
           const optimized = run(cases[index], {
             seconds:30,
-            nodes:8000000,
+            nodes:0,
             bursteinFastPath:true
           });
 
           const reference = run(cases[index], {
             seconds:30,
-            nodes:8000000,
+            nodes:0,
             bursteinFastPath:false
           });
 
@@ -5735,8 +5739,14 @@ const LEGACY_STORAGE_KEY = "experimental_fide_burstein_2026_en";
 
 const FIXED_SEARCH_LIMITS = Object.freeze({
   seconds:30,
-  nodes:8000000
+  nodes:0
 });
+
+/*
+ * Hard upper bound on registered participants.
+ * Enforced on registration and tournament-file loading.
+ */
+const MAX_PLAYERS = 60;
 
 const TITLE_WEIGHTS = {
   GM:8,IM:7,WGM:6,FM:5,WIM:4,CM:3,WFM:2,WCM:1,"":0
@@ -6638,6 +6648,13 @@ function normalizeTournament(raw) {
     );
   }
 
+if (raw.players.length > MAX_PLAYERS) {
+    throw new Error(
+      "The tournament file contains " + raw.players.length +
+      " players, which exceeds the limit of " + MAX_PLAYERS + "."
+    );
+  }
+
 const historical =
   Array.isArray(raw.rounds) &&
   raw.rounds.length > 0;
@@ -7050,6 +7067,16 @@ function canRegister() {
 function admitPlayers(list) {
   canRegister();
   applySettings();
+
+  const prospective = tournament.players.length + list.length;
+
+  if (prospective > MAX_PLAYERS) {
+    throw new Error(
+      "The tournament is limited to " + MAX_PLAYERS +
+      " participants. Currently " + tournament.players.length +
+      " registered; attempted to add " + list.length + "."
+    );
+  }
 
   let order = nextRegistrationOrder();
 
@@ -7922,15 +7949,16 @@ $("listStatus").textContent = (
     : "Participant list open until the first round is paired."
 ) + seedingDescription;
 
-  $("registrationHint").textContent = tournament.listClosed
+$("registrationHint").textContent = tournament.listClosed
     ? "Registration is closed. Existing players may be withdrawn or " +
       "reinstated between rounds."
-    : "Players are initially ordered by rating, title, and name.";
+    : "Players are initially ordered by rating, title, and name. " +
+      "The participant list is limited to " + MAX_PLAYERS + " players.";
 }
 
 function renderPlayers() {
   $("playerCount").textContent =
-    String(tournament.players.length);
+    tournament.players.length + " / " + MAX_PLAYERS;
 
   const pending = tournament.activePairings.length > 0;
   const finished = tournamentComplete();
@@ -8287,15 +8315,28 @@ function updateControls() {
     tournamentStarted() ||
     finished;
 
-  $("addButton").disabled = registrationBlocked;
-  $("importButton").disabled = registrationBlocked;
-  $("pasteButton").disabled = registrationBlocked;
-  $("sampleButton").disabled = registrationBlocked;
+  const atPlayerLimit =
+    tournament.players.length >= MAX_PLAYERS;
+
+  const sampleWouldOverflow =
+    tournament.players.length + 32 > MAX_PLAYERS;
+
+  $("addButton").disabled =
+    registrationBlocked || atPlayerLimit;
+
+  $("importButton").disabled =
+    registrationBlocked || atPlayerLimit;
+
+  $("pasteButton").disabled =
+    registrationBlocked || atPlayerLimit;
+
+  $("sampleButton").disabled =
+    registrationBlocked || sampleWouldOverflow;
 
   for (const id of [
     "pName","pRating","pTitle"
   ]) {
-    $(id).disabled = registrationBlocked;
+    $(id).disabled = registrationBlocked || atPlayerLimit;
   }
 
   for (const id of [
