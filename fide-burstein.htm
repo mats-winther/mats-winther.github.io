@@ -355,7 +355,7 @@ a { color:var(--blue); }
 
     <div class="card">
       <div class="row between">
-        <h2>Spelare (<span id="playerCount">0</span>)</h2>
+        <h2>Spelare (<span id="playerCount">0 / 60</span>)</h2>
         <div class="row no-print">
           <button id="importButton"
                   onclick="document.getElementById('playersFile').click()">
@@ -411,7 +411,7 @@ a { color:var(--blue); }
         spelarna inom varje Bursteingrupp efter Buchholz, sedan
         Sonneborn-Berger och därefter stigande TPN.
         Vid import av en TRF-fil hämtas endast registreringsuppgifterna,
-        inte turneringshistoriken.
+        inte turneringshistoriken. Deltagarlistan är begränsad till 60 deltagare.
       </p>
 
       <div class="table-wrap">
@@ -570,6 +570,11 @@ a { color:var(--blue); }
     via användargränssnittet, förutsatt att en säkerhetskopia av turneringen
     tidigare har skapats med funktionen ”Spara turnering”.
   </p>
+
+  <p>
+    <b>Obs:</b> Det maximala antalet deltagare är 60.
+  </p>
+
   <p>
     Följande är inte implementerat: acceleration, godtyckliga ytterligare
     lottningsrestriktioner, avbrutna partier eller ett administrativt
@@ -2791,7 +2796,7 @@ function Burstein2026Core(DutchCore) {
   function solveBurstein(input, limits = {}, progress = () => {}) {
     const started = performance.now();
     const seconds = Number(limits.seconds ?? 30);
-    const nodeLimit = Number(limits.nodes ?? 8000000);
+    const nodeLimit = Number(limits.nodes ?? 0);
     const deadline = seconds > 0 ? started + seconds * 1000 : Infinity;
 
     if (
@@ -3873,7 +3878,7 @@ function Burstein2026Core(DutchCore) {
       };
     }
 
-    function run(input,limits = {seconds:30,nodes:8000000}) {
+    function run(input,limits = {seconds:30,nodes:0}) {
       return solve(input,limits);
     }
 
@@ -4021,10 +4026,10 @@ function Burstein2026Core(DutchCore) {
 
       for (let index = 0; index < cases.length; index++) {
         const optimized = run(cases[index],{
-          seconds:30,nodes:8000000,bursteinFastPath:true
+          seconds:30,nodes:0,bursteinFastPath:true
         });
         const reference = run(cases[index],{
-          seconds:30,nodes:8000000,bursteinFastPath:false
+          seconds:30,nodes:0,bursteinFastPath:false
         });
         check(
           signature(optimized) === signature(reference),
@@ -4055,8 +4060,14 @@ const LEGACY_STORAGE_KEY = "experimental_fide_burstein_2026_en";
 
 const FIXED_SEARCH_LIMITS = Object.freeze({
   seconds:30,
-  nodes:8000000
+  nodes:0
 });
+
+/*
+ * Hard upper bound on registered participants.
+ * Enforced on registration and tournament-file loading.
+ */
+const MAX_PLAYERS = 60;
 
 const TITLE_WEIGHTS = {
   GM:8,IM:7,WGM:6,FM:5,WIM:4,CM:3,WFM:2,WCM:1,"":0
@@ -4768,6 +4779,13 @@ function normalizeTournament(raw) {
     throw new Error("Filen innehåller ingen deltagarlista för en turnering.");
   }
 
+  if (raw.players.length > MAX_PLAYERS) {
+    throw new Error(
+      "The tournament file contains " + raw.players.length +
+      " players, which exceeds the limit of " + MAX_PLAYERS + "."
+    );
+  }
+
   const historical = Array.isArray(raw.rounds) && raw.rounds.length > 0;
   const pending = Array.isArray(raw.activePairings) && raw.activePairings.length > 0;
 
@@ -5038,6 +5056,17 @@ function canRegister() {
 function admitPlayers(list) {
   canRegister();
   applySettings();
+
+  const prospective = tournament.players.length + list.length;
+
+  if (prospective > MAX_PLAYERS) {
+    throw new Error(
+      "The tournament is limited to " + MAX_PLAYERS +
+      " participants. Currently " + tournament.players.length +
+      " registered; attempted to add " + list.length + "."
+    );
+  }
+
   let order = nextRegistrationOrder();
 
   for (const p of list) {
@@ -5049,7 +5078,11 @@ function admitPlayers(list) {
   rebuildState();
   renderAll();
   autoSave();
-  message(list.length + " spelare har lagts till. Kontrollera den uppdaterade TPN-listan.");
+
+  message(
+    list.length + " player(s) added. Review the updated TPN list."
+  );
+
   return true;
 }
 
@@ -5711,11 +5744,13 @@ function renderSettings() {
 
   $("registrationHint").textContent = tournament.listClosed
     ? "Registreringen är stängd. Befintliga spelare kan dras tillbaka eller återaktiveras mellan ronderna."
-    : "Spelarna ordnas inledningsvis efter rating, titel och namn.";
+    : "Spelarna ordnas inledningsvis efter rating, titel och namn." +
+      "Deltagarlistan är begränsad till " + MAX_PLAYERS + " spelare.";
 }
 
 function renderPlayers() {
-  $("playerCount").textContent = String(tournament.players.length);
+  $("playerCount").textContent =
+    tournament.players.length + " / " + MAX_PLAYERS;
   const pending = tournament.activePairings.length > 0;
   const finished = tournamentComplete();
   const blocked = Boolean(job) || pending;
@@ -6015,13 +6050,28 @@ function updateControls() {
   const registrationBlocked =
     busy || pending || tournament.listClosed || tournamentStarted() || finished;
 
-  $("addButton").disabled = registrationBlocked;
-  $("importButton").disabled = registrationBlocked;
-  $("pasteButton").disabled = registrationBlocked;
-  $("sampleButton").disabled = registrationBlocked;
+const atPlayerLimit =
+    tournament.players.length >= MAX_PLAYERS;
 
-  for (const id of ["pName","pRating","pTitle"]) {
-    $(id).disabled = registrationBlocked;
+  const sampleWouldOverflow =
+    tournament.players.length + 32 > MAX_PLAYERS;
+
+  $("addButton").disabled =
+    registrationBlocked || atPlayerLimit;
+
+  $("importButton").disabled =
+    registrationBlocked || atPlayerLimit;
+
+  $("pasteButton").disabled =
+    registrationBlocked || atPlayerLimit;
+
+  $("sampleButton").disabled =
+    registrationBlocked || sampleWouldOverflow;
+
+  for (const id of [
+    "pName","pRating","pTitle"
+  ]) {
+    $(id).disabled = registrationBlocked || atPlayerLimit;
   }
   for (const id of ["tRounds","tColor","tPoints","tPab"]) {
     $(id).disabled = busy || tournament.settingsFrozen;
