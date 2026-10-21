@@ -307,7 +307,7 @@ a { color:var(--blue); }
 
     <div class="card">
       <div class="row between">
-        <h2>Spelare (<span id="playerCount">0 / 70</span>)</h2>
+        <h2>Spelare (<span id="playerCount">0 / 60</span>)</h2>
         <div class="row no-print">
           <button id="importButton"
                   onclick="document.getElementById('playersFile').click()">
@@ -355,7 +355,7 @@ a { color:var(--blue); }
         Kontrollera den inledande ordningen efter rating, titel och namn.
         Lottningen styrs av sparade startnummer, inte av särskiljningen i resultatlistan.
         Vid import av en TRF-fil hämtas endast registreringsuppgifter, inte turneringshistoriken.
-        Deltagarlistan är begränsad till 70 spelare.
+        Deltagarlistan är begränsad till 60 spelare.
       </p>
 
       <div class="table-wrap">
@@ -500,7 +500,7 @@ a { color:var(--blue); }
     är större än varje faktisk poängskillnad, enligt den konvention som
     förklaras i TEC:s kommentarer.
   </p>
-  <p><b>Observera:</b> Det högsta antalet deltagare är 70.</p>
+  <p><b>Observera:</b> Det högsta antalet deltagare är 60.</p>
   <p>
     Efter att en rond har bekräftats kan ett felregistrerat resultat rättas
     genom att öppna en tidigare sparad säkerhetskopia. Ändringar efter säkerhetskopians tidpunkt måste då göras om.
@@ -2423,7 +2423,7 @@ const FIXED_SEARCH_LIMITS = Object.freeze({
  * Hard upper bound on registered participants.
  * Enforced on registration and tournament-file loading.
  */
-const MAX_PLAYERS = 70;
+const MAX_PLAYERS = 60;
 
 const TITLE_WEIGHTS = {
   GM:8, IM:7, WGM:6, FM:5, WIM:4, CM:3, WFM:2, WCM:1, "":0

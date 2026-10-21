@@ -369,7 +369,7 @@ a { color:var(--blue); }
 
     <div class="card">
       <div class="row between">
-        <h2>Players (<span id="playerCount">0 / 70</span>)</h2>
+        <h2>Players (<span id="playerCount">0 / 60</span>)</h2>
 
         <div class="row no-print">
           <button id="importButton"
@@ -427,7 +427,7 @@ a { color:var(--blue); }
         Review the initial rating/title/name order. Stored TPNs, not
         standings tie-breaks, drive pairing. Importing a TRF here imports
         registration fields only, not its tournament history.
-        The participant list is limited to 70 players.
+        The participant list is limited to 60 players.
       </p>
 
       <div class="table-wrap">
@@ -603,7 +603,7 @@ a { color:var(--blue); }
   </p>
 
   <p>
-    <b>Note:</b> The maximum number of participants is 70.
+    <b>Note:</b> The maximum number of participants is 60.
   </p>
 
   <p>
@@ -3318,7 +3318,7 @@ const FIXED_SEARCH_LIMITS = Object.freeze({
  * Hard upper bound on registered participants.
  * Enforced on registration and tournament-file loading.
  */
-const MAX_PLAYERS = 70;
+const MAX_PLAYERS = 60;
 
 const TITLE_WEIGHTS = {
   GM:8, IM:7, WGM:6, FM:5, WIM:4, CM:3, WFM:2, WCM:1, "":0
