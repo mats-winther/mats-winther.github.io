@@ -368,7 +368,7 @@ a { color:var(--blue); }
 
     <div class="card">
       <div class="row between">
-        <h2>Players (<span id="playerCount">0 / 50</span>)</h2>
+        <h2>Players (<span id="playerCount">0</span>)</h2>
 
         <div class="row no-print">
           <button id="importButton"
@@ -428,7 +428,6 @@ a { color:var(--blue); }
         are ranked by Buchholz, then Sonneborn-Berger, then ascending TPN.
         Importing a TRF here imports registration fields only, not its
         tournament history.
-        The participant list is limited to 50 players.
       </p>
 
       <div class="table-wrap">
@@ -587,18 +586,15 @@ a { color:var(--blue); }
 </p>
 
 <p>
-  Pairing searches use fixed time and node limits. An interrupted search never publishes a provisional
-  pairing.
+  Pairing searches use fixed time and node limits.
+  An interrupted search never publishes a provisional pairing.
+  Large or difficult positions may still exceed the search limits.
 </p>
 
 <p>
   Once a round is confirmed, an incorrectly recorded result can be 
   corrected through the GUI, provided that a tournament backup was 
   previously created using the "Save Tournament" function.
-</p>
-
-<p>
-  <b>Note:</b> The maximum number of participants is 50.
 </p>
 
   <p>
@@ -644,11 +640,11 @@ a { color:var(--blue); }
 "use strict";
 
 /* ========================================================================== */
-/* PAIRING CORE — DOM-INDEPENDENT                                              */
+/* PAIRING CORE: DOM-INDEPENDENT                                               */
 /* ========================================================================== */
 
 function Dutch2026Core() {
-  const VERSION = "2026-reference-1";
+  const VERSION = "2026-reference-3";
 
   function fault(code, message) {
     const error = new Error(message);
@@ -668,6 +664,7 @@ function Dutch2026Core() {
       const c = Array.isArray(a[i])
         ? compareArrays(a[i], b[i])
         : Math.sign(a[i] - b[i]);
+
       if (c) return c;
     }
     return 0;
@@ -685,8 +682,9 @@ function Dutch2026Core() {
 
   function preference(player) {
     const h = player.playedColors;
+
     if (!h.length) {
-      return { color:null, strength:0, type:"none" };
+      return {color:null, strength:0, type:"none"};
     }
 
     const cd = colorDifference(player);
@@ -705,16 +703,19 @@ function Dutch2026Core() {
     }
 
     if (absoluteWhite) {
-      return { color:"W", strength:3, type:"absolute" };
+      return {color:"W", strength:3, type:"absolute"};
     }
+
     if (absoluteBlack) {
-      return { color:"B", strength:3, type:"absolute" };
+      return {color:"B", strength:3, type:"absolute"};
     }
+
     if (cd === 1) {
-      return { color:"B", strength:2, type:"strong" };
+      return {color:"B", strength:2, type:"strong"};
     }
+
     if (cd === -1) {
-      return { color:"W", strength:2, type:"strong" };
+      return {color:"W", strength:2, type:"strong"};
     }
 
     return {
@@ -732,6 +733,7 @@ function Dutch2026Core() {
 
   function compatible(a, b, context) {
     if (!a || !b || a.id === b.id) return false;
+
     if (a.opponents.includes(b.id) || b.opponents.includes(a.id)) {
       return false;
     }
@@ -756,21 +758,28 @@ function Dutch2026Core() {
 
     function give(player, color) {
       const other = player === high ? low : high;
+
       return color === "W"
-        ? { white:player, black:other }
-        : { white:other, black:player };
+        ? {white:player, black:other}
+        : {white:other, black:player};
     }
 
     if (hp.color && lp.color && hp.color !== lp.color) {
       return give(high, hp.color);
     }
 
-    if (hp.strength > lp.strength) return give(high, hp.color);
-    if (lp.strength > hp.strength) return give(low, lp.color);
+    if (hp.strength > lp.strength) {
+      return give(high, hp.color);
+    }
+
+    if (lp.strength > hp.strength) {
+      return give(low, lp.color);
+    }
 
     if (hp.strength === 3 && lp.strength === 3) {
       const hd = Math.abs(colorDifference(high));
       const ld = Math.abs(colorDifference(low));
+
       if (hd > ld) return give(high, hp.color);
       if (ld > hd) return give(low, lp.color);
     }
@@ -781,6 +790,7 @@ function Dutch2026Core() {
     for (let back = 1; back <= Math.min(hh.length, lh.length); back++) {
       const hc = hh[hh.length - back];
       const lc = lh[lh.length - back];
+
       if (hc !== lc) {
         return give(high, hc === "W" ? "B" : "W");
       }
@@ -796,10 +806,304 @@ function Dutch2026Core() {
     return give(high, color);
   }
 
+  /*
+   * Exact perfect-matching feasibility for an undirected graph.
+   *
+   * graph[v] contains the neighbours of local vertex v.
+   * Uses augmenting paths with Edmonds blossom contraction.
+   *
+   * This determines feasibility only. It does not select the
+   * tournament pairing or assign colours.
+   */
+  function hasPerfectMatchingGraph(graph, work = () => {}) {
+    work();
+
+    const n = graph.length;
+
+    if (n % 2) return false;
+    if (n === 0) return true;
+
+    for (let v = 0; v < n; v++) {
+      if (graph[v].length === 0) return false;
+    }
+
+    const mate = new Int32Array(n);
+    mate.fill(-1);
+
+    let matchedVertices = 0;
+
+    /*
+     * Dense feasibility graphs often admit this inexpensive initial
+     * matching. Blossom augmentation repairs it when needed.
+     */
+    for (let v = 0; v < n; v++) {
+      if (mate[v] !== -1) continue;
+
+      for (const u of graph[v]) {
+        work();
+
+        if (mate[u] === -1) {
+          mate[v] = u;
+          mate[u] = v;
+          matchedVertices += 2;
+          break;
+        }
+      }
+    }
+
+    if (matchedVertices === n) return true;
+
+    const parent = new Int32Array(n);
+    const base = new Int32Array(n);
+    const queue = new Int32Array(n);
+
+    const used = new Uint8Array(n);
+    const blossom = new Uint8Array(n);
+    const ancestor = new Uint8Array(n);
+
+    function lowestCommonAncestor(a, b) {
+      ancestor.fill(0);
+
+      while (true) {
+        work();
+
+        a = base[a];
+        ancestor[a] = 1;
+
+        if (mate[a] === -1) break;
+        a = parent[mate[a]];
+      }
+
+      while (true) {
+        work();
+
+        b = base[b];
+
+        if (ancestor[b]) return b;
+        b = parent[mate[b]];
+      }
+    }
+
+    function markPath(v, blossomBase, child) {
+      while (base[v] !== blossomBase) {
+        work();
+
+        blossom[base[v]] = 1;
+        blossom[base[mate[v]]] = 1;
+
+        parent[v] = child;
+        child = mate[v];
+        v = parent[mate[v]];
+      }
+    }
+
+    function findAugmentingEndpoint(root) {
+      parent.fill(-1);
+      used.fill(0);
+
+      for (let v = 0; v < n; v++) {
+        base[v] = v;
+      }
+
+      let head = 0;
+      let tail = 0;
+
+      queue[tail++] = root;
+      used[root] = 1;
+
+      while (head < tail) {
+        const v = queue[head++];
+
+        for (const u of graph[v]) {
+          work();
+
+          if (base[v] === base[u] || mate[v] === u) {
+            continue;
+          }
+
+          if (
+            u === root ||
+            (mate[u] !== -1 && parent[mate[u]] !== -1)
+          ) {
+            const blossomBase = lowestCommonAncestor(v, u);
+
+            blossom.fill(0);
+            markPath(v, blossomBase, u);
+            markPath(u, blossomBase, v);
+
+            for (let i = 0; i < n; i++) {
+              work();
+
+              if (!blossom[base[i]]) continue;
+
+              base[i] = blossomBase;
+
+              if (!used[i]) {
+                used[i] = 1;
+                queue[tail++] = i;
+              }
+            }
+          } else if (parent[u] === -1) {
+            parent[u] = v;
+
+            if (mate[u] === -1) return u;
+
+            const next = mate[u];
+
+            if (!used[next]) {
+              used[next] = 1;
+              queue[tail++] = next;
+            }
+          }
+        }
+      }
+
+      return -1;
+    }
+
+    for (let root = 0; root < n; root++) {
+      if (mate[root] !== -1) continue;
+
+      let v = findAugmentingEndpoint(root);
+
+      if (v === -1) continue;
+
+      while (v !== -1) {
+        work();
+
+        const p = parent[v];
+        const next = p === -1 ? -1 : mate[p];
+
+        mate[v] = p;
+
+        if (p !== -1) {
+          mate[p] = v;
+        }
+
+        v = next;
+      }
+
+      matchedVertices += 2;
+
+      if (matchedVertices === n) return true;
+    }
+
+    return false;
+  }
+
+  /*
+   * Minimum-cost assignment for a square matrix.
+   *
+   * cost[row][column]:
+   *   BigInt = permitted assignment and its exact cost
+   *   null   = forbidden assignment
+   *
+   * Returns:
+   *   columns[row] = assigned column
+   *   null if no complete assignment exists
+   *
+   * Hungarian shortest-augmenting-path implementation.
+   */
+  function minimumCostAssignment(cost, work = () => {}) {
+    work();
+
+    const n = cost.length;
+
+    if (n === 0) return [];
+
+    const u = new Array(n + 1).fill(0n);
+    const v = new Array(n + 1).fill(0n);
+
+    const p = new Int32Array(n + 1);
+    const way = new Int32Array(n + 1);
+
+    for (let row = 1; row <= n; row++) {
+      work();
+
+      p[0] = row;
+
+      const minv = new Array(n + 1).fill(null);
+      const used = new Uint8Array(n + 1);
+
+      let column0 = 0;
+
+      do {
+        used[column0] = 1;
+
+        const row0 = p[column0];
+        const matrixRow = cost[row0 - 1];
+
+        let delta = null;
+        let column1 = -1;
+
+        for (let column = 1; column <= n; column++) {
+          if (used[column]) continue;
+
+          work();
+
+          const raw = matrixRow[column - 1];
+
+          if (raw !== null) {
+            const reduced = raw - u[row0] - v[column];
+
+            if (
+              minv[column] === null ||
+              reduced < minv[column]
+            ) {
+              minv[column] = reduced;
+              way[column] = column0;
+            }
+          }
+
+          /*
+           * A finite minv may have been established by an earlier
+           * row in this augmenting-path search, even when the
+           * current row has no edge to this column.
+           */
+          if (
+            minv[column] !== null &&
+            (delta === null || minv[column] < delta)
+          ) {
+            delta = minv[column];
+            column1 = column;
+          }
+        }
+
+        if (column1 === -1) return null;
+
+        for (let column = 0; column <= n; column++) {
+          if (used[column]) {
+            u[p[column]] += delta;
+            v[column] -= delta;
+          } else if (minv[column] !== null) {
+            minv[column] -= delta;
+          }
+        }
+
+        column0 = column1;
+      } while (p[column0] !== 0);
+
+      do {
+        const previousColumn = way[column0];
+
+        p[column0] = p[previousColumn];
+        column0 = previousColumn;
+      } while (column0 !== 0);
+    }
+
+    const columns = new Array(n).fill(-1);
+
+    for (let column = 1; column <= n; column++) {
+      columns[p[column] - 1] = column - 1;
+    }
+
+    return columns;
+  }
+
   function solve(input, limits = {}, progress = () => {}) {
     const started = performance.now();
-    const seconds = Number(limits.seconds ?? 30);
-    const nodeLimit = Number(limits.nodes ?? 8000000);
+    const seconds = Number(limits.seconds ?? 20);
+    const nodeLimit = Number(limits.nodes ?? 0);
     const deadline = seconds > 0
       ? started + seconds * 1000
       : Infinity;
@@ -812,6 +1116,15 @@ function Dutch2026Core() {
     }
 
     let nodes = 0;
+    let assignmentCalls = 0;
+    let dfsRemainderPartitions = 0;
+
+    /*
+     * Enabled normally. The switch allows regression tests to compare
+     * the assignment path against the existing DFS path.
+     */
+    const assignmentFastPath = limits.assignmentFastPath !== false;
+
     let phase = "Preparing pairing data";
     let lastProgress = started;
 
@@ -830,7 +1143,7 @@ function Dutch2026Core() {
         }
 
         if (now - lastProgress >= 200) {
-          progress({ phase, nodes, elapsedMs:now - started });
+          progress({phase, nodes, elapsedMs:now - started});
           lastProgress = now;
         }
       }
@@ -900,6 +1213,7 @@ function Dutch2026Core() {
 
       seenIds.add(p.id);
       seenTPNs.add(p.tpn);
+
       p.unplayedCount = completed - p.playedColors.length;
       p.pref = preference(p);
       p.cd = colorDifference(p);
@@ -938,11 +1252,13 @@ function Dutch2026Core() {
 
         const a = players[i];
         const b = players[j];
+
         edge[i][j] = edge[j][i] = compatible(a, b, context);
 
         const allocation = allocate(a, b, context.initialColor);
         const wi = allocation.white === a ? i : j;
         const bi = wi === i ? j : i;
+
         colors[i][j] = colors[j][i] = [wi, bi];
 
         const cost = [0,0,0,0];
@@ -952,6 +1268,7 @@ function Dutch2026Core() {
 
           if (p.pref.color && p.pref.color !== color) {
             cost[2]++;
+
             if (p.pref.strength === 2) cost[3]++;
           }
 
@@ -961,10 +1278,11 @@ function Dutch2026Core() {
             }
 
             const h = p.playedColors;
+
             if (
               h.length >= 2 &&
-              h[h.length-1] === color &&
-              h[h.length-2] === color
+              h[h.length - 1] === color &&
+              h[h.length - 2] === color
             ) {
               cost[1]++;
             }
@@ -976,201 +1294,106 @@ function Dutch2026Core() {
     }
 
     /*
-     * Neighbour lists mirroring edge[][]. They exist only so the
-     * matching DFS can iterate over legal opponents in
-     * O(neighbours) instead of scanning the whole sublist.
+     * colorWant[v]:
+     *   +1 if v wants White
+     *   -1 if v wants Black
+     *    0 otherwise
      */
-    const adjacency = Array.from({length:N}, () => []);
+    const colorWant = new Int8Array(N);
+
     for (let i = 0; i < N; i++) {
-      for (let j = 0; j < N; j++) {
-        if (i !== j && edge[i][j]) adjacency[i].push(j);
-      }
+      const c = players[i].pref.color;
+      colorWant[i] = c === "W" ? 1 : c === "B" ? -1 : 0;
     }
 
     const matchingMemo = new Map();
     const MATCHING_MEMO_CAP = 200000;
 
-    /*
-     * Absolute-completion matching test used for C4 and
-     * pairing-allocated-bye feasibility.
-     *
-     * Two cheap, sound necessary-condition filters run before
-     * the recursive DFS:
-     *
-     *   (a) every remaining player must still have at least one
-     *       legal partner inside the sublist; and
-     *   (b) every connected component of the induced legality
-     *       graph must have even size (Tutte's necessary test).
-     *
-     * Both filters can only reject a sublist, never accept one,
-     * so the returned answer is identical to the unpruned DFS.
-     */
     function perfectMatching(list, restricted = new Set()) {
-      const restrictedSize = restricted.size;
+      tick();
 
-      function allowed(i, j) {
-        if (!edge[i][j]) return false;
-        if (restrictedSize && restricted.has(i) && restricted.has(j)) {
-          return false;
-        }
-        return true;
+      const xs = ordered(list);
+      const n = xs.length;
+
+      if (n % 2) return false;
+      if (n === 0) return true;
+
+      const key = xs.join(",") + "/" +
+        xs.filter(i => restricted.has(i)).join(",");
+
+      if (matchingMemo.has(key)) {
+        return matchingMemo.get(key);
       }
 
-      function visit(xs) {
-        tick();
-        if (!xs.length) return true;
-        if (xs.length % 2) return false;
+      const graph = Array.from({length:n}, () => []);
+      const blocked = xs.map(i => restricted.has(i));
 
-        let key = xs.join(",");
-        if (restrictedSize) {
-          key += "/";
-          for (const i of xs) if (restricted.has(i)) key += i + ",";
-        }
-
-        if (matchingMemo.has(key)) {
-          return matchingMemo.get(key);
-        }
-
-        const inside = new Set(xs);
-
-        /* (a) every player must have a legal partner present */
-        for (const i of xs) {
-          let ok = false;
-          for (const j of adjacency[i]) {
-            if (inside.has(j) && allowed(i, j)) { ok = true; break; }
-          }
-          if (!ok) {
-            matchingMemo.set(key, false);
-            return false;
-          }
-        }
-
-        /* (b) decompose into components; odd-size component ⇒ no matching */
-        const seenComponent = new Set();
-        const components    = [];
-
-        for (const start of xs) {
-          if (seenComponent.has(start)) continue;
-
-          const stack   = [start];
-          const members = [];
-          seenComponent.add(start);
-
-          while (stack.length) {
-            tick();
-            const v = stack.pop();
-            members.push(v);
-
-            for (const w of adjacency[v]) {
-              if (inside.has(w) && !seenComponent.has(w) && allowed(v, w)) {
-                seenComponent.add(w);
-                stack.push(w);
-              }
-            }
-          }
-
-          if (members.length % 2) {
-            matchingMemo.set(key, false);
-            return false;
-          }
-
-          components.push(members);
-        }
-
-        /* (c) solve each component independently when disconnected */
-        if (components.length > 1) {
-          let allMatch = true;
-
-          for (const comp of components) {
-            if (!visit([...comp].sort(numericSort))) {
-              allMatch = false;
-              break;
-            }
-          }
-
-          matchingMemo.set(key, allMatch);
-          return allMatch;
-        }
-
-        let chosen = -1;
-        let opponents = null;
-
-        for (const i of xs) {
+      for (let a = 0; a < n; a++) {
+        for (let b = a + 1; b < n; b++) {
           tick();
 
-          const possible = [];
-          for (const j of xs) {
-            if (j !== i && allowed(i, j)) possible.push(j);
-          }
-
-          if (!possible.length) {
-            matchingMemo.set(key, false);
-            return false;
-          }
-
           if (
-            opponents === null ||
-            possible.length < opponents.length
+            edge[xs[a]][xs[b]] &&
+            !(blocked[a] && blocked[b])
           ) {
-            chosen = i;
-            opponents = possible;
+            graph[a].push(b);
+            graph[b].push(a);
           }
         }
-
-        for (const j of opponents) {
-          if (visit(xs.filter(i => i !== chosen && i !== j))) {
-            matchingMemo.set(key, true);
-            return true;
-          }
-        }
-
-        matchingMemo.set(key, false);
-        if (matchingMemo.size > MATCHING_MEMO_CAP) {
-          matchingMemo.clear();
-        }
-        return false;
       }
 
-      return visit(ordered(list));
+      const answer = hasPerfectMatchingGraph(graph, tick);
+
+      /*
+       * Clearing the bounded cache affects performance, not results.
+       */
+      if (matchingMemo.size >= MATCHING_MEMO_CAP) {
+        matchingMemo.clear();
+      }
+
+      matchingMemo.set(key, answer);
+      return answer;
     }
 
-function canRemoveForBye(list, score) {
-  for (const i of list) {
-    tick();
-    if (
-      eligible(i) &&
-      players[i].score === score &&
-      perfectMatching(list.filter(j => j !== i))
-    ) {
-      return true;
-    }
-  }
-  return false;
-}
+    function canRemoveForBye(list, score) {
+      for (const i of list) {
+        tick();
 
+        if (
+          eligible(i) &&
+          players[i].score === score &&
+          perfectMatching(list.filter(j => j !== i))
+        ) {
+          return true;
+        }
+      }
+
+      return false;
+    }
 
     phase = "Establishing C4 and the minimum feasible bye score";
+
     let byeScore = null;
 
-if (N % 2) {
-  const possibleScores = [...new Set(
-    ids.filter(eligible).map(i => players[i].score)
-  )].sort((a, b) => a - b);
+    if (N % 2) {
+      const possibleScores = [...new Set(
+        ids.filter(eligible).map(i => players[i].score)
+      )].sort((a,b) => a-b);
 
-  for (const score of possibleScores) {
-    if (canRemoveForBye(ids, score)) {
-      byeScore = score;
-      break;
-    }
-  }
+      for (const score of possibleScores) {
+        if (canRemoveForBye(ids, score)) {
+          byeScore = score;
+          break;
+        }
+      }
 
-  if (byeScore === null) {
-    throw fault(
-      "NO_LEGAL_COMPLETION",
-      "No complete round satisfying C1–C3 and bye eligibility exists."
-    );
-  }
-} else if (!perfectMatching(ids)) {
+      if (byeScore === null) {
+        throw fault(
+          "NO_LEGAL_COMPLETION",
+          "No complete round satisfying C1–C3 and bye eligibility exists."
+        );
+      }
+    } else if (!perfectMatching(ids)) {
       throw fault(
         "NO_LEGAL_COMPLETION",
         "No complete round satisfying C1–C3 exists."
@@ -1179,29 +1402,29 @@ if (N % 2) {
 
     const completionMemo = new Map();
 
-function canComplete(list) {
-  const xs = ordered(list);
-  const key = xs.join(",");
+    function canComplete(list) {
+      const xs = ordered(list);
+      const key = xs.join(",");
 
-  if (completionMemo.has(key)) return completionMemo.get(key);
+      if (completionMemo.has(key)) return completionMemo.get(key);
 
-  let answer = false;
+      let answer = false;
 
-  if (!(xs.length % 2)) {
-    answer = perfectMatching(xs);
-  } else if (byeScore !== null) {
-    answer = canRemoveForBye(xs, byeScore);
-  }
+      if (!(xs.length % 2)) {
+        answer = perfectMatching(xs);
+      } else if (byeScore !== null) {
+        answer = canRemoveForBye(xs, byeScore);
+      }
 
-  completionMemo.set(key, answer);
-  return answer;
-}
+      completionMemo.set(key, answer);
+      return answer;
+    }
 
     const groups = [];
 
     for (const i of ids) {
       const score = players[i].score;
-      const last = groups[groups.length-1];
+      const last = groups[groups.length - 1];
 
       if (!last || last.score !== score) {
         groups.push({score, ids:[i]});
@@ -1214,7 +1437,7 @@ function canComplete(list) {
     tails[groups.length] = [];
 
     for (let i = groups.length - 1; i >= 0; i--) {
-      tails[i] = [...groups[i].ids, ...tails[i+1]];
+      tails[i] = [...groups[i].ids, ...tails[i + 1]];
     }
 
     const contexts = new Map();
@@ -1236,7 +1459,7 @@ function canComplete(list) {
         mdpSet:new Set(mdps),
         residents,
         all:ordered([...mdps, ...residents]),
-        lower:tails[index+1],
+        lower:tails[index + 1],
         last:index === groups.length - 1
       };
 
@@ -1254,7 +1477,7 @@ function canComplete(list) {
 
       for (let i = start; i <= items.length - count; i++) {
         chosen.push(items[i]);
-        yield* combinations(items, count-1, i+1, chosen);
+        yield* combinations(items, count - 1, i + 1, chosen);
         chosen.pop();
       }
     }
@@ -1264,7 +1487,7 @@ function canComplete(list) {
 
       for (const i of ordered(list)) {
         const score = players[i].score;
-        const last = result[result.length-1];
+        const last = result[result.length - 1];
 
         if (!last || last.score !== score) {
           result.push({score, ids:[i]});
@@ -1281,31 +1504,30 @@ function canComplete(list) {
       const remaining = new Array(gs.length + 1).fill(0);
 
       for (let i = gs.length - 1; i >= 0; i--) {
-        remaining[i] = remaining[i+1] + gs[i].ids.length;
+        remaining[i] = remaining[i + 1] + gs[i].ids.length;
       }
 
-      const profile = [];
-
-      function* visit(index, needed) {
+      function* visit(index, needed, profile) {
         tick();
 
         if (index === gs.length) {
-          if (needed === 0) yield profile.slice();
+          if (needed === 0) yield profile;
           return;
         }
 
-        const minimum = Math.max(0, needed - remaining[index+1]);
+        const minimum = Math.max(0, needed - remaining[index + 1]);
         const maximum = Math.min(needed, gs[index].ids.length);
-        const score = gs[index].score;
 
         for (let take = minimum; take <= maximum; take++) {
-          for (let t = 0; t < take; t++) profile.push(score);
-          yield* visit(index+1, needed-take);
-          for (let t = 0; t < take; t++) profile.pop();
+          yield* visit(
+            index + 1,
+            needed - take,
+            [...profile, ...new Array(take).fill(gs[index].score)]
+          );
         }
       }
 
-      yield* visit(0, count);
+      yield* visit(0, count, []);
     }
 
     function* setsWithScores(list, profile) {
@@ -1316,34 +1538,22 @@ function canComplete(list) {
         counts.set(score, (counts.get(score) || 0) + 1);
       }
 
-      const chosen = [];
-
-      function* visit(index) {
+      function* visit(index, chosen) {
         tick();
 
         if (index === gs.length) {
-          yield chosen.slice();
+          yield chosen;
           return;
         }
 
         const count = counts.get(gs[index].score) || 0;
-        const ids = gs[index].ids;
 
-        function* pick(start, remaining) {
-          tick();
-          if (remaining === 0) { yield* visit(index + 1); return; }
-          for (let i = start; i <= ids.length - remaining; i++) {
-            chosen.push(ids[i]);
-            yield* pick(i + 1, remaining - 1);
-            chosen.pop();
-          }
+        for (const part of combinations(gs[index].ids, count)) {
+          yield* visit(index + 1, [...chosen, ...part]);
         }
-
-        if (count === 0) yield* visit(index + 1);
-        else yield* pick(0, count);
       }
 
-      yield* visit(0);
+      yield* visit(0, []);
     }
 
     function futureOK(ctx, down) {
@@ -1353,6 +1563,7 @@ function canComplete(list) {
             eligible(down[0]) &&
             players[down[0]].score === byeScore;
         }
+
         return down.length === 0;
       }
 
@@ -1382,14 +1593,14 @@ function canComplete(list) {
 
     function theoreticalHigh(ctx) {
       const pairs = Math.min(
-        Math.floor(ctx.all.length/2),
+        Math.floor(ctx.all.length / 2),
         ctx.residents.length
       );
-      const count = ctx.all.length - 2*pairs;
+      const count = ctx.all.length - 2 * pairs;
       const scores = ctx.all
         .map(i => players[i].score)
         .sort((a,b) => a-b)
-        .slice(0,count)
+        .slice(0, count)
         .sort((a,b) => b-a);
 
       return {count, scores};
@@ -1420,8 +1631,8 @@ function canComplete(list) {
             const high = {
               count,
               scores:profile,
-              pairs:(ctx.all.length-count)/2,
-              m1:ctx.mdps.length-limboCount,
+              pairs:(ctx.all.length - count) / 2,
+              m1:ctx.mdps.length - limboCount,
               exampleDown:down
             };
 
@@ -1439,7 +1650,7 @@ function canComplete(list) {
       if (ctx.last) return {count:0, scores:[]};
 
       const nextBound = theoreticalHigh(
-        bracketContext(ctx.index+1, high.exampleDown)
+        bracketContext(ctx.index + 1, high.exampleDown)
       );
 
       let best = null;
@@ -1447,7 +1658,7 @@ function canComplete(list) {
       for (const down of setsWithScores(ctx.all, high.scores)) {
         if (!feasibleDownset(ctx, down)) continue;
 
-        const next = highFor(ctx.index+1, down);
+        const next = highFor(ctx.index + 1, down);
         if (!next) continue;
 
         if (!best || compareHigh(next, best) < 0) {
@@ -1471,7 +1682,8 @@ function canComplete(list) {
     function matchesLookAhead(ctx, down, lookAhead) {
       if (ctx.last) return true;
 
-      const next = highFor(ctx.index+1, down);
+      const next = highFor(ctx.index + 1, down);
+
       return next !== null && compareHigh(next, lookAhead) === 0;
     }
 
@@ -1520,164 +1732,411 @@ function canComplete(list) {
         return;
       }
 
-      if (items.length-start < count) return;
+      if (items.length - start < count) return;
 
       let minimum = 0;
       let maximum = 0;
 
       for (let k = 0; k < count; k++) {
-        minimum += items[start+k];
-        maximum += items[items.length-1-k];
+        minimum += items[start + k];
+        maximum += items[items.length - 1 - k];
       }
 
       if (target < minimum || target > maximum) return;
 
-      for (let i = start; i <= items.length-count; i++) {
+      for (let i = start; i <= items.length - count; i++) {
         chosen.push(items[i]);
 
         yield* sumCombinations(
-          items, count-1, target-items[i], i+1, chosen
+          items, count - 1, target - items[i], i + 1, chosen
         );
 
         chosen.pop();
       }
     }
 
-    /*
-     * Enumeration of top/bottom partitions of the bracket.
-     *
-     * The transposition size is capped by bracket width.  The
-     * uncapped loop enumerates C(n, pairCount) partitions, which
-     * for a 25-player bracket with 12 pairings is ≈ 5.2 million
-     * partitions — several orders of magnitude more than the
-     * engine can afford to visit before the fixed work limit
-     * fires.  The natural partition plus a small transposition
-     * window is sufficient for ordinary colour problems; larger
-     * exchange sizes are only needed in degenerate histories.
-     *
-     * The reversed-A array and the outgoing combinations are
-     * hoisted so they are computed once per exchange size
-     * rather than once per (size, difference) pair.
-     */
     function* exchangeConfigurations(list, pairCount) {
       const n = list.length;
-      const A = Array.from({length:pairCount}, (_,i) => i+1);
+      const A = Array.from({length:pairCount}, (_,i) => i + 1);
       const B = Array.from(
-        {length:n-pairCount}, (_,i) => pairCount+i+1
+        {length:n - pairCount}, (_,i) => pairCount + i + 1
       );
 
       yield {
-        s1:list.slice(0,pairCount),
+        s1:list.slice(0, pairCount),
         s2:list.slice(pairCount)
       };
 
-      const exchangeCap =
-        n <= 12 ? 8 : n <= 20 ? 4 : 3;
-      const maxSize = Math.min(A.length, B.length, exchangeCap);
-      const ARev = Array.from({length:pairCount}, (_,i) => pairCount - i);
+      const maxSize = Math.min(A.length, B.length);
 
-      for (
-        let size = 1;
-        size <= maxSize;
-        size++
-      ) {
-        const outgoings = [];
-        for (const arr of combinations(ARev, size)) {
-          outgoings.push({
-            arr,
-            set: new Set(arr),
-            sum: arr.reduce((a,b) => a+b, 0)
-          });
-        }
-
+      for (let size = 1; size <= maxSize; size++) {
         for (
-          let difference = size*size;
-          difference <= size*(n-size);
+          let difference = size * size;
+          difference <= size * (n - size);
           difference++
         ) {
-          for (const { arr: outgoing, set: outSet, sum } of outgoings) {
-            for (const incoming of sumCombinations(B,size,sum+difference)) {
+          for (const outgoing of combinations([...A].reverse(), size)) {
+            const sum = outgoing.reduce((a,b) => a+b, 0);
+
+            for (
+              const incoming of sumCombinations(
+                B, size, sum + difference
+              )
+            ) {
               tick();
 
+              const outSet = new Set(outgoing);
               const inSet = new Set(incoming);
 
               const s1 = [
                 ...A.filter(x => !outSet.has(x)),
                 ...incoming
-              ].sort(numericSort).map(x => list[x-1]);
+              ].sort(numericSort).map(x => list[x - 1]);
 
               const s2 = [
                 ...B.filter(x => !inSet.has(x)),
                 ...outgoing
-              ].sort(numericSort).map(x => list[x-1]);
+              ].sort(numericSort).map(x => list[x - 1]);
 
-              yield {s1,s2};
+              yield {s1, s2};
             }
           }
         }
       }
     }
 
-    function* prefixPairings(
-      s1, s2, canWin, position = 0, used = new Set(), pairs = []
-    ) {
-      tick();
-      if (!canWin(pairs)) return;
+    /*
+     * Per-partition suffix bounds on remaining C12 and C13.
+     *
+     * For each S1 row, take the minimum legal pair cost over S2.
+     * Ignoring competition for S2 players produces a relaxation,
+     * so the suffix sums are valid lower bounds.
+     */
+    function computeSuffixBounds(s1, s2) {
+      const n = s1.length;
+      const suf2 = new Array(n + 1).fill(0);
+      const suf3 = new Array(n + 1).fill(0);
 
-      if (position === s1.length) {
-        yield {
-          pairs:[...pairs],
-          unused:s2.filter(i => !used.has(i))
-        };
-        return;
+      for (let i = n - 1; i >= 0; i--) {
+        tick();
+
+        const row = s1[i];
+        let m2 = Infinity;
+        let m3 = Infinity;
+
+        for (let k = 0; k < s2.length; k++) {
+          const b = s2[k];
+
+          if (!edge[row][b]) continue;
+
+          const pc = pairCost[row][b];
+
+          if (pc[2] < m2) m2 = pc[2];
+          if (pc[3] < m3) m3 = pc[3];
+
+          if (m2 === 0 && m3 === 0) break;
+        }
+
+        suf2[i] = suf2[i + 1] + (m2 === Infinity ? 0 : m2);
+        suf3[i] = suf3[i + 1] + (m3 === Infinity ? 0 : m3);
       }
 
-      const first = s1[position];
-
-      for (const second of s2) {
-        if (used.has(second) || !edge[first][second]) continue;
-
-        used.add(second);
-        pairs.push([first,second]);
-
-        yield* prefixPairings(
-          s1,s2,canWin,position+1,used,pairs
-        );
-
-        pairs.pop();
-        used.delete(second);
-      }
+      return {suf2, suf3};
     }
 
     /*
-     * Per-partition lower bound.
+     * Depth-first pairing of S1 into S2.
      *
-     * For a fixed top/bottom partition (s1, s2), every element
-     * of s1 must be paired with some element of s2.  Therefore
-     * the sum of the per-element lexicographic minima backward
-     * from s1 across s2 is a valid lower bound on the cost of
-     * any matching inside that partition.  When the incumbent
-     * bound already beats this bound, the whole partition is
-     * discarded without a single DFS node being spent inside it.
+     * sums and dfsUsed are shared mutable search-state buffers.
+     * The finally block restores them on every exit.
      *
-     * The bound is cheap: |s1|·|s2| legality-and-cost probes,
-     * which is negligible next to the exponential DFS the
-     * partition would otherwise trigger.
+     * Homogeneous searches may discard dominated prefixes:
+     *
+     *   same position and used S2 players
+     *   plus an earlier, no-worse C10-C13 cost
+     *
+     * Do not enable dominance for the MDP anchor phase, where
+     * different assignments can affect later float criteria.
      */
+    function* prefixPairings(
+      s1, s2, canWin, sums, dfsUsed,
+      suffixMinP2, suffixMinP3,
+      useDominance = false
+    ) {
+      const pairs = [];
+
+      const memo = useDominance ? new Map() : null;
+      const MEMO_CAP = 100000;
+
+      const bits = useDominance
+        ? s2.map((_,k) => 1n << BigInt(k))
+        : null;
+
+      function* visit(position, mask) {
+        tick();
+
+        if (!canWin(position, suffixMinP2, suffixMinP3)) {
+          return;
+        }
+
+        if (memo) {
+          const cost = [
+            sums.p0,
+            sums.p1,
+            sums.p2,
+            sums.p3
+          ];
+
+          const earlier = memo.get(mask);
+
+          if (
+            earlier !== undefined &&
+            compareArrays(earlier, cost) <= 0
+          ) {
+            return;
+          }
+
+          if (memo.size >= MEMO_CAP) {
+            memo.clear();
+          }
+
+          memo.set(mask, cost);
+        }
+
+        if (position === s1.length) {
+          yield {
+            pairs:[...pairs],
+            unused:s2.filter(i => !dfsUsed[i])
+          };
+          return;
+        }
+
+        const first = s1[position];
+
+        for (let k = 0; k < s2.length; k++) {
+          const second = s2[k];
+
+          if (dfsUsed[second] || !edge[first][second]) {
+            continue;
+          }
+
+          const pc = pairCost[first][second];
+          const wa = colorWant[first];
+          const wb = colorWant[second];
+
+          dfsUsed[second] = 1;
+          pairs.push([first, second]);
+
+          sums.p0 += pc[0];
+          sums.p1 += pc[1];
+          sums.p2 += pc[2];
+          sums.p3 += pc[3];
+
+          if (wa === 1) sums.pairedW++;
+          else if (wa === -1) sums.pairedB++;
+
+          if (wb === 1) sums.pairedW++;
+          else if (wb === -1) sums.pairedB++;
+
+          sums.count++;
+
+          try {
+            yield* visit(
+              position + 1,
+              memo ? mask | bits[k] : 0n
+            );
+          } finally {
+            sums.p0 -= pc[0];
+            sums.p1 -= pc[1];
+            sums.p2 -= pc[2];
+            sums.p3 -= pc[3];
+
+            if (wa === 1) sums.pairedW--;
+            else if (wa === -1) sums.pairedB--;
+
+            if (wb === 1) sums.pairedW--;
+            else if (wb === -1) sums.pairedB--;
+
+            sums.count--;
+
+            pairs.pop();
+            dfsUsed[second] = 0;
+          }
+        }
+      }
+
+      yield* visit(0, 0n);
+    }
+
+    /*
+     * Solve one fixed homogeneous S1/S2 partition exactly.
+     *
+     * Supported:
+     *   s2.length === s1.length
+     *   s2.length === s1.length + 1
+     *
+     * The optional extra row selects the resident downfloater.
+     *
+     * Within a fixed MDP anchor assignment, the variable quality
+     * components are:
+     *
+     *   C10, C11, C12, C13, C14, C16
+     *
+     * Other float-related components are constant for this local
+     * optimization and remain evaluated by quality().
+     */
+    function optimalHomogeneousPartition(s1, s2, allowDown) {
+      const realRows = s1.length;
+      const size = s2.length;
+      const downCount = size - realRows;
+
+      if (downCount !== 0 && downCount !== 1) {
+        throw fault(
+          "INTERNAL",
+          "Unsupported assignment-partition shape."
+        );
+      }
+
+      let allowedDown = null;
+
+      if (downCount === 0) {
+        if (!allowDown([])) return null;
+      } else {
+        allowedDown = s2.map(player => {
+          tick();
+          return allowDown([player]);
+        });
+
+        if (!allowedDown.some(Boolean)) return null;
+      }
+
+      /*
+       * Every quality-component total is at most N.
+       * Base N+1 preserves the exact lexicographic priorities.
+       */
+      const base = BigInt(N + 1);
+
+      const qualityWeights = [
+        base ** 5n,
+        base ** 4n,
+        base ** 3n,
+        base ** 2n
+      ];
+
+      /*
+       * Lowest priority: the S2 column sequence assigned to the
+       * real S1 rows. Its total is below sequenceScale.
+       */
+      const sequenceBase = BigInt(size + 1);
+      const positionWeights = new Array(realRows);
+
+      let sequenceScale = 1n;
+
+      for (let row = realRows - 1; row >= 0; row--) {
+        positionWeights[row] = sequenceScale;
+        sequenceScale *= sequenceBase;
+      }
+
+      const matrix = [];
+
+      for (let row = 0; row < realRows; row++) {
+        tick();
+
+        const a = s1[row];
+        const costs = new Array(size).fill(null);
+
+        for (let column = 0; column < size; column++) {
+          const b = s2[column];
+
+          if (!edge[a][b]) continue;
+
+          const pc = pairCost[a][b];
+
+          let qualityCost = 0n;
+
+          for (let component = 0; component < 4; component++) {
+            qualityCost +=
+              BigInt(pc[component]) * qualityWeights[component];
+          }
+
+          costs[column] =
+            qualityCost * sequenceScale +
+            BigInt(column) * positionWeights[row];
+        }
+
+        matrix.push(costs);
+      }
+
+      if (downCount === 1) {
+        const dummy = new Array(size).fill(null);
+
+        for (let column = 0; column < size; column++) {
+          tick();
+
+          if (!allowedDown[column]) continue;
+
+          const player = s2[column];
+
+          const c14 = previous(player, 1) === "D" ? 1n : 0n;
+          const c16 = previous(player, 2) === "D" ? 1n : 0n;
+
+          dummy[column] =
+            (c14 * base + c16) * sequenceScale;
+        }
+
+        matrix.push(dummy);
+      }
+
+      assignmentCalls++;
+
+      const assigned = minimumCostAssignment(matrix, tick);
+
+      if (assigned === null) return null;
+
+      const pairs = [];
+      const colorCost = [0,0,0,0];
+
+      for (let row = 0; row < realRows; row++) {
+        const a = s1[row];
+        const b = s2[assigned[row]];
+
+        pairs.push([a,b]);
+
+        const pc = pairCost[a][b];
+
+        for (let component = 0; component < 4; component++) {
+          colorCost[component] += pc[component];
+        }
+      }
+
+      const down = downCount === 1
+        ? [s2[assigned[realRows]]]
+        : [];
+
+      return {pairs, down, colorCost};
+    }
+
     function* homogeneousCandidates(
-      list, pairCount, canWin, shouldSkipPartition
+      list, pairCount, canWin, shouldSkipPartition,
+      sums, dfsUsed, allowDown
     ) {
       const sorted = ordered(list);
+      const downCount = sorted.length - 2 * pairCount;
 
       if (pairCount === 0) {
-        yield {pairs:[], down:sorted};
+        if (allowDown(sorted)) {
+          yield {pairs:[], down:sorted};
+        }
         return;
       }
 
-      for (const config of exchangeConfigurations(sorted,pairCount)) {
+      for (const config of exchangeConfigurations(sorted, pairCount)) {
         const s1 = config.s1;
         const s2 = config.s2;
 
+        /*
+         * Inexpensive row-relaxation bound before assignment or DFS.
+         */
         if (shouldSkipPartition) {
           const lb = [0,0,0,0];
           let feasible = true;
@@ -1690,43 +2149,90 @@ function canComplete(list) {
 
               const pc = pairCost[a][b];
 
-              if (!bestRow || compareArrays(pc,bestRow) < 0) {
+              if (
+                bestRow === null ||
+                compareArrays(pc, bestRow) < 0
+              ) {
                 bestRow = pc;
               }
             }
 
-            if (!bestRow) {
+            if (bestRow === null) {
               feasible = false;
               break;
             }
 
-            lb[0] += bestRow[0];
-            lb[1] += bestRow[1];
-            lb[2] += bestRow[2];
-            lb[3] += bestRow[3];
+            for (let component = 0; component < 4; component++) {
+              lb[component] += bestRow[component];
+            }
           }
 
-          if (!feasible) continue;
-          if (shouldSkipPartition(lb)) continue;
+          if (!feasible || shouldSkipPartition(lb)) continue;
         }
 
-        for (const candidate of prefixPairings(
-          s1,s2,canWin
-        )) {
+        /*
+         * Direct optimization for zero or one resident downfloater.
+         * Only the best candidate for this fixed partition is needed.
+         */
+        if (
+          assignmentFastPath &&
+          (downCount === 0 || downCount === 1)
+        ) {
+          const candidate = optimalHomogeneousPartition(
+            s1, s2, allowDown
+          );
+
+          if (candidate === null) continue;
+
+          if (
+            shouldSkipPartition &&
+            shouldSkipPartition(candidate.colorCost)
+          ) {
+            continue;
+          }
+
           yield {
             pairs:candidate.pairs,
-            down:ordered(candidate.unused)
+            down:candidate.down
+          };
+
+          continue;
+        }
+
+        /*
+         * Retain DFS for two or more resident downfloaters,
+         * and for regression comparisons.
+         */
+        dfsRemainderPartitions++;
+
+        const {suf2, suf3} = computeSuffixBounds(s1, s2);
+
+        for (const candidate of prefixPairings(
+          s1, s2, canWin, sums, dfsUsed, suf2, suf3, true
+        )) {
+          if (!allowDown(candidate.unused)) continue;
+
+          yield {
+            pairs:candidate.pairs,
+            down:candidate.unused
           };
         }
       }
     }
 
     function* bracketCandidates(
-      ctx, high, canWin, shouldSkipPartition
+      ctx, high, canWin, shouldSkipPartition,
+      sums, dfsUsed, acceptableDown
     ) {
       if (!ctx.mdps.length) {
         yield* homogeneousCandidates(
-          ctx.residents,high.pairs,canWin,shouldSkipPartition
+          ctx.residents,
+          high.pairs,
+          canWin,
+          shouldSkipPartition,
+          sums,
+          dfsUsed,
+          acceptableDown
         );
         return;
       }
@@ -1739,25 +2245,59 @@ function canComplete(list) {
         const selectedSet = new Set(selected);
         const limbo = ctx.mdps.filter(i => !selectedSet.has(i));
 
-        if (compareArrays(scoreList(limbo),requiredLimboScores)) {
+        if (
+          compareArrays(scoreList(limbo), requiredLimboScores)
+        ) {
           continue;
         }
 
-        for (const mdpPairing of prefixPairings(
-          selected,ctx.residents,canWin
-        )) {
-          const remainderCanWin = pairs =>
-            canWin([...mdpPairing.pairs,...pairs]);
+        const allowRemainderDown = down => acceptableDown(
+          ordered([...limbo, ...down])
+        );
 
+        /*
+         * If Limbo contains all downfloaters, their acceptability
+         * is independent of the MDP anchor assignment.
+         */
+        if (
+          high.count === limbo.length &&
+          !allowRemainderDown([])
+        ) {
+          continue;
+        }
+
+        const {suf2, suf3} = computeSuffixBounds(
+          selected, ctx.residents
+        );
+
+        /*
+         * Retain the MDP anchor search because different mappings
+         * can affect the MDP-related float criteria.
+         */
+        for (const mdpPairing of prefixPairings(
+          selected,
+          ctx.residents,
+          canWin,
+          sums,
+          dfsUsed,
+          suf2,
+          suf3
+        )) {
           for (const remainder of homogeneousCandidates(
             mdpPairing.unused,
-            high.pairs-high.m1,
-            remainderCanWin,
-            shouldSkipPartition
+            high.pairs - high.m1,
+            canWin,
+            shouldSkipPartition,
+            sums,
+            dfsUsed,
+            allowRemainderDown
           )) {
             yield {
-              pairs:[...mdpPairing.pairs,...remainder.pairs],
-              down:ordered([...limbo,...remainder.down])
+              pairs:[
+                ...mdpPairing.pairs,
+                ...remainder.pairs
+              ],
+              down:ordered([...limbo, ...remainder.down])
             };
           }
         }
@@ -1788,14 +2328,14 @@ function canComplete(list) {
         }
 
         if (mdp !== null) {
-          const gap = players[mdp].score-players[resident].score;
+          const gap = players[mdp].score - players[resident].score;
 
-          if (previous(resident,1) === "U") {
+          if (previous(resident, 1) === "U") {
             v[5]++;
             v[9].push(gap);
           }
 
-          if (previous(resident,2) === "U") {
+          if (previous(resident, 2) === "U") {
             v[7]++;
             v[11].push(gap);
           }
@@ -1804,17 +2344,18 @@ function canComplete(list) {
 
       for (const i of candidate.down) {
         if (ctx.mdpSet.has(i)) continue;
-        if (previous(i,1) === "D") v[4]++;
-        if (previous(i,2) === "D") v[6]++;
+
+        if (previous(i, 1) === "D") v[4]++;
+        if (previous(i, 2) === "D") v[6]++;
       }
 
       for (const i of ctx.mdps) {
         const gap = mates.has(i)
-          ? players[i].score-players[mates.get(i)].score
+          ? players[i].score - players[mates.get(i)].score
           : REFLOAT;
 
-        if (previous(i,1) === "D") v[8].push(gap);
-        if (previous(i,2) === "D") v[10].push(gap);
+        if (previous(i, 1) === "D") v[8].push(gap);
+        if (previous(i, 2) === "D") v[10].push(gap);
       }
 
       for (let k = 8; k < 12; k++) {
@@ -1828,8 +2369,8 @@ function canComplete(list) {
       const pairs = high.pairs;
       const down = high.count;
       const r = ctx.residents.length;
-      const limboCount = ctx.mdps.length-high.m1;
-      const residentDown = down-limboCount;
+      const limboCount = ctx.mdps.length - high.m1;
+      const residentDown = down - limboCount;
 
       const countPreference = (color, strongOnly) =>
         ctx.all.filter(i =>
@@ -1838,25 +2379,25 @@ function canComplete(list) {
         ).length;
 
       const colorBound = strongOnly =>
-        Math.max(0,countPreference("W",strongOnly)-pairs-down) +
-        Math.max(0,countPreference("B",strongOnly)-pairs-down);
+        Math.max(0, countPreference("W", strongOnly) - pairs - down) +
+        Math.max(0, countPreference("B", strongOnly) - pairs - down);
 
       const residentHistoryCount = (marker, back) =>
         ctx.residents.filter(
-          i => previous(i,back) === marker
+          i => previous(i, back) === marker
         ).length;
 
       const d1 = Math.max(
-        0,residentDown-(r-residentHistoryCount("D",1))
+        0, residentDown - (r - residentHistoryCount("D", 1))
       );
       const u1 = Math.max(
-        0,high.m1-(r-residentHistoryCount("U",1))
+        0, high.m1 - (r - residentHistoryCount("U", 1))
       );
       const d2 = Math.max(
-        0,residentDown-(r-residentHistoryCount("D",2))
+        0, residentDown - (r - residentHistoryCount("D", 2))
       );
       const u2 = Math.max(
-        0,high.m1-(r-residentHistoryCount("U",2))
+        0, high.m1 - (r - residentHistoryCount("U", 2))
       );
 
       const limboByScore = new Map();
@@ -1864,7 +2405,7 @@ function canComplete(list) {
       for (const score of high.scores) {
         if (score > ctx.score) {
           limboByScore.set(
-            score,(limboByScore.get(score)||0)+1
+            score, (limboByScore.get(score) || 0) + 1
           );
         }
       }
@@ -1874,20 +2415,20 @@ function canComplete(list) {
 
         for (const group of groupedScores(ctx.mdps)) {
           const protectedCount = group.ids.filter(
-            i => previous(i,back) === "D"
+            i => previous(i, back) === "D"
           ).length;
 
           const limbo = limboByScore.get(group.score) || 0;
           const forcedProtectedLimbo = Math.max(
-            0,limbo-(group.ids.length-protectedCount)
+            0, limbo - (group.ids.length - protectedCount)
           );
 
           result.push(
             ...new Array(forcedProtectedLimbo).fill(REFLOAT)
           );
           result.push(
-            ...new Array(protectedCount-forcedProtectedLimbo)
-              .fill(group.score-ctx.score)
+            ...new Array(protectedCount - forcedProtectedLimbo)
+              .fill(group.score - ctx.score)
           );
         }
 
@@ -1898,10 +2439,10 @@ function canComplete(list) {
 
       for (const group of groupedScores(ctx.mdps)) {
         const count = group.ids.length -
-          (limboByScore.get(group.score)||0);
+          (limboByScore.get(group.score) || 0);
 
         pairedMdpGaps.push(
-          ...new Array(count).fill(group.score-ctx.score)
+          ...new Array(count).fill(group.score - ctx.score)
         );
       }
 
@@ -1911,17 +2452,30 @@ function canComplete(list) {
         0,0,colorBound(false),colorBound(true),
         d1,u1,d2,u2,
         mdpBound(1),
-        pairedMdpGaps.slice(0,u1).sort((a,b) => b-a),
+        pairedMdpGaps.slice(0, u1).sort((a,b) => b-a),
         mdpBound(2),
-        pairedMdpGaps.slice(0,u2).sort((a,b) => b-a)
+        pairedMdpGaps.slice(0, u2).sort((a,b) => b-a)
       ];
     }
 
     function selectBracket(index, incoming) {
-      const ctx = bracketContext(index,incoming);
-      phase = "Optimizing bracket at score " + ctx.score;
+      const ctx = bracketContext(index, incoming);
+      phase = "Establishing bracket bounds at score " + ctx.score;
 
-      const high = highFor(index,incoming);
+      let totalW = 0;
+      let totalB = 0;
+
+      for (const v of ctx.all) {
+        const c = colorWant[v];
+
+        if (c === 1) totalW++;
+        else if (c === -1) totalB++;
+      }
+
+      let bestLimitCache = null;
+      let bestValueCache = null;
+
+      const high = highFor(index, incoming);
 
       if (!high) {
         throw fault(
@@ -1931,9 +2485,14 @@ function canComplete(list) {
         );
       }
 
-      const lookAhead = bestLookAhead(ctx,high);
-      const c9 = bestC9(ctx,high,lookAhead);
-      const lowerBound = qualityLowerBound(ctx,high);
+      phase = "Evaluating C8 look-ahead at score " + ctx.score;
+
+      const lookAhead = bestLookAhead(ctx, high);
+      const c9 = bestC9(ctx, high, lookAhead);
+      const lowerBound = qualityLowerBound(ctx, high);
+
+      phase = "Optimizing pair assignments at score " + ctx.score;
+
       const acceptableMemo = new Map();
 
       function acceptableDown(down) {
@@ -1945,15 +2504,15 @@ function canComplete(list) {
 
         const answer =
           down.length === high.count &&
-          compareArrays(scoreList(down),high.scores) === 0 &&
-          feasibleDownset(ctx,down) &&
-          matchesLookAhead(ctx,down,lookAhead) &&
+          compareArrays(scoreList(down), high.scores) === 0 &&
+          feasibleDownset(ctx, down) &&
+          matchesLookAhead(ctx, down, lookAhead) &&
           (
             !c9Applies(high) ||
             players[down[0]].unplayedCount === c9
           );
 
-        acceptableMemo.set(key,answer);
+        acceptableMemo.set(key, answer);
         return answer;
       }
 
@@ -1962,103 +2521,124 @@ function canComplete(list) {
       let cap = null;
       let proof = "exhausted-with-safe-pruning";
 
-function canWin(partialPairs) {
-  const limit = best ? best.value.slice(0,4) : cap;
-  if (!limit) return true;
+      const sums = {
+        p0:0, p1:0, p2:0, p3:0,
+        pairedW:0, pairedB:0, count:0
+      };
 
-  const partial = [0,0,0,0];
-  const paired = new Set();
+      const dfsUsed = new Uint8Array(N);
 
-  for (const [a,b] of partialPairs) {
-    for (let k = 0; k < 4; k++) {
-      partial[k] += pairCost[a][b][k];
-    }
-    paired.add(a);
-    paired.add(b);
-  }
+      function canWin(position, suffixMinP2, suffixMinP3) {
+        let limit;
 
-  // C10 and C11 are exact counters; a direct comparison is
-  // already the tightest possible test.
-  if (partial[0] !== limit[0]) return partial[0] < limit[0];
-  if (partial[1] !== limit[1]) return partial[1] < limit[1];
-
-  // C12: colour-preference misses.  A sound lower bound follows
-  // from the unpaired players’ colour wishes.  Of the remaining
-  // White-wanters, at most `high.count` can be floated out (they
-  // receive no colour) and at most `fp` can receive White; the
-  // rest must get Black and therefore miss.  Symmetric for
-  // Black-wanters.  This bound is used both for the true incumbent
-  // (`best`) and for every optimistic cap.
-  let wWant = 0;
-  let bWant = 0;
-
-  for (const v of ctx.all) {
-    if (paired.has(v)) continue;
-    const due = players[v].pref.color;
-    if (due === "W") wWant++;
-    else if (due === "B") bWant++;
-  }
-
-  const remaining = ctx.all.length - 2*partialPairs.length;
-  const fp = (remaining - high.count)/2;
-
-  const lb2 =
-    Math.max(0, wWant - high.count - fp) +
-    Math.max(0, bWant - high.count - fp);
-
-  const low2 = partial[2] + lb2;
-
-  if (low2 !== limit[2]) return low2 < limit[2];
-
-  // C13: no useful lower bound is available; require strict
-  // improvement against the current limit.
-  if (partial[3] !== limit[3]) return partial[3] < limit[3];
-
-  return true;
-}
-
-      /*
-       * Predicate used by homogeneousCandidates to discard a whole
-       * partition before spending a single DFS node inside it.
-       *
-       *   - Against `best`, require strict lexicographic improvement.
-       *   - Against a pre-set cap, allow the bound to meet the cap.
-       */
-      function shouldSkipPartition(lb) {
         if (best) {
-          return compareArrays(lb, best.value.slice(0,4)) >= 0;
+          if (best.value !== bestValueCache) {
+            bestValueCache = best.value;
+            bestLimitCache = [
+              best.value[0], best.value[1],
+              best.value[2], best.value[3]
+            ];
+          }
+
+          limit = bestLimitCache;
+        } else {
+          limit = cap;
         }
-        if (cap) {
-          return compareArrays(lb, cap) > 0;
-        }
-        return false;
+
+        if (!limit) return true;
+
+        const p0 = sums.p0;
+        const p1 = sums.p1;
+        const p2 = sums.p2;
+        const p3 = sums.p3;
+
+        if (p0 !== limit[0]) return p0 < limit[0];
+        if (p1 !== limit[1]) return p1 < limit[1];
+
+        const wWant = totalW - sums.pairedW;
+        const bWant = totalB - sums.pairedB;
+        const remaining = ctx.all.length - 2 * sums.count;
+        const fp = (remaining - high.count) / 2;
+
+        const lb2 =
+          Math.max(0, wWant - high.count - fp) +
+          Math.max(0, bWant - high.count - fp);
+
+        const p2Remaining = Math.max(
+          lb2, suffixMinP2[position]
+        );
+        const low2 = p2 + p2Remaining;
+
+        if (low2 !== limit[2]) return low2 < limit[2];
+
+        const low3 = p3 + suffixMinP3[position];
+
+        if (low3 !== limit[3]) return low3 < limit[3];
+
+        return true;
       }
 
-      // Optimistic passes first. Relax the cap only if nothing is found.
+      function shouldSkipPartition(lb) {
+        /*
+         * lb covers only the homogeneous partition.
+         * Include any already-fixed MDP anchor costs.
+         */
+        const total = [
+          sums.p0 + lb[0],
+          sums.p1 + lb[1],
+          sums.p2 + lb[2],
+          sums.p3 + lb[3]
+        ];
+
+        let limit = cap;
+
+        if (best) {
+          if (best.value !== bestValueCache) {
+            bestValueCache = best.value;
+            bestLimitCache = [
+              best.value[0],
+              best.value[1],
+              best.value[2],
+              best.value[3]
+            ];
+          }
+
+          limit = bestLimitCache;
+        }
+
+        return limit !== null &&
+          compareArrays(total, limit) > 0;
+      }
+
       const caps = [
-        [lowerBound[0],lowerBound[1],lowerBound[2],Infinity],
-        [lowerBound[0],lowerBound[1],lowerBound[2]+1,Infinity],
-        null                       // original behaviour as last resort
+        [lowerBound[0], lowerBound[1], lowerBound[2], Infinity],
+        [lowerBound[0], lowerBound[1], lowerBound[2] + 1, Infinity],
+        null
       ];
 
       for (const c of caps) {
         cap = c;
 
+        sums.p0 = sums.p1 = sums.p2 = sums.p3 = 0;
+        sums.pairedW = sums.pairedB = sums.count = 0;
+        dfsUsed.fill(0);
+
         for (const candidate of bracketCandidates(
-          ctx,high,canWin,shouldSkipPartition
+          ctx, high, canWin, shouldSkipPartition,
+          sums, dfsUsed, acceptableDown
         )) {
           tick();
           ordinal++;
 
           if (!acceptableDown(candidate.down)) continue;
 
-          const value = quality(ctx,candidate);
+          const value = quality(ctx, candidate);
 
-          if (!best || compareQuality(value,best.value) < 0) {
-            best = {...candidate,value,ordinal};
+          if (!best || compareQuality(value, best.value) < 0) {
+            best = {...candidate, value, ordinal};
           }
 
-          if (compareQuality(best.value,lowerBound) === 0) {
+          if (compareQuality(best.value, lowerBound) === 0) {
             proof = "lower-bound-attained";
             break;
           }
@@ -2117,14 +2697,15 @@ function canWin(partialPairs) {
     let incoming = [];
 
     for (let index = 0; index < groups.length; index++) {
-      const selected = selectBracket(index,incoming);
+      const selected = selectBracket(index, incoming);
+
       allPairs.push(...selected.pairs);
       trace.push(selected.trace);
       incoming = selected.down;
     }
 
     if (incoming.length !== N % 2) {
-      throw fault("INTERNAL","Final coverage check failed.");
+      throw fault("INTERNAL", "Final coverage check failed.");
     }
 
     const pabIndex = incoming.length ? incoming[0] : null;
@@ -2136,7 +2717,7 @@ function canWin(partialPairs) {
         players[pabIndex].score !== byeScore
       )
     ) {
-      throw fault("INTERNAL","Final bye check failed.");
+      throw fault("INTERNAL", "Final bye check failed.");
     }
 
     const covered = new Set();
@@ -2163,13 +2744,14 @@ function canWin(partialPairs) {
 
     if (pabIndex !== null) {
       if (covered.has(pabIndex)) {
-        throw fault("INTERNAL","Duplicate bye recipient.");
+        throw fault("INTERNAL", "Duplicate bye recipient.");
       }
+
       covered.add(pabIndex);
     }
 
     if (covered.size !== N) {
-      throw fault("INTERNAL","Incomplete player coverage.");
+      throw fault("INTERNAL", "Incomplete player coverage.");
     }
 
     return {
@@ -2180,7 +2762,9 @@ function canWin(partialPairs) {
       trace,
       stats:{
         nodes,
-        elapsedMs:performance.now()-started
+        assignmentCalls,
+        dfsRemainderPartitions,
+        elapsedMs:performance.now() - started
       }
     };
   }
@@ -2188,28 +2772,31 @@ function canWin(partialPairs) {
   function selfTest(progress = () => {}) {
     const results = [];
 
-    function check(condition,message) {
+    function check(condition, message) {
       if (!condition) throw new Error(message);
     }
 
-    function test(name,fn) {
-      progress({phase:"Test: "+name,nodes:0,elapsedMs:0});
+    function test(name, fn) {
+      progress({phase:"Test: " + name, nodes:0, elapsedMs:0});
       fn();
       results.push(name);
     }
 
-    function fixture(count,roundNumber = 1,totalRounds = 5) {
-      const m = roundNumber-1;
+    function fixture(count, roundNumber = 1, totalRounds = 5) {
+      const m = roundNumber - 1;
 
       return {
-        roundNumber,totalRounds,winPoints:1,initialColor:"W",
-        players:Array.from({length:count},(_,i) => ({
-          id:"P"+(i+1),
-          tpn:i+1,
+        roundNumber,
+        totalRounds,
+        winPoints:1,
+        initialColor:"W",
+        players:Array.from({length:count}, (_,i) => ({
+          id:"P" + (i + 1),
+          tpn:i + 1,
           score:0,
           opponents:[],
           playedColors:Array.from(
-            {length:m},(_,r) => (r+i)%2 ? "B" : "W"
+            {length:m}, (_,r) => (r + i) % 2 ? "B" : "W"
           ),
           floats:new Array(m).fill("-"),
           hadPAB:false,
@@ -2218,26 +2805,29 @@ function canWin(partialPairs) {
       };
     }
 
-    function run(input,limits = {seconds:30,nodes:8000000}) {
-      return solve(input,limits);
+    function run(input, limits = {seconds:10, nodes:0}) {
+      return solve(input, limits);
     }
 
     function opponents(result) {
       return result.pairs.map(p =>
-        [p.whiteId,p.blackId].sort().join("-")
+        [p.whiteId, p.blackId].sort().join("-")
       ).sort();
     }
 
-    test("Ordinary odd first round",() => {
+    test("Ordinary odd first round", () => {
       const result = run(fixture(15));
 
-      check(result.pabId === "P15","Expected TPN 15 to receive the bye.");
+      check(
+        result.pabId === "P15",
+        "Expected TPN 15 to receive the bye."
+      );
 
       for (let i = 1; i <= 7; i++) {
         check(
           result.pairs.some(p =>
-            [p.whiteId,p.blackId].includes("P"+i) &&
-            [p.whiteId,p.blackId].includes("P"+(i+7))
+            [p.whiteId, p.blackId].includes("P" + i) &&
+            [p.whiteId, p.blackId].includes("P" + (i + 7))
           ),
           "Incorrect first-round opponent."
         );
@@ -2258,8 +2848,8 @@ function canWin(partialPairs) {
       );
     });
 
-    test("Canonical tie order",() => {
-      const input = fixture(4,3,5);
+    test("Canonical tie order", () => {
+      const input = fixture(4, 3, 5);
 
       input.players.forEach(p => {
         p.score = 1;
@@ -2275,22 +2865,22 @@ function canWin(partialPairs) {
       );
     });
 
-    test("Played histories aligned from the end",() => {
+    test("Played histories aligned from the end", () => {
       const a = {
-        id:"A",tpn:1,score:2,playedColors:["W","W","B"]
+        id:"A", tpn:1, score:2, playedColors:["W","W","B"]
       };
       const b = {
-        id:"B",tpn:2,score:2,playedColors:["W","B","W"]
+        id:"B", tpn:2, score:2, playedColors:["W","B","W"]
       };
 
       check(
-        allocate(a,b,"W").white.id === "A",
+        allocate(a, b, "W").white.id === "A",
         "Color allocation used the wrong historical alignment."
       );
     });
 
-    test("C3 is absolute outside the topscorer exception",() => {
-      const input = fixture(2,3,4);
+    test("C3 is absolute outside the topscorer exception", () => {
+      const input = fixture(2, 3, 4);
 
       input.players.forEach(p => {
         p.score = 2;
@@ -2318,8 +2908,9 @@ function canWin(partialPairs) {
       );
     });
 
-    test("C4 can require extra downfloaters",() => {
-      const input = fixture(4,2,5);
+    test("C4 can require extra downfloaters", () => {
+      const input = fixture(4, 2, 5);
+
       input.players[0].score = 1;
       input.players[1].score = 1;
       input.players[2].opponents = ["P4"];
@@ -2331,14 +2922,16 @@ function canWin(partialPairs) {
         result.trace[0].MaxPairs === 0,
         "The upper bracket must leave both players available."
       );
+
       check(
         result.pairs.length === 2,
         "Expected complete cross-score pairing."
       );
     });
 
-    test("C5 chooses the minimum feasible score",() => {
-      const input = fixture(3,2,5);
+    test("C5 chooses the minimum feasible score", () => {
+      const input = fixture(3, 2, 5);
+
       input.players[0].score = 1;
       input.players[2].score = 1;
       input.players[0].opponents = ["P3"];
@@ -2353,8 +2946,8 @@ function canWin(partialPairs) {
       );
     });
 
-    test("C9 protects a player with fewer played games",() => {
-      const input = fixture(3,2,5);
+    test("C9 protects a player with fewer played games", () => {
+      const input = fixture(3, 2, 5);
       input.players[2].playedColors = [];
 
       check(
@@ -2363,8 +2956,8 @@ function canWin(partialPairs) {
       );
     });
 
-    test("C8 optimizes the next bracket before current colors",() => {
-      const input = fixture(8,3,6);
+    test("C8 optimizes the next bracket before current colors", () => {
+      const input = fixture(8, 3, 6);
 
       input.players.forEach((p,i) => {
         p.score = i < 3 ? 2 : i < 6 ? 1 : 0;
@@ -2386,8 +2979,9 @@ function canWin(partialPairs) {
       );
     });
 
-    test("C18 protects an incoming MDP against Limbo/PAB",() => {
-      const input = fixture(3,3,5);
+    test("C18 protects an incoming MDP against Limbo/PAB", () => {
+      const input = fixture(3, 3, 5);
+
       input.players[0].score = input.players[1].score = 2;
       input.players[0].playedColors = ["B","B"];
       input.players[1].playedColors = ["B","B"];
@@ -2402,19 +2996,283 @@ function canWin(partialPairs) {
       );
     });
 
-    test("Resource interruption returns no provisional solution",() => {
+    test("Resource interruption returns no provisional solution", () => {
       let stopped = false;
 
       try {
-        run(fixture(8),{seconds:0,nodes:1});
+        run(fixture(8), {seconds:0, nodes:1});
       } catch (error) {
         stopped = error.code === "LIMIT";
       }
 
-      check(stopped,"Expected a resource-limit exception.");
+      check(stopped, "Expected a resource-limit exception.");
     });
 
-    return {passed:results.length,tests:results};
+    test("Blossom feasibility agrees with exhaustive small graphs", () => {
+      function brute(graph, remaining) {
+        if (!remaining.length) return true;
+
+        const first = remaining[0];
+        const rest = remaining.slice(1);
+
+        for (const second of rest) {
+          if (!graph[first].includes(second)) continue;
+
+          if (brute(
+            graph,
+            rest.filter(v => v !== second)
+          )) {
+            return true;
+          }
+        }
+
+        return false;
+      }
+
+      const n = 6;
+      const possibleEdges = [];
+
+      for (let a = 0; a < n; a++) {
+        for (let b = a + 1; b < n; b++) {
+          possibleEdges.push([a,b]);
+        }
+      }
+
+      const vertices = Array.from({length:n}, (_,i) => i);
+      const graphCount = 2 ** possibleEdges.length;
+
+      for (let mask = 0; mask < graphCount; mask++) {
+        const graph = Array.from({length:n}, () => []);
+
+        possibleEdges.forEach(([a,b], bit) => {
+          if (mask & (1 << bit)) {
+            graph[a].push(b);
+            graph[b].push(a);
+          }
+        });
+
+        check(
+          hasPerfectMatchingGraph(graph) === brute(graph, vertices),
+          "Matching disagreement for six-vertex graph " + mask
+        );
+      }
+    });
+
+    test("59- and 60-player first rounds", () => {
+      const even = run(fixture(60));
+
+      check(
+        even.pairs.length === 30 && even.pabId === null,
+        "Expected 30 games and no bye for 60 players."
+      );
+
+      for (let i = 1; i <= 30; i++) {
+        check(
+          even.pairs.some(p =>
+            [p.whiteId, p.blackId].includes("P" + i) &&
+            [p.whiteId, p.blackId].includes("P" + (i + 30))
+          ),
+          "Incorrect first-round opponent for TPN " + i
+        );
+      }
+
+      const odd = run(fixture(59));
+
+      check(
+        odd.pairs.length === 29 && odd.pabId === "P59",
+        "Expected 29 games and the lowest-TPN-order bye for 59 players."
+      );
+    });
+
+    test("Assignment solver agrees with brute force", () => {
+      let seed = 123456789;
+
+      function random() {
+        seed = (
+          Math.imul(seed, 1664525) + 1013904223
+        ) >>> 0;
+
+        return seed;
+      }
+
+      function brute(matrix) {
+        const n = matrix.length;
+        const used = new Uint8Array(n);
+
+        let best = null;
+
+        function visit(row, total) {
+          if (row === n) {
+            if (best === null || total < best) {
+              best = total;
+            }
+            return;
+          }
+
+          for (let column = 0; column < n; column++) {
+            if (
+              used[column] ||
+              matrix[row][column] === null
+            ) {
+              continue;
+            }
+
+            used[column] = 1;
+
+            visit(
+              row + 1,
+              total + matrix[row][column]
+            );
+
+            used[column] = 0;
+          }
+        }
+
+        visit(0, 0n);
+        return best;
+      }
+
+      for (let sample = 0; sample < 72; sample++) {
+        const n = sample % 7;
+
+        const matrix = Array.from({length:n}, () =>
+          Array.from({length:n}, () => {
+            const r = random();
+
+            return r % 5 === 0
+              ? null
+              : BigInt(r % 17);
+          })
+        );
+
+        const expected = brute(matrix);
+        const assigned = minimumCostAssignment(matrix);
+
+        if (expected === null) {
+          check(
+            assigned === null,
+            "Assignment solver accepted an infeasible matrix."
+          );
+          continue;
+        }
+
+        check(
+          assigned !== null,
+          "Assignment solver rejected a feasible matrix."
+        );
+
+        check(
+          new Set(assigned).size === n,
+          "Assignment solver reused a column."
+        );
+
+        let actual = 0n;
+
+        for (let row = 0; row < n; row++) {
+          const value = matrix[row][assigned[row]];
+
+          check(
+            value !== null,
+            "Assignment solver used a forbidden edge."
+          );
+
+          actual += value;
+        }
+
+        check(
+          actual === expected,
+          "Assignment solver returned a nonminimum cost."
+        );
+      }
+    });
+
+    test("Assignment fast path agrees with DFS", () => {
+      function signature(result) {
+        return JSON.stringify({
+          pairs:result.pairs.map(pair =>
+            [pair.whiteId, pair.blackId].join("/")
+          ).sort(),
+          pabId:result.pabId,
+          byeScore:result.byeScore
+        });
+      }
+
+      const cases = [
+        fixture(8),
+        fixture(9)
+      ];
+
+      /*
+       * Every player wants Black absolutely and is a topscorer.
+       * Some final-round color penalties are unavoidable.
+       */
+      const finalColors = fixture(6, 5, 5);
+
+      finalColors.players.forEach(player => {
+        player.score = 3;
+        player.playedColors = ["W","B","W","W"];
+      });
+
+      cases.push(finalColors);
+
+      /*
+       * All pairing color costs are equal. Downfloater history,
+       * followed by transposition order, determines the bye.
+       */
+      const finalFloats = fixture(7, 5, 5);
+
+      finalFloats.players.forEach(player => {
+        player.score = 2;
+        player.playedColors = ["W","B","W","B"];
+      });
+
+      finalFloats.players[6].floats[3] = "D";
+      finalFloats.players[5].floats[2] = "D";
+
+      cases.push(finalFloats);
+
+      /*
+       * A heterogeneous bracket with a homogeneous remainder.
+       */
+      const mixed = fixture(8, 3, 6);
+
+      mixed.players.forEach((player,index) => {
+        player.score = index < 3 ? 2 : 1;
+        player.playedColors = ["W","B"];
+      });
+
+      cases.push(mixed);
+
+      for (let index = 0; index < cases.length; index++) {
+        const input = cases[index];
+
+        const optimized = run(input, {
+          seconds:10,
+          nodes:0,
+          assignmentFastPath:true
+        });
+
+        const reference = run(input, {
+          seconds:10,
+          nodes:0,
+          assignmentFastPath:false
+        });
+
+        check(
+          signature(optimized) === signature(reference),
+          "Assignment/DFS disagreement in case " + index
+        );
+      }
+
+      const floatResult = run(finalFloats);
+
+      check(
+        floatResult.pabId === "P5",
+        "Incorrect downfloater-history or transposition ordering."
+      );
+    });
+
+    return {passed:results.length, tests:results};
   }
 
   return {
@@ -2425,10 +3283,10 @@ function canWin(partialPairs) {
     preference,
     colorDifference,
     compatible,
-    allocate
+    allocate,
+    hasPerfectMatchingGraph
   };
 }
-
 
 /* ========================================================================== */
 /* BURSTEIN CORE — DUTCH SEEDING PLUS 2026 BURSTEIN PAIRING                   */
@@ -3037,154 +3895,59 @@ function solve(input, limits = {}, progress = () => {}) {
       }
     }
 
-    /*
-     * Absolute-completion matching test used for C4 and
-     * pairing-allocated-bye feasibility.
+/*
+     * Burstein legal-completion feasibility.
      *
-     * Two cheap, sound necessary-condition filters run before
-     * the recursive DFS:
-     *
-     *   (a) every remaining player must still have at least one
-     *       legal partner inside the sublist; and
-     *   (b) every connected component of the induced legality
-     *       graph must have even size (Tutte's necessary test).
-     *
-     * Both filters can only reject a sublist, never accept one,
-     * so the returned answer is identical to the unpruned DFS.
+     * Uses the graph-matching helper exported by the Dutch
+     * factory, but builds the graph from Burstein compatibility
+     * edges. Dutch pairing priorities are not applied here.
      */
     const matchingMemo = new Map();
     const MATCHING_MEMO_CAP = 500000;
 
     function perfectMatching(list) {
-      function visit(xs) {
-        tick();
+      tick();
 
-        if (!xs.length) return true;
-        if (xs.length % 2) return false;
+      const xs = ordered(list);
+      const n = xs.length;
 
-        const key = xs.join(",");
+      if (n % 2) return false;
+      if (n === 0) return true;
 
-        if (matchingMemo.has(key)) {
-          return matchingMemo.get(key);
-        }
+      const key = xs.join(",");
 
-        const inside = new Set(xs);
-
-
-
-        /* (a) every player must have a legal partner present */
-        for (const index of xs) {
-          let ok = false;
-
-          for (const other of adjacency[index]) {
-            if (inside.has(other)) {
-              ok = true;
-              break;
-            }
-          }
-
-          if (!ok) {
-            matchingMemo.set(key, false);
-            return false;
-          }
-        }
-
-/* (b) decompose into components; odd-size component ⇒ no matching */
-        const seenComponent = new Set();
-        const components    = [];
-
-        for (const start of xs) {
-          if (seenComponent.has(start)) continue;
-
-          const stack   = [start];
-          const members = [];
-          seenComponent.add(start);
-
-          while (stack.length) {
-            tick();
-            const v = stack.pop();
-            members.push(v);
-
-            for (const w of adjacency[v]) {
-              if (inside.has(w) && !seenComponent.has(w)) {
-                seenComponent.add(w);
-                stack.push(w);
-              }
-            }
-          }
-
-          if (members.length % 2) {
-            matchingMemo.set(key, false);
-            return false;
-          }
-
-          components.push(members);
-        }
-
-        /* (c) solve each component independently when disconnected */
-        if (components.length > 1) {
-          let allMatch = true;
-
-          for (const comp of components) {
-            if (!visit([...comp].sort(numericOrder))) {
-              allMatch = false;
-              break;
-            }
-          }
-
-          matchingMemo.set(key, allMatch);
-          return allMatch;
-        }
-
-        let chosen = -1;
-        let opponents = null;
-
-        for (const index of xs) {
-          tick();
-
-          const possible = xs.filter(
-            other =>
-              other !== index &&
-              edge[index][other]
-          );
-
-          if (!possible.length) {
-            matchingMemo.set(key, false);
-            return false;
-          }
-
-          if (
-            opponents === null ||
-            possible.length < opponents.length
-          ) {
-            chosen = index;
-            opponents = possible;
-          }
-        }
-
-        for (const opponent of opponents) {
-          const rest = xs.filter(
-            index =>
-              index !== chosen &&
-              index !== opponent
-          );
-
-          if (visit(rest)) {
-            matchingMemo.set(key, true);
-            return true;
-          }
-        }
-
-        matchingMemo.set(key, false);
-
-        if (matchingMemo.size > MATCHING_MEMO_CAP) {
-          matchingMemo.clear();
-        }
-
-        return false;
+      if (matchingMemo.has(key)) {
+        return matchingMemo.get(key);
       }
 
-      return visit(ordered(list));
+      const graph = Array.from(
+        {length:n},
+        () => []
+      );
+
+      for (let a = 0; a < n; a++) {
+        for (let b = a + 1; b < n; b++) {
+          tick();
+
+          if (edge[xs[a]][xs[b]]) {
+            graph[a].push(b);
+            graph[b].push(a);
+          }
+        }
+      }
+
+      const answer = DutchCore.hasPerfectMatchingGraph(
+        graph,
+        tick
+      );
+
+      if (matchingMemo.size >= MATCHING_MEMO_CAP) {
+        matchingMemo.clear();
+      }
+
+      matchingMemo.set(key, answer);
+
+      return answer;
     }
 
     /*
@@ -3772,7 +4535,7 @@ if (playerCount % 2) {
      * the first position that can possibly be unassigned,
      * replacing the O(total) prefix scan with O(1).
      */
-function* orderedPairings(ctx, pairCount, canWin, floaterScores) {
+function* referenceOrderedPairings(ctx, pairCount, canWin, floaterScores) {
   const list = ctx.all;
   const total = list.length;
   const floatCount = floaterScores.length;
@@ -3845,6 +4608,488 @@ function* orderedPairings(ctx, pairCount, canWin, floaterScores) {
   yield* visit(0, 0, 0, [...floaterScores], 0);
 }
 
+    /*
+     * Exact Burstein search with:
+     *
+     * - increasing C8 cost budgets;
+     * - colour-capacity and row-minimum lower bounds;
+     * - residual matching feasibility;
+     * - early rejection of unacceptable complete floater sets;
+     * - dominance keys that retain floater identities.
+     *
+     * Opponents remain in descending BSN order.
+     * The outgoing-floater option remains last.
+     *
+     * The reference path is retained for regression comparisons.
+     */
+    function* orderedPairings(
+      ctx,
+      pairCount,
+      canWin,
+      floaterScores,
+      acceptableDown
+    ) {
+      if (limits.bursteinFastPath === false) {
+        yield* referenceOrderedPairings(
+          ctx,
+          pairCount,
+          canWin,
+          floaterScores
+        );
+        return;
+      }
+
+      const list = ctx.all;
+      const total = list.length;
+      const floatCount = floaterScores.length;
+
+      if (total !== 2 * pairCount + floatCount) {
+        throw fault(
+          "INTERNAL",
+          "Invalid Burstein pairing-search shape."
+        );
+      }
+
+      const scores = [
+        ...new Set(list.map(i => players[i].score))
+      ];
+
+      const scoreSlots = new Map(
+        scores.map((score, slot) => [score, slot])
+      );
+
+      const slots = list.map(
+        i => scoreSlots.get(players[i].score)
+      );
+
+      const due = list.map(
+        i => players[i].pref.color
+      );
+
+      const initialQuota = new Int32Array(scores.length);
+
+      for (const score of floaterScores) {
+        const slot = scoreSlots.get(score);
+
+        if (slot === undefined) {
+          throw fault(
+            "INTERNAL",
+            "A floater score is absent from its bracket."
+          );
+        }
+
+        initialQuota[slot]++;
+      }
+
+      const quota = new Int32Array(initialQuota);
+      const used = new Uint8Array(total);
+
+      const bits = list.map(
+        (_, position) => 1n << BigInt(position)
+      );
+
+      const fullMask = (1n << BigInt(total)) - 1n;
+
+      const pairs = [];
+      const down = [];
+
+      const dominanceMemo = new Map();
+      const DOMINANCE_CAP = 100000;
+
+      const feasibilityMemo = new Map();
+      const FEASIBILITY_CAP = 50000;
+
+      let budget = 0;
+
+      /*
+       * Lower bounds for the still-unassigned players.
+       *
+       * Each remaining game supplies one White and one Black.
+       * Floater-score quotas limit how many players wanting
+       * either colour can avoid receiving a colour.
+       *
+       * Row minima ignore competition for opponents. Their
+       * sum, divided by two and rounded up, is another valid
+       * lower bound.
+       */
+      function inspect(pairsLeft) {
+        const remaining = [];
+
+        const available = new Int32Array(scores.length);
+        const white = new Int32Array(scores.length);
+        const black = new Int32Array(scores.length);
+
+        let whiteCount = 0;
+        let blackCount = 0;
+
+        for (let position = 0; position < total; position++) {
+          if (used[position]) continue;
+
+          remaining.push(position);
+
+          const slot = slots[position];
+          available[slot]++;
+
+          if (due[position] === "W") {
+            white[slot]++;
+            whiteCount++;
+          } else if (due[position] === "B") {
+            black[slot]++;
+            blackCount++;
+          }
+        }
+
+        let maxWhiteFloaters = 0;
+        let maxBlackFloaters = 0;
+
+        for (let slot = 0; slot < scores.length; slot++) {
+          if (quota[slot] > available[slot]) {
+            return null;
+          }
+
+          maxWhiteFloaters += Math.min(
+            quota[slot],
+            white[slot]
+          );
+
+          maxBlackFloaters += Math.min(
+            quota[slot],
+            black[slot]
+          );
+        }
+
+        const colourBound =
+          Math.max(
+            0,
+            whiteCount - maxWhiteFloaters - pairsLeft
+          ) +
+          Math.max(
+            0,
+            blackCount - maxBlackFloaters - pairsLeft
+          );
+
+        let rowMinimumSum = 0;
+
+        for (const position of remaining) {
+          /*
+           * Allow every potentially floatable player to
+           * contribute zero to this relaxation.
+           */
+          if (quota[slots[position]] > 0) continue;
+
+          const first = list[position];
+          let minimum = Infinity;
+
+          for (const otherPosition of remaining) {
+            if (otherPosition === position) continue;
+
+            tick();
+
+            const second = list[otherPosition];
+
+            if (!edge[first][second]) continue;
+
+            minimum = Math.min(
+              minimum,
+              colorMiss[first][second]
+            );
+
+            if (minimum === 0) break;
+          }
+
+          /*
+           * This player cannot float and has no legal
+           * remaining opponent.
+           */
+          if (!Number.isFinite(minimum)) {
+            return null;
+          }
+
+          rowMinimumSum += minimum;
+        }
+
+        return {
+          remaining,
+          lowerBound:Math.max(
+            colourBound,
+            Math.ceil(rowMinimumSum / 2)
+          )
+        };
+      }
+
+      /*
+       * Add virtual vertices for the remaining floater quotas.
+       * A virtual vertex connects only to players with its
+       * required score. Virtual vertices cannot meet each other.
+       *
+       * Once the colour budget is exhausted, positive-cost
+       * real-player edges are excluded as well.
+       */
+      function residualFeasible(
+        remaining,
+        floatsLeft,
+        stateKey,
+        zeroOnly
+      ) {
+        const key = stateKey + (zeroOnly ? "/zero" : "/legal");
+
+        if (feasibilityMemo.has(key)) {
+          return feasibilityMemo.get(key);
+        }
+
+        const realCount = remaining.length;
+
+        const graph = Array.from(
+          {length:realCount + floatsLeft},
+          () => []
+        );
+
+        for (let a = 0; a < realCount; a++) {
+          const first = list[remaining[a]];
+
+          for (let b = a + 1; b < realCount; b++) {
+            tick();
+
+            const second = list[remaining[b]];
+
+            if (
+              edge[first][second] &&
+              (
+                !zeroOnly ||
+                colorMiss[first][second] === 0
+              )
+            ) {
+              graph[a].push(b);
+              graph[b].push(a);
+            }
+          }
+        }
+
+        let virtual = realCount;
+
+        for (let slot = 0; slot < scores.length; slot++) {
+          for (let count = 0; count < quota[slot]; count++) {
+            for (let a = 0; a < realCount; a++) {
+              tick();
+
+              if (slots[remaining[a]] !== slot) continue;
+
+              graph[a].push(virtual);
+              graph[virtual].push(a);
+            }
+
+            virtual++;
+          }
+        }
+
+        const answer = DutchCore.hasPerfectMatchingGraph(
+          graph,
+          tick
+        );
+
+        if (feasibilityMemo.size >= FEASIBILITY_CAP) {
+          feasibilityMemo.clear();
+        }
+
+        feasibilityMemo.set(key, answer);
+
+        return answer;
+      }
+
+      function* visit(
+        pairsMade,
+        floatsMade,
+        currentCost,
+        remainingMask,
+        floatedMask
+      ) {
+        tick();
+
+        if (
+          currentCost > budget ||
+          !canWin(currentCost)
+        ) {
+          return;
+        }
+
+        /*
+         * Once all outgoing floaters have been selected,
+         * C7 acceptability cannot be changed by the remaining
+         * pair assignments.
+         */
+        if (
+          floatsMade === floatCount &&
+          !acceptableDown(down)
+        ) {
+          return;
+        }
+
+        const state = inspect(pairCount - pairsMade);
+
+        if (
+          state === null ||
+          currentCost + state.lowerBound > budget
+        ) {
+          return;
+        }
+
+        /*
+         * Floater identities must be retained: identical
+         * remaining players do not imply identical C7 states.
+         */
+        const stateKey =
+          remainingMask.toString(36) + "/" +
+          floatedMask.toString(36);
+
+        const earlierCost = dominanceMemo.get(stateKey);
+
+        if (
+          earlierCost !== undefined &&
+          earlierCost <= currentCost
+        ) {
+          return;
+        }
+
+        if (dominanceMemo.size >= DOMINANCE_CAP) {
+          dominanceMemo.clear();
+        }
+
+        dominanceMemo.set(stateKey, currentCost);
+
+        if (!state.remaining.length) {
+          if (
+            pairsMade === pairCount &&
+            floatsMade === floatCount
+          ) {
+            yield {
+              pairs:[...pairs],
+              down:[...down],
+              cost:currentCost
+            };
+          }
+
+          return;
+        }
+
+        if (!residualFeasible(
+          state.remaining,
+          floatCount - floatsMade,
+          stateKey,
+          currentCost === budget
+        )) {
+          return;
+        }
+
+        const position = state.remaining[0];
+        const first = list[position];
+
+        used[position] = 1;
+
+        try {
+          /*
+           * Preserve Article 4 opponent order.
+           */
+          if (pairsMade < pairCount) {
+            for (
+              let otherPosition = total - 1;
+              otherPosition > position;
+              otherPosition--
+            ) {
+              if (used[otherPosition]) continue;
+
+              const second = list[otherPosition];
+
+              if (!edge[first][second]) continue;
+
+              const nextCost =
+                currentCost + colorMiss[first][second];
+
+              if (nextCost > budget) continue;
+
+              used[otherPosition] = 1;
+              pairs.push([first, second]);
+
+              try {
+                yield* visit(
+                  pairsMade + 1,
+                  floatsMade,
+                  nextCost,
+                  remainingMask ^
+                    bits[position] ^
+                    bits[otherPosition],
+                  floatedMask
+                );
+              } finally {
+                pairs.pop();
+                used[otherPosition] = 0;
+              }
+            }
+          }
+
+          /*
+           * Virtual BSN zero comes after all real opponents.
+           */
+          const slot = slots[position];
+
+          if (
+            floatsMade < floatCount &&
+            quota[slot] > 0
+          ) {
+            quota[slot]--;
+            down.push(first);
+
+            try {
+              yield* visit(
+                pairsMade,
+                floatsMade + 1,
+                currentCost,
+                remainingMask ^ bits[position],
+                floatedMask | bits[position]
+              );
+            } finally {
+              down.pop();
+              quota[slot]++;
+            }
+          }
+        } finally {
+          used[position] = 0;
+        }
+      }
+
+      const initial = inspect(pairCount);
+
+      if (initial === null) return;
+
+      /*
+       * Every lower budget is exhausted before advancing.
+       * Within the first feasible budget, return the first
+       * acceptable candidate in Article 4 order.
+       */
+      for (
+        budget = initial.lowerBound;
+        budget <= 2 * pairCount;
+        budget++
+      ) {
+        dominanceMemo.clear();
+
+        used.fill(0);
+        quota.set(initialQuota);
+        pairs.length = 0;
+        down.length = 0;
+
+        for (const candidate of visit(
+          0,
+          0,
+          0,
+          fullMask,
+          0n
+        )) {
+          yield candidate;
+          return;
+        }
+      }
+    }
+
     function selectBracket(index, incoming) {
       const ctx = bracketContext(
         index,
@@ -3907,7 +5152,8 @@ function* orderedPairings(ctx, pairCount, canWin, floaterScores) {
           ctx,
           high.pairs,
           canWin,
-          high.scores
+          high.scores,
+          acceptableDown
         )
       ) {
         tick();
@@ -3997,7 +5243,7 @@ function* orderedPairings(ctx, pairCount, canWin, floaterScores) {
           proof:
             bestCost === 0
               ? "C8-lower-bound-attained"
-              : "article-4-order-exhausted"
+              : "C8-optimum-established"
         }
       };
     }
@@ -4342,6 +5588,120 @@ function* orderedPairings(ctx, pairCount, canWin, floaterScores) {
       }
     );
 
+test(
+      "61-player Burstein round with a positive C8 optimum",
+      () => {
+        const input = fixture(61, 3, 5);
+
+        /*
+         * Synthetic stress fixture: every player wants Black.
+         * After the bye, 30 games necessarily incur 30 misses.
+         */
+        input.players.forEach(player => {
+          player.score = 1;
+          player.playedColors = ["B", "W"];
+        });
+
+        const result = run(input, {
+          seconds:30,
+          nodes:200000
+        });
+
+        check(
+          result.pabId === "P61",
+          "Incorrect bye in the positive-C8 stress fixture."
+        );
+
+        check(
+          result.pairs.length === 30,
+          "Expected 30 games."
+        );
+
+        check(
+          result.trace.length === 1 &&
+          result.trace[0].C8.colourPreferenceMisses === 30,
+          "Expected a proven optimum of 30 colour misses."
+        );
+
+        for (let i = 1; i <= 30; i++) {
+          check(
+            result.pairs.some(pair =>
+              [pair.whiteId, pair.blackId].includes("P" + i) &&
+              [pair.whiteId, pair.blackId].includes(
+                "P" + (61 - i)
+              )
+            ),
+            "Article 4 tie order changed for TPN " + i
+          );
+        }
+      }
+    );
+
+    test(
+      "Optimized Burstein agrees with reference enumeration",
+      () => {
+        function signature(result) {
+          return JSON.stringify({
+            pairs:result.pairs.map(pair =>
+              [pair.whiteId, pair.blackId].join("/")
+            ).sort(),
+            pabId:result.pabId,
+            byeScore:result.byeScore
+          });
+        }
+
+        const positive = fixture(6, 3, 5);
+
+        positive.players.forEach(player => {
+          player.score = 1;
+          player.playedColors = ["B", "W"];
+        });
+
+        const mixed = fixture(7, 3, 5);
+        const mixedScores = [2, 2, 1, 1, 1, 0, 0];
+
+        mixed.players.forEach((player, index) => {
+          player.score = mixedScores[index];
+          player.playedColors = index % 2
+            ? ["W", "B"]
+            : ["B", "W"];
+        });
+
+        /*
+         * Force incoming floaters from the top scoregroup.
+         */
+        mixed.players[0].opponents = ["P2"];
+        mixed.players[1].opponents = ["P1"];
+
+        const cases = [
+          fixture(6, 3, 5),
+          fixture(7, 3, 5),
+          fixture(8, 3, 5),
+          positive,
+          mixed
+        ];
+
+        for (let index = 0; index < cases.length; index++) {
+          const optimized = run(cases[index], {
+            seconds:30,
+            nodes:8000000,
+            bursteinFastPath:true
+          });
+
+          const reference = run(cases[index], {
+            seconds:30,
+            nodes:8000000,
+            bursteinFastPath:false
+          });
+
+          check(
+            signature(optimized) === signature(reference),
+            "Optimized/reference disagreement in case " + index
+          );
+        }
+      }
+    );
+
     return {
       passed:passed.length,
       tests:passed
@@ -4377,13 +5737,6 @@ const FIXED_SEARCH_LIMITS = Object.freeze({
   seconds:30,
   nodes:8000000
 });
-
-/*
- * Hard upper bound on the number of registered participants.
- * Enforced when players are added, when a tournament file is
- * loaded, and reflected in the setup UI.
- */
-const MAX_PLAYERS = 50;
 
 const TITLE_WEIGHTS = {
   GM:8,IM:7,WGM:6,FM:5,WIM:4,CM:3,WFM:2,WCM:1,"":0
@@ -5285,13 +6638,6 @@ function normalizeTournament(raw) {
     );
   }
 
-  if (raw.players.length > MAX_PLAYERS) {
-    throw new Error(
-      "The tournament file contains " + raw.players.length +
-      " players, which exceeds the limit of " + MAX_PLAYERS + "."
-    );
-  }
-
 const historical =
   Array.isArray(raw.rounds) &&
   raw.rounds.length > 0;
@@ -5704,16 +7050,6 @@ function canRegister() {
 function admitPlayers(list) {
   canRegister();
   applySettings();
-
-  const prospective = tournament.players.length + list.length;
-
-  if (prospective > MAX_PLAYERS) {
-    throw new Error(
-      "The tournament is limited to " + MAX_PLAYERS +
-      " participants. Currently " + tournament.players.length +
-      " registered; attempted to add " + list.length + "."
-    );
-  }
 
   let order = nextRegistrationOrder();
 
@@ -6589,13 +7925,12 @@ $("listStatus").textContent = (
   $("registrationHint").textContent = tournament.listClosed
     ? "Registration is closed. Existing players may be withdrawn or " +
       "reinstated between rounds."
-    : "Players are initially ordered by rating, title, and name. " +
-      "The participant list is limited to " + MAX_PLAYERS + " players.";
+    : "Players are initially ordered by rating, title, and name.";
 }
 
 function renderPlayers() {
   $("playerCount").textContent =
-    tournament.players.length + " / " + MAX_PLAYERS;
+    String(tournament.players.length);
 
   const pending = tournament.activePairings.length > 0;
   const finished = tournamentComplete();
@@ -6952,33 +8287,15 @@ function updateControls() {
     tournamentStarted() ||
     finished;
 
-  /*
-   * Registration controls are additionally disabled when the
-   * participant limit has been reached. The sample-list button
-   * is disabled whenever adding 32 more players would exceed it.
-   */
-  const atPlayerLimit =
-    tournament.players.length >= MAX_PLAYERS;
-
-  const sampleWouldOverflow =
-    tournament.players.length + 32 > MAX_PLAYERS;
-
-  $("addButton").disabled =
-    registrationBlocked || atPlayerLimit;
-
-  $("importButton").disabled =
-    registrationBlocked || atPlayerLimit;
-
-  $("pasteButton").disabled =
-    registrationBlocked || atPlayerLimit;
-
-  $("sampleButton").disabled =
-    registrationBlocked || sampleWouldOverflow;
+  $("addButton").disabled = registrationBlocked;
+  $("importButton").disabled = registrationBlocked;
+  $("pasteButton").disabled = registrationBlocked;
+  $("sampleButton").disabled = registrationBlocked;
 
   for (const id of [
     "pName","pRating","pTitle"
   ]) {
-    $(id).disabled = registrationBlocked || atPlayerLimit;
+    $(id).disabled = registrationBlocked;
   }
 
   for (const id of [
