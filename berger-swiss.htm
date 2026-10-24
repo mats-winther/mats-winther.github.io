@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description"
-      content="A browser-based tournament system combining five or seven rounds in interchanged Berger groups with additional Swiss rounds.">
+      content="A browser-based tournament system combining five rounds in interchanged Berger groups with additional Swiss rounds.">
 <meta name="author" content="Mats Winther">
 <title>Berger-Swiss Tournament System</title>
 
@@ -108,11 +108,11 @@
   }
 
   button {
-    border: 0;
+    border: 2px;
     border-radius: 5px;
     padding: 9px 14px;
     background: var(--primary);
-    color: #fff;
+    color: #000000;
     font: inherit;
     font-size: 14px;
     font-weight: 600;
@@ -120,30 +120,8 @@
   }
 
   button:hover { background: var(--primary-hover); }
-  button.secondary { background: #64748b; }
+  button.secondary { background: #ffffff; }
   button.secondary:hover { background: #475569; }
-
-  /* Light-grey styling for these five buttons only. */
-  button.secondary[onclick*="about-dialog"],
-  button.secondary[onclick="saveTournament()"],
-  button.secondary[onclick="printPairings()"],
-  button.secondary[onclick="printStandings()"],
-  button.secondary[onclick="newTournament()"] {
-    background: #f5f5f5;
-    border: 1px solid #cccccc;
-    color: var(--primary);
-  }
-
-  button.secondary[onclick*="about-dialog"]:hover,
-  button.secondary[onclick="saveTournament()"]:hover,
-  button.secondary[onclick="printPairings()"]:hover,
-  button.secondary[onclick="printStandings()"]:hover,
-  button.secondary[onclick="newTournament()"]:hover {
-    background: #eaeaea;
-    border-color: #b3b3b3;
-    color: #000000;
-  }
-
   button.danger { background: var(--danger); }
   button.danger:hover { background: #991b1b; }
 
@@ -162,38 +140,9 @@
 
   .settings-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr;
     gap: 18px;
     margin-bottom: 18px;
-  }
-
-.berger-round-options {
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: none;
-  outline: none;
-}
-
-.berger-round-options label {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin: 0 0 5px;
-  font-weight: 400;
-  cursor: pointer;
-}
-
-.berger-round-options legend {
-  padding: 0;
-  margin-bottom: 6px;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-  .berger-round-options input {
-    margin: 0;
-    accent-color: var(--primary);
   }
 
   .hint,
@@ -295,31 +244,6 @@
     white-space: nowrap;
   }
 
-  .rematch-badge {
-    display: inline-block;
-    margin-left: 6px;
-    padding: 2px 8px;
-    border: 1px solid #fde68a;
-    border-radius: 4px;
-    background: #fef3c7;
-    color: #92400e;
-    font-size: 12px;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-
-  .withdrawn-badge {
-    display: inline-block;
-    margin-left: 6px;
-    padding: 2px 7px;
-    border: 1px solid #fecaca;
-    border-radius: 4px;
-    background: #fef2f2;
-    color: #991b1b;
-    font-size: 11px;
-    white-space: normal;
-  }
-
   details {
     margin-top: 18px;
     border: 1px solid var(--border);
@@ -344,34 +268,6 @@
     background: #fff;
     color: var(--text);
     box-shadow: 0 20px 40px rgba(0,0,0,0.25);
-  }
-
-  #about-dialog { padding-top: 52px; }
-
-  .dialog-close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    padding: 0;
-    background: transparent;
-    color: var(--muted);
-    font-size: 28px;
-    line-height: 1;
-  }
-
-  .dialog-close:hover {
-    background: var(--stripe);
-    color: var(--text);
-  }
-
-  .dialog-close:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
   }
 
   dialog::backdrop { background: rgba(0,0,0,0.55); }
@@ -406,11 +302,6 @@
 
   .berger-schedule .scheduled-player + .scheduled-player {
     margin-top: 5px;
-  }
-
-  tr.berger-group-start > td,
-  #print-area tr.berger-group-start > td {
-    border-top: 2px solid #1565c0;
   }
 
   @media (max-width: 650px) {
@@ -493,33 +384,10 @@
         <input id="tournament-name" type="text"
                value="Berger-Swiss Championship" maxlength="200">
       </div>
-
-      <fieldset class="berger-round-options">
-        <legend>Berger Rounds</legend>
-
-        <label for="berger-rounds-5">
-          <input id="berger-rounds-5"
-                 type="radio"
-                 name="berger-rounds"
-                 value="5"
-                 checked>
-          5 Berger rounds
-        </label>
-
-        <label for="berger-rounds-7">
-          <input id="berger-rounds-7"
-                 type="radio"
-                 name="berger-rounds"
-                 value="7">
-          7 Berger rounds
-        </label>
-      </fieldset>
-
       <div>
         <label for="extra-rounds">Extra Swiss Rounds</label>
-        <input id="extra-rounds" type="number"
-               value="4" min="0" step="1">
-        <div id="extra-rounds-hint" class="hint">
+        <input id="extra-rounds" type="number" value="2" min="0" step="1">
+        <div class="hint">
           Five initial rounds plus the selected extra rounds.
         </div>
       </div>
@@ -532,34 +400,38 @@
           TPNs are assigned in initial descending rating order and never
           change. Equal ratings retain their input order.
         </li>
-
-        <li id="setup-layout-rule"></li>
-        <li id="setup-exchange-rule"></li>
-        <li id="setup-tail-exchange-rule"></li>
-
+        <li>
+          Players are initially divided in rating order into six-player
+          Berger groups. When the field size is not divisible by six,
+          the bottom Swiss group contains seven to eleven players
+          instead of leaving an incomplete Berger group.
+        </li>
+        <li>
+          Adjacent Berger groups are processed in pairs. Positions
+          2, 4, 6 of the upper group are exchanged with positions
+          1, 3, 5 of the lower group. Thus, in an initial block of
+          twelve players, the resulting groups contain the odd and
+          even TPNs respectively.
+        </li>
+        <li>
+          If there is an odd number of Berger groups and a bottom
+          Swiss group, positions 1, 3, 5 of the last Berger group
+          are exchanged with positions 2, 4, 6 of the bottom Swiss
+          group. These positions refer to the original rating order
+          within those groups. If there is no bottom Swiss group,
+          the final unpaired Berger group retains its membership.
+        </li>
         <li>
           After all exchanges, each Berger group is independently
           randomized. The resulting bottom Swiss group is placed
           in rating order, without randomization, and plays Swiss
           rounds from Round 1.
         </li>
-
         <li>
-          A withdrawal takes effect from the next unpaired round.
-          During the initial phase, the affected Berger group and
-          every subsequent Berger group normally form one Swiss
-          field together with any existing Swiss field. Earlier
-          unaffected Berger groups retain their schedules.
-          Exception: if there is no existing Swiss field and only
-          the last Berger group is affected, that group retains its
-          remaining Berger schedule. Active players scheduled to
-          face withdrawn players receive one-point pairing byes.
-          Initial group numbers and memberships remain recorded
-          permanently.
+          After Round 5, all players join one Swiss field.
+          Scores and opponent histories are carried forward.
+          Rematches are never permitted.
         </li>
-
-        <li id="setup-combined-rule"></li>
-
         <li>
           Swiss pairing order: descending score, descending WNT,
           then ascending TPN. Opponents are considered by smallest
@@ -569,49 +441,38 @@
           three consecutive games of the same colour. Maximum score
           differences of zero, half a point, and one point are tried
           in that order. Colour restrictions are relaxed if necessary.
-          A further fallback permits larger score differences while
-          still excluding rematches. Only if no complete pairing
-          without rematches exists for any eligible bye recipient
-          are rematches permitted.
+          A final fallback permits larger score differences, but
+          never rematches or second byes.
         </li>
-
-	<li>
-          Swiss colours: Both colour assignments are considered.
-          The program first prefers assignments that avoid
-          extending a same-colour run beyond two games, then
-          considers colour balance and alternation. If these
-          considerations are equal, White goes to the player
-          with fewer previous White games, or to the higher
-          TPN if equal. Byes and forfeits add no played colour.
+        <li>
+          Swiss White: The player with fewer White games is assigned
+          White. If both players have had the same number of White
+          games, the higher TPN receives White. Byes do not count
+          as White games.
         </li>
-
         <li>
           A bye scores one tournament point and contributes no direct
-          WNT. In Round 1, the lowest-rated player receives the bye
-          if the field is odd. Later bye recipients must have the
-          fewest previous byes among active players in the current
-          Swiss field. A repeat bye is allowed only when every
-          player in that field has already received at least one.
-          Eligible recipients are considered from the bottom of the
-          Swiss standings, subject to a complete pairing of the
-          remaining players. Scheduled byes in a retained Berger group
-          are an exception to Swiss bye selection and count toward
-          subsequent Swiss bye eligibility.
+          WNT. No player receives a second bye. In Round 1, the
+          lowest-rated player receives the bye if the field is odd.
         </li>
-
-        <li id="setup-postponement-rule"></li>
-
         <li>
-          The current published round is not changed by a withdrawal.
-          Enter its result normally, or select an explicit forfeit
-          result if the game was not played. Forfeits award the
-          selected points but add no direct WNT, played colours,
-          or encounter.
+          Berger games may be marked p for postponed. A postponed
+          game temporarily gives both players zero points and no
+          direct WNT contribution. Submitted Berger results remain
+          editable during the initial five-round phase. All postponed
+          games must receive proper results before Round 6 or
+          tournament completion.
         </li>
       </ul>
     </div>
 
-    <p id="setup-field-hint" class="hint"></p>
+    <p class="hint">
+      Every field size of at least seven players is supported.
+      Examples: 13 players form one Berger group plus seven Swiss
+      players; 18 form three Berger groups; 25 form three Berger
+      groups plus seven Swiss players; 30 form five Berger groups.
+      Fields of seven to eleven use only a Swiss group.
+    </p>
 
     <label for="player-input">
       Players, one per line: Name Rating
@@ -690,9 +551,9 @@
         <thead>
           <tr>
             <th class="center" style="width:60px">Board</th>
-            <th style="width:120px">Group</th>
+            <th style="width:110px">Group</th>
             <th>White (TPN / Rating)</th>
-            <th class="center" style="width:190px">Result</th>
+            <th class="center" style="width:160px">Result</th>
             <th>Black (TPN / Rating)</th>
           </tr>
         </thead>
@@ -706,10 +567,6 @@
       </button>
       <button type="button" class="danger" onclick="finishEarly()">
         Finish After This Round
-      </button>
-      <button type="button" id="withdraw-button" class="danger"
-              onclick="openWithdrawDialog()">
-        Withdraw Player
       </button>
     </div>
 
@@ -727,6 +584,8 @@
             <th>Initial Group</th>
             <th class="center">Score</th>
             <th class="center">WNT</th>
+            <th class="center">W</th>
+            <th class="center">B</th>
             <th>Colors</th>
           </tr>
         </thead>
@@ -737,10 +596,10 @@
     <details>
       <summary>Initial Groups and Berger Draw Numbers</summary>
       <p class="hint">
-        These are the original groups after all exchanges.
-        Their membership and Berger draw numbers never change.
-        A withdrawal can change which groups still use their
-        fixed schedules, but does not rewrite the initial draw.
+        These are the groups after all exchanges. Berger draw
+        numbers determine the fixed five-round schedule and are
+        separate from permanent TPNs. The resulting bottom Swiss
+        group is shown in rating order.
       </p>
       <div id="groups-content"></div>
     </details>
@@ -753,82 +612,39 @@
 </main>
 
 <dialog id="about-dialog">
-  <button type="button"
-          class="dialog-close"
-          aria-label="Close About / Rules"
-          title="Close"
-          onclick="document.getElementById('about-dialog').close()">
-    &times;
-  </button>
-
   <h2>About the Berger-Swiss System</h2>
 
-  <p id="about-format-summary"></p>
+  <p>
+    The first five rounds use six-player Berger groups, together
+    with a bottom Swiss group when required. From Round 6,
+    all players enter one Swiss field.
+  </p>
 
   <h3>Group construction and interchange</h3>
-  <p id="about-layout-rule"></p>
-  <p id="about-exchange-rule"></p>
-  <p id="about-tail-exchange-rule"></p>
-
   <p>
-    Positions used for interchange refer to the original rating
-    order within each group, before randomization. After all
-    exchanges, every Berger group is independently shuffled.
-    The resulting bottom Swiss group is sorted in rating order
-    without randomization. Permanent TPNs never change.
-  </p>
-
-  <h3>Withdrawals and early conversion to Swiss</h3>
-  <p>
-    Use Withdraw Player to announce a withdrawal after the
-    currently published round. The current pairings and entered
-    results remain unchanged. The player is excluded from the
-    next unpaired round onward.
+    Players are initially arranged by descending rating. Groups
+    contain six players, except that a field not divisible by six
+    ends with a Swiss group of seven to eleven players.
   </p>
   <p>
-    During the initial group phase, the affected Berger group
-    and all subsequent Berger groups normally form one Swiss
-    field together with any existing Swiss field. Earlier
-    unaffected Berger groups retain their fixed schedules.
-    For example, a withdrawal from Berger 2 converts Berger 2
-    and every later group, while leaving Berger 1 unchanged,
-    unless the isolated-last-group exception below applies.
+    Adjacent Berger groups are processed in pairs. Positions
+    2, 4, 6 of the upper group are exchanged with positions
+    1, 3, 5 of the lower group. For an original twelve-player
+    block numbered 1 to 12, the resulting groups contain
+    1, 3, 5, 7, 9, 11 and 2, 4, 6, 8, 10, 12.
   </p>
   <p>
-    If there is no existing Swiss field and only the last Berger
-    group is affected, that group retains its remaining Berger
-    schedule. Active players scheduled to face withdrawn players
-    receive one-point pairing byes, regardless of their previous
-    bye counts. Games scheduled between two withdrawn players
-    are omitted. These byes add no direct WNT or played colour,
-    but count toward later Swiss bye eligibility. If an earlier
-    group subsequently converts, the last group joins the
-    resulting Swiss field.
+    With an odd number of Berger groups, the last Berger group
+    exchanges its players in positions 1, 3, 5 with the players
+    in positions 2, 4, 6 of the bottom Swiss group, if one exists.
+    Positions are counted in the original rating order within
+    those groups. Without a bottom Swiss group, the last unpaired
+    Berger group retains its membership.
   </p>
   <p>
-    Group numbers refer to the established groups after interchange,
-    not to current standings. Original group memberships are
-    retained as historical records. A subsequent withdrawal
-    from an earlier retained Berger group expands the Swiss
-    field again. Converted groups never return to Berger.
-    A withdrawal from an existing Swiss field does not by itself
-    convert any earlier Berger group.
-  </p>
-  <p>
-    Completed results, scores, opponent histories, colour histories,
-    and previous byes are carried forward. WNT continues to be
-    recalculated. Withdrawn players remain in the standings,
-    and their completed results are not annulled.
-  </p>
-  <p id="about-conversion-postponement-rule"></p>
-  <p>
-    Withdrawals do not reset previous bye counts. If an odd Swiss
-    field needs a bye, eligible recipients are the active players
-    in that field with the fewest previous byes. A repeat bye is
-    allowed only when every remaining Swiss player has already
-    received at least one. If fewer than two active players remain
-    for the next round, the tournament finishes after the current
-    round is submitted.
+    After all exchanges, every Berger group is independently
+    shuffled. The resulting bottom Swiss group is sorted in
+    rating order without randomization. Permanent TPNs never change.
   </p>
 
   <h3>Swiss pairing</h3>
@@ -854,16 +670,10 @@
   </p>
   <p>
     If no complete pairing exists within one point even with
-    unrestricted colours, a further fallback permits larger
-    score differences while still excluding rematches.
-    Only after this search fails for every eligible bye
-    recipient are rematches permitted as an absolute last resort.
-    In that final search, candidate opponents who have not met
-    are preferred, followed by those with fewer previous meetings,
-    then by score difference, colour penalties, and standings
-    order. This is a top-down preference, not a guarantee of the
-    minimum total number of rematches. Rematches are marked
-    in the pairing list.
+    unrestricted colours, the final fallback permits larger
+    score differences. Rematches and second byes remain prohibited.
+    Earlier pairings can make a later round impossible under
+    these two restrictions.
   </p>
 
   <h3>Color allocation</h3>
@@ -876,13 +686,8 @@
     games and avoids three consecutive identical colours.
     Both restrictions may be relaxed when necessary to
     complete the round. Colour counts and histories include
-    the Berger phase.
-  </p>
-  <p>
-    Byes and forfeits add neither White nor Black games and
-    do not interrupt a played-colour streak. Unresolved
-    postponed Berger games temporarily retain their scheduled
-    colours as allocations.
+    the Berger phase. Byes add neither White nor Black games
+    and do not interrupt a colour streak.
   </p>
 
   <h3>Postponed Berger games</h3>
@@ -892,80 +697,57 @@
     and contributes no direct WNT to either player.
     The scheduled Berger colours remain recorded as allocations.
   </p>
-  <p id="about-postponement-rule"></p>
-
-  <h3>Forfeits</h3>
   <p>
-    Use 1-0 (Forfeit), 0-1 (Forfeit), or 0-0 (Double forfeit)
-    when the scheduled game was not played. These results award
-    the indicated tournament points but contribute no direct
-    WNT and add no played colours or encounter. A forfeit win
-    is not treated as a pairing bye by this custom system.
-    No forfeit is assigned automatically when a player withdraws.
+    Submitted Berger games remain editable during the initial
+    five-round phase. Replace p with 1-0, ½-½, or 0-1 after the
+    game is played. All postponed games must be resolved before
+    Round 6 or tournament completion, including an early finish.
+    Swiss games cannot be marked postponed.
   </p>
 
   <h3>WNT</h3>
   <div class="formula">WNT = 100 × Σ [(Pᵢ / N) × (rᵢ + Pᵢ / (2N))]
 
 Pᵢ = opponent i's current tournament score
-rᵢ = result in the played game: 1, ½, or 0
+rᵢ = result against opponent i: 1, 0.5, or 0
 N  = number of submitted rounds
 
-The sum is over played games.
-Byes, forfeits, and unresolved postponed games are excluded.</div>
+Byes and unresolved postponed games are excluded from the sum.</div>
 
   <p>
     WNT is recalculated from all submitted rounds.
-    Repeated played encounters contribute separately.
+    Byes give one tournament point but no direct WNT contribution.
     Results entered in an unsubmitted round are saved, but do
-    not yet affect scores or tie-breaks. Permitted corrections
-    to submitted Berger results immediately update scores and WNT.
-  </p>
-  <p id="about-wnt-equivalence"></p>
-  <p>
-    When players finish tied on points, they are separated based on
-    the quality of the opposition they have faced. This method provides
-    a clear reflection of player performance, consistently rewarding
-    those who compete on the top boards. Although a player receives no
-    tie-break points for a BYE, the free game point elevates the player
-    into higher score groups, where stronger opposition naturally helps
-    offset the missed round. Unlike Buchholz, which employs a linear
-    calculation, WNT uses a quadratic weighting of opposition strength.
-    Furthermore, WNT awards points even for losses against strong
-    opponents, helping to compensate for a BYE while contributing
-    positively to the tie-break score.
+    not yet affect scores or tie-breaks. Corrections to submitted
+    Berger results immediately update scores and WNT.
   </p>
   <p>
-    When employed as a sorting criterion within score groups, WNT
-    pairs competitors with comparable opposition quality against each
-    other. This adheres to the Swiss principle, ensuring that the most
-    battle-tested players meet on higher boards without relying on
-    pre-tournament ratings.
+    Among players tied on points in the same completed Berger
+    group after Round 5, with all games resolved, WNT gives the
+    same ordering as Sonneborn-Berger. This is an ordering
+    equivalence, not numerical equality, and does not generally
+    hold across different groups.
   </p>
 
   <h3>Field sizes and byes</h3>
-  <p id="about-field-rule"></p>
-  <p id="about-field-examples"></p>
   <p>
-    In an odd initial field, the lowest-rated player receives
-    the first bye. Later bye recipients must have the fewest
-    previous byes among active players in the current Swiss
-    field. Among those eligible players, recipients are considered
-    from the bottom of the current Swiss standings, requiring
-    a complete pairing for everyone else. Repeat byes are allowed
-    only when every player in that field has already received
-    at least one. A Swiss field receives at most one pairing bye
-    per round. Repeat Swiss byes are permitted only under the
-    eligibility rule above. A retained Berger group may produce
-    multiple scheduled byes in one round after multiple withdrawals.
+    Every integer field size of at least seven players is supported.
+    A field divisible by six uses only Berger groups. Otherwise,
+    it uses six-player Berger groups followed by one Swiss group
+    of seven to eleven players. Fields of seven to eleven use
+    only a Swiss group.
   </p>
   <p>
-    The setup round limit remains based on the original field
-    size. It is a program policy, not a guarantee that all
-    planned rounds remain possible after withdrawals.
+    Examples before exchanges: 13 players give one Berger group
+    and seven Swiss players; 18 give three Berger groups; 25
+    give three Berger groups and seven Swiss players; 30 give
+    five Berger groups.
   </p>
   <p>
-    The Berger-Swiss system was developed by Mats Winther in October 2026.
+    In odd fields, the lowest-rated player receives the first
+    bye. Later byes are considered from the bottom of the
+    current standings, excluding players who already received
+    one and requiring a legal pairing for everyone else.
   </p>
 
   <h3>Sources</h3>
@@ -976,19 +758,13 @@ Byes, forfeits, and unresolved postponed games are excluded.</div>
         FIDE Berger tables
       </a>
     </li>
-    <li>
-      <a href="https://mats-winther.github.io/bg/chesspairing.htm"
-         target="_blank" rel="noopener noreferrer">
-        Chess pairings: a review of Monrad, Swiss, and Berger
-      </a>
-    </li>
   </ul>
 
   <p class="hint">
     The embedded sample roster contains illustrative names and
     ratings, not a FIDE ranking snapshot. This is a custom
-    Berger-Swiss implementation, including its withdrawal and
-    forfeit policies, not a claim of FIDE approval.
+    Berger-Swiss implementation, not a claim of FIDE approval
+    for the combined system.
   </p>
 
   <div class="btn-bar">
@@ -1013,34 +789,6 @@ Byes, forfeits, and unresolved postponed games are excluded.</div>
   </div>
 </dialog>
 
-<dialog id="withdraw-dialog">
-  <h2>Withdraw Player</h2>
-
-  <p id="withdraw-description"></p>
-
-  <label for="withdraw-player">Player</label>
-  <select id="withdraw-player"
-          onchange="updateWithdrawalExplanation()"></select>
-
-  <p id="withdraw-effect" class="hint"></p>
-
-  <p class="hint">
-    Current pairings and entered results are retained.
-    No result or forfeit is assigned automatically.
-    A confirmed withdrawal cannot be reversed in this interface.
-  </p>
-
-  <div class="btn-bar">
-    <button type="button" class="danger" onclick="confirmWithdrawal()">
-      Confirm Withdrawal
-    </button>
-    <button type="button" class="secondary"
-            onclick="document.getElementById('withdraw-dialog').close()">
-      Cancel
-    </button>
-  </div>
-</dialog>
-
 <div id="print-area"></div>
 
 <script>
@@ -1061,16 +809,13 @@ const RESULTS = [
   ["1-0", "1-0"],
   ["0.5-0.5", "½-½"],
   ["0-1", "0-1"],
-  ["p", "p (Postponed)"],
-  ["F1-0", "1-0 (Forfeit)"],
-  ["F0-1", "0-1 (Forfeit)"],
-  ["F0-0", "0-0 (Double forfeit)"]
+  ["p", "p (Postponed)"]
 ];
 
 const VALID_RESULTS = new Set(RESULTS.map(x => x[0]));
-const FORFEIT_RESULTS = new Set(["F1-0", "F0-1", "F0-0"]);
 
 /*
+  Six-player Berger table.
   First number is White; second number is Black.
   Numbers are local draw positions, not permanent TPNs.
 */
@@ -1080,16 +825,6 @@ const BERGER_SIX = [
   [[2,6], [3,1], [4,5]],
   [[6,5], [1,4], [2,3]],
   [[3,6], [4,2], [5,1]]
-];
-
-const BERGER_EIGHT = [
-  [[1,8], [2,7], [3,6], [4,5]],
-  [[8,5], [6,4], [7,3], [1,2]],
-  [[2,8], [3,1], [4,7], [5,6]],
-  [[8,6], [7,5], [1,4], [2,3]],
-  [[3,8], [4,2], [5,1], [6,7]],
-  [[8,7], [1,6], [2,5], [3,4]],
-  [[4,8], [5,3], [6,2], [7,1]]
 ];
 
 /* Illustrative sample roster. */
@@ -1198,368 +933,11 @@ function formatScore(score2) {
   return (score2 / 2).toFixed(1);
 }
 
-function isForfeitResult(result) {
-  return FORFEIT_RESULTS.has(result);
-}
-
 function formatResult(result) {
   if (result === "0.5-0.5") return "½-½";
   if (result === "BYE") return "1-0 (Bye)";
   if (result === "p") return "p (Postponed)";
-  if (result === "F1-0") return "1-0 (Forfeit)";
-  if (result === "F0-1") return "0-1 (Forfeit)";
-  if (result === "F0-0") return "0-0 (Double forfeit)";
   return result || "";
-}
-
-function resultPoints2(result) {
-  switch (result) {
-    case "1-0":
-    case "F1-0":
-      return [2, 0];
-
-    case "0.5-0.5":
-      return [1, 1];
-
-    case "0-1":
-    case "F0-1":
-      return [0, 2];
-
-    case "p":
-    case "F0-0":
-      return [0, 0];
-
-    default:
-      throw new Error(
-        "A submitted round contains a missing or invalid result."
-      );
-  }
-}
-
-function meetingKey(a, b) {
-  return `${Math.min(a, b)}/${Math.max(a, b)}`;
-}
-
-function rematchBadgeHtml(s, round, pair) {
-  if (pair.black === null) return "";
-
-  const previouslyMet = s.rounds.some(previous =>
-    previous.number < round.number &&
-    previous.pairings.some(oldPair =>
-      oldPair.black !== null &&
-      !isForfeitResult(oldPair.result) &&
-      meetingKey(oldPair.white, oldPair.black) ===
-        meetingKey(pair.white, pair.black)
-    )
-  );
-
-  return previouslyMet
-    ? '<span class="rematch-badge" ' +
-      'title="These players have already met in an earlier round">' +
-      'Rematch</span>'
-    : "";
-}
-
-/* ========================================================================
-   FORMAT SETTINGS AND EXPLANATORY TEXT
-   ======================================================================== */
-
-function selectedBergerRounds() {
-  const selected = document.querySelector(
-    'input[name="berger-rounds"]:checked'
-  );
-
-  return selected ? Number(selected.value) : 5;
-}
-
-function bergerRoundsFor(s) {
-  /*
-    Original files without bergerRounds retain the five-round format.
-    Invalid explicit values are rejected by tournament validation.
-  */
-  return s.bergerRounds === undefined ? 5 : s.bergerRounds;
-}
-
-function bergerTableFor(rounds) {
-  requireCondition(
-    rounds === 5 || rounds === 7,
-    "Choose either 5 or 7 Berger rounds."
-  );
-
-  return rounds === 7 ? BERGER_EIGHT : BERGER_SIX;
-}
-
-function formatDetails(rounds) {
-  bergerTableFor(rounds);
-
-  const size = rounds + 1;
-
-  return {
-    rounds,
-    size,
-    minimumPlayers: size + 1,
-    minimumTail: size + 1,
-    maximumTail: size * 2 - 1,
-    firstCombinedRound: rounds + 1,
-
-    /*
-      Zero-based original positions.
-
-      Adjacent paired Berger groups:
-        Six players: upper 2,4,6 <-> lower 1,3,5.
-        Eight players: upper 2,4,6,8 <-> lower 1,3,5,7.
-    */
-    upperDown: rounds === 7
-      ? [1, 3, 5, 7]
-      : [1, 3, 5],
-
-    lowerUp: rounds === 7
-      ? [0, 2, 4, 6]
-      : [0, 2, 4],
-
-    /*
-      Final unpaired Berger group and bottom Swiss:
-        Five-round format:
-          Berger 2,4,6 <-> Swiss 1,3,5.
-
-        Seven-round format:
-          Berger 2,4,6,8 <-> Swiss 1,3,5,7.
-
-      Without a bottom Swiss group, the final unpaired
-      Berger group retains its membership.
-    */
-    lastBergerDown: rounds === 7
-      ? [1, 3, 5, 7]
-      : [1, 3, 5],
-
-    bottomSwissUp: rounds === 7
-      ? [0, 2, 4, 6]
-      : [0, 2, 4]
-  };
-}
-
-function positionList(indices) {
-  return indices.map(index => index + 1).join(", ");
-}
-
-function updateFormatText() {
-  const rounds = state
-    ? bergerRoundsFor(state)
-    : selectedBergerRounds();
-
-  const details = formatDetails(rounds);
-
-  const layoutText =
-    `Players are initially divided in rating order into ` +
-    `${details.size}-player Berger groups. When the field size ` +
-    `is not divisible by ${details.size}, ` +
-    `${details.minimumTail} to ${details.maximumTail} players ` +
-    `are allocated to the bottom Swiss group, leaving the ` +
-    `remaining players in complete ${details.size}-player ` +
-    `Berger groups.`;
-
-  const exchangeText =
-    `Adjacent Berger groups are processed in pairs. Positions ` +
-    `${positionList(details.upperDown)} of the upper group are ` +
-    `exchanged with positions ${positionList(details.lowerUp)} ` +
-    `of the lower group. These positions refer to the original ` +
-    `rating order before randomization. ` +
-    `Within each exchanged pair of Berger groups, the upper ` +
-    `group contains only odd-numbered TPNs and the lower group ` +
-    `only even-numbered TPNs. Players with neighbouring TPNs ` +
-    `will therefore not meet within those paired groups while ` +
-    `their Berger schedules are retained.`;
-
-  const tailExchangeText =
-    `If there is an odd number of Berger groups and a bottom ` +
-    `Swiss group, positions ` +
-    `${positionList(details.lastBergerDown)} of the last Berger ` +
-    `group are exchanged with positions ` +
-    `${positionList(details.bottomSwissUp)} of the bottom Swiss ` +
-    `group. These positions refer to the original rating order ` +
-    `within those groups. Without a bottom Swiss group, the final ` +
-    `unpaired Berger group retains its membership.`;
-
-  const fieldText =
-    `Every integer initial field size of at least ` +
-    `${details.minimumPlayers} players is supported in the ` +
-    `${rounds}-round format. A field divisible by ${details.size} ` +
-    `initially uses only Berger groups. Otherwise, it uses ` +
-    `${details.size}-player Berger groups followed by one Swiss ` +
-    `group of ${details.minimumTail} to ${details.maximumTail} ` +
-    `players. Fields of ${details.minimumTail} to ` +
-    `${details.maximumTail} use only a Swiss group.`;
-
-  const exampleCounts = rounds === 5
-    ? [13, 18, 25, 30]
-    : [17, 24, 33, 40];
-
-  const examples = exampleCounts.map(count => {
-    const layout = getLayout(count, rounds);
-
-    return `${count} players: ${layout.bergerCount} Berger ` +
-      `group${layout.bergerCount === 1 ? "" : "s"}` +
-      (
-        layout.tailSize
-          ? ` plus ${layout.tailSize} bottom Swiss players`
-          : ""
-      );
-  }).join("; ") + ".";
-
-  const equivalenceText =
-    `Among players tied on points in the same completed Berger ` +
-    `group after Round ${rounds}, with every scheduled game ` +
-    `played, WNT gives the same ordering as Sonneborn-Berger. ` +
-    `This is an <em>ordering</em> equivalence, not numerical equality, ` +
-    `and does not generally hold across different groups or ` +
-    `after additional Swiss rounds.`;
-
-  $("extra-rounds-hint").textContent =
-    `${rounds} initial rounds plus the selected extra rounds.`;
-
-  $("setup-layout-rule").textContent = layoutText;
-  $("setup-exchange-rule").textContent = exchangeText;
-  $("setup-tail-exchange-rule").textContent = tailExchangeText;
-
-  $("setup-combined-rule").textContent =
-    `From Round ${details.firstCombinedRound}, all remaining ` +
-    `active players enter one Swiss field. Completed results, ` +
-    `scores, opponent histories, colour histories, and previous ` +
-    `byes are carried forward. WNT continues to be recalculated. ` +
-    equivalenceText;
-
-  $("setup-postponement-rule").textContent =
-    "Berger games may be marked p for postponed. A postponed " +
-    "game temporarily gives both players zero points and no " +
-    "direct WNT contribution. Submitted Berger results remain " +
-    "editable while their group still uses Berger pairings. " +
-    "Postponed games in a converting group must be resolved " +
-    "before that group enters Swiss. All postponed games must " +
-    `be resolved before Round ${details.firstCombinedRound} ` +
-    "or tournament completion.";
-
-  $("setup-field-hint").textContent =
-    `${fieldText} Examples: ${examples}`;
-
-  $("about-format-summary").textContent =
-    `Normally, the first ${rounds} rounds use ` +
-    `${details.size}-player Berger groups, together with a ` +
-    `bottom Swiss group when required. From Round ` +
-    `${details.firstCombinedRound}, all remaining active players ` +
-    `enter one Swiss field. Withdrawals can cause earlier conversion.`;
-
-  $("about-layout-rule").textContent = layoutText;
-  $("about-exchange-rule").textContent = exchangeText;
-  $("about-tail-exchange-rule").textContent = tailExchangeText;
-
-  $("about-conversion-postponement-rule").textContent =
-    "Any postponed games belonging to a converting group must " +
-    "be resolved before its first Swiss round. Earlier retained " +
-    "Berger groups may still have postponed games until their " +
-    `own conversion, Round ${details.firstCombinedRound}, ` +
-    "or tournament completion.";
-
-  $("about-postponement-rule").textContent =
-    "Submitted Berger games remain editable while their group " +
-    "still uses Berger pairings. Once that group enters Swiss, " +
-    "its submitted results are locked. Replace p with a proper " +
-    "played result or an explicit forfeit result before conversion. " +
-    "All postponed games must be resolved before Round " +
-    `${details.firstCombinedRound} or tournament completion, ` +
-    "including an early finish. Swiss games cannot be marked postponed.";
-
-  $("about-wnt-equivalence").textContent = equivalenceText;
-  $("about-field-rule").textContent = fieldText;
-  $("about-field-examples").textContent =
-    `Examples before exchanges: ${examples}`;
-
-  document.querySelector("#berger-pairings-dialog h2")
-    .textContent = `Berger Pairings: Rounds 1–${rounds}`;
-}
-
-/* ========================================================================
-   WITHDRAWAL HISTORY AND ROUND PLANS
-
-   Original groups are immutable historical records.
-   withdrawnFrom is the first round in which a player is absent.
-   Missing withdrawnFrom in an older save is treated as null.
-   ======================================================================== */
-
-function activePlayerIds(s, roundNumber) {
-  return s.players
-    .filter(p =>
-      p.withdrawnFrom == null ||
-      roundNumber < p.withdrawnFrom
-    )
-    .map(p => p.id);
-}
-
-function swissStartIndex(s, roundNumber) {
-  if (roundNumber > bergerRoundsFor(s)) return 0;
-
-  const bergerCount = s.groups.filter(
-    group => group.kind === "berger"
-  ).length;
-
-  let boundary = bergerCount;
-  const groupOf = groupIndexMap(s);
-
-  for (const p of s.players) {
-    if (
-      p.withdrawnFrom != null &&
-      p.withdrawnFrom <= roundNumber
-    ) {
-      boundary = Math.min(boundary, groupOf.get(p.id));
-    }
-  }
-
-  /*
-    Preserve an isolated last Berger group if there is no
-    original bottom Swiss group and no earlier conversion.
-  */
-  const hasBottomSwiss = s.groups.some(
-    group => group.kind === "swiss"
-  );
-
-  if (
-    s.retainLastBergerSchedule === true &&
-    !hasBottomSwiss &&
-    bergerCount > 0 &&
-    boundary === bergerCount - 1
-  ) {
-    return bergerCount;
-  }
-
-  return boundary;
-}
-
-function groupUsesBerger(s, groupIndex, roundNumber) {
-  return (
-    roundNumber <= bergerRoundsFor(s) &&
-    s.groups[groupIndex]?.kind === "berger" &&
-    groupIndex < swissStartIndex(s, roundNumber)
-  );
-}
-
-function getRoundPlan(s, roundNumber) {
-  const activeIds = activePlayerIds(s, roundNumber);
-  const active = new Set(activeIds);
-  const berger = [];
-  const swissIds = [];
-
-  s.groups.forEach((group, index) => {
-    if (groupUsesBerger(s, index, roundNumber)) {
-      berger.push({group, index});
-    } else {
-      group.members.forEach(id => {
-        if (active.has(id)) swissIds.push(id);
-      });
-    }
-  });
-
-  swissIds.sort((a, b) => a - b);
-
-  return {activeIds, berger, swissIds};
 }
 
 function isBergerGame(s, round, pair) {
@@ -1568,152 +946,76 @@ function isBergerGame(s, round, pair) {
     !round ||
     !pair ||
     pair.black === null ||
-    round.number > bergerRoundsFor(s)
+    round.number > 5
   ) {
     return false;
   }
 
-  return s.groups.some((group, index) =>
-    groupUsesBerger(s, index, round.number) &&
+  return s.groups.some(group =>
+    group.kind === "berger" &&
     group.members.includes(pair.white) &&
     group.members.includes(pair.black)
   );
 }
 
-function withdrawalBadgeHtml(s, p) {
-  if (p.withdrawnFrom == null) return "";
-
-  const afterRound = p.withdrawnFrom - 1;
-  const completed = s.rounds.filter(r => r.closed).length;
-
-  const text = completed >= afterRound
-    ? `Withdrawn after Round ${afterRound}`
-    : `Withdraws after Round ${afterRound}`;
-
-  return '<span class="withdrawn-badge">' +
-    escapeHtml(text) +
-    "</span>";
-}
-
-function postponedGameLocations(s, targetRound = null) {
+function postponedGameLocations(s) {
   const locations = [];
-  const groupOf = groupIndexMap(s);
 
   for (const round of s.rounds) {
     round.pairings.forEach((pair, index) => {
-      if (pair.result !== "p") return;
-
-      if (
-        targetRound !== null &&
-        groupUsesBerger(
-          s,
-          groupOf.get(pair.white),
-          targetRound
-        )
-      ) {
-        return;
+      if (pair.result === "p") {
+        locations.push(
+          `Round ${round.number}, board ${index + 1}`
+        );
       }
-
-      locations.push(
-        `Round ${round.number}, board ${index + 1}`
-      );
     });
   }
 
   return locations;
 }
 
-function requireResolvedPostponements(s, targetRound = null) {
-  const locations = postponedGameLocations(s, targetRound);
-
-  requireCondition(
-    locations.length === 0,
-    (
-      targetRound === null
-        ? "The tournament cannot finish until all postponed " +
-          "Berger games have proper results."
-        : `Round ${targetRound} cannot be generated until postponed ` +
-          "games in groups entering Swiss have proper results."
-    ) +
-    "\n\nUnresolved games:\n" +
-    locations.join("\n") +
-    "\n\nUse Previous to open the relevant round and replace p " +
-    "with a played result or an explicit forfeit result. Then " +
-    "return to the latest round and submit again."
-  );
-}
-
-function planDescription(s, roundNumber) {
-  const plan = getRoundPlan(s, roundNumber);
-
-  if (roundNumber > bergerRoundsFor(s)) {
-    return `Combined Swiss field: ${plan.swissIds.length} active players.`;
-  }
-
-  const bergerText = plan.berger.length === 0
-    ? "No retained Berger groups."
-    : `Retained Berger groups: ${plan.berger.length}.`;
-
-  const swissText = plan.swissIds.length === 0
-    ? "No Swiss field."
-    : `Swiss field: ${plan.swissIds.length} active players.`;
-
-  return `${bergerText} ${swissText}`;
-}
-
 /* ========================================================================
    FIELD LAYOUT AND INITIAL GROUPS
    ======================================================================== */
 
-function getLayout(count, bergerRounds = 5) {
-  const details = formatDetails(bergerRounds);
-
+function getLayout(count) {
   requireCondition(
-    Number.isInteger(count) &&
-    count >= details.minimumPlayers,
-    `Enter at least ${details.minimumPlayers} players for ` +
-    `${bergerRounds} Berger rounds.`
+    Number.isInteger(count) && count >= 7,
+    "Enter at least 7 players."
   );
 
-  const remainder = count % details.size;
-  const tailSize = remainder === 0
-    ? 0
-    : details.size + remainder;
-
+  const remainder = count % 6;
+  const tailSize = remainder === 0 ? 0 : 6 + remainder;
   const bergerPlayers = count - tailSize;
 
   return {
-    bergerCount: bergerPlayers / details.size,
+    bergerCount: bergerPlayers / 6,
     bergerPlayers,
-    tailSize,
-    groupSize: details.size,
-    bergerRounds
+    tailSize
   };
 }
 
 function maximumTotalRounds(count) {
   /*
-    Tournament-length policy based on the original field size.
-    This is not a continuation guarantee after withdrawals.
+    These are upper bounds, not guarantees for every earlier pairing.
   */
   return count % 2 === 0 ? count - 1 : count;
 }
 
-function buildGroups(
-  count,
-  randomize = true,
-  bergerRounds = 5
-) {
-  const details = formatDetails(bergerRounds);
-  const layout = getLayout(count, bergerRounds);
+function buildGroups(count, randomize = true) {
+  const layout = getLayout(count);
   const groups = [];
 
+  /*
+    First construct every group in initial TPN/rating order.
+    All exchanges take place before any randomization.
+  */
   for (let index = 0; index < layout.bergerCount; index++) {
     groups.push({
       kind: "berger",
       members: Array.from(
-        {length: details.size},
-        (_, position) => index * details.size + position + 1
+        {length: 6},
+        (_, position) => index * 6 + position + 1
       )
     });
   }
@@ -1729,14 +1031,14 @@ function buildGroups(
   }
 
   /*
-    Exchange adjacent pairs of Berger groups before randomization.
+    Exchange adjacent pairs of Berger groups.
 
-    The order used for the six-player format remains identical
-    to the original implementation.
+    The resulting upper group contains:
+      upper positions 1,3,5 and lower positions 1,3,5.
+
+    The resulting lower group contains:
+      upper positions 2,4,6 and lower positions 2,4,6.
   */
-  const downSet = new Set(details.upperDown);
-  const upSet = new Set(details.lowerUp);
-
   for (
     let index = 0;
     index + 1 < layout.bergerCount;
@@ -1746,19 +1048,23 @@ function buildGroups(
     const lower = [...groups[index + 1].members];
 
     groups[index].members = [
-      ...upper.filter((_, position) => !downSet.has(position)),
-      ...details.lowerUp.map(position => lower[position])
+      upper[0], upper[2], upper[4],
+      lower[0], lower[2], lower[4]
     ];
 
     groups[index + 1].members = [
-      ...details.upperDown.map(position => upper[position]),
-      ...lower.filter((_, position) => !upSet.has(position))
+      upper[1], upper[3], upper[5],
+      lower[1], lower[3], lower[5]
     ];
   }
 
   /*
-    Exchange an unpaired final Berger group with the bottom
-    Swiss group, if one exists.
+    If one Berger group is left over and a bottom Swiss group
+    exists, exchange last-Berger positions 1,3,5 with
+    bottom-Swiss positions 2,4,6.
+
+    Without a bottom Swiss group, the final unpaired Berger
+    group retains its original membership.
   */
   if (
     layout.bergerCount % 2 === 1 &&
@@ -1767,8 +1073,9 @@ function buildGroups(
     const lastBerger = groups[layout.bergerCount - 1];
     const bottomSwiss = groups[layout.bergerCount];
 
-    details.lastBergerDown.forEach((bergerPosition, index) => {
-      const swissPosition = details.bottomSwissUp[index];
+    for (let index = 0; index < 3; index++) {
+      const bergerPosition = index * 2;
+      const swissPosition = index * 2 + 1;
 
       [
         lastBerger.members[bergerPosition],
@@ -1777,12 +1084,19 @@ function buildGroups(
         bottomSwiss.members[swissPosition],
         lastBerger.members[bergerPosition]
       ];
-    });
+    }
   }
 
+  /*
+    Randomize only Berger draw positions.
+    Swiss members remain in ascending TPN/rating order after
+    any exchange. Equal ratings follow permanent TPN order.
+  */
   for (const group of groups) {
     if (group.kind === "berger") {
-      if (randomize) group.members = shuffle(group.members);
+      if (randomize) {
+        group.members = shuffle(group.members);
+      }
     } else {
       group.members.sort((a, b) => a - b);
     }
@@ -1832,8 +1146,7 @@ function parsePlayers() {
     id: index + 1,
     tpn: index + 1,
     name: p.name,
-    rating: p.rating,
-    withdrawnFrom: null
+    rating: p.rating
   }));
 }
 
@@ -1877,8 +1190,7 @@ function computeStats(s) {
           opponent: null,
           color: "-",
           result2: 2,
-          postponed: false,
-          forfeit: false
+          postponed: false
         });
 
         continue;
@@ -1886,49 +1198,61 @@ function computeStats(s) {
 
       const black = byId.get(pair.black);
       const postponed = pair.result === "p";
-      const forfeit = isForfeitResult(pair.result);
+
+      let whiteResult2;
+      let blackResult2;
 
       if (postponed) {
         requireCondition(
           isBergerGame(s, round, pair),
           "Only a Berger game may be postponed."
         );
-      }
 
-      const [whiteResult2, blackResult2] =
-        resultPoints2(pair.result);
+        whiteResult2 = 0;
+        blackResult2 = 0;
+      } else {
+        if (pair.result === "1-0") {
+          whiteResult2 = 2;
+        } else if (pair.result === "0.5-0.5") {
+          whiteResult2 = 1;
+        } else if (pair.result === "0-1") {
+          whiteResult2 = 0;
+        } else {
+          throw new Error(
+            "A submitted round contains a missing result."
+          );
+        }
+
+        blackResult2 = 2 - whiteResult2;
+      }
 
       white.score2 += whiteResult2;
       black.score2 += blackResult2;
 
       /*
-        Postponed games retain scheduled colour allocations.
-        Forfeits add neither colours nor an encounter.
+        Postponed Berger games retain their scheduled colours.
+        They must all be resolved before combined Swiss pairing.
       */
-      if (!forfeit) {
-        white.whites++;
-        black.blacks++;
+      white.whites++;
+      black.blacks++;
 
-        white.opponents.add(black.id);
-        black.opponents.add(white.id);
-      }
+      white.opponents.add(black.id);
+      black.opponents.add(white.id);
 
       white.history.push({
         round: round.number,
         opponent: black.id,
-        color: forfeit ? "F" : "W",
+        color: "W",
         result2: whiteResult2,
-        postponed,
-        forfeit
+        postponed
       });
 
       black.history.push({
         round: round.number,
         opponent: white.id,
-        color: forfeit ? "F" : "B",
+        color: "B",
         result2: blackResult2,
-        postponed,
-        forfeit
+        postponed
       });
     }
   }
@@ -1938,20 +1262,20 @@ function computeStats(s) {
       let numerator = 0;
 
       for (const h of p.history) {
-        if (
-          h.opponent === null ||
-          h.postponed ||
-          h.forfeit
-        ) {
-          continue;
-        }
+        if (h.opponent === null || h.postponed) continue;
 
-        const opponentScore2 =
-          byId.get(h.opponent).score2;
+        const opponent = byId.get(h.opponent);
+        const opponentScore2 = opponent.score2;
 
         /*
-          Common integer numerator for exact WNT sorting:
-          2*N*opponentScore2*result2 + opponentScore2^2
+          P = opponentScore2 / 2
+          r = result2 / 2
+
+          WNT = 100 * sum(
+            2*N*opponentScore2*result2 + opponentScore2^2
+          ) / (8*N^2)
+
+          Use the common integer numerator for sorting.
         */
         numerator +=
           2 * N * opponentScore2 * h.result2 +
@@ -1978,107 +1302,15 @@ function sortedStats(context) {
   return [...context.byId.values()].sort(compareStats);
 }
 
-function colourRunAfter(stats, colour) {
-  let run = 1;
-  const history = stats.history || [];
-
-  for (let index = history.length - 1; index >= 0; index--) {
-    const previousColour = history[index].color;
-
-    if (previousColour !== "W" && previousColour !== "B") {
-      continue;
-    }
-
-    if (previousColour !== colour) break;
-
-    run++;
-  }
-
-  return run;
-}
-
-function assessSwissColours(whiteId, blackId, context) {
-  const white = context.byId.get(whiteId);
-  const black = context.byId.get(blackId);
-
-  const whiteDifference =
-    (white.whites || 0) + 1 - (white.blacks || 0);
-
-  const blackDifference =
-    (black.whites || 0) - ((black.blacks || 0) + 1);
-
-  const whiteRun = colourRunAfter(white, "W");
-  const blackRun = colourRunAfter(black, "B");
-  const longestRun = Math.max(whiteRun, blackRun);
-
-  return {
-    white: whiteId,
-    black: blackId,
-
-    balanceExcess:
-      Math.max(0, Math.abs(whiteDifference) - 2) +
-      Math.max(0, Math.abs(blackDifference) - 2),
-
-    totalImbalance:
-      Math.abs(whiteDifference) +
-      Math.abs(blackDifference),
-
-    streakViolations:
-      Number(whiteRun >= 3) +
-      Number(blackRun >= 3),
-
-    repeatedColours:
-      Number(whiteRun >= 2) +
-      Number(blackRun >= 2),
-
-    longestRun,
-    runExcess: Math.max(0, longestRun - 2)
-  };
-}
-
 function preferredWhiteId(firstId, secondId, context) {
   const first = context.byId.get(firstId);
   const second = context.byId.get(secondId);
 
-  /*
-    The original rule remains the final preference:
-    fewer previous White games, then higher TPN.
-  */
-  const defaultWhite =
-    first.whites !== second.whites
-      ? (first.whites < second.whites ? firstId : secondId)
-      : (first.tpn > second.tpn ? firstId : secondId);
+  if (first.whites !== second.whites) {
+    return first.whites < second.whites ? firstId : secondId;
+  }
 
-  const firstWhite = assessSwissColours(
-    firstId,
-    secondId,
-    context
-  );
-
-  const secondWhite = assessSwissColours(
-    secondId,
-    firstId,
-    context
-  );
-
-  /*
-    Compare both colour assignments.
-
-    Avoid extending a colour run beyond two first.
-    Then consider violations, balance, and alternation.
-  */
-  const comparison =
-    firstWhite.runExcess - secondWhite.runExcess ||
-    firstWhite.streakViolations -
-      secondWhite.streakViolations ||
-    firstWhite.balanceExcess - secondWhite.balanceExcess ||
-    firstWhite.totalImbalance - secondWhite.totalImbalance ||
-    firstWhite.repeatedColours - secondWhite.repeatedColours;
-
-  if (comparison < 0) return firstId;
-  if (comparison > 0) return secondId;
-
-  return defaultWhite;
+  return first.tpn > second.tpn ? firstId : secondId;
 }
 
 function wouldMakeThree(stats, color) {
@@ -2091,11 +1323,15 @@ function wouldMakeThree(stats, color) {
       continue;
     }
 
-    if (previousColor !== color) return false;
+    if (previousColor !== color) {
+      return false;
+    }
 
     matchingPreviousGames++;
 
-    if (matchingPreviousGames === 2) return true;
+    if (matchingPreviousGames === 2) {
+      return true;
+    }
   }
 
   return false;
@@ -2111,36 +1347,36 @@ function swissColourPenalty(firstId, secondId, context) {
   );
 }
 
-function evaluateColourAssignment(whiteId, blackId, context) {
+function swissColourAssessment(firstId, secondId, context) {
+  const whiteId = preferredWhiteId(firstId, secondId, context);
+  const blackId = whiteId === firstId ? secondId : firstId;
+
   const white = context.byId.get(whiteId);
   const black = context.byId.get(blackId);
 
-  const whiteDiff = white.whites + 1 - white.blacks;
-  const blackDiff = black.whites - (black.blacks + 1);
+  const whiteDifference = white.whites + 1 - white.blacks;
+  const blackDifference = black.whites - (black.blacks + 1);
+
+  const whiteExcess = Math.max(
+    0,
+    Math.abs(whiteDifference) - 2
+  );
+
+  const blackExcess = Math.max(
+    0,
+    Math.abs(blackDifference) - 2
+  );
 
   return {
     white: whiteId,
     black: blackId,
-    balanceExcess:
-      Math.max(0, Math.abs(whiteDiff) - 2) +
-      Math.max(0, Math.abs(blackDiff) - 2),
-    streakViolations:
-      Number(wouldMakeThree(white, "W")) +
-      Number(wouldMakeThree(black, "B"))
+    balanceExcess: whiteExcess + blackExcess,
+    streakViolations: swissColourPenalty(
+      firstId,
+      secondId,
+      context
+    )
   };
-}
-
-function swissColourAssessment(firstId, secondId, context) {
-  const whiteId = preferredWhiteId(
-    firstId,
-    secondId,
-    context
-  );
-
-  const blackId =
-    whiteId === firstId ? secondId : firstId;
-
-  return assessSwissColours(whiteId, blackId, context);
 }
 
 /* ========================================================================
@@ -2280,19 +1516,27 @@ function perfectMatching(ids, allowed) {
 
       mate[vertex] = previous;
 
-      if (previous !== -1) mate[previous] = vertex;
+      if (previous !== -1) {
+        mate[previous] = vertex;
+      }
 
       vertex = next;
     }
   }
 
-  if (mate.some(value => value === -1)) return null;
+  if (mate.some(value => value === -1)) {
+    return null;
+  }
 
   return new Map(
     ids.map((id, index) => [id, ids[mate[index]]])
   );
 }
 
+/*
+  Select the first feasible opponent for each highest remaining
+  player. Reuse a witness matching when possible.
+*/
 function topDownMatching(
   orderedIds,
   allowed,
@@ -2356,20 +1600,7 @@ function topDownMatching(
    SWISS AND BERGER ROUND GENERATION
    ======================================================================== */
 
-function minimumByeCandidates(ids, getByeCount) {
-  if (ids.length === 0) return [];
-
-  const minimum = ids.reduce(
-    (lowest, id) => Math.min(lowest, getByeCount(id)),
-    Infinity
-  );
-
-  return ids.filter(id => getByeCount(id) === minimum);
-}
-
 function makeSwissPairings(ids, context, forceFirstBye = false) {
-  if (ids.length === 0) return [];
-
   const ordered = [...ids].sort((a, b) =>
     compareStats(context.byId.get(a), context.byId.get(b))
   );
@@ -2378,12 +1609,15 @@ function makeSwissPairings(ids, context, forceFirstBye = false) {
     ordered.map((id, index) => [id, index])
   );
 
+  const unrestricted = new Map(
+    ordered.map(id => [id, new Set()])
+  );
+
   const assessments = new Map(
     ordered.map(id => [id, new Map()])
   );
 
   const edges = [];
-  let maximumRun = 2;
 
   for (let i = 0; i < ordered.length; i++) {
     for (let j = i + 1; j < ordered.length; j++) {
@@ -2393,57 +1627,38 @@ function makeSwissPairings(ids, context, forceFirstBye = false) {
       const first = context.byId.get(a);
       const second = context.byId.get(b);
 
-      const rematch =
+      if (
         first.opponents.has(b) ||
-        second.opponents.has(a);
-
-      const previousMeetings = Math.max(
-        first.history.filter(h =>
-          h.opponent === b && !h.forfeit
-        ).length,
-        second.history.filter(h =>
-          h.opponent === a && !h.forfeit
-        ).length,
-        Number(rematch)
-      );
+        second.opponents.has(a)
+      ) {
+        continue;
+      }
 
       const assessment = {
         ...swissColourAssessment(a, b, context),
-        gap2: Math.abs(first.score2 - second.score2),
-        rematch,
-        previousMeetings
+        gap2: Math.abs(first.score2 - second.score2)
       };
+
+      unrestricted.get(a).add(b);
+      unrestricted.get(b).add(a);
 
       assessments.get(a).set(b, assessment);
       assessments.get(b).set(a, assessment);
 
       edges.push({a, b, assessment});
-
-      maximumRun = Math.max(
-        maximumRun,
-        assessment.longestRun
-      );
     }
   }
 
   let byeCandidates = [null];
 
   if (ordered.length % 2 !== 0) {
-    const eligible = minimumByeCandidates(
-      [...ordered].reverse(),
-      id => context.byId.get(id).byes
-    );
-
-    byeCandidates = forceFirstBye
-      ? eligible.filter(
-          id => id === ordered[ordered.length - 1]
-        )
-      : eligible;
-
-    requireCondition(
-      byeCandidates.length > 0,
-      "No eligible Swiss bye recipient was found."
-    );
+    if (forceFirstBye) {
+      byeCandidates = [ordered[ordered.length - 1]];
+    } else {
+      byeCandidates = [...ordered]
+        .reverse()
+        .filter(id => context.byId.get(id).byes === 0);
+    }
   }
 
   function compareCandidates(first, a, b) {
@@ -2451,249 +1666,154 @@ function makeSwissPairings(ids, context, forceFirstBye = false) {
     const assessmentB = assessments.get(first).get(b);
 
     return (
-      Number(assessmentA.rematch) -
-        Number(assessmentB.rematch) ||
-      assessmentA.previousMeetings -
-        assessmentB.previousMeetings ||
       assessmentA.gap2 - assessmentB.gap2 ||
       assessmentA.balanceExcess - assessmentB.balanceExcess ||
       assessmentA.streakViolations -
         assessmentB.streakViolations ||
-      assessmentA.totalImbalance -
-        assessmentB.totalImbalance ||
-      assessmentA.repeatedColours -
-        assessmentB.repeatedColours ||
       rank.get(a) - rank.get(b)
     );
   }
 
-  function buildGraph(
-    allowRematches,
-    maximumColourRun,
-    requireBalance,
-    maximumGap2
-  ) {
-    const graph = new Map(
-      ordered.map(id => [id, new Set()])
-    );
+  function tryGraph(graph) {
+    for (const byeId of byeCandidates) {
+      const toPair = ordered.filter(id => id !== byeId);
 
-    for (const {a, b, assessment} of edges) {
-      if (!allowRematches && assessment.rematch) continue;
-
-      if (assessment.longestRun > maximumColourRun) {
-        continue;
-      }
-
-      if (
-        requireBalance &&
-        assessment.balanceExcess > 0
-      ) {
-        continue;
-      }
-
-      if (assessment.gap2 > maximumGap2) continue;
-
-      graph.get(a).add(b);
-      graph.get(b).add(a);
-    }
-
-    return graph;
-  }
-
-  /*
-    First exhaust every no-rematch possibility.
-    Rematches remain an absolute last resort.
-  */
-  for (const allowRematches of [false, true]) {
-    /*
-      Avoid three consecutive identical colours first.
-      Only increase the limit when no eligible bye recipient
-      permits a complete pairing at the current limit.
-    */
-    for (
-      let maximumColourRun = 2;
-      maximumColourRun <= maximumRun;
-      maximumColourRun++
-    ) {
-      const completeGraph = buildGraph(
-        allowRematches,
-        maximumColourRun,
-        false,
-        Infinity
+      const matching = topDownMatching(
+        toPair,
+        graph,
+        compareCandidates
       );
 
-      /*
-        Bye candidates are already ordered from the bottom
-        of the standings, restricted to minimum bye counts.
-      */
-      for (const byeId of byeCandidates) {
-        const toPair = ordered.filter(id => id !== byeId);
+      if (matching === null) continue;
 
-        /*
-          Do not reject a low-ranked bye recipient merely
-          because pairing the others requires a score gap
-          or a total-colour-balance exception.
-        */
+      const pairings = matching.map(([first, second]) => {
+        const assessment = assessments.get(first).get(second);
+
+        return {
+          white: assessment.white,
+          black: assessment.black,
+          result: ""
+        };
+      });
+
+      if (byeId !== null) {
+        pairings.push({
+          white: byeId,
+          black: null,
+          result: "BYE"
+        });
+      }
+
+      return pairings;
+    }
+
+    return null;
+  }
+
+  const colourModes = [
+    {requireBalance: true,  requireNoThree: true},
+    {requireBalance: true,  requireNoThree: false},
+    {requireBalance: false, requireNoThree: true},
+    {requireBalance: false, requireNoThree: false}
+  ];
+
+  for (const mode of colourModes) {
+    for (const maximumGap2 of [0, 1, 2]) {
+      const graph = new Map(
+        ordered.map(id => [id, new Set()])
+      );
+
+      for (const {a, b, assessment} of edges) {
+        if (assessment.gap2 > maximumGap2) {
+          continue;
+        }
+
         if (
-          perfectMatching(toPair, completeGraph) === null
+          mode.requireBalance &&
+          assessment.balanceExcess > 0
         ) {
           continue;
         }
 
-        /*
-          This bye recipient is now fixed.
-
-          Prefer colour balance, then progressively widen
-          the permitted score differences.
-        */
-        for (const requireBalance of [true, false]) {
-          for (const maximumGap2 of [0, 1, 2, Infinity]) {
-            const graph =
-              !requireBalance && maximumGap2 === Infinity
-                ? completeGraph
-                : buildGraph(
-                    allowRematches,
-                    maximumColourRun,
-                    requireBalance,
-                    maximumGap2
-                  );
-
-            const matching = topDownMatching(
-              toPair,
-              graph,
-              compareCandidates
-            );
-
-            if (matching === null) continue;
-
-            const pairings = matching.map(
-              ([first, second]) => {
-                const assessment =
-                  assessments.get(first).get(second);
-
-                return {
-                  white: assessment.white,
-                  black: assessment.black,
-                  result: ""
-                };
-              }
-            );
-
-            if (byeId !== null) {
-              pairings.push({
-                white: byeId,
-                black: null,
-                result: "BYE"
-              });
-            }
-
-            return pairings;
-          }
+        if (
+          mode.requireNoThree &&
+          assessment.streakViolations > 0
+        ) {
+          continue;
         }
+
+        graph.get(a).add(b);
+        graph.get(b).add(a);
+      }
+
+      const pairings = tryGraph(graph);
+
+      if (pairings !== null) {
+        return pairings;
       }
     }
   }
 
-  throw new Error(
-    "No complete Swiss pairing could be generated " +
-    "for any eligible bye recipient."
-  );
-}
+  const fallbackPairings = tryGraph(unrestricted);
 
-function bergerRoundPairings(s, group, roundNumber) {
-  const active = new Set(activePlayerIds(s, roundNumber));
-  const pairings = [];
-  const table = bergerTableFor(bergerRoundsFor(s));
-
-  for (const [whiteNo, blackNo] of table[roundNumber - 1]) {
-    const white = group.members[whiteNo - 1];
-    const black = group.members[blackNo - 1];
-
-    const whiteActive = active.has(white);
-    const blackActive = active.has(black);
-
-    if (whiteActive && blackActive) {
-      pairings.push({
-        white,
-        black,
-        result: ""
-      });
-    } else if (whiteActive || blackActive) {
-      /*
-        A bye occupies the white-player storage slot,
-        but does not allocate a played colour.
-      */
-      pairings.push({
-        white: whiteActive ? white : black,
-        black: null,
-        result: "BYE"
-      });
-    }
+  if (fallbackPairings !== null) {
+    return fallbackPairings;
   }
 
-  return pairings;
+  throw new Error(
+    "No complete pairing exists under the no-rematch and " +
+    "no-second-bye rules, even after all colour and " +
+    "score-difference restrictions have been relaxed."
+  );
 }
 
 function makeRound(s, roundNumber) {
-  /*
-    Only postponements in groups entering Swiss block this round.
-    All groups enter Swiss after the selected Berger phase.
-  */
-  requireResolvedPostponements(s, roundNumber);
-
-  const plan = getRoundPlan(s, roundNumber);
-
-  requireCondition(
-    plan.activeIds.length >= 2,
-    "Fewer than two active players remain."
-  );
+  if (roundNumber > 5) {
+    requireCondition(
+      postponedGameLocations(s).length === 0,
+      "All postponed Berger games must be resolved before Round 6."
+    );
+  }
 
   const context = computeStats(s);
   const pairings = [];
 
-  for (const {group} of plan.berger) {
+  if (roundNumber <= 5) {
+    for (const group of s.groups) {
+      if (group.kind === "berger") {
+        for (const [whiteNo, blackNo] of
+             BERGER_SIX[roundNumber - 1]) {
+          pairings.push({
+            white: group.members[whiteNo - 1],
+            black: group.members[blackNo - 1],
+            result: ""
+          });
+        }
+      } else {
+        pairings.push(
+          ...makeSwissPairings(
+            group.members,
+            context,
+            roundNumber === 1
+          )
+        );
+      }
+    }
+  } else {
     pairings.push(
-      ...bergerRoundPairings(s, group, roundNumber)
+      ...makeSwissPairings(
+        s.players.map(p => p.id),
+        context,
+        false
+      )
     );
   }
-
-  pairings.push(
-    ...makeSwissPairings(
-      plan.swissIds,
-      context,
-      roundNumber === 1
-    )
-  );
 
   return {
     number: roundNumber,
     closed: false,
     pairings
   };
-}
-
-/* ========================================================================
-   PER-PAIRING EDIT PERMISSIONS
-   ======================================================================== */
-
-function canEditPairing(s, round, pair) {
-  if (!s || s.finished || !round || !pair) return false;
-  if (pair.black === null) return false;
-
-  if (!round.closed) {
-    return round.number === s.rounds.length;
-  }
-
-  if (!isBergerGame(s, round, pair)) return false;
-
-  const groupOf = groupIndexMap(s);
-  const index = groupOf.get(pair.white);
-
-  /*
-    Historical Berger results lock when their group enters Swiss.
-    A pending conversion for the next round does not yet lock them.
-  */
-  return groupUsesBerger(s, index, s.rounds.length);
 }
 
 /* ========================================================================
@@ -2717,46 +1837,17 @@ function validateTournament(s) {
   );
 
   const count = s.players.length;
-  const bergerRounds = bergerRoundsFor(s);
+  getLayout(count);
 
   requireCondition(
-    bergerRounds === 5 || bergerRounds === 7,
-    "Invalid number of Berger rounds."
+    Number.isInteger(s.extraRounds) && s.extraRounds >= 0,
+    "Invalid number of extra rounds."
   );
 
-  getLayout(count, bergerRounds);
-
   requireCondition(
-    Number.isSafeInteger(s.extraRounds) &&
-    s.extraRounds >= 0 &&
-    s.totalRounds === bergerRounds + s.extraRounds &&
+    s.totalRounds === 5 + s.extraRounds &&
     s.totalRounds <= maximumTotalRounds(count),
     "Invalid total number of rounds."
-  );
-
-  requireCondition(
-    Array.isArray(s.rounds) &&
-    s.rounds.length >= 1 &&
-    s.rounds.length <= s.totalRounds,
-    "Invalid round list."
-  );
-
-  requireCondition(
-    typeof s.finished === "boolean",
-    "Invalid tournament completion flag."
-  );
-
-  requireCondition(
-    s.retainLastBergerSchedule === undefined ||
-    typeof s.retainLastBergerSchedule === "boolean",
-    "Invalid last-Berger-group withdrawal policy."
-  );
-
-  requireCondition(
-    Number.isInteger(s.viewRound) &&
-    s.viewRound >= 1 &&
-    s.viewRound <= s.rounds.length,
-    "Invalid viewed round."
   );
 
   const ids = new Set();
@@ -2775,17 +1866,6 @@ function validateTournament(s) {
       "Invalid player data or TPN sequence."
     );
 
-    requireCondition(
-      p.withdrawnFrom == null ||
-      (
-        Number.isInteger(p.withdrawnFrom) &&
-        p.withdrawnFrom >= 2 &&
-        p.withdrawnFrom <= s.rounds.length + 1 &&
-        p.withdrawnFrom <= s.totalRounds + 1
-      ),
-      "Invalid withdrawal round."
-    );
-
     if (index > 0) {
       requireCondition(
         s.players[index - 1].rating >= p.rating,
@@ -2796,11 +1876,11 @@ function validateTournament(s) {
     ids.add(p.id);
   });
 
-  const expectedGroups = buildGroups(
-    count,
-    false,
-    bergerRounds
-  );
+  /*
+    Expected memberships include the last-Berger/bottom-Swiss
+    exchange when the number of Berger groups is odd.
+  */
+  const expectedGroups = buildGroups(count, false);
 
   requireCondition(
     Array.isArray(s.groups) &&
@@ -2826,18 +1906,38 @@ function validateTournament(s) {
     requireCondition(
       JSON.stringify(actualSorted) ===
         JSON.stringify(expectedSorted),
-      "An initial group does not contain the required players."
+      "A group does not contain the required players after interchange."
     );
 
     if (group.kind === "swiss") {
       requireCondition(
         JSON.stringify(group.members) ===
           JSON.stringify(expected.members),
-        "The initial bottom Swiss group must be in rating order."
+        "The resulting bottom Swiss group must be in rating order."
       );
     }
   });
 
+  requireCondition(
+    Array.isArray(s.rounds) &&
+    s.rounds.length >= 1 &&
+    s.rounds.length <= s.totalRounds,
+    "Invalid round list."
+  );
+
+  requireCondition(
+    typeof s.finished === "boolean",
+    "Invalid tournament completion flag."
+  );
+
+  requireCondition(
+    Number.isInteger(s.viewRound) &&
+    s.viewRound >= 1 &&
+    s.viewRound <= s.rounds.length,
+    "Invalid viewed round."
+  );
+
+  const groupOf = groupIndexMap(s);
   const whiteCounts = new Map(s.players.map(p => [p.id, 0]));
   const byeCounts = new Map(s.players.map(p => [p.id, 0]));
   const meetings = new Set();
@@ -2859,52 +1959,33 @@ function validateTournament(s) {
       "Only the final ongoing round may be unsubmitted."
     );
 
-    const plan = getRoundPlan(s, round.number);
-    const colourContext = computeStats({
-      ...s,
-      rounds: s.rounds.slice(0, index)
-    });
-    const active = new Set(plan.activeIds);
-    const swiss = new Set(plan.swissIds);
-
-    const expectedBergerEntries = plan.berger.flatMap(
-      ({group}) =>
-        bergerRoundPairings(s, group, round.number)
-    );
-
-    const expectedPairingCount =
-      expectedBergerEntries.length +
-      Math.ceil(plan.swissIds.length / 2);
-
     requireCondition(
-      active.size >= 2 &&
-      round.pairings.length === expectedPairingCount,
-      "Incorrect number of active players or pairings."
+      round.pairings.length === Math.ceil(count / 2),
+      "Incorrect number of pairings."
     );
-
-    const previousMeetings = new Set(meetings);
-    const previousByeCounts = new Map(byeCounts);
-    const expectedBergerPairs = new Set();
-
-    for (const pair of expectedBergerEntries) {
-      expectedBergerPairs.add(
-        pair.black === null
-          ? `${pair.white}/BYE`
-          : `${pair.white}/${pair.black}`
-      );
-    }
 
     const used = new Set();
     let byesThisRound = 0;
-    let containsSwissRematch = false;
+    const expectedBergerPairs = new Set();
+
+    if (round.number <= 5) {
+      for (const group of s.groups) {
+        if (group.kind !== "berger") continue;
+
+        for (const [w, b] of BERGER_SIX[round.number - 1]) {
+          expectedBergerPairs.add(
+            `${group.members[w - 1]}/${group.members[b - 1]}`
+          );
+        }
+      }
+    }
 
     for (const pair of round.pairings) {
       requireCondition(
         pair &&
         ids.has(pair.white) &&
-        active.has(pair.white) &&
         !used.has(pair.white),
-        "Invalid, inactive, or duplicated White player."
+        "Invalid or duplicated White player."
       );
 
       used.add(pair.white);
@@ -2912,59 +1993,40 @@ function validateTournament(s) {
       if (pair.black === null) {
         requireCondition(
           pair.result === "BYE",
-          "A pairing bye must have the BYE result."
+          "A bye must have the BYE result."
         );
 
-        const bergerByeKey = `${pair.white}/BYE`;
+        byesThisRound++;
 
-        if (expectedBergerPairs.has(bergerByeKey)) {
-          /*
-            Fixed Berger byes are exempt from Swiss minimum-bye
-            selection, but count toward future bye eligibility.
-          */
-          expectedBergerPairs.delete(bergerByeKey);
-        } else {
+        requireCondition(
+          byeCounts.get(pair.white) === 0,
+          "A player has been assigned more than one bye."
+        );
+
+        byeCounts.set(pair.white, 1);
+
+        if (round.number === 1) {
           requireCondition(
-            swiss.has(pair.white),
-            "A bye must be a scheduled Berger bye or belong " +
-            "to the current Swiss field."
+            pair.white === count,
+            "The first-round bye must go to the lowest-rated player."
           );
-
-          const eligibleByeIds = minimumByeCandidates(
-            plan.swissIds,
-            id => previousByeCounts.get(id)
-          );
-
-          requireCondition(
-            eligibleByeIds.includes(pair.white),
-            "A Swiss pairing bye must go to a player with " +
-            "the fewest previous byes in the current Swiss field."
-          );
-
-          if (round.number === 1) {
-            requireCondition(
-              pair.white === count,
-              "The first-round bye must go to the lowest-rated player."
-            );
-          }
-
-          byesThisRound++;
         }
 
-        byeCounts.set(
-          pair.white,
-          byeCounts.get(pair.white) + 1
-        );
+        if (round.number <= 5) {
+          requireCondition(
+            s.groups[groupOf.get(pair.white)].kind === "swiss",
+            "A six-player Berger group cannot contain a bye."
+          );
+        }
 
         continue;
       }
 
       requireCondition(
         ids.has(pair.black) &&
-        active.has(pair.black) &&
         pair.black !== pair.white &&
         !used.has(pair.black),
-        "Invalid, inactive, or duplicated Black player."
+        "Invalid or duplicated Black player."
       );
 
       used.add(pair.black);
@@ -2975,63 +2037,71 @@ function validateTournament(s) {
         "Invalid or missing game result."
       );
 
-      const bergerGame = isBergerGame(s, round, pair);
-
-      if (bergerGame) {
-        const key = `${pair.white}/${pair.black}`;
+      if (pair.result === "p") {
+        requireCondition(
+          isBergerGame(s, round, pair),
+          "Only a Berger game may have a postponed result."
+        );
 
         requireCondition(
-          expectedBergerPairs.has(key),
-          "A Berger pairing or color differs from the fixed draw."
+          !s.finished && s.rounds.length <= 5,
+          "All postponed Berger games must be resolved before " +
+          "Round 6 or tournament completion."
         );
+      }
 
-        expectedBergerPairs.delete(key);
-      } else {
+      const meetingKey = [
+        Math.min(pair.white, pair.black),
+        Math.max(pair.white, pair.black)
+      ].join("/");
+
+      requireCondition(
+        !meetings.has(meetingKey),
+        "The file contains a rematch."
+      );
+
+      meetings.add(meetingKey);
+
+      let isSwissGame = round.number > 5;
+
+      if (round.number <= 5) {
+        const whiteGroup = groupOf.get(pair.white);
+        const blackGroup = groupOf.get(pair.black);
+
         requireCondition(
-          swiss.has(pair.white) && swiss.has(pair.black),
-          "A pairing crosses the retained Berger/Swiss boundary."
+          whiteGroup === blackGroup,
+          "Players from different initial groups meet before Round 6."
         );
 
-	  const expectedWhite = preferredWhiteId(
-          pair.white,
-          pair.black,
-          colourContext
-        );
+        if (s.groups[whiteGroup].kind === "berger") {
+          const key = `${pair.white}/${pair.black}`;
+
+          requireCondition(
+            expectedBergerPairs.has(key),
+            "A Berger pairing or color differs from the fixed draw."
+          );
+
+          expectedBergerPairs.delete(key);
+        } else {
+          isSwissGame = true;
+        }
+      }
+
+      if (isSwissGame) {
+        const wCount = whiteCounts.get(pair.white);
+        const bCount = whiteCounts.get(pair.black);
+
+        const expectedWhite = wCount === bCount
+          ? Math.max(pair.white, pair.black)
+          : (wCount < bCount ? pair.white : pair.black);
 
         requireCondition(
           pair.white === expectedWhite,
-          "A Swiss colour assignment violates the revised rule."
+          "A Swiss color assignment violates the specified rule."
         );
       }
 
-      if (pair.result === "p") {
-        requireCondition(
-          bergerGame && canEditPairing(s, round, pair),
-          "A postponed game must belong to a still-retained " +
-          "Berger group in an unfinished tournament."
-        );
-      }
-
-      const key = meetingKey(pair.white, pair.black);
-
-      if (previousMeetings.has(key)) {
-        requireCondition(
-          !bergerGame,
-          "A fixed Berger pairing cannot be a rematch."
-        );
-
-        containsSwissRematch = true;
-      }
-
-      /*
-        A forfeit is not a played encounter. An unresolved
-        Berger postponement reserves its scheduled encounter.
-      */
-      if (!isForfeitResult(pair.result)) {
-        meetings.add(key);
-      }
-
-      if (round.closed && !isForfeitResult(pair.result)) {
+      if (round.closed) {
         whiteCounts.set(
           pair.white,
           whiteCounts.get(pair.white) + 1
@@ -3040,57 +2110,11 @@ function validateTournament(s) {
     }
 
     requireCondition(
-      used.size === active.size &&
-      byesThisRound === plan.swissIds.length % 2 &&
+      used.size === count &&
+      byesThisRound === count % 2 &&
       expectedBergerPairs.size === 0,
       "A round is incomplete or has an invalid bye/group structure."
     );
-
-    /*
-      Validate last-resort rematches against this round's
-      actual Swiss field and previous encounter history.
-    */
-    if (containsSwissRematch) {
-      const graph = new Map(
-        plan.swissIds.map(id => [id, new Set()])
-      );
-
-      for (let i = 0; i < plan.swissIds.length; i++) {
-        for (let j = i + 1; j < plan.swissIds.length; j++) {
-          const a = plan.swissIds[i];
-          const b = plan.swissIds[j];
-
-          if (!previousMeetings.has(meetingKey(a, b))) {
-            graph.get(a).add(b);
-            graph.get(b).add(a);
-          }
-        }
-      }
-
-      let eligibleByes = [null];
-
-      if (plan.swissIds.length % 2 !== 0) {
-        eligibleByes = round.number === 1
-          ? [count]
-          : minimumByeCandidates(
-              plan.swissIds,
-              id => previousByeCounts.get(id)
-            );
-      }
-
-      const uniquePairingExists = eligibleByes.some(byeId =>
-        perfectMatching(
-          plan.swissIds.filter(id => id !== byeId),
-          graph
-        ) !== null
-      );
-
-      requireCondition(
-        !uniquePairingExists,
-        "The file contains a Swiss rematch even though a " +
-        "complete pairing without rematches was available."
-      );
-    }
   });
 
   return true;
@@ -3100,14 +2124,8 @@ function validateTournament(s) {
    PREPARED BERGER DRAW AND SETTINGS-PAGE SCHEDULE
    ======================================================================== */
 
-function getPreparedBergerDraw(
-  players,
-  bergerRounds = selectedBergerRounds()
-) {
-  const signature = JSON.stringify({
-    bergerRounds,
-    players
-  });
+function getPreparedBergerDraw(players) {
+  const signature = JSON.stringify(players);
 
   if (
     !preparedBergerDraw ||
@@ -3115,13 +2133,8 @@ function getPreparedBergerDraw(
   ) {
     preparedBergerDraw = {
       signature,
-      bergerRounds,
       players: clone(players),
-      groups: buildGroups(
-        players.length,
-        true,
-        bergerRounds
-      )
+      groups: buildGroups(players.length, true)
     };
   }
 
@@ -3129,10 +2142,6 @@ function getPreparedBergerDraw(
 }
 
 function bergerScheduleHtml(draw) {
-  const bergerRounds = bergerRoundsFor(draw);
-  const table = bergerTableFor(bergerRounds);
-  const boardsPerGroup = (bergerRounds + 1) / 2;
-
   const players = new Map(
     draw.players.map(p => [p.id, p])
   );
@@ -3140,18 +2149,19 @@ function bergerScheduleHtml(draw) {
   const sections = [];
   let bergerIndex = 0;
 
-  draw.groups.forEach((group, groupIndex) => {
-    if (group.kind !== "berger") return;
+  for (
+    let groupIndex = 0;
+    groupIndex < draw.groups.length;
+    groupIndex++
+  ) {
+    const group = draw.groups[groupIndex];
 
-    const firstBoard = bergerIndex * boardsPerGroup + 1;
+    if (group.kind !== "berger") continue;
+
+    const firstBoard = bergerIndex * 3 + 1;
     bergerIndex++;
 
-    const headings = Array.from(
-      {length: boardsPerGroup},
-      (_, index) => `<th>Board ${firstBoard + index}</th>`
-    ).join("");
-
-    const rows = table.map((roundPairs, roundIndex) => {
+    const rows = BERGER_SIX.map((roundPairs, roundIndex) => {
       const cells = roundPairs.map(([whiteNo, blackNo]) => {
         const white = players.get(group.members[whiteNo - 1]);
         const black = players.get(group.members[blackNo - 1]);
@@ -3163,7 +2173,7 @@ function bergerScheduleHtml(draw) {
               ${white.tpn}. ${escapeHtml(white.name)}
             </div>
             <div class="scheduled-player">
-              <strong>B:</strong>
+              <strong>B:&nbsp;</strong>
               ${black.tpn}. ${escapeHtml(black.name)}
             </div>
           </td>
@@ -3187,14 +2197,16 @@ function bergerScheduleHtml(draw) {
           <thead>
             <tr>
               <th class="center">Round</th>
-              ${headings}
+              <th>Board ${firstBoard}</th>
+              <th>Board ${firstBoard + 1}</th>
+              <th>Board ${firstBoard + 2}</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
         </table>
       </section>
     `);
-  });
+  }
 
   if (sections.length === 0) {
     return `
@@ -3218,10 +2230,7 @@ function bergerScheduleHtml(draw) {
     <p class="hint">
       These groups include all required exchanges.
       This randomized draw will also be used when the tournament
-      starts, provided the player roster and Berger-round
-      selection remain unchanged. A later withdrawal can cancel
-      future Berger pairings in the affected group and subsequent
-      groups, subject to the isolated-last-group exception.
+      starts, provided the player roster remains unchanged.
     </p>
 
     ${sections.join("")}
@@ -3245,19 +2254,10 @@ function showBergerPairings() {
       "The internal startup checks failed."
     );
 
-    const bergerRounds = selectedBergerRounds();
     const players = parsePlayers();
+    getLayout(players.length);
 
-    getLayout(players.length, bergerRounds);
-
-    const draw = getPreparedBergerDraw(
-      players,
-      bergerRounds
-    );
-
-    document.querySelector("#berger-pairings-dialog h2")
-      .textContent =
-        `Berger Pairings: Rounds 1–${bergerRounds}`;
+    const draw = getPreparedBergerDraw(players);
 
     $("berger-pairings-content").innerHTML =
       bergerScheduleHtml(draw);
@@ -3271,201 +2271,38 @@ function showBergerPairings() {
 function printBergerPairings() {
   const dialog = $("berger-pairings-dialog");
 
-  if (!dialog.open || !preparedBergerDraw) return;
+  if (!dialog.open) return;
 
   const content = $("berger-pairings-content").innerHTML;
-  const bergerRounds = preparedBergerDraw.bergerRounds;
   const tournamentName =
     $("tournament-name").value.trim() || "Berger-Swiss Tournament";
 
   dialog.close();
 
   openPrintView(
-    `Berger Pairings: Rounds 1–${bergerRounds}`,
+    "Berger Pairings: Rounds 1–5",
     content,
     tournamentName
   );
 }
 
 /* ========================================================================
-   WITHDRAWAL INTERFACE
+   PER-PAIRING EDIT PERMISSIONS
    ======================================================================== */
 
-function withdrawalCandidates(s) {
-  return s.players.filter(p => p.withdrawnFrom == null);
-}
+function canEditPairing(s, round, pair) {
+  if (!s || s.finished || !round || !pair) return false;
+  if (pair.black === null) return false;
 
-function openWithdrawDialog() {
-  if (
-    !state ||
-    state.finished ||
-    state.viewRound !== state.rounds.length
-  ) {
-    return;
+  if (!round.closed) {
+    return round.number === s.rounds.length;
   }
 
-  showMessage("");
-
-  try {
-    const current = state.rounds[state.rounds.length - 1];
-
-    requireCondition(
-      !current.closed &&
-      current.number < state.totalRounds,
-      "There is no later planned round from which to withdraw a player."
-    );
-
-    const candidates = withdrawalCandidates(state);
-
-    requireCondition(
-      candidates.length > 0,
-      "Every player already has a recorded withdrawal."
-    );
-
-    const groupOf = groupIndexMap(state);
-    const select = $("withdraw-player");
-
-    select.innerHTML = "";
-
-    for (const p of candidates) {
-      const option = document.createElement("option");
-      const index = groupOf.get(p.id);
-
-      option.value = p.id;
-      option.textContent =
-        `${p.tpn}. ${p.name} (${groupName(state.groups[index], index)})`;
-
-      select.appendChild(option);
-    }
-
-    $("withdraw-description").textContent =
-      `The selected player remains in Round ${current.number} ` +
-      `and is excluded from Round ${current.number + 1} onward.`;
-
-    updateWithdrawalExplanation();
-    $("withdraw-dialog").showModal();
-  } catch (error) {
-    showMessage(error.message);
-  }
-}
-
-function updateWithdrawalExplanation() {
-  if (!state) return;
-
-  const id = Number($("withdraw-player").value);
-  const player = state.players.find(p => p.id === id);
-
-  if (!player) {
-    $("withdraw-effect").textContent = "";
-    return;
+  if (s.rounds.length > 5 || round.number > 5) {
+    return false;
   }
 
-  const nextRound = state.rounds.length + 1;
-  const groupOf = groupIndexMap(state);
-  const index = groupOf.get(id);
-
-  const draft = clone(state);
-  draft.players.find(p => p.id === id).withdrawnFrom = nextRound;
-
-  let explanation;
-
-  if (nextRound > bergerRoundsFor(state)) {
-    explanation =
-      "All other active players continue in the combined Swiss field.";
-  } else if (groupUsesBerger(draft, index, nextRound)) {
-    explanation =
-      `${groupName(draft.groups[index], index)} will retain its ` +
-      "remaining Berger schedule. Active players scheduled to " +
-      "face a withdrawn player will receive one-point pairing " +
-      "byes. Games scheduled between two withdrawn players " +
-      "will be omitted. Earlier Berger groups remain unchanged.";
-  } else if (groupUsesBerger(state, index, nextRound)) {
-    explanation =
-      `${groupName(state.groups[index], index)} and every subsequent ` +
-      "group will form one Swiss field. Earlier unaffected Berger " +
-      "groups will retain their schedules.";
-  } else {
-    explanation =
-      "The player leaves the existing Swiss field. Earlier retained " +
-      "Berger groups are not converted by this withdrawal.";
-  }
-
-  const remaining = activePlayerIds(draft, nextRound).length;
-
-  if (remaining < 2) {
-    explanation +=
-      " Fewer than two active players will remain, so the tournament " +
-      "will finish when the current round is submitted.";
-  } else {
-    explanation +=
-      ` Next-round plan: ${planDescription(draft, nextRound)}`;
-  }
-
-  explanation +=
-    " Scores and histories are retained. Any postponed games in " +
-    "groups entering Swiss must be resolved before their first " +
-    "Swiss round.";
-
-  $("withdraw-effect").textContent = explanation;
-}
-
-function confirmWithdrawal() {
-  if (
-    !state ||
-    state.finished ||
-    state.viewRound !== state.rounds.length
-  ) {
-    return;
-  }
-
-  showMessage("");
-
-  try {
-    const current = state.rounds[state.rounds.length - 1];
-
-    requireCondition(
-      !current.closed && current.number < state.totalRounds,
-      "Withdrawal is not available for this round."
-    );
-
-    const id = Number($("withdraw-player").value);
-    const player = state.players.find(p => p.id === id);
-
-    requireCondition(
-      player && player.withdrawnFrom == null,
-      "Select an active player without an existing withdrawal."
-    );
-
-    const nextRound = current.number + 1;
-
-    if (!confirm(
-      `Withdraw ${player.name} after Round ${current.number}?\n\n` +
-      `The player will not be paired from Round ${nextRound} onward. ` +
-      "Current pairings and results will be retained. This action " +
-      "cannot be reversed in this interface."
-    )) {
-      return;
-    }
-
-    const draft = clone(state);
-    draft.players.find(p => p.id === id).withdrawnFrom = nextRound;
-
-    validateTournament(draft);
-
-    state = draft;
-    $("withdraw-dialog").close();
-
-    autosave();
-    renderTournament();
-
-    showMessage(
-      `${player.name} will withdraw after Round ${current.number}. ` +
-      `Round ${current.number} has not been re-paired. ` +
-      `From Round ${nextRound}: ${planDescription(state, nextRound)}`
-    );
-  } catch (error) {
-    showMessage(error.message);
-  }
+  return isBergerGame(s, round, pair);
 }
 
 /* ========================================================================
@@ -3481,10 +2318,8 @@ function startTournament() {
       "The internal startup checks failed. The tournament cannot start."
     );
 
-    const bergerRounds = selectedBergerRounds();
     const players = parsePlayers();
-
-    getLayout(players.length, bergerRounds);
+    getLayout(players.length);
 
     const extraText = $("extra-rounds").value.trim();
 
@@ -3494,19 +2329,14 @@ function startTournament() {
     );
 
     const extraRounds = Number(extraText);
-    const totalRounds = bergerRounds + extraRounds;
+    const totalRounds = 5 + extraRounds;
     const maximum = maximumTotalRounds(players.length);
 
     requireCondition(
-      Number.isSafeInteger(extraRounds) &&
       totalRounds <= maximum,
-      `With ${players.length} players, this program permits at most ` +
-      `${maximum} total rounds. Select at most ` +
-      `${maximum - bergerRounds} extra rounds. ` +
-      "Rematches are allowed only as a last resort; repeat byes " +
-      "are allowed only when every remaining Swiss player has " +
-      "already received one, and only players with the fewest " +
-      "previous byes are eligible."
+      `With ${players.length} players, the theoretical maximum is ` +
+      `${maximum} total rounds under the no-rematch and ` +
+      `no-second-bye rules. Select at most ${maximum - 5} extra rounds.`
     );
 
     const draft = {
@@ -3514,14 +2344,10 @@ function startTournament() {
       version: FILE_VERSION,
       name: $("tournament-name").value.trim() ||
         "Berger-Swiss Tournament",
-      bergerRounds,
       extraRounds,
       totalRounds,
-      retainLastBergerSchedule: true,
       players,
-      groups: clone(
-        getPreparedBergerDraw(players, bergerRounds).groups
-      ),
+      groups: clone(getPreparedBergerDraw(players).groups),
       rounds: [],
       viewRound: 1,
       finished: false
@@ -3600,35 +2426,54 @@ function submitRound(stopAfterRound = false) {
     );
 
     /*
-      Transactional submission:
-      generation failure retains the original round and results.
+      Apply submission transactionally. If validation or generation
+      fails, retain the original state and all entered results.
     */
     const draft = clone(state);
     draft.rounds[draft.rounds.length - 1].closed = true;
 
-    const nextNumber = draft.rounds.length + 1;
-    const tooFewActive =
-      activePlayerIds(draft, nextNumber).length < 2;
-
     const finishing =
       stopAfterRound ||
-      draft.rounds.length === draft.totalRounds ||
-      tooFewActive;
+      draft.rounds.length === draft.totalRounds;
+
+    const enteringCombinedSwiss =
+      !finishing &&
+      draft.rounds.length === 5;
+
+    if (finishing || enteringCombinedSwiss) {
+      const postponedGames = postponedGameLocations(draft);
+
+      requireCondition(
+        postponedGames.length === 0,
+        (
+          enteringCombinedSwiss
+            ? "Round 6 cannot be generated until all postponed " +
+              "Berger games have proper results."
+            : "The tournament cannot finish until all postponed " +
+              "Berger games have proper results."
+        ) +
+        "\n\nUnresolved games:\n" +
+        postponedGames.join("\n") +
+        "\n\nUse Previous to open the relevant round and replace " +
+        "p with 1-0, ½-½, or 0-1. Then return to the latest round " +
+        "and submit again."
+      );
+    }
 
     if (finishing) {
-      requireResolvedPostponements(draft);
       draft.finished = true;
     } else {
+      const nextNumber = draft.rounds.length + 1;
+
       try {
         draft.rounds.push(makeRound(draft, nextNumber));
       } catch (error) {
         throw new Error(
           `Round ${nextNumber} could not be generated.\n` +
           error.message + "\n\n" +
-          "Your entered results and recorded withdrawals have been " +
-          "retained, but the current round has not been submitted. " +
-          "You may resolve any blocking postponed games, save the " +
-          'tournament, or select "Finish After This Round".'
+          "Your entered results have been retained, but the current " +
+          "round has not been submitted. You may save the tournament " +
+          'or select "Finish After This Round".'
         );
       }
     }
@@ -3639,17 +2484,6 @@ function submitRound(stopAfterRound = false) {
     state = draft;
     autosave();
     renderTournament();
-
-    if (
-      tooFewActive &&
-      !stopAfterRound &&
-      current.number < state.totalRounds
-    ) {
-      showMessage(
-        "The tournament has finished because fewer than two active " +
-        "players remain for the next round."
-      );
-    }
   } catch (error) {
     showMessage(error.message);
   }
@@ -3690,33 +2524,15 @@ function changeViewedRound(change) {
    ======================================================================== */
 
 function pairGroupLabel(s, round, pair, groupOf) {
+  if (round.number > 5) return "Swiss";
+
   const index = groupOf.get(pair.white);
-
-  if (
-    groupUsesBerger(s, index, round.number) &&
-    (
-      pair.black === null ||
-      groupOf.get(pair.black) === index
-    )
-  ) {
-    return groupName(s.groups[index], index);
-  }
-
-  if (round.number > bergerRoundsFor(s)) return "Swiss";
-
-  const initialBergerCount = s.groups.filter(
-    group => group.kind === "berger"
-  ).length;
-
-  return swissStartIndex(s, round.number) < initialBergerCount
-    ? "Enlarged Swiss"
-    : "Bottom Swiss";
+  return groupName(s.groups[index], index);
 }
 
-function playerLabel(p, s = null) {
+function playerLabel(p) {
   return `${escapeHtml(p.name)} ` +
-    `<span class="nowrap">(${p.tpn} / ${p.rating})</span>` +
-    (s ? withdrawalBadgeHtml(s, p) : "");
+    `<span class="nowrap">(${p.tpn} / ${p.rating})</span>`;
 }
 
 function renderPairings() {
@@ -3737,21 +2553,6 @@ function renderPairings() {
         : players.get(pair.black);
 
       const editable = canEditPairing(state, round, pair);
-
-      const currentGroup = pairGroupLabel(
-        state, round, pair, groupOf
-      );
-
-      const previousGroup = index > 0
-        ? pairGroupLabel(
-            state, round, round.pairings[index - 1], groupOf
-          )
-        : null;
-
-      const separatorClass =
-        index > 0 && currentGroup !== previousGroup
-          ? ' class="berger-group-start"'
-          : "";
 
       let resultHtml;
 
@@ -3783,15 +2584,16 @@ function renderPairings() {
       }
 
       return `
-        <tr${separatorClass}>
+        <tr>
           <td class="center">${index + 1}</td>
-          <td>${escapeHtml(currentGroup)}</td>
           <td>
-            ${playerLabel(white, state)}
-            ${rematchBadgeHtml(state, round, pair)}
+            ${escapeHtml(
+              pairGroupLabel(state, round, pair, groupOf)
+            )}
           </td>
+          <td>${playerLabel(white)}</td>
           <td class="center">${resultHtml}</td>
-          <td>${black ? playerLabel(black, state) : "BYE"}</td>
+          <td>${black ? playerLabel(black) : "BYE"}</td>
         </tr>
       `;
     }).join("");
@@ -3802,39 +2604,20 @@ function renderPairings() {
     state.rounds.length === state.totalRounds
       ? "Finish Tournament"
       : "Submit Results and Generate Next Round";
-
-  $("withdraw-button").disabled =
-    state.rounds.length >= state.totalRounds ||
-    withdrawalCandidates(state).length === 0;
 }
 
 function standingsRows(s, context) {
   const groupOf = groupIndexMap(s);
-  const players = playerMap(s);
-  const ordered = sortedStats(context);
 
-  return ordered.map((p, index) => {
+  return sortedStats(context).map((p, index) => {
     const groupIndex = groupOf.get(p.id);
     const colors = p.history.map(h => h.color).join("");
-    const original = players.get(p.id);
-
-    const previousGroupIndex = index > 0
-      ? groupOf.get(ordered[index - 1].id)
-      : null;
-
-    const separatorClass =
-      index > 0 && groupIndex !== previousGroupIndex
-        ? ' class="berger-group-start"'
-        : "";
 
     return `
-      <tr${separatorClass}>
+      <tr>
         <td class="center">${index + 1}</td>
         <td class="center">${p.tpn}</td>
-        <td>
-          ${escapeHtml(p.name)}
-          ${withdrawalBadgeHtml(s, original)}
-        </td>
+        <td>${escapeHtml(p.name)}</td>
         <td class="center">${p.rating}</td>
         <td>
           ${escapeHtml(groupName(s.groups[groupIndex], groupIndex))}
@@ -3843,6 +2626,8 @@ function standingsRows(s, context) {
           <strong>${formatScore(p.score2)}</strong>
         </td>
         <td class="center">${p.wnt.toFixed(2)}</td>
+        <td class="center">${p.whites}</td>
+        <td class="center">${p.blacks}</td>
         <td class="colors">${escapeHtml(colors)}</td>
       </tr>
     `;
@@ -3851,95 +2636,65 @@ function standingsRows(s, context) {
 
 function renderGroups() {
   const players = playerMap(state);
-  const currentNumber = state.rounds.length;
 
   $("groups-content").innerHTML =
-    state.groups.map((group, index) => {
-      let status;
+    state.groups.map((group, index) => `
+      <h3>${escapeHtml(groupName(group, index))}</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="center">
+                ${group.kind === "berger" ? "Berger No." : "Order"}
+              </th>
+              <th class="center">TPN</th>
+              <th>Player</th>
+              <th class="center">Rating</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${group.members.map((id, localIndex) => {
+              const p = players.get(id);
 
-      if (currentNumber > bergerRoundsFor(state)) {
-        status = "Active members now belong to the combined Swiss field.";
-      } else if (groupUsesBerger(state, index, currentNumber)) {
-        status = "This group currently retains its Berger schedule.";
-      } else {
-        status = "Active members currently belong to the Swiss field.";
-      }
-
-      return `
-        <h3>${escapeHtml(groupName(group, index))}</h3>
-        <p class="hint">${escapeHtml(status)}</p>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th class="center">
-                  ${group.kind === "berger" ? "Berger No." : "Order"}
-                </th>
-                <th class="center">TPN</th>
-                <th>Player</th>
-                <th class="center">Rating</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${group.members.map((id, localIndex) => {
-                const p = players.get(id);
-
-                return `
-                  <tr>
-                    <td class="center">${localIndex + 1}</td>
-                    <td class="center">${p.tpn}</td>
-                    <td>
-                      ${escapeHtml(p.name)}
-                      ${withdrawalBadgeHtml(state, p)}
-                    </td>
-                    <td class="center">${p.rating}</td>
-                  </tr>
-                `;
-              }).join("")}
-            </tbody>
-          </table>
-        </div>
-      `;
-    }).join("");
+              return `
+                <tr>
+                  <td class="center">${localIndex + 1}</td>
+                  <td class="center">${p.tpn}</td>
+                  <td>${escapeHtml(p.name)}</td>
+                  <td class="center">${p.rating}</td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>
+    `).join("");
 }
 
 function renderTournament() {
-  updateFormatText();
-
   $("setup-section").hidden = true;
   $("tournament-section").hidden = false;
 
+  const layout = getLayout(state.players.length);
   const round = state.rounds[state.viewRound - 1];
-  const latestNumber = state.rounds.length;
   const context = computeStats(state);
   const postponedCount = postponedGameLocations(state).length;
-
-  const currentActive =
-    activePlayerIds(state, latestNumber).length;
-
-  const pendingWithdrawals = state.players.filter(p =>
-    p.withdrawnFrom === latestNumber + 1
-  );
 
   $("tournament-heading").textContent = state.name;
 
   $("tournament-summary").textContent =
-    `${state.players.length} registered players. ` +
-    `${currentActive} active in the latest published round. ` +
-    `Planned rounds: ${bergerRoundsFor(state)} + ` +
-    `${state.extraRounds} = ${state.totalRounds}. ` +
+    `${state.players.length} players. ` +
+    `${layout.bergerCount} Berger groups` +
+    (layout.tailSize
+      ? ` plus ${layout.tailSize} bottom Swiss players.`
+      : ".") +
+    ` Planned rounds: 5 + ${state.extraRounds} = ${state.totalRounds}.` +
     (state.finished
-      ? `Finished after ${context.N} rounds.`
-      : `Submitted rounds: ${context.N}.`) +
+      ? ` Finished after ${context.N} rounds.`
+      : ` Submitted rounds: ${context.N}.`) +
     (postponedCount > 0
       ? ` Unresolved postponed games: ${postponedCount}.`
-      : "") +
-    (
-      !state.finished && pendingWithdrawals.length > 0
-        ? ` Withdrawals effective next round: ` +
-          `${pendingWithdrawals.length}.`
-        : ""
-    );
+      : "");
 
   $("round-heading").textContent =
     `Round ${state.viewRound} of ${state.totalRounds}`;
@@ -3948,43 +2703,39 @@ function renderTournament() {
   $("following-button").disabled =
     state.viewRound === state.rounds.length;
 
+  const phaseText = round.number <= 5
+    ? "Initial group phase"
+    : "Combined Swiss phase";
+
+  const bergerCorrectionsAllowed =
+    !state.finished && state.rounds.length <= 5;
+
   let editingDescription;
 
-  if (state.finished) {
-    editingDescription = "The tournament has finished. Results are locked.";
-  } else if (!round.closed) {
+  if (!round.closed) {
+    editingDescription = bergerCorrectionsAllowed
+      ? "Enter all results, then submit the round. Berger games " +
+        "may be marked p for postponed. Use Previous to correct " +
+        "submitted Berger games. All postponed games must be " +
+        "resolved before Round 6 or tournament completion. " +
+        "Submitted bottom Swiss results remain locked."
+      : "Enter all results, then submit the round. Results in " +
+        "previously submitted rounds are locked.";
+  } else if (bergerCorrectionsAllowed) {
     editingDescription =
-      "Enter all results, then submit the round. Use explicit forfeit " +
-      "results for unplayed games. Only Berger games may be postponed. " +
-      "Withdrawals affect the next unpaired round, not this round.";
+      "Berger results in this submitted round can be corrected. " +
+      "Replace p with a proper result when a postponed game is " +
+      "played. Bottom Swiss results are locked. Corrections " +
+      "immediately update scores and WNT.";
   } else {
-    const editableBerger = round.pairings.some(pair =>
-      canEditPairing(state, round, pair)
-    );
-
-    editingDescription = editableBerger
-      ? "Results belonging to still-retained Berger groups may be " +
-        "corrected. Submitted Swiss results and results from groups " +
-        "already converted to Swiss are locked."
-      : "Submitted results in this round are locked.";
-  }
-
-  let nextPlan = "";
-
-  if (
-    !state.finished &&
-    pendingWithdrawals.length > 0 &&
-    latestNumber < state.totalRounds
-  ) {
-    nextPlan =
-      ` Next-round plan: ${planDescription(state, latestNumber + 1)}`;
+    editingDescription =
+      "Submitted results are locked because the tournament has " +
+      "entered the combined Swiss phase or has finished.";
   }
 
   $("round-description").textContent =
-    `${planDescription(state, round.number)} ` +
-    `${editingDescription} ` +
-    "TPNs remain tied to the original rating order." +
-    nextPlan;
+    `${phaseText}. ${editingDescription} ` +
+    "TPNs remain tied to the original rating order.";
 
   $("standings-heading").textContent = state.finished
     ? `Final Standings After Round ${context.N}`
@@ -3993,14 +2744,13 @@ function renderTournament() {
       : `Current Standings After Round ${context.N}`;
 
   $("standings-description").textContent =
-    "Standings include all registered players and all submitted " +
-    "rounds, even when an earlier round is viewed. Withdrawn players " +
-    "retain completed scores and results. Unsubmitted results do not " +
-    "affect scores or WNT. Byes, forfeits, and unresolved postponed " +
-    "games add no direct WNT. W/B totals include scheduled colours " +
-    "of submitted postponed Berger games, but exclude forfeits. " +
-    "Colours: W = White, B = Black, - = bye, F = forfeit. " +
-    "WNT is sorted at full precision before the TPN tie-break.";
+    "Standings show all submitted rounds, even when an earlier " +
+    "round is being viewed. Unsubmitted results do not affect " +
+    "scores or WNT. Postponed games give both players zero points " +
+    "and no direct WNT. W/B totals include scheduled colours of " +
+    "submitted postponed Berger games. Corrections to submitted " +
+    "Berger results take effect immediately. WNT is sorted at " +
+    "full precision before the TPN tie-break.";
 
   renderPairings();
   $("standings-body").innerHTML = standingsRows(state, context);
@@ -4058,14 +2808,6 @@ function installLoadedTournament(loaded) {
   validateTournament(loaded);
 
   state = loaded;
-  preparedBergerDraw = null;
-
-  const bergerRounds = bergerRoundsFor(loaded);
-
-  $(`berger-rounds-${bergerRounds}`).checked = true;
-  $("extra-rounds").value = loaded.extraRounds;
-  $("tournament-name").value = loaded.name;
-
   showMessage("");
   $("resume-banner").hidden = true;
 
@@ -4091,7 +2833,9 @@ function resumeTournament() {
 }
 
 function discardAutosave() {
-  if (!confirm("Discard the automatically saved tournament?")) return;
+  if (!confirm("Discard the automatically saved tournament?")) {
+    return;
+  }
 
   removeAutosave();
   $("resume-banner").hidden = true;
@@ -4142,7 +2886,6 @@ function newTournament() {
   $("resume-banner").hidden = true;
 
   showMessage("");
-  updateFormatText();
   updateRosterInfo();
 }
 
@@ -4168,61 +2911,38 @@ function updateRosterInfo() {
     .filter(line => line.trim())
     .length;
 
-  const bergerRounds = selectedBergerRounds();
-  const details = formatDetails(bergerRounds);
-
   if (count === 0) {
-    $("roster-info").textContent =
-      `No players entered. The ${bergerRounds}-round format ` +
-      `requires at least ${details.minimumPlayers} players.`;
-
+    $("roster-info").textContent = "No players entered.";
     return;
   }
 
   try {
-    const layout = getLayout(count, bergerRounds);
+    const layout = getLayout(count);
 
     let exchangeNote = "";
 
     if (layout.bergerCount % 2 === 1) {
       exchangeNote = layout.tailSize > 0
-        ? ` The last Berger group exchanges positions ` +
-          `${positionList(details.lastBergerDown)} with bottom ` +
-          `Swiss positions ${positionList(details.bottomSwissUp)}.`
+        ? " The last Berger group exchanges positions 1, 3, 5 " +
+          "with bottom Swiss positions 2, 4, 6."
         : " The final unpaired Berger group retains its membership.";
     }
 
     $("roster-info").textContent =
-      `${count} players: ${layout.bergerCount} ` +
-      `${details.size}-player Berger groups` +
-      (
-        layout.tailSize
-          ? ` and a ${layout.tailSize}-player bottom Swiss group.`
-          : "."
-      ) +
+      `${count} players: ${layout.bergerCount} Berger groups` +
+      (layout.tailSize
+        ? ` and a ${layout.tailSize}-player bottom Swiss group.`
+        : ".") +
       exchangeNote +
-      " Maximum permitted extra rounds: " +
-      `${maximumTotalRounds(count) - bergerRounds}.`;
+      ` Maximum theoretical extra rounds: ` +
+      `${maximumTotalRounds(count) - 5}.`;
   } catch (error) {
     $("roster-info").textContent =
-      `${count} players: enter at least ` +
-      `${details.minimumPlayers} players for ` +
-      `${bergerRounds} Berger rounds.`;
+      `${count} players: enter at least seven players.`;
   }
 }
 
 $("player-input").addEventListener("input", updateRosterInfo);
-
-document.querySelectorAll(
-  'input[name="berger-rounds"]'
-).forEach(input => {
-  input.addEventListener("change", () => {
-    preparedBergerDraw = null;
-    showMessage("");
-    updateFormatText();
-    updateRosterInfo();
-  });
-});
 
 $("txt-input").addEventListener("change", function(event) {
   const file = event.target.files[0];
@@ -4261,7 +2981,8 @@ $("json-input").addEventListener("change", function(event) {
 
   reader.onload = () => {
     try {
-      installLoadedTournament(JSON.parse(String(reader.result)));
+      const loaded = JSON.parse(String(reader.result));
+      installLoadedTournament(loaded);
     } catch (error) {
       showMessage(
         "Could not load the tournament:\n" + error.message
@@ -4315,39 +3036,22 @@ function printPairings() {
       ? null
       : players.get(pair.black);
 
-    const currentGroup = pairGroupLabel(
-      state, round, pair, groupOf
-    );
-
-    const previousGroup = index > 0
-      ? pairGroupLabel(
-          state, round, round.pairings[index - 1], groupOf
-        )
-      : null;
-
-    const separatorClass =
-      index > 0 && currentGroup !== previousGroup
-        ? ' class="berger-group-start"'
-        : "";
-
     return `
-      <tr${separatorClass}>
+      <tr>
         <td class="center">${index + 1}</td>
-        <td>${escapeHtml(currentGroup)}</td>
         <td>
-          ${playerLabel(white, state)}
-          ${rematchBadgeHtml(state, round, pair)}
+          ${escapeHtml(pairGroupLabel(state, round, pair, groupOf))}
         </td>
+        <td>${playerLabel(white)}</td>
         <td class="center">
           ${black ? "______" : "1-0 (Bye)"}
         </td>
-        <td>${black ? playerLabel(black, state) : "BYE"}</td>
+        <td>${black ? playerLabel(black) : "BYE"}</td>
       </tr>
     `;
   }).join("");
 
   openPrintView(`Round ${round.number} Pairings`, `
-    <p>${escapeHtml(planDescription(state, round.number))}</p>
     <table>
       <thead>
         <tr>
@@ -4383,6 +3087,8 @@ function printStandings() {
           <th>Initial Group</th>
           <th>Score</th>
           <th>WNT</th>
+          <th>W</th>
+          <th>B</th>
           <th>Colors</th>
         </tr>
       </thead>
@@ -4390,130 +3096,40 @@ function printStandings() {
     </table>
     <p>
       Order: score, WNT, TPN.
-      Colors: W = White, B = Black, - = bye, F = forfeit.
+      Colors: W = White, B = Black, - = bye.
       Scheduled colours of submitted postponed Berger games
-      are included in the colour totals. Forfeits are excluded.
-      Withdrawn players retain their completed scores and results.
+      are included in the colour totals.
     </p>
   `);
 }
 
 /* ========================================================================
-   STARTUP SELF-CHECK HELPERS
-   ======================================================================== */
-
-function makeTestTournament(
-  count,
-  extraRounds = 2,
-  bergerRounds = 5
-) {
-  return {
-    app: APP_ID,
-    version: FILE_VERSION,
-    name: "Internal test",
-    bergerRounds,
-    extraRounds,
-    totalRounds: bergerRounds + extraRounds,
-    retainLastBergerSchedule: true,
-    players: Array.from({length: count}, (_, index) => ({
-      id: index + 1,
-      tpn: index + 1,
-      name: `Test Player ${index + 1}`,
-      rating: 2800 - index,
-      withdrawnFrom: null
-    })),
-    groups: buildGroups(count, false, bergerRounds),
-    rounds: [],
-    viewRound: 1,
-    finished: false
-  };
-}
-
-function fillTestRound(round, result = "0.5-0.5") {
-  round.pairings.forEach(pair => {
-    if (pair.black !== null) pair.result = result;
-  });
-}
-
-function requireTestRejection(action, message) {
-  let rejected = false;
-
-  try {
-    action();
-  } catch (error) {
-    rejected = true;
-  }
-
-  requireCondition(rejected, message);
-}
-
-function makePairingTestContext(count) {
-  return {
-    byId: new Map(
-      Array.from({length: count}, (_, index) => {
-        const id = index + 1;
-
-        return [id, {
-          id,
-          tpn: id,
-          score2: 0,
-          wntKey: 0,
-          whites: 0,
-          blacks: 0,
-          byes: 0,
-          opponents: new Set(),
-          history: []
-        }];
-      })
-    )
-  };
-}
-
-function addTestMeeting(context, a, b) {
-  context.byId.get(a).opponents.add(b);
-  context.byId.get(b).opponents.add(a);
-}
-
-/* ========================================================================
-   LAYOUT AND BERGER TABLE CHECKS
+   STARTUP SELF-CHECKS
    ======================================================================== */
 
 function runLayoutChecks() {
-  for (const rounds of [5, 7]) {
-    const details = formatDetails(rounds);
+  /*
+    Every integer field size from 7 through 120 must be supported.
+    Check total coverage and the required tail size.
+  */
+  for (let count = 7; count <= 120; count++) {
+    const layout = getLayout(count);
+    const groups = buildGroups(count, false);
+    const allMembers = groups.flatMap(group => group.members);
 
-    for (
-      let count = details.minimumPlayers;
-      count <= 120;
-      count++
-    ) {
-      const layout = getLayout(count, rounds);
-      const groups = buildGroups(count, false, rounds);
-      const allMembers = groups.flatMap(group => group.members);
-
-      requireCondition(
-        layout.bergerPlayers + layout.tailSize === count &&
-        Number.isInteger(layout.bergerCount) &&
-        layout.bergerCount >= 0 &&
-        (
-          layout.tailSize === 0 ||
-          (
-            layout.tailSize >= details.minimumTail &&
-            layout.tailSize <= details.maximumTail
-          )
-        ) &&
-        allMembers.length === count &&
-        new Set(allMembers).size === count &&
-        [...allMembers].sort((a, b) => a - b)
-          .every((id, index) => id === index + 1),
-        `Self-check failed: ${count}-player, ` +
-        `${rounds}-round group coverage.`
-      );
-    }
-
-    requireTestRejection(
-      () => getLayout(details.minimumPlayers - 1, rounds),
-      `Self-check failed: ${rounds}-round minimum field size.`
+    requireCondition(
+      layout.bergerPlayers + layout.tailSize === count &&
+      Number.isInteger(layout.bergerCount) &&
+      layout.bergerCount >= 0 &&
+      (
+        layout.tailSize === 0 ||
+        (layout.tailSize >= 7 && layout.tailSize <= 11)
+      ) &&
+      allMembers.length === count &&
+      new Set(allMembers).size === count &&
+      [...allMembers].sort((a, b) => a - b)
+        .every((id, index) => id === index + 1),
+      `Self-check failed: ${count}-player group coverage.`
     );
   }
 
@@ -4522,7 +3138,7 @@ function runLayoutChecks() {
   requireCondition(
     layout33.bergerCount === 4 &&
     layout33.tailSize === 9,
-    "Self-check failed: original 33-player layout."
+    "Self-check failed: 33-player layout."
   );
 
   const groups12 = buildGroups(12, false);
@@ -4530,184 +3146,81 @@ function runLayoutChecks() {
   requireCondition(
     groups12[0].members.join(",") === "1,3,5,7,9,11" &&
     groups12[1].members.join(",") === "2,4,6,8,10,12",
-    "Self-check failed: six-player paired interchange."
+    "Self-check failed: paired Berger interchange."
   );
 
+  /*
+    Thirty players are now valid: five Berger groups.
+    The final group has no Swiss group with which to exchange.
+  */
+  const layout30 = getLayout(30);
   const groups30 = buildGroups(30, false);
 
   requireCondition(
+    layout30.bergerCount === 5 &&
+    layout30.tailSize === 0 &&
     groups30.length === 5 &&
     groups30[4].members.join(",") === "25,26,27,28,29,30",
-    "Self-check failed: six-player unpaired final group."
+    "Self-check failed: 30 players with an unpaired Berger group."
   );
 
+  /*
+    Thirteen players:
+      Berger before exchange: 1,2,3,4,5,6
+      Swiss before exchange:  7,8,9,10,11,12,13
+
+    Swap Berger 1,3,5 with Swiss 8,10,12.
+  */
   const groups13 = buildGroups(13, false);
 
   requireCondition(
-    groups13[0].members.join(",") === "1,7,3,9,5,11" &&
-    groups13[1].members.join(",") === "2,4,6,8,10,12,13",
-    "Self-check failed: six-player Berger/Swiss interchange."
+    groups13.length === 2 &&
+    groups13[0].members.join(",") === "8,2,10,4,12,6" &&
+    groups13[1].members.join(",") === "1,3,5,7,9,11,13",
+    "Self-check failed: odd Berger/Swiss interchange."
   );
 
+  /*
+    Twenty-five players:
+      First twelve use the ordinary paired interchange.
+      Last Berger group exchanges with the seven-player Swiss group.
+  */
   const groups25 = buildGroups(25, false);
 
   requireCondition(
     groups25[0].members.join(",") === "1,3,5,7,9,11" &&
     groups25[1].members.join(",") === "2,4,6,8,10,12" &&
-    groups25[2].members.join(",") === "13,19,15,21,17,23" &&
-    groups25[3].members.join(",") === "14,16,18,20,22,24,25",
-    "Self-check failed: 25-player interchange."
+    groups25[2].members.join(",") === "20,14,22,16,24,18" &&
+    groups25[3].members.join(",") === "13,15,17,19,21,23,25",
+    "Self-check failed: paired groups followed by Berger/Swiss exchange."
   );
 
   const groups18 = buildGroups(18, false);
+
+  requireCondition(
+    groups18.length === 3 &&
+    groups18[2].members.join(",") === "13,14,15,16,17,18",
+    "Self-check failed: odd Berger count without a Swiss group."
+  );
+
   const groups19 = buildGroups(19, false);
 
   requireCondition(
-    groups18[2].members.join(",") === "13,14,15,16,17,18" &&
     groups19[2].members.join(",") === "13,14,15,16,17,18,19",
-    "Self-check failed: six-player remaining memberships."
+    "Self-check failed: no extra exchange with an even Berger count."
   );
 
-  const groups16 = buildGroups(16, false, 7);
+  let rejectedSmallField = false;
 
-  requireCondition(
-    groups16[0].members.join(",") ===
-      "1,3,5,7,9,11,13,15" &&
-    groups16[1].members.join(",") ===
-      "2,4,6,8,10,12,14,16",
-    "Self-check failed: eight-player paired interchange."
-  );
-
-  const groups17 = buildGroups(17, false, 7);
-
-  requireCondition(
-    groups17[0].members.join(",") ===
-      "1,9,3,11,5,13,7,15" &&
-    groups17[1].members.join(",") ===
-      "2,4,6,8,10,12,14,16,17",
-    "Self-check failed: eight-player Berger/Swiss interchange."
-  );
-
-  const groups24 = buildGroups(24, false, 7);
-
-  requireCondition(
-    groups24.length === 3 &&
-    groups24[2].members.join(",") ===
-      "17,18,19,20,21,22,23,24",
-    "Self-check failed: eight-player unpaired final group."
-  );
-
-  const layoutSeven33 = getLayout(33, 7);
-
-  requireCondition(
-    layoutSeven33.bergerCount === 3 &&
-    layoutSeven33.tailSize === 9,
-    "Self-check failed: seven-round 33-player layout."
-  );
-}
-
-function runBergerTableChecks() {
-  for (const rounds of [5, 7]) {
-    const size = rounds + 1;
-    const table = bergerTableFor(rounds);
-    const meetings = new Set();
-    const appearances = Array(size + 1).fill(0);
-    const whites = Array(size + 1).fill(0);
-
-    requireCondition(
-      table.length === rounds,
-      `Self-check failed: ${size}-player Berger round count.`
-    );
-
-    for (const round of table) {
-      const used = new Set();
-
-      requireCondition(
-        round.length === size / 2,
-        `Self-check failed: ${size}-player Berger board count.`
-      );
-
-      for (const [white, black] of round) {
-        requireCondition(
-          white >= 1 && white <= size &&
-          black >= 1 && black <= size &&
-          white !== black &&
-          !used.has(white) &&
-          !used.has(black),
-          `Self-check failed: ${size}-player Berger round coverage.`
-        );
-
-        used.add(white);
-        used.add(black);
-        appearances[white]++;
-        appearances[black]++;
-        whites[white]++;
-        meetings.add(meetingKey(white, black));
-      }
-
-      requireCondition(
-        used.size === size,
-        `Self-check failed: ${size}-player Berger player coverage.`
-      );
-    }
-
-    requireCondition(
-      meetings.size === size * (size - 1) / 2 &&
-      appearances.slice(1).every(value => value === rounds) &&
-      whites.slice(1).every(value =>
-        value === Math.floor(rounds / 2) ||
-        value === Math.ceil(rounds / 2)
-      ),
-      `Self-check failed: ${size}-player Berger completeness or colours.`
-    );
+  try {
+    getLayout(6);
+  } catch (error) {
+    rejectedSmallField = true;
   }
-}
-
-/* ========================================================================
-   MATCHING AND COLOUR CHECKS
-   ======================================================================== */
-
-function runMatchingChecks() {
-  const trapGraph = new Map([
-    [1, new Set([2,3])],
-    [2, new Set([1,4])],
-    [3, new Set([1])],
-    [4, new Set([2])]
-  ]);
 
   requireCondition(
-    JSON.stringify(
-      topDownMatching([1,2,3,4], trapGraph)
-    ) === JSON.stringify([[1,3],[2,4]]),
-    "Self-check failed: top-down matching feasibility."
-  );
-
-  const oddCycleGraph = new Map([
-    [1, new Set([2,3,4])],
-    [2, new Set([1,3,5])],
-    [3, new Set([1,2,6])],
-    [4, new Set([1])],
-    [5, new Set([2])],
-    [6, new Set([3])]
-  ]);
-
-  requireCondition(
-    perfectMatching([1,2,3,4,5,6], oddCycleGraph) !== null,
-    "Self-check failed: odd-cycle matching."
-  );
-
-  const colorContext = {
-    byId: new Map([
-      [1, {tpn: 1, whites: 2}],
-      [2, {tpn: 2, whites: 2}],
-      [3, {tpn: 3, whites: 1}]
-    ])
-  };
-
-  requireCondition(
-    preferredWhiteId(1, 2, colorContext) === 2 &&
-    preferredWhiteId(1, 3, colorContext) === 3,
-    "Self-check failed: Swiss color preference."
+    rejectedSmallField,
+    "Self-check failed: minimum field size."
   );
 }
 
@@ -4717,6 +3230,7 @@ function runColourPairingChecks() {
 
     for (let id = 1; id <= count; id++) {
       const endsWithWhite = id <= whiteStreakCount;
+
       const colors = endsWithWhite
         ? ["B", "W", "B", "B", "W", "W"]
         : ["W", "B", "W", "W", "B", "B"];
@@ -4745,11 +3259,10 @@ function runColourPairingChecks() {
       history: [
         {color: "W"},
         {color: "-"},
-        {color: "F"},
         {color: "W"}
       ]
     }, "W"),
-    "Self-check failed: unplayed rounds must not reset colour history."
+    "Self-check failed: byes must not reset colour history."
   );
 
   const context = makeContext();
@@ -4762,7 +3275,7 @@ function runColourPairingChecks() {
     pairings.every(pair =>
       swissColourPenalty(pair.white, pair.black, context) === 0
     ),
-    "Self-check failed: colour-safe pairing."
+    "Self-check failed: colour-safe pairing across a half-point gap."
   );
 
   const oddContext = makeContext(5, 3);
@@ -4788,11 +3301,10 @@ function runColourPairingChecks() {
 
   const forcedContext = makeContext();
 
-  for (const a of [1, 2]) {
-    for (const b of [3, 4]) {
-      addTestMeeting(forcedContext, a, b);
-    }
-  }
+  forcedContext.byId.get(1).opponents = new Set([3, 4]);
+  forcedContext.byId.get(2).opponents = new Set([3, 4]);
+  forcedContext.byId.get(3).opponents = new Set([1, 2]);
+  forcedContext.byId.get(4).opponents = new Set([1, 2]);
 
   const forcedPairings = makeSwissPairings(
     [1, 2, 3, 4],
@@ -4843,28 +3355,30 @@ function runColourBalanceChecks() {
     return {byId};
   }
 
-  const specifications = [
+  const balanceContext = makeContext([
     {score2: 8, colors: "WWBWBW"},
     {score2: 8, colors: "WWBWBW"},
     {score2: 6, colors: "BBWBWB"},
     {score2: 6, colors: "BBWBWB"}
-  ];
+  ]);
 
-  const context = makeContext(specifications);
-  const pairings = makeSwissPairings([1, 2, 3, 4], context);
+  const balancedPairings = makeSwissPairings(
+    [1, 2, 3, 4],
+    balanceContext
+  );
 
   requireCondition(
     JSON.stringify(
-      pairings.map(pair => [pair.white, pair.black])
+      balancedPairings.map(pair => [pair.white, pair.black])
     ) === JSON.stringify([[3, 1], [4, 2]]) &&
-    pairings.every(pair =>
+    balancedPairings.every(pair =>
       swissColourAssessment(
         pair.white,
         pair.black,
-        context
+        balanceContext
       ).balanceExcess === 0
     ),
-    "Self-check failed: colour-balance pairing."
+    "Self-check failed: one-point pairing to prevent 5-2 colours."
   );
 
   const scoreContext = makeContext([
@@ -4874,871 +3388,357 @@ function runColourBalanceChecks() {
     {score2: 7,  colors: "WBWB"}
   ]);
 
-  const nearest = makeSwissPairings(
+  const nearestPairings = makeSwissPairings(
     [1, 2, 3, 4],
     scoreContext
-  ).map(pair =>
+  );
+
+  const nearestKeys = nearestPairings.map(pair =>
     [pair.white, pair.black]
       .sort((a, b) => a - b)
       .join("/")
   );
 
   requireCondition(
-    JSON.stringify(nearest) === JSON.stringify(["1/3", "2/4"]),
+    JSON.stringify(nearestKeys) ===
+      JSON.stringify(["1/3", "2/4"]),
     "Self-check failed: smallest score difference first."
   );
 
-  const forced = makeContext(specifications);
+  const forcedContext = makeContext([
+    {score2: 8, colors: "WWBWBW"},
+    {score2: 8, colors: "WWBWBW"},
+    {score2: 6, colors: "BBWBWB"},
+    {score2: 6, colors: "BBWBWB"}
+  ]);
 
-  for (const a of [1, 2]) {
-    for (const b of [3, 4]) {
-      addTestMeeting(forced, a, b);
-    }
-  }
+  forcedContext.byId.get(1).opponents = new Set([3, 4]);
+  forcedContext.byId.get(2).opponents = new Set([3, 4]);
+  forcedContext.byId.get(3).opponents = new Set([1, 2]);
+  forcedContext.byId.get(4).opponents = new Set([1, 2]);
 
-  const forcedPairs = makeSwissPairings([1, 2, 3, 4], forced);
+  const forcedPairings = makeSwissPairings(
+    [1, 2, 3, 4],
+    forcedContext
+  );
 
   requireCondition(
-    forcedPairs.every(pair =>
-      !forced.byId.get(pair.white).opponents.has(pair.black)
+    forcedPairings.length === 2 &&
+    forcedPairings.every(pair =>
+      !forcedContext.byId.get(pair.white)
+        .opponents.has(pair.black)
     ) &&
-    forcedPairs.reduce((total, pair) =>
+    forcedPairings.reduce((total, pair) =>
       total + swissColourAssessment(
         pair.white,
         pair.black,
-        forced
-      ).balanceExcess, 0
+        forcedContext
+      ).balanceExcess,
+      0
     ) === 2,
-    "Self-check failed: unavoidable balance fallback."
+    "Self-check failed: unavoidable colour-imbalance fallback."
   );
 
-  const wideGap = makeContext([
+  const wideGapContext = makeContext([
     {score2: 8, colors: "WBWBWB"},
     {score2: 4, colors: "WBWBWB"}
   ]);
 
-  const widePair = makeSwissPairings([1, 2], wideGap);
+  const wideGapPairings = makeSwissPairings(
+    [1, 2],
+    wideGapContext
+  );
 
   requireCondition(
-    widePair.length === 1 &&
-    widePair[0].white === 2 &&
-    widePair[0].black === 1,
+    wideGapPairings.length === 1 &&
+    wideGapPairings[0].white === 2 &&
+    wideGapPairings[0].black === 1,
     "Self-check failed: final score-gap fallback."
   );
 }
 
-/* ========================================================================
-   REMATCH AND BYE CHECKS
-   ======================================================================== */
-
-function runRematchChecks() {
-  function isRematch(context, pair) {
-    return pair.black !== null &&
-      context.byId.get(pair.white).opponents.has(pair.black);
-  }
-
-  const forced = makePairingTestContext(4);
-
-  for (let a = 1; a <= 4; a++) {
-    for (let b = a + 1; b <= 4; b++) {
-      if (a === 1 && b === 2) continue;
-      addTestMeeting(forced, a, b);
-    }
-  }
-
-  const forcedPairs = makeSwissPairings([1, 2, 3, 4], forced);
-
-  requireCondition(
-    forcedPairs.length === 2 &&
-    forcedPairs.filter(pair => isRematch(forced, pair)).length === 1,
-    "Self-check failed: last-resort rematch generation."
-  );
-
-  const wideGap = makePairingTestContext(4);
-
-  wideGap.byId.get(1).score2 = 10;
-  wideGap.byId.get(2).score2 = 10;
-
-  addTestMeeting(wideGap, 1, 2);
-  addTestMeeting(wideGap, 3, 4);
-
-  requireCondition(
-    makeSwissPairings([1, 2, 3, 4], wideGap)
-      .every(pair => !isRematch(wideGap, pair)),
-    "Self-check failed: wide gaps must precede rematches."
-  );
-
-  const odd = makePairingTestContext(3);
-  addTestMeeting(odd, 1, 2);
-
-  const oddPairs = makeSwissPairings([1, 2, 3], odd);
-
-  requireCondition(
-    oddPairs.some(pair =>
-      pair.black === null && pair.white === 2
-    ) &&
-    oddPairs.every(pair => !isRematch(odd, pair)),
-    "Self-check failed: eligible byes must precede rematches."
-  );
-
-  const scenarios = [
-    {counts: [1, 1, 1], recipient: 3},
-    {counts: [0, 1, 1], recipient: 1},
-    {counts: [1, 2, 2], recipient: 1},
-    {counts: [2, 2, 2], recipient: 3}
-  ];
-
-  scenarios.forEach(({counts, recipient}, index) => {
-    const context = makePairingTestContext(3);
-
-    counts.forEach((count, playerIndex) => {
-      context.byId.get(playerIndex + 1).byes = count;
-    });
-
-    const pairs = makeSwissPairings([1, 2, 3], context);
-
-    requireCondition(
-      pairs.length === 2 &&
-      pairs.some(pair =>
-        pair.black === null && pair.white === recipient
-      ),
-      `Self-check failed: minimum-bye scenario ${index + 1}.`
-    );
-  });
+function makeTestTournament(count, extraRounds = 2) {
+  return {
+    app: APP_ID,
+    version: FILE_VERSION,
+    name: "Internal test",
+    extraRounds,
+    totalRounds: 5 + extraRounds,
+    players: Array.from({length: count}, (_, index) => ({
+      id: index + 1,
+      tpn: index + 1,
+      name: `Test Player ${index + 1}`,
+      rating: 2800 - index
+    })),
+    groups: buildGroups(count, false),
+    rounds: [],
+    viewRound: 1,
+    finished: false
+  };
 }
 
-/* ========================================================================
-   POSTPONEMENT, FORFEIT AND WITHDRAWAL CHECKS
-   ======================================================================== */
+function runPostponementChecks() {
+  const test = makeTestTournament(12);
 
-function runPostponementChecks(bergerRounds = 5) {
-  const size = bergerRounds + 1;
-  const test = makeTestTournament(size * 2, 2, bergerRounds);
   const first = makeRound(test, 1);
 
-  fillTestRound(first);
+  first.pairings.forEach(pair => {
+    pair.result = "0.5-0.5";
+  });
+
   first.pairings[0].result = "p";
   first.closed = true;
   test.rounds.push(first);
 
-  test.rounds.push(makeRound(test, 2));
-  test.viewRound = 2;
-
-  validateTournament(test);
-
-  const pair = first.pairings[0];
-  const context = computeStats(test);
-
-  requireCondition(
-    context.byId.get(pair.white).score2 === 0 &&
-    context.byId.get(pair.black).score2 === 0 &&
-    context.byId.get(pair.white).wntKey === 0 &&
-    context.byId.get(pair.black).wntKey === 0 &&
-    canEditPairing(test, first, pair),
-    "Self-check failed: postponed scoring or edit permission."
-  );
-
-  const statsTest = clone(test);
-  fillTestRound(statsTest.rounds[1]);
-  statsTest.rounds[1].closed = true;
-
-  const later = computeStats(statsTest);
-
-  for (const id of [pair.white, pair.black]) {
-    const p = later.byId.get(id);
-    const played = p.history.find(h => !h.postponed);
-    const opponentScore2 =
-      later.byId.get(played.opponent).score2;
-
-    requireCondition(
-      p.wntKey ===
-        2 * later.N * opponentScore2 * played.result2 +
-        opponentScore2 * opponentScore2,
-      "Self-check failed: postponed direct WNT exclusion."
-    );
-  }
-
-  requireTestRejection(
-    () => makeRound(test, bergerRounds + 1),
-    "Self-check failed: postponement must block combined Swiss."
-  );
-
-  const finished = clone(test);
-  fillTestRound(finished.rounds[1]);
-  finished.rounds[1].closed = true;
-  finished.finished = true;
-
-  requireTestRejection(
-    () => validateTournament(finished),
-    "Self-check failed: unresolved postponement in finished file."
-  );
-
-  pair.result = "1-0";
-  validateTournament(test);
-
-  requireCondition(
-    computeStats(test).byId.get(pair.white).score2 === 2,
-    "Self-check failed: replacing postponed result."
-  );
-
-  const swiss = makeTestTournament(size + 1, 2, bergerRounds);
-  const swissRound = makeRound(swiss, 1);
-
-  swissRound.pairings.find(p => p.black !== null).result = "p";
-  swiss.rounds.push(swissRound);
-
-  requireTestRejection(
-    () => validateTournament(swiss),
-    "Self-check failed: Swiss postponement must be rejected."
-  );
-
-  /*
-    Check that a postponement remains editable throughout
-    the full Berger phase and locks on combined Swiss entry.
-  */
-  const phase = makeTestTournament(size * 2, 2, bergerRounds);
-
-  for (let number = 1; number <= bergerRounds; number++) {
-    const round = makeRound(phase, number);
-    phase.rounds.push(round);
-    phase.viewRound = number;
-
-    validateTournament(phase);
-    fillTestRound(round);
-
-    if (number === 1) {
-      round.pairings[0].result = "p";
-    }
-
-    round.closed = true;
-  }
-
-  requireTestRejection(
-    () => makeRound(phase, bergerRounds + 1),
-    "Self-check failed: final Berger postponement deadline."
-  );
-
-  phase.rounds[0].pairings[0].result = "0.5-0.5";
-  phase.rounds.push(makeRound(phase, bergerRounds + 1));
-  phase.viewRound = bergerRounds + 1;
-
-  validateTournament(phase);
-
-  requireCondition(
-    !canEditPairing(
-      phase,
-      phase.rounds[0],
-      phase.rounds[0].pairings[0]
-    ),
-    "Self-check failed: Berger result locking after full phase."
-  );
-}
-
-function runForfeitChecks(bergerRounds = 5) {
-  const test = makeTestTournament(
-    (bergerRounds + 1) * 2,
-    2,
-    bergerRounds
-  );
-
-  const first = makeRound(test, 1);
-
-  fillTestRound(first);
-  first.pairings[0].result = "F1-0";
-  first.closed = true;
-  test.rounds.push(first);
-
-  test.rounds.push(makeRound(test, 2));
-  test.viewRound = 2;
-
-  validateTournament(test);
-
-  const pair = first.pairings[0];
-  const context = computeStats(test);
-  const white = context.byId.get(pair.white);
-  const black = context.byId.get(pair.black);
-
-  requireCondition(
-    white.score2 === 2 &&
-    black.score2 === 0 &&
-    white.whites === 0 &&
-    black.blacks === 0 &&
-    white.wntKey === 0 &&
-    black.wntKey === 0 &&
-    !white.opponents.has(black.id) &&
-    !black.opponents.has(white.id),
-    "Self-check failed: forfeit scoring or histories."
-  );
-}
-
-function runWithdrawalChecks(bergerRounds = 5) {
-  const size = bergerRounds + 1;
-  const count = size * 5 + 3;
-  const test = makeTestTournament(count, 2, bergerRounds);
-
-  /*
-    This layout has four Berger groups and one bottom Swiss group.
-  */
-  const first = makeRound(test, 1);
-  fillTestRound(first);
-  first.closed = true;
-  test.rounds.push(first);
-
   const second = makeRound(test, 2);
-  fillTestRound(second);
   test.rounds.push(second);
   test.viewRound = 2;
 
-  const leavingId = test.groups[1].members[0];
-  const originalSecond = JSON.stringify(second.pairings);
-
-  test.players.find(p => p.id === leavingId).withdrawnFrom = 3;
-
   validateTournament(test);
 
-  const before = getRoundPlan(test, 2);
-  const after = getRoundPlan(test, 3);
+  const postponedPair = first.pairings[0];
+  const context = computeStats(test);
+  const white = context.byId.get(postponedPair.white);
+  const black = context.byId.get(postponedPair.black);
 
   requireCondition(
-    before.berger.length === 4 &&
-    before.activeIds.length === count &&
-    after.berger.length === 1 &&
-    after.swissIds.length === count - size - 1 &&
-    after.activeIds.length === count - 1 &&
-    !after.swissIds.includes(leavingId) &&
-    JSON.stringify(second.pairings) === originalSecond,
-    "Self-check failed: withdrawal boundary or round preservation."
+    white.score2 === 0 &&
+    black.score2 === 0 &&
+    white.wntKey === 0 &&
+    black.wntKey === 0 &&
+    canEditPairing(test, first, postponedPair),
+    "Self-check failed: postponed scoring or edit permission."
   );
-
-  const upperPair = first.pairings[0];
-  const lowerPair = first.pairings[size / 2];
-
-  upperPair.result = "p";
-  lowerPair.result = "p";
-  second.closed = true;
-
-  requireTestRejection(
-    () => makeRound(test, 3),
-    "Self-check failed: converting-group postponement must block Swiss."
-  );
-
-  lowerPair.result = "0.5-0.5";
-
-  const statsBefore = computeStats(test);
-  const third = makeRound(test, 3);
-
-  test.rounds.push(third);
-  test.viewRound = 3;
-
-  validateTournament(test);
-
-  requireCondition(
-    canEditPairing(test, first, upperPair) &&
-    !canEditPairing(test, first, lowerPair),
-    "Self-check failed: conversion-specific result locking."
-  );
-
-  const statsAfter = computeStats(test);
-
-  for (const id of statsBefore.byId.keys()) {
-    const a = statsBefore.byId.get(id);
-    const b = statsAfter.byId.get(id);
-
-    requireCondition(
-      a.score2 === b.score2 &&
-      a.whites === b.whites &&
-      a.blacks === b.blacks &&
-      a.byes === b.byes &&
-      a.wntKey === b.wntKey &&
-      JSON.stringify(a.history) === JSON.stringify(b.history) &&
-      JSON.stringify([...a.opponents]) ===
-        JSON.stringify([...b.opponents]),
-      "Self-check failed: scores or histories changed during conversion."
-    );
-  }
-
-  upperPair.result = "0.5-0.5";
-  fillTestRound(third);
-
-  const upperLeavingId = test.groups[0].members[0];
-  test.players.find(p => p.id === upperLeavingId).withdrawnFrom = 4;
-
-  validateTournament(test);
-
-  requireCondition(
-    getRoundPlan(test, 3).berger.length === 1 &&
-    getRoundPlan(test, 4).berger.length === 0 &&
-    getRoundPlan(test, 4).swissIds.length === count - 2,
-    "Self-check failed: subsequent withdrawal must expand Swiss upward."
-  );
-
-  third.closed = true;
-
-  for (let number = 4; number <= test.totalRounds; number++) {
-    const round = makeRound(test, number);
-
-    test.rounds.push(round);
-    test.viewRound = number;
-    validateTournament(test);
-
-    fillTestRound(round);
-    round.closed = true;
-  }
-
-  test.finished = true;
-  validateTournament(test);
-  validateTournament(clone(test));
 
   /*
-    Withdrawal from the original bottom Swiss group does not
-    convert earlier Berger groups.
+    Give both postponed players another proper result.
+    Their original postponed meeting must still contribute no WNT,
+    even when their current tournament scores are nonzero.
   */
-  const bottomTest = makeTestTournament(count, 2, bergerRounds);
-  const bottomFirst = makeRound(bottomTest, 1);
+  const statsTest = clone(test);
 
-  fillTestRound(bottomFirst);
-  bottomFirst.closed = true;
-
-  bottomTest.rounds.push(bottomFirst);
-  bottomTest.rounds.push(makeRound(bottomTest, 2));
-  bottomTest.viewRound = 2;
-
-  const bottomId = bottomTest.groups[4].members[0];
-  bottomTest.players.find(p => p.id === bottomId).withdrawnFrom = 3;
-
-  validateTournament(bottomTest);
-
-  requireCondition(
-    getRoundPlan(bottomTest, 3).berger.length === 4 &&
-    getRoundPlan(bottomTest, 3).swissIds.length === size + 2,
-    "Self-check failed: bottom withdrawal must retain Berger groups."
-  );
-}
-
-function runRepeatByeWithdrawalChecks() {
-  const test = makeTestTournament(7, 2);
-
-  for (let number = 1; number <= 6; number++) {
-    const round = makeRound(test, number);
-
-    fillTestRound(round);
-    round.closed = true;
-    test.rounds.push(round);
-  }
-
-  const before = computeStats(test);
-  const unused = test.players.find(
-    p => before.byId.get(p.id).byes === 0
-  );
-  const previousRecipient = test.players.find(
-    p => before.byId.get(p.id).byes === 1
-  );
-
-  requireCondition(
-    unused && previousRecipient,
-    "Self-check failed: repeat-bye withdrawal setup."
-  );
-
-  unused.withdrawnFrom = 7;
-  previousRecipient.withdrawnFrom = 7;
-
-  const remaining = activePlayerIds(test, 7);
-
-  requireCondition(
-    remaining.length === 5 &&
-    remaining.every(id => before.byId.get(id).byes === 1),
-    "Self-check failed: exhausted active bye field."
-  );
-
-  const seventh = makeRound(test, 7);
-
-  test.rounds.push(seventh);
-  test.viewRound = 7;
-
-  validateTournament(test);
-
-  const bye = seventh.pairings.find(
-    pair => pair.black === null
-  );
-
-  requireCondition(
-    bye && remaining.includes(bye.white),
-    "Self-check failed: repeat bye after withdrawals."
-  );
-
-  fillTestRound(seventh);
-  seventh.closed = true;
-  test.finished = true;
-
-  validateTournament(test);
-  validateTournament(clone(test));
-
-  const after = computeStats(test);
-
-  requireCondition(
-    after.byId.get(bye.white).byes === 2 &&
-    after.byId.get(bye.white).score2 ===
-      before.byId.get(bye.white).score2 + 2,
-    "Self-check failed: repeat-bye counting or scoring."
-  );
-}
-
-function runLastBergerRetentionChecks(bergerRounds = 5) {
-  const size = bergerRounds + 1;
-  const table = bergerTableFor(bergerRounds);
-  const test = makeTestTournament(size * 3, 2, bergerRounds);
-
-  const first = makeRound(test, 1);
-  fillTestRound(first);
-  first.closed = true;
-  test.rounds.push(first);
-
-  const lastGroup = test.groups[2];
-  const leavingId = lastGroup.members[0];
-
-  test.players.find(
-    p => p.id === leavingId
-  ).withdrawnFrom = 2;
-
-  const originalFirst = JSON.stringify(first.pairings);
-  const byeRecipients = [];
-
-  for (let number = 2; number <= bergerRounds; number++) {
-    const plan = getRoundPlan(test, number);
-
-    requireCondition(
-      plan.berger.length === 3 &&
-      plan.swissIds.length === 0,
-      "Self-check failed: isolated last Berger group retention."
-    );
-
-    const round = makeRound(test, number);
-    test.rounds.push(round);
-    test.viewRound = number;
-
-    validateTournament(test);
-
-    const byes = round.pairings.filter(
-      pair => pair.black === null
-    );
-
-    const scheduledPair = table[number - 1].find(
-      ([w, b]) =>
-        lastGroup.members[w - 1] === leavingId ||
-        lastGroup.members[b - 1] === leavingId
-    );
-
-    const scheduledOpponent = scheduledPair
-      .map(position => lastGroup.members[position - 1])
-      .find(id => id !== leavingId);
-
-    requireCondition(
-      byes.length === 1 &&
-      byes[0].white === scheduledOpponent &&
-      !round.pairings.some(pair =>
-        pair.white === leavingId ||
-        pair.black === leavingId
-      ) &&
-      pairGroupLabel(
-        test,
-        round,
-        byes[0],
-        groupIndexMap(test)
-      ) === "Berger 3",
-      "Self-check failed: scheduled Berger bye or group label."
-    );
-
-    byeRecipients.push(byes[0].white);
-
-    if (number === 2) {
-      /*
-        An earlier withdrawal converts the affected group
-        together with the retained last group.
-      */
-      const expanded = clone(test);
-
-      expanded.players.find(
-        p => p.id === expanded.groups[1].members[0]
-      ).withdrawnFrom = 3;
-
-      validateTournament(expanded);
-
-      fillTestRound(expanded.rounds[1]);
-      expanded.rounds[1].closed = true;
-
-      const expandedPlan = getRoundPlan(expanded, 3);
-
-      requireCondition(
-        expandedPlan.berger.length === 1 &&
-        expandedPlan.swissIds.length === size * 2 - 2,
-        "Self-check failed: earlier withdrawal converts lower groups."
-      );
-
-      expanded.rounds.push(makeRound(expanded, 3));
-      expanded.viewRound = 3;
-      validateTournament(expanded);
-
-      /*
-        Further withdrawals confined to the last group
-        continue to retain its fixed schedule.
-      */
-      const reduced = clone(test);
-
-      reduced.players.find(
-        p => p.id === reduced.groups[2].members[1]
-      ).withdrawnFrom = 3;
-
-      fillTestRound(reduced.rounds[1]);
-      reduced.rounds[1].closed = true;
-
-      for (let next = 3; next <= bergerRounds; next++) {
-        const reducedPlan = getRoundPlan(reduced, next);
-
-        requireCondition(
-          reducedPlan.berger.length === 3 &&
-          reducedPlan.swissIds.length === 0,
-          "Self-check failed: further last-group withdrawals."
-        );
-
-        reduced.rounds.push(makeRound(reduced, next));
-        reduced.viewRound = next;
-
-        validateTournament(reduced);
-
-        fillTestRound(reduced.rounds[next - 1]);
-        reduced.rounds[next - 1].closed = true;
-      }
-
-      reduced.rounds.push(
-        makeRound(reduced, bergerRounds + 1)
-      );
-      reduced.viewRound = bergerRounds + 1;
-
-      validateTournament(reduced);
-    }
-
-    fillTestRound(round);
-    round.closed = true;
-  }
-
-  requireCondition(
-    new Set(byeRecipients).size === bergerRounds - 1 &&
-    JSON.stringify(first.pairings) === originalFirst &&
-    [...computeStats(test).byId.values()]
-      .reduce((total, p) => total + p.byes, 0) ===
-        bergerRounds - 1,
-    "Self-check failed: Berger bye distribution or history preservation."
-  );
-
-  test.rounds.push(makeRound(test, bergerRounds + 1));
-  test.viewRound = bergerRounds + 1;
-
-  requireCondition(
-    getRoundPlan(test, bergerRounds + 1).berger.length === 0 &&
-    getRoundPlan(test, bergerRounds + 1).swissIds.length ===
-      size * 3 - 1,
-    "Self-check failed: retained group must join combined Swiss."
-  );
-
-  validateTournament(test);
-  validateTournament(clone(test));
-
-  /*
-    An original bottom Swiss group prevents the retention exception.
-  */
-  const withSwiss = makeTestTournament(
-    size * 3 + 1,
-    2,
-    bergerRounds
-  );
-
-  const swissFirst = makeRound(withSwiss, 1);
-
-  fillTestRound(swissFirst);
-  swissFirst.closed = true;
-  withSwiss.rounds.push(swissFirst);
-
-  withSwiss.players.find(
-    p => p.id === withSwiss.groups[1].members[0]
-  ).withdrawnFrom = 2;
-
-  const swissPlan = getRoundPlan(withSwiss, 2);
-
-  requireCondition(
-    swissPlan.berger.length === 1 &&
-    swissPlan.swissIds.length === size * 2,
-    "Self-check failed: existing Swiss field receives converting group."
-  );
-
-  withSwiss.rounds.push(makeRound(withSwiss, 2));
-  withSwiss.viewRound = 2;
-
-  validateTournament(withSwiss);
-}
-
-/* ========================================================================
-   COMPATIBILITY AND FULL-TOURNAMENT CHECKS
-   ======================================================================== */
-
-function runCompatibilityChecks() {
-  const legacy = makeTestTournament(12, 0);
-
-  delete legacy.bergerRounds;
-  legacy.players.forEach(p => {
-    delete p.withdrawnFrom;
+  statsTest.rounds[1].pairings.forEach(pair => {
+    pair.result = "0.5-0.5";
   });
 
-  legacy.rounds.push(makeRound(legacy, 1));
+  statsTest.rounds[1].closed = true;
 
-  validateTournament(legacy);
+  const laterContext = computeStats(statsTest);
 
-  requireCondition(
-    bergerRoundsFor(legacy) === 5,
-    "Self-check failed: legacy five-round compatibility."
-  );
+  for (const id of [postponedPair.white, postponedPair.black]) {
+    const p = laterContext.byId.get(id);
+    const playedHistory = p.history.find(h => !h.postponed);
+    const opponentScore2 =
+      laterContext.byId.get(playedHistory.opponent).score2;
 
-  const invalid = clone(legacy);
-  invalid.bergerRounds = 6;
+    const expectedNumerator =
+      2 * laterContext.N *
+        opponentScore2 * playedHistory.result2 +
+      opponentScore2 * opponentScore2;
 
-  requireTestRejection(
-    () => validateTournament(invalid),
-    "Self-check failed: invalid Berger-round count."
-  );
-
-  const nullFormat = clone(legacy);
-  nullFormat.bergerRounds = null;
-
-  requireTestRejection(
-    () => validateTournament(nullFormat),
-    "Self-check failed: explicit null Berger-round count."
-  );
-}
-
-function runFullTournamentChecks() {
-  for (const bergerRounds of [5, 7]) {
-    const minimum = bergerRounds + 2;
-
-    for (let count = minimum; count <= 48; count++) {
-      const initial = makeTestTournament(
-        count,
-        0,
-        bergerRounds
-      );
-
-      initial.rounds.push(makeRound(initial, 1));
-      validateTournament(initial);
-    }
-
-    /*
-      Seven-round format is tested through eleven rounds.
-    */
-    const extraRounds = bergerRounds === 7 ? 4 : 2;
-    const test = makeTestTournament(
-      33,
-      extraRounds,
-      bergerRounds
+    requireCondition(
+      p.wntKey === expectedNumerator,
+      "Self-check failed: postponed game must add no direct WNT."
     );
-
-    for (let number = 1; number <= test.totalRounds; number++) {
-      const round = makeRound(test, number);
-
-      test.rounds.push(round);
-      test.viewRound = number;
-
-      validateTournament(test);
-
-      round.pairings.forEach((pair, index) => {
-        if (pair.black === null) return;
-
-        pair.result = ["1-0", "0.5-0.5", "0-1"][
-          (number + index) % 3
-        ];
-      });
-
-      round.closed = true;
-    }
-
-    test.finished = true;
-
-    validateTournament(test);
-    validateTournament(clone(test));
   }
-}
 
-function runPairingPriorityChecks() {
-  /*
-    A leader must not receive the bye merely because
-    the other two players have equal scores.
-  */
-  const byeContext = makePairingTestContext(3);
-  byeContext.byId.get(1).score2 = 4;
+  let blockedSwiss = false;
 
-  const byePairings = makeSwissPairings(
-    [1, 2, 3],
-    byeContext
-  );
+  try {
+    makeRound(test, 6);
+  } catch (error) {
+    blockedSwiss = true;
+  }
 
   requireCondition(
-    byePairings.some(pair =>
-      pair.black === null && pair.white === 3
-    ),
-    "Self-check failed: lowest-ranked feasible bye recipient."
+    blockedSwiss,
+    "Self-check failed: unresolved postponement must block Round 6."
   );
 
-  /*
-    Reversing the default colours avoids giving both
-    players a third consecutive identical colour.
-  */
-  const colourContext = makePairingTestContext(2);
+  const invalidFinished = clone(test);
 
-  const histories = [
-    ["W", "B", "W", "W", "B", "B"],
-    ["B", "W", "B", "B", "W", "W"]
-  ];
-
-  histories.forEach((colours, index) => {
-    const player = colourContext.byId.get(index + 1);
-
-    player.whites = 3;
-    player.blacks = 3;
-    player.history = colours.map((color, historyIndex) => ({
-      round: historyIndex + 1,
-      color
-    }));
+  invalidFinished.rounds[1].pairings.forEach(pair => {
+    pair.result = "0.5-0.5";
   });
 
-  const colourPairings = makeSwissPairings(
-    [1, 2],
-    colourContext
-  );
+  invalidFinished.rounds[1].closed = true;
+  invalidFinished.finished = true;
+
+  let rejectedFinished = false;
+
+  try {
+    validateTournament(invalidFinished);
+  } catch (error) {
+    rejectedFinished = true;
+  }
 
   requireCondition(
-    colourPairings.length === 1 &&
-    colourPairings[0].white === 1 &&
-    colourPairings[0].black === 2,
-    "Self-check failed: reversed colours must avoid colour streaks."
+    rejectedFinished,
+    "Self-check failed: unresolved postponement in finished file."
+  );
+
+  postponedPair.result = "1-0";
+  validateTournament(test);
+
+  const resolvedContext = computeStats(test);
+
+  requireCondition(
+    resolvedContext.byId.get(postponedPair.white).score2 === 2 &&
+    resolvedContext.byId.get(postponedPair.black).score2 === 0,
+    "Self-check failed: replacement of postponed result."
+  );
+
+  /*
+    A bottom Swiss game cannot be postponed.
+  */
+  const swissTest = makeTestTournament(7);
+  const swissRound = makeRound(swissTest, 1);
+
+  swissRound.pairings.find(pair => pair.black !== null).result = "p";
+  swissTest.rounds.push(swissRound);
+
+  let rejectedSwissPostponement = false;
+
+  try {
+    validateTournament(swissTest);
+  } catch (error) {
+    rejectedSwissPostponement = true;
+  }
+
+  requireCondition(
+    rejectedSwissPostponement,
+    "Self-check failed: Swiss postponement must be rejected."
   );
 }
 
 function runSelfChecks() {
   runLayoutChecks();
-  runBergerTableChecks();
-  runMatchingChecks();
   runColourPairingChecks();
   runColourBalanceChecks();
-  runRematchChecks();
-  runPairingPriorityChecks();
 
-  for (const bergerRounds of [5, 7]) {
-    runPostponementChecks(bergerRounds);
-    runForfeitChecks(bergerRounds);
-    runWithdrawalChecks(bergerRounds);
-    runLastBergerRetentionChecks(bergerRounds);
+  const bergerMeetings = new Set();
+  const bergerAppearances = Array(7).fill(0);
+
+  for (const round of BERGER_SIX) {
+    const used = new Set();
+
+    for (const [white, black] of round) {
+      requireCondition(
+        white !== black &&
+        !used.has(white) &&
+        !used.has(black),
+        "Self-check failed: Berger round coverage."
+      );
+
+      used.add(white);
+      used.add(black);
+
+      bergerAppearances[white]++;
+      bergerAppearances[black]++;
+
+      bergerMeetings.add(
+        [Math.min(white, black), Math.max(white, black)].join("/")
+      );
+    }
+
+    requireCondition(
+      used.size === 6,
+      "Self-check failed: Berger player coverage."
+    );
   }
 
-  runRepeatByeWithdrawalChecks();
-  runCompatibilityChecks();
-  runFullTournamentChecks();
+  requireCondition(
+    bergerMeetings.size === 15 &&
+    bergerAppearances.slice(1).every(value => value === 5),
+    "Self-check failed: Berger round-robin completeness."
+  );
+
+  const trapGraph = new Map([
+    [1, new Set([2,3])],
+    [2, new Set([1,4])],
+    [3, new Set([1])],
+    [4, new Set([2])]
+  ]);
+
+  const trapMatching = topDownMatching(
+    [1,2,3,4],
+    trapGraph
+  );
+
+  requireCondition(
+    JSON.stringify(trapMatching) ===
+      JSON.stringify([[1,3],[2,4]]),
+    "Self-check failed: top-down matching feasibility."
+  );
+
+  const oddCycleGraph = new Map([
+    [1, new Set([2,3,4])],
+    [2, new Set([1,3,5])],
+    [3, new Set([1,2,6])],
+    [4, new Set([1])],
+    [5, new Set([2])],
+    [6, new Set([3])]
+  ]);
+
+  requireCondition(
+    perfectMatching(
+      [1,2,3,4,5,6],
+      oddCycleGraph
+    ) !== null,
+    "Self-check failed: odd-cycle matching."
+  );
+
+  const colorContext = {
+    byId: new Map([
+      [1, {tpn: 1, whites: 2}],
+      [2, {tpn: 2, whites: 2}],
+      [3, {tpn: 3, whites: 1}]
+    ])
+  };
+
+  requireCondition(
+    preferredWhiteId(1, 2, colorContext) === 2 &&
+    preferredWhiteId(1, 3, colorContext) === 3,
+    "Self-check failed: Swiss color preference."
+  );
+
+  runPostponementChecks();
+
+  /*
+    Check initial-round generation and validation for every
+    supported layout in this range, including odd Berger counts.
+  */
+  for (let count = 7; count <= 48; count++) {
+    const initialTest = makeTestTournament(count, 0);
+    initialTest.rounds.push(makeRound(initialTest, 1));
+    validateTournament(initialTest);
+  }
+
+  /*
+    Validate a complete 33-player seven-round test tournament.
+  */
+  const test = makeTestTournament(33, 2);
+
+  for (let number = 1; number <= test.totalRounds; number++) {
+    const round = makeRound(test, number);
+
+    test.rounds.push(round);
+    test.viewRound = number;
+    validateTournament(test);
+
+    round.pairings.forEach((pair, index) => {
+      if (pair.black === null) return;
+
+      pair.result = ["1-0", "0.5-0.5", "0-1"][
+        (number + index) % 3
+      ];
+    });
+
+    round.closed = true;
+  }
+
+  test.finished = true;
+  validateTournament(test);
 
   return true;
 }
@@ -5755,7 +3755,6 @@ try {
   showMessage(error.message);
 }
 
-updateFormatText();
 updateRosterInfo();
 checkAutosave();
 </script>
