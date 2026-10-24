@@ -575,11 +575,14 @@
           are rematches permitted.
         </li>
 
-        <li>
-          Swiss White: The player with fewer White games is assigned
-          White. If both players have had the same number of White
-          games, the higher TPN receives White. Byes and forfeits do
-          not count as White games.
+	<li>
+          Swiss colours: Both colour assignments are considered.
+          The program first prefers assignments that avoid
+          extending a same-colour run beyond two games, then
+          considers colour balance and alternation. If these
+          considerations are equal, White goes to the player
+          with fewer previous White games, or to the higher
+          TPN if equal. Byes and forfeits add no played colour.
         </li>
 
         <li>
@@ -1407,7 +1410,7 @@ function updateFormatText() {
     `Among players tied on points in the same completed Berger ` +
     `group after Round ${rounds}, with every scheduled game ` +
     `played, WNT gives the same ordering as Sonneborn-Berger. ` +
-    `This is an ordering equivalence, not numerical equality, ` +
+    `This is an <em>ordering</em> equivalence, not numerical equality, ` +
     `and does not generally hold across different groups or ` +
     `after additional Swiss rounds.`;
 
@@ -1975,15 +1978,107 @@ function sortedStats(context) {
   return [...context.byId.values()].sort(compareStats);
 }
 
+function colourRunAfter(stats, colour) {
+  let run = 1;
+  const history = stats.history || [];
+
+  for (let index = history.length - 1; index >= 0; index--) {
+    const previousColour = history[index].color;
+
+    if (previousColour !== "W" && previousColour !== "B") {
+      continue;
+    }
+
+    if (previousColour !== colour) break;
+
+    run++;
+  }
+
+  return run;
+}
+
+function assessSwissColours(whiteId, blackId, context) {
+  const white = context.byId.get(whiteId);
+  const black = context.byId.get(blackId);
+
+  const whiteDifference =
+    (white.whites || 0) + 1 - (white.blacks || 0);
+
+  const blackDifference =
+    (black.whites || 0) - ((black.blacks || 0) + 1);
+
+  const whiteRun = colourRunAfter(white, "W");
+  const blackRun = colourRunAfter(black, "B");
+  const longestRun = Math.max(whiteRun, blackRun);
+
+  return {
+    white: whiteId,
+    black: blackId,
+
+    balanceExcess:
+      Math.max(0, Math.abs(whiteDifference) - 2) +
+      Math.max(0, Math.abs(blackDifference) - 2),
+
+    totalImbalance:
+      Math.abs(whiteDifference) +
+      Math.abs(blackDifference),
+
+    streakViolations:
+      Number(whiteRun >= 3) +
+      Number(blackRun >= 3),
+
+    repeatedColours:
+      Number(whiteRun >= 2) +
+      Number(blackRun >= 2),
+
+    longestRun,
+    runExcess: Math.max(0, longestRun - 2)
+  };
+}
+
 function preferredWhiteId(firstId, secondId, context) {
   const first = context.byId.get(firstId);
   const second = context.byId.get(secondId);
 
-  if (first.whites !== second.whites) {
-    return first.whites < second.whites ? firstId : secondId;
-  }
+  /*
+    The original rule remains the final preference:
+    fewer previous White games, then higher TPN.
+  */
+  const defaultWhite =
+    first.whites !== second.whites
+      ? (first.whites < second.whites ? firstId : secondId)
+      : (first.tpn > second.tpn ? firstId : secondId);
 
-  return first.tpn > second.tpn ? firstId : secondId;
+  const firstWhite = assessSwissColours(
+    firstId,
+    secondId,
+    context
+  );
+
+  const secondWhite = assessSwissColours(
+    secondId,
+    firstId,
+    context
+  );
+
+  /*
+    Compare both colour assignments.
+
+    Avoid extending a colour run beyond two first.
+    Then consider violations, balance, and alternation.
+  */
+  const comparison =
+    firstWhite.runExcess - secondWhite.runExcess ||
+    firstWhite.streakViolations -
+      secondWhite.streakViolations ||
+    firstWhite.balanceExcess - secondWhite.balanceExcess ||
+    firstWhite.totalImbalance - secondWhite.totalImbalance ||
+    firstWhite.repeatedColours - secondWhite.repeatedColours;
+
+  if (comparison < 0) return firstId;
+  if (comparison > 0) return secondId;
+
+  return defaultWhite;
 }
 
 function wouldMakeThree(stats, color) {
@@ -2016,36 +2111,36 @@ function swissColourPenalty(firstId, secondId, context) {
   );
 }
 
-function swissColourAssessment(firstId, secondId, context) {
-  const whiteId = preferredWhiteId(firstId, secondId, context);
-  const blackId = whiteId === firstId ? secondId : firstId;
-
+function evaluateColourAssignment(whiteId, blackId, context) {
   const white = context.byId.get(whiteId);
   const black = context.byId.get(blackId);
 
-  const whiteDifference = white.whites + 1 - white.blacks;
-  const blackDifference = black.whites - (black.blacks + 1);
-
-  const whiteExcess = Math.max(
-    0,
-    Math.abs(whiteDifference) - 2
-  );
-
-  const blackExcess = Math.max(
-    0,
-    Math.abs(blackDifference) - 2
-  );
+  const whiteDiff = white.whites + 1 - white.blacks;
+  const blackDiff = black.whites - (black.blacks + 1);
 
   return {
     white: whiteId,
     black: blackId,
-    balanceExcess: whiteExcess + blackExcess,
-    streakViolations: swissColourPenalty(
-      firstId,
-      secondId,
-      context
-    )
+    balanceExcess:
+      Math.max(0, Math.abs(whiteDiff) - 2) +
+      Math.max(0, Math.abs(blackDiff) - 2),
+    streakViolations:
+      Number(wouldMakeThree(white, "W")) +
+      Number(wouldMakeThree(black, "B"))
   };
+}
+
+function swissColourAssessment(firstId, secondId, context) {
+  const whiteId = preferredWhiteId(
+    firstId,
+    secondId,
+    context
+  );
+
+  const blackId =
+    whiteId === firstId ? secondId : firstId;
+
+  return assessSwissColours(whiteId, blackId, context);
 }
 
 /* ========================================================================
@@ -2283,19 +2378,12 @@ function makeSwissPairings(ids, context, forceFirstBye = false) {
     ordered.map((id, index) => [id, index])
   );
 
-  const unrestricted = new Map(
-    ordered.map(id => [id, new Set()])
-  );
-
-  const includingRematches = new Map(
-    ordered.map(id => [id, new Set()])
-  );
-
   const assessments = new Map(
     ordered.map(id => [id, new Map()])
   );
 
   const edges = [];
+  let maximumRun = 2;
 
   for (let i = 0; i < ordered.length; i++) {
     for (let j = i + 1; j < ordered.length; j++) {
@@ -2329,14 +2417,12 @@ function makeSwissPairings(ids, context, forceFirstBye = false) {
       assessments.get(a).set(b, assessment);
       assessments.get(b).set(a, assessment);
 
-      includingRematches.get(a).add(b);
-      includingRematches.get(b).add(a);
+      edges.push({a, b, assessment});
 
-      if (!rematch) {
-        unrestricted.get(a).add(b);
-        unrestricted.get(b).add(a);
-        edges.push({a, b, assessment});
-      }
+      maximumRun = Math.max(
+        maximumRun,
+        assessment.longestRun
+      );
     }
   }
 
@@ -2373,105 +2459,144 @@ function makeSwissPairings(ids, context, forceFirstBye = false) {
       assessmentA.balanceExcess - assessmentB.balanceExcess ||
       assessmentA.streakViolations -
         assessmentB.streakViolations ||
+      assessmentA.totalImbalance -
+        assessmentB.totalImbalance ||
+      assessmentA.repeatedColours -
+        assessmentB.repeatedColours ||
       rank.get(a) - rank.get(b)
     );
   }
 
-  function tryGraph(graph) {
-    for (const byeId of byeCandidates) {
-      const toPair = ordered.filter(id => id !== byeId);
+  function buildGraph(
+    allowRematches,
+    maximumColourRun,
+    requireBalance,
+    maximumGap2
+  ) {
+    const graph = new Map(
+      ordered.map(id => [id, new Set()])
+    );
 
-      const matching = topDownMatching(
-        toPair,
-        graph,
-        compareCandidates
-      );
+    for (const {a, b, assessment} of edges) {
+      if (!allowRematches && assessment.rematch) continue;
 
-      if (matching === null) continue;
-
-      const pairings = matching.map(([first, second]) => {
-        const assessment = assessments.get(first).get(second);
-
-        return {
-          white: assessment.white,
-          black: assessment.black,
-          result: ""
-        };
-      });
-
-      if (byeId !== null) {
-        pairings.push({
-          white: byeId,
-          black: null,
-          result: "BYE"
-        });
+      if (assessment.longestRun > maximumColourRun) {
+        continue;
       }
 
-      return pairings;
+      if (
+        requireBalance &&
+        assessment.balanceExcess > 0
+      ) {
+        continue;
+      }
+
+      if (assessment.gap2 > maximumGap2) continue;
+
+      graph.get(a).add(b);
+      graph.get(b).add(a);
     }
 
-    return null;
+    return graph;
   }
 
-  const colourModes = [
-    {requireBalance: true,  requireNoThree: true},
-    {requireBalance: true,  requireNoThree: false},
-    {requireBalance: false, requireNoThree: true},
-    {requireBalance: false, requireNoThree: false}
-  ];
-
-  for (const mode of colourModes) {
-    for (const maximumGap2 of [0, 1, 2]) {
-      const graph = new Map(
-        ordered.map(id => [id, new Set()])
+  /*
+    First exhaust every no-rematch possibility.
+    Rematches remain an absolute last resort.
+  */
+  for (const allowRematches of [false, true]) {
+    /*
+      Avoid three consecutive identical colours first.
+      Only increase the limit when no eligible bye recipient
+      permits a complete pairing at the current limit.
+    */
+    for (
+      let maximumColourRun = 2;
+      maximumColourRun <= maximumRun;
+      maximumColourRun++
+    ) {
+      const completeGraph = buildGraph(
+        allowRematches,
+        maximumColourRun,
+        false,
+        Infinity
       );
 
-      for (const {a, b, assessment} of edges) {
-        if (assessment.gap2 > maximumGap2) continue;
+      /*
+        Bye candidates are already ordered from the bottom
+        of the standings, restricted to minimum bye counts.
+      */
+      for (const byeId of byeCandidates) {
+        const toPair = ordered.filter(id => id !== byeId);
 
+        /*
+          Do not reject a low-ranked bye recipient merely
+          because pairing the others requires a score gap
+          or a total-colour-balance exception.
+        */
         if (
-          mode.requireBalance &&
-          assessment.balanceExcess > 0
+          perfectMatching(toPair, completeGraph) === null
         ) {
           continue;
         }
 
-        if (
-          mode.requireNoThree &&
-          assessment.streakViolations > 0
-        ) {
-          continue;
+        /*
+          This bye recipient is now fixed.
+
+          Prefer colour balance, then progressively widen
+          the permitted score differences.
+        */
+        for (const requireBalance of [true, false]) {
+          for (const maximumGap2 of [0, 1, 2, Infinity]) {
+            const graph =
+              !requireBalance && maximumGap2 === Infinity
+                ? completeGraph
+                : buildGraph(
+                    allowRematches,
+                    maximumColourRun,
+                    requireBalance,
+                    maximumGap2
+                  );
+
+            const matching = topDownMatching(
+              toPair,
+              graph,
+              compareCandidates
+            );
+
+            if (matching === null) continue;
+
+            const pairings = matching.map(
+              ([first, second]) => {
+                const assessment =
+                  assessments.get(first).get(second);
+
+                return {
+                  white: assessment.white,
+                  black: assessment.black,
+                  result: ""
+                };
+              }
+            );
+
+            if (byeId !== null) {
+              pairings.push({
+                white: byeId,
+                black: null,
+                result: "BYE"
+              });
+            }
+
+            return pairings;
+          }
         }
-
-        graph.get(a).add(b);
-        graph.get(b).add(a);
       }
-
-      const pairings = tryGraph(graph);
-
-      if (pairings !== null) return pairings;
     }
   }
-
-  /*
-    Exhaust all no-rematch possibilities for every eligible
-    bye recipient without colour or score-gap limits.
-  */
-  const fallbackPairings = tryGraph(unrestricted);
-
-  if (fallbackPairings !== null) return fallbackPairings;
-
-  /*
-    Absolute last resort. Minimum-bye eligibility still applies.
-  */
-  const rematchPairings = tryGraph(includingRematches);
-
-  if (rematchPairings !== null) return rematchPairings;
 
   throw new Error(
-    "No complete pairing could be generated for any eligible " +
-    "bye recipient, even with rematches allowed and all colour " +
-    "and score-difference restrictions relaxed."
+    "No complete Swiss pairing could be generated " +
+    "for any eligible bye recipient."
   );
 }
 
@@ -2735,6 +2860,10 @@ function validateTournament(s) {
     );
 
     const plan = getRoundPlan(s, round.number);
+    const colourContext = computeStats({
+      ...s,
+      rounds: s.rounds.slice(0, index)
+    });
     const active = new Set(plan.activeIds);
     const swiss = new Set(plan.swissIds);
 
@@ -2863,16 +2992,15 @@ function validateTournament(s) {
           "A pairing crosses the retained Berger/Swiss boundary."
         );
 
-        const wCount = whiteCounts.get(pair.white);
-        const bCount = whiteCounts.get(pair.black);
-
-        const expectedWhite = wCount === bCount
-          ? Math.max(pair.white, pair.black)
-          : (wCount < bCount ? pair.white : pair.black);
+	  const expectedWhite = preferredWhiteId(
+          pair.white,
+          pair.black,
+          colourContext
+        );
 
         requireCondition(
           pair.white === expectedWhite,
-          "A Swiss color assignment violates the specified rule."
+          "A Swiss colour assignment violates the revised rule."
         );
       }
 
@@ -5537,6 +5665,61 @@ function runFullTournamentChecks() {
   }
 }
 
+function runPairingPriorityChecks() {
+  /*
+    A leader must not receive the bye merely because
+    the other two players have equal scores.
+  */
+  const byeContext = makePairingTestContext(3);
+  byeContext.byId.get(1).score2 = 4;
+
+  const byePairings = makeSwissPairings(
+    [1, 2, 3],
+    byeContext
+  );
+
+  requireCondition(
+    byePairings.some(pair =>
+      pair.black === null && pair.white === 3
+    ),
+    "Self-check failed: lowest-ranked feasible bye recipient."
+  );
+
+  /*
+    Reversing the default colours avoids giving both
+    players a third consecutive identical colour.
+  */
+  const colourContext = makePairingTestContext(2);
+
+  const histories = [
+    ["W", "B", "W", "W", "B", "B"],
+    ["B", "W", "B", "B", "W", "W"]
+  ];
+
+  histories.forEach((colours, index) => {
+    const player = colourContext.byId.get(index + 1);
+
+    player.whites = 3;
+    player.blacks = 3;
+    player.history = colours.map((color, historyIndex) => ({
+      round: historyIndex + 1,
+      color
+    }));
+  });
+
+  const colourPairings = makeSwissPairings(
+    [1, 2],
+    colourContext
+  );
+
+  requireCondition(
+    colourPairings.length === 1 &&
+    colourPairings[0].white === 1 &&
+    colourPairings[0].black === 2,
+    "Self-check failed: reversed colours must avoid colour streaks."
+  );
+}
+
 function runSelfChecks() {
   runLayoutChecks();
   runBergerTableChecks();
@@ -5544,6 +5727,7 @@ function runSelfChecks() {
   runColourPairingChecks();
   runColourBalanceChecks();
   runRematchChecks();
+  runPairingPriorityChecks();
 
   for (const bergerRounds of [5, 7]) {
     runPostponementChecks(bergerRounds);
