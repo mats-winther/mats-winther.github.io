@@ -530,7 +530,7 @@
       <h3>Lottningssystem</h3>
       <ul>
         <li>
-          TPN tilldelas efter inledande ratingordning, från högst till lägst,
+          TPN tilldelas enligt inledande ratingordning, från högst till lägst,
           och ändras aldrig. Vid lika rating behålls inmatningsordningen.
         </li>
 
@@ -547,9 +547,9 @@
         <li>
           Ett spelaravhopp börjar gälla från nästa olottade rond.
           Under den inledande fasen bildar den berörda bergergruppen
-          och alla efterföljande bergergrupper normalt ett gemensamt
+          och alla efterföljande bergergrupper normalt ett enda gemensamt
           schweizerfält tillsammans med ett eventuellt befintligt
-          schweizerfält. Bergergrupper ovanför behåller sina scheman.
+          schweizerfält. Högre bergergrupper behåller sina scheman.
           Om det saknas ett befintligt schweizerfält och endast den
           sista bergergruppen påverkas, behåller den sitt återstående
           bergerschema. Aktiva spelare som enligt schemat skulle möta
@@ -562,8 +562,8 @@
 
         <li>
           Spelarna ordnas efter fallande poäng, fallande WNT och
-          därefter stigande TPN. Sökningen utesluter först omspel
-          och försöker skapa en fullständig lottning utan att någon
+          därefter stigande TPN. Sökningen 
+          försöker skapa en fullständig lottning utan att någon
           får ett tredje parti i följd med samma färg. Vid behov
           tillåts successivt längre färgsviter. Vid varje gräns för
           färgsvitens längd prövas behöriga mottagare av frironden
@@ -594,7 +594,7 @@
         <li>
           En frirond ger en turneringspoäng och bidrar inte direkt
           till WNT. I rond 1 får spelaren med lägst rating frironden
-          om spelarantalet är udda. Vid lika lägsta rating får
+          om spelarantalet är udda, annars får
           spelaren med högst TPN frironden. Senare är endast aktiva
           spelare med minst antal tidigare frironder i det aktuella
           schweizerfältet behöriga. En upprepad frirond tillåts
@@ -803,13 +803,11 @@
     Under den inledande fasen bildar den berörda bergergruppen
     och alla efterföljande grupper normalt ett gemensamt
     schweizerfält tillsammans med ett eventuellt befintligt
-    schweizerfält. Bergergrupper ovanför behåller sina scheman.
+    schweizerfält. Högre bergergrupper behåller sina scheman.
     Exempel: om en spelare utgår i Berger&nbsp;2 övergår den
     gruppen och alla senare grupper till schweizerlottning,
     medan Berger&nbsp;1 förblir opåverkad, såvida inte undantaget
-    för den isolerade sista gruppen gäller. Ett avhopp från
-    ett befintligt schweizerfält medför inte i sig att högre
-    bergergrupper övergår till schweizerlottning.
+    för den isolerade sista gruppen gäller.
   </p>
   <p>
     Om ett befintligt schweizerfält saknas och endast den sista
@@ -843,7 +841,7 @@
     aktiva spelare med minst antal tidigare frironder i det
     aktuella fältet behöriga att få frironden. En upprepad
     schweizerfrirond tillåts därför endast när alla aktiva
-    spelare i fältet redan har fått minst en. Om färre än två
+    spelare i fältet redan haft minst en. Om färre än två
     aktiva spelare återstår inför nästa rond avslutas turneringen
     när den aktuella ronden registreras, förutsatt att alla
     uppskjutna partier har fått giltiga resultat.
@@ -860,7 +858,7 @@
     de återstående spelarna.
   </p>
   <p>
-    Sökningen utesluter först omspel och försöker skapa en
+    Sökningen försöker skapa en
     fullständig lottning utan att någon får ett tredje parti
     i följd med samma färg. Vid varje gräns för färgsvitens
     längd prövas behöriga mottagare av frironden från botten
@@ -904,7 +902,7 @@
     minska antalet spelare som får minst tre partier i följd
     med samma färg. Sedan beaktas total färgbalans och växling
     mellan färger. Om dessa kriterier är likvärdiga får
-    spelaren med färre tidigare vitpartier vit, eller spelaren
+    spelaren med färre vitpartier vit, eller spelaren
     med högre TPN om antalet är lika. Färgantal och färghistorik
     omfattar bergerfasen. Längre färgsviter och undantag från
     total färgbalans kan tillåtas enligt sökprioriteringarna
@@ -986,8 +984,8 @@ Frironder, partier avgjorda utan spel och olösta uppskjutna partier utesluts.</
   <p id="about-field-examples"></p>
   <p>
     I ett inledande fält med udda antal spelare får spelaren
-    med lägst rating den första frironden. Vid lika lägsta
-    rating får spelaren med högst TPN frironden. Senare är
+    med lägst rating den första frironden, annars får spelaren
+    med högst TPN frironden. Senare är
     endast aktiva spelare med minst antal tidigare frironder
     i det aktuella schweizerfältet behöriga. Bland dessa prövas
     mottagarna från botten av schweizerställningen enligt
@@ -1407,8 +1405,8 @@ function updateFormatText() {
     `Positionerna avser den ursprungliga ratingordningen före slumpningen. ` +
     `Inom varje sådant par av bergergrupper innehåller den övre gruppen ` +
     `endast udda TPN och den nedre gruppen endast jämna TPN. Spelare ` +
-    `med intilliggande TPN möts därför inte inom dessa parvis ` +
-    `behandlade grupper så länge deras bergerscheman behålls.`;
+    `med intilliggande TPN kommer därför inte mötas så länge deras ` +
+    `bergerscheman behålls.`;
 
   const tailExchangeText =
     `Om antalet bergergrupper är udda och det finns en nedre ` +
@@ -1445,10 +1443,9 @@ function updateFormatText() {
   }).join("; ") + ".";
 
   const equivalenceText =
-    `Bland spelare med lika poäng i samma färdigspelade bergergrupp ` +
-    `efter rond ${rounds}, där samtliga schemalagda partier har ` +
-    `spelats, ger WNT samma rangordning som Sonneborn-Berger, ` +
-    `inklusive eventuella kvarstående likheter. Likvärdigheten ` +
+    `WNT ger samma rangordning som Sonneborn-Berger för spelare ` + 
+    `med lika poäng i en och samma färdigspelade bergergrupp ` +
+    `efter rond ${rounds}. Likvärdigheten ` +
     `gäller rangordningen, inte de numeriska värdena, och gäller ` +
     `i allmänhet inte mellan olika grupper eller efter ytterligare ` +
     `schweizerronder.`;
@@ -1473,8 +1470,7 @@ function updateFormatText() {
     "kan ändras medan turneringen pågår och gruppen fortfarande " +
     "använder bergerlottning. Uppskjutna partier måste få giltiga " +
     "resultat före gruppens övergång till schweizerlottning, före " +
-    `rond ${details.firstCombinedRound} eller före turneringens avslut, ` +
-    "beroende på vilket som inträffar först.";
+    `rond ${details.firstCombinedRound} eller turneringslut. `;
 
   $("about-format-summary").textContent =
     `Under de första ${rounds} ronderna används normalt bergergrupper med ` +
