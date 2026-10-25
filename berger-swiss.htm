@@ -492,7 +492,7 @@
       <div>
         <label for="tournament-name">Tournament Name</label>
         <input id="tournament-name" type="text"
-               value="Berger-Schweizermästerskapet" maxlength="200">
+               value="Berger-Swiss Championship" maxlength="200">
       </div>
 
       <fieldset class="berger-round-options">
@@ -597,7 +597,9 @@
           Swiss standings, subject to a complete pairing of the
           remaining players. Scheduled byes in a retained Berger group
           are an exception to Swiss bye selection and count toward
-          subsequent Swiss bye eligibility.
+          subsequent Swiss bye eligibility. A higher-ranked eligible 
+	  player may receive the bye if lower-ranked eligible recipients
+	  would require a rematch or a longer same-colour run.
         </li>
 
         <li id="setup-postponement-rule"></li>
@@ -811,9 +813,7 @@
     not to current standings. Original group memberships are
     retained as historical records. A subsequent withdrawal
     from an earlier retained Berger group expands the Swiss
-    field again. Converted groups never return to Berger.
-    A withdrawal from an existing Swiss field does not by itself
-    convert any earlier Berger group.
+    field again.
   </p>
   <p>
     Completed results, scores, opponent histories, colour histories,
@@ -833,51 +833,62 @@
   </p>
 
   <h3>Swiss pairing</h3>
-  <p>
+<p>
     Players are ordered by descending score, descending WNT,
     and ascending TPN. The highest remaining player is paired
-    first. Candidate opponents are considered by smallest
-    score difference first, with colour penalties and then
-    standings order breaking equal score differences.
-    Every choice must permit a complete pairing of the
-    remaining field.
+    first. Within each search stage, candidate opponents are
+    considered by smallest score difference, then colour
+    penalties, then standings order. Every choice must permit
+    a complete pairing of the remaining field.
   </p>
+
   <p>
-    The program first seeks a complete pairing that keeps each
-    player's White and Black totals within two games and avoids
-    three consecutive games of the same colour. It tries equal
-    scores first, then permits half a point, then one point.
-    All eligible bye recipients are considered at each stage.
-    If necessary, the consecutive-colour restriction is relaxed
-    before the total-balance restriction. A further search allows
-    balance exceptions while avoiding colour streaks, followed
-    by a search allowing both kinds of exception.
+    The search first excludes rematches and seeks a complete
+    pairing without giving anyone a third consecutive game of
+    the same colour. At each colour-run limit, eligible bye
+    recipients are considered from the bottom of the Swiss
+    standings. The first recipient who permits a complete
+    pairing is selected before score differences and total
+    colour balance are optimized. Thus, a higher-ranked
+    recipient is not selected merely to obtain smaller score
+    differences or better total colour balance.
   </p>
+
   <p>
-    If no complete pairing exists within one point even with
-    unrestricted colours, a further fallback permits larger
-    score differences while still excluding rematches.
-    Only after this search fails for every eligible bye
-    recipient are rematches permitted as an absolute last resort.
-    In that final search, candidate opponents who have not met
-    are preferred, followed by those with fewer previous meetings,
-    then by score difference, colour penalties, and standings
-    order. This is a top-down preference, not a guarantee of the
-    minimum total number of rematches. Rematches are marked
-    in the pairing list.
+    For the selected recipient, the search first seeks pairings
+    that keep each player's White and Black totals within two
+    games. Maximum score differences of zero, half a point,
+    one point, and unrestricted differences are tried in that
+    order. If necessary, the total-balance restriction is relaxed
+    and those score differences are tried again. If no eligible
+    recipient permits a complete pairing at the current
+    colour-run limit, that limit is increased.
+  </p>
+
+  <p>
+    Rematches are permitted only after every no-rematch
+    possibility has failed for every eligible bye recipient.
+    In the rematch search, candidate opponents who have not met
+    are preferred, followed by those with fewer previous
+    meetings, then by score difference, colour penalties, and
+    standings order. This is a top-down preference, not a
+    guarantee of the minimum total number of rematches.
+    Rematches are marked in the pairing list.
   </p>
 
   <h3>Color allocation</h3>
   <p>
-    Berger colors follow the fixed Berger table.
-    In every Swiss round, White goes to the player with fewer
-    previous White games, or to the higher TPN if equal.
-    Opponents are normally selected so that this allocation
-    keeps each player's White and Black totals within two
-    games and avoids three consecutive identical colours.
-    Both restrictions may be relaxed when necessary to
-    complete the round. Colour counts and histories include
-    the Berger phase.
+    Berger colours follow the fixed Berger table. For each
+    prospective Swiss pairing, both colour assignments are
+    compared. Preference is given first to limiting runs of
+    identical colours, then to reducing colour-streak violations,
+    maintaining total colour balance, and alternating colours.
+    If these considerations are equal, White goes to the player
+    with fewer previous White games, or to the higher TPN if
+    equal. Colour counts and histories include the Berger phase.
+    Longer colour runs and total-balance exceptions may be
+    permitted according to the Swiss search priorities described
+    above.
   </p>
   <p>
     Byes and forfeits add neither White nor Black games and
@@ -888,7 +899,7 @@
 
   <h3>Postponed Berger games</h3>
   <p>
-    Select p to mark a Berger game as postponed. In a submitted
+    Select ‘p’ to mark a Berger game as postponed. In a submitted
     round, that game temporarily gives zero points to both players
     and contributes no direct WNT to either player.
     The scheduled Berger colours remain recorded as allocations.
@@ -924,24 +935,27 @@ Byes, forfeits, and unresolved postponed games are excluded.</div>
   </p>
   <p id="about-wnt-equivalence"></p>
   <p>
-    When players finish tied on points, they are separated based on
-    the quality of the opposition they have faced. This method provides
-    a clear reflection of player performance, consistently rewarding
-    those who compete on the top boards. Although a player receives no
-    tie-break points for a BYE, the free game point elevates the player
-    into higher score groups, where stronger opposition naturally helps
-    offset the missed round. Unlike Buchholz, which employs a linear
-    calculation, WNT uses a quadratic weighting of opposition strength.
-    Furthermore, WNT awards points even for losses against strong
-    opponents, helping to compensate for a BYE while contributing
-    positively to the tie-break score.
+    WNT distinguishes players tied on tournament points by
+    combining their results against opponents with those
+    opponents' current tournament scores. Its formula contains
+    both a result-weighted linear term and a quadratic term.
+    A played loss contributes positively whenever the opponent
+    has a positive tournament score, with a larger contribution
+    against a higher-scoring opponent. Byes, forfeits, and
+    unresolved postponed games contribute no direct WNT.
+    A bye may lead to stronger subsequent opposition, but the
+    system does not guarantee compensation for the missing
+    played-game contribution.
   </p>
+
   <p>
-    When employed as a sorting criterion within score groups, WNT
-    pairs competitors with comparable opposition quality against each
-    other. This adheres to the Swiss principle, ensuring that the most
-    battle-tested players meet on higher boards without relying on
-    pre-tournament ratings.
+    Within equal-score groups, players with higher WNT are
+    considered first. This gives priority to the combination
+    of opposition scores and game results measured by WNT,
+    rather than sorting directly by rating. Opponent selection
+    remains subject to the complete-pairing search, colour
+    considerations, and rematch restrictions. Initial groups
+    and permanent TPNs remain based on pre-tournament ratings.
   </p>
 
   <h3>Field sizes and byes</h3>
@@ -959,6 +973,9 @@ Byes, forfeits, and unresolved postponed games are excluded.</div>
     per round. Repeat Swiss byes are permitted only under the
     eligibility rule above. A retained Berger group may produce
     multiple scheduled byes in one round after multiple withdrawals.
+    A higher-ranked eligible player may receive the bye if
+    lower-ranked eligible recipients would require a rematch
+    or a longer same-colour run.
   </p>
   <p>
     The setup round limit remains based on the original field
@@ -1411,7 +1428,7 @@ function updateFormatText() {
     `Among players tied on points in the same completed Berger ` +
     `group after Round ${rounds}, with every scheduled game ` +
     `played, WNT gives the same ordering as Sonneborn-Berger. ` +
-    `This is an <em>ordering</em> equivalence, not numerical equality, ` +
+    `This is an ordering equivalence, not numerical equality, ` +
     `and does not generally hold across different groups or ` +
     `after additional Swiss rounds.`;
 
@@ -1430,7 +1447,7 @@ function updateFormatText() {
     equivalenceText;
 
   $("setup-postponement-rule").textContent =
-    "Berger games may be marked p for postponed. A postponed " +
+    "Berger games may be marked ‘p’ for postponed. A postponed " +
     "game temporarily gives both players zero points and no " +
     "direct WNT contribution. Submitted Berger results remain " +
     "editable while their group still uses Berger pairings. " +
@@ -1463,7 +1480,7 @@ function updateFormatText() {
   $("about-postponement-rule").textContent =
     "Submitted Berger games remain editable while their group " +
     "still uses Berger pairings. Once that group enters Swiss, " +
-    "its submitted results are locked. Replace p with a proper " +
+    "its submitted results are locked. Replace ‘p’ with a proper " +
     "played result or an explicit forfeit result before conversion. " +
     "All postponed games must be resolved before Round " +
     `${details.firstCombinedRound} or tournament completion, ` +
@@ -1638,7 +1655,7 @@ function requireResolvedPostponements(s, targetRound = null) {
     ) +
     "\n\nUnresolved games:\n" +
     locations.join("\n") +
-    "\n\nUse Previous to open the relevant round and replace p " +
+    "\n\nUse Previous to open the relevant round and replace ‘p’ " +
     "with a played result or an explicit forfeit result. Then " +
     "return to the latest round and submit again."
   );
