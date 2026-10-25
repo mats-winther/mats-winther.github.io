@@ -7,7 +7,7 @@
   <meta name="description" content=
   "En teknisk genomgång av lottning i schackturneringar med fokus på Monrad och Schweizer. Artikeln presenterar ett nytt schweizersystem som ett stabilt och rättvist alternativ för öppna turneringar.">
   <meta name="keywords" content=
-  "Monrad, Schweizer, Berger, Scheveningen, WNT, Klubbschweizer, Dutch, FIDE, Dubov, Lim, Burstein, Buchholz, Sonneborn-Berger">
+  "Monrad, Schweizer, Berger, Scheveningen, WNT, Klubbschweizer, Berger-Schweizer, Dutch, FIDE, Dubov, Lim, Burstein, Buchholz, Sonneborn-Berger">
 
   <style>
   a.c2 {float: left; margin-top:2px; margin-left:2px}
@@ -245,7 +245,17 @@
     I mitt program <a href="../klubbschweizer.htm">Klubbschweizer</a> delas spelarna in i tre ratinggrupper som
     randomiseras var för sig. Systemet kombinerar monradsystemets slumpmässighet med schweizersystemets sportsliga
     rättvisa och passar därför särskilt bra för schackklubbar. Under de två första ronderna möter den starkaste gruppen
-    mellangruppen, medan den svagaste gruppen spelar inbördes. Därefter lottas hela startfältet som en enda grupp.</p>
+    mellangruppen, medan den svagaste gruppen spelar inbördes. Därefter lottas hela startfältet som en enda grupp.<br>
+    <br>
+    <a href="../berger-schweizer.htm">Berger-Schweizer</a> är mitt försök att förena förutsägbarheten i bergergrupper
+    med flexibiliteten i schweizerlottning. Spelarna delas först in efter rating, med byten mellan angränsande
+    bergergrupper för att bredda motståndet. Beroende på antalet spelare kan det behövas ett ytterligare fält för
+    återstoden som inte ryms i fullständiga bergergrupper. Detta fält använder schweizerlottning från start. Efter fem
+    eller sju ronder går alla aktiva spelare in i en gemensam schweizergrupp och behåller sin poäng och historik. Det
+    fasta inledande bergerschemat förenklar planeringen och gör det möjligt att skjuta upp partier. Den senare
+    schweizerfasen sammanför spelare med liknande poäng från de ursprungliga grupperna. Vid lika poäng används WNT som
+    särskiljningsmetod, som bygger på en kombination av motståndarnas poäng och spelarens individuella
+    partiresultat.</p>
     <p><span class="bigger">Schematisk översikt</span></p>
     <table class="c1">
       <thead>
@@ -314,7 +324,7 @@
     spelare med bäst resultat möter varandra mot slutet av turneringen.<br>
     <br>
     Jag har skapat en experimentell version här: <a href="../fide-hollandskt.htm">holländskt&nbsp;lottningssystem</a>.
-    Av allt att döma fungerar det korrekt. En turnering med 32 spelare över nio ronder simulerades. GPT-6.1-Sol och
+    Av allt att döma fungerar det korrekt. En turnering med 32 spelare över nio ronder simulerades. GPT-Sol-6.1 och
     Claude-Sonnet-5.5 analyserade turneringsfilerna för att verifiera att lottningen i varje rond följde FIDE:s
     specifikationer. Båda modellerna bedömde att lottningen var korrekt i samtliga nio ronder. En PDF med analyserna
     finns <a href="https://drive.google.com/file/d/1rh6cbWCTKffYym9fQ0SHIIdo-Vd7TWZ9/view?usp=drive_link" title=
