@@ -564,12 +564,12 @@
         <li>
           Swiss pairing order: descending score, descending WNT,
           then ascending TPN. Opponents are considered by smallest
-          score difference first, then by colour penalties and
+          score difference first, then by color penalties and
           standings order. The normal search keeps the difference
           between White and Black game totals within two and avoids
-          three consecutive games of the same colour. Maximum score
+          three consecutive games of the same color. Maximum score
           differences of zero, half a point, and one point are tried
-          in that order. Colour restrictions are relaxed if necessary.
+          in that order. Color restrictions are relaxed if necessary.
           A further fallback permits larger score differences while
           still excluding rematches. Only if no complete pairing
           without rematches exists for any eligible bye recipient
@@ -577,13 +577,13 @@
         </li>
 
 	<li>
-          Swiss colours: Both colour assignments are considered.
+          Swiss colors: Both color assignments are considered.
           The program first prefers assignments that avoid
-          extending a same-colour run beyond two games, then
-          considers colour balance and alternation. If these
+          extending a same-color run beyond two games, then
+          considers color balance and alternation. If these
           considerations are equal, White goes to the player
           with fewer previous White games, or to the higher
-          TPN if equal. Byes and forfeits add no played colour.
+          TPN if equal. Byes and forfeits add no played color.
         </li>
 
         <li>
@@ -599,7 +599,7 @@
           are an exception to Swiss bye selection and count toward
           subsequent Swiss bye eligibility. A higher-ranked eligible 
 	  player may receive the bye if lower-ranked eligible recipients
-	  would require a rematch or a longer same-colour run.
+	  would require a rematch or a longer same-color run.
         </li>
 
         <li id="setup-postponement-rule"></li>
@@ -608,7 +608,7 @@
           The current published round is not changed by a withdrawal.
           Enter its result normally, or select an explicit forfeit
           result if the game was not played. Forfeits award the
-          selected points but add no direct WNT, played colours,
+          selected points but add no direct WNT, played colors,
           or encounter.
         </li>
       </ul>
@@ -803,7 +803,7 @@
     schedule. Active players scheduled to face withdrawn players
     receive one-point pairing byes, regardless of their previous
     bye counts. Games scheduled between two withdrawn players
-    are omitted. These byes add no direct WNT or played colour,
+    are omitted. These byes add no direct WNT or played color,
     but count toward later Swiss bye eligibility. If an earlier
     group subsequently converts, the last group joins the
     resulting Swiss field.
@@ -816,7 +816,7 @@
     field again.
   </p>
   <p>
-    Completed results, scores, opponent histories, colour histories,
+    Completed results, scores, opponent histories, color histories,
     and previous byes are carried forward. WNT continues to be
     recalculated. Withdrawn players remain in the standings,
     and their completed results are not annulled.
@@ -837,7 +837,7 @@
     Players are ordered by descending score, descending WNT,
     and ascending TPN. The highest remaining player is paired
     first. Within each search stage, candidate opponents are
-    considered by smallest score difference, then colour
+    considered by smallest score difference, then color
     penalties, then standings order. Every choice must permit
     a complete pairing of the remaining field.
   </p>
@@ -845,13 +845,13 @@
   <p>
     The search first excludes rematches and seeks a complete
     pairing without giving anyone a third consecutive game of
-    the same colour. At each colour-run limit, eligible bye
+    the same color. At each color-run limit, eligible bye
     recipients are considered from the bottom of the Swiss
     standings. The first recipient who permits a complete
     pairing is selected before score differences and total
-    colour balance are optimized. Thus, a higher-ranked
+    color balance are optimized. Thus, a higher-ranked
     recipient is not selected merely to obtain smaller score
-    differences or better total colour balance.
+    differences or better total color balance.
   </p>
 
   <p>
@@ -862,7 +862,7 @@
     order. If necessary, the total-balance restriction is relaxed
     and those score differences are tried again. If no eligible
     recipient permits a complete pairing at the current
-    colour-run limit, that limit is increased.
+    color-run limit, that limit is increased.
   </p>
 
   <p>
@@ -870,7 +870,7 @@
     possibility has failed for every eligible bye recipient.
     In the rematch search, candidate opponents who have not met
     are preferred, followed by those with fewer previous
-    meetings, then by score difference, colour penalties, and
+    meetings, then by score difference, color penalties, and
     standings order. This is a top-down preference, not a
     guarantee of the minimum total number of rematches.
     Rematches are marked in the pairing list.
@@ -878,23 +878,23 @@
 
   <h3>Color allocation</h3>
   <p>
-    Berger colours follow the fixed Berger table. For each
-    prospective Swiss pairing, both colour assignments are
+    Berger colors follow the fixed Berger table. For each
+    prospective Swiss pairing, both color assignments are
     compared. Preference is given first to limiting runs of
-    identical colours, then to reducing colour-streak violations,
-    maintaining total colour balance, and alternating colours.
+    identical colors, then to reducing color-streak violations,
+    maintaining total color balance, and alternating colors.
     If these considerations are equal, White goes to the player
     with fewer previous White games, or to the higher TPN if
-    equal. Colour counts and histories include the Berger phase.
-    Longer colour runs and total-balance exceptions may be
+    equal. Color counts and histories include the Berger phase.
+    Longer color runs and total-balance exceptions may be
     permitted according to the Swiss search priorities described
     above.
   </p>
   <p>
     Byes and forfeits add neither White nor Black games and
-    do not interrupt a played-colour streak. Unresolved
+    do not interrupt a played-color streak. Unresolved
     postponed Berger games temporarily retain their scheduled
-    colours as allocations.
+    colors as allocations.
   </p>
 
   <h3>Postponed Berger games</h3>
@@ -902,7 +902,7 @@
     Select ‘p’ to mark a Berger game as postponed. In a submitted
     round, that game temporarily gives zero points to both players
     and contributes no direct WNT to either player.
-    The scheduled Berger colours remain recorded as allocations.
+    The scheduled Berger colors remain recorded as allocations.
   </p>
   <p id="about-postponement-rule"></p>
 
@@ -911,7 +911,7 @@
     Use 1-0 (Forfeit), 0-1 (Forfeit), or 0-0 (Double forfeit)
     when the scheduled game was not played. These results award
     the indicated tournament points but contribute no direct
-    WNT and add no played colours or encounter. A forfeit win
+    WNT and add no played colors or encounter. A forfeit win
     is not treated as a pairing bye by this custom system.
     No forfeit is assigned automatically when a player withdraws.
   </p>
@@ -953,7 +953,7 @@ Byes, forfeits, and unresolved postponed games are excluded.</div>
     considered first. This gives priority to the combination
     of opposition scores and game results measured by WNT,
     rather than sorting directly by rating. Opponent selection
-    remains subject to the complete-pairing search, colour
+    remains subject to the complete-pairing search, color
     considerations, and rematch restrictions. Initial groups
     and permanent TPNs remain based on pre-tournament ratings.
   </p>
@@ -975,7 +975,7 @@ Byes, forfeits, and unresolved postponed games are excluded.</div>
     multiple scheduled byes in one round after multiple withdrawals.
     A higher-ranked eligible player may receive the bye if
     lower-ranked eligible recipients would require a rematch
-    or a longer same-colour run.
+    or a longer same-color run.
   </p>
   <p>
     The setup round limit remains based on the original field
@@ -1442,7 +1442,7 @@ function updateFormatText() {
   $("setup-combined-rule").textContent =
     `From Round ${details.firstCombinedRound}, all remaining ` +
     `active players enter one Swiss field. Completed results, ` +
-    `scores, opponent histories, colour histories, and previous ` +
+    `scores, opponent histories, color histories, and previous ` +
     `byes are carried forward. WNT continues to be recalculated. ` +
     equivalenceText;
 
@@ -3018,7 +3018,7 @@ function validateTournament(s) {
 
         requireCondition(
           pair.white === expectedWhite,
-          "A Swiss colour assignment violates the revised rule."
+          "A Swiss color assignment violates the revised rule."
         );
       }
 
@@ -4015,9 +4015,9 @@ function renderTournament() {
     "rounds, even when an earlier round is viewed. Withdrawn players " +
     "retain completed scores and results. Unsubmitted results do not " +
     "affect scores or WNT. Byes, forfeits, and unresolved postponed " +
-    "games add no direct WNT. W/B totals include scheduled colours " +
+    "games add no direct WNT. W/B totals include scheduled colors " +
     "of submitted postponed Berger games, but exclude forfeits. " +
-    "Colours: W = White, B = Black, - = bye, F = forfeit. " +
+    "Colors: W = White, B = Black, - = bye, F = forfeit. " +
     "WNT is sorted at full precision before the TPN tie-break.";
 
   renderPairings();
@@ -4409,8 +4409,8 @@ function printStandings() {
     <p>
       Order: score, WNT, TPN.
       Colors: W = White, B = Black, - = bye, F = forfeit.
-      Scheduled colours of submitted postponed Berger games
-      are included in the colour totals. Forfeits are excluded.
+      Scheduled colors of submitted postponed Berger games
+      are included in the color totals. Forfeits are excluded.
       Withdrawn players retain their completed scores and results.
     </p>
   `);
@@ -4676,7 +4676,7 @@ function runBergerTableChecks() {
         value === Math.floor(rounds / 2) ||
         value === Math.ceil(rounds / 2)
       ),
-      `Self-check failed: ${size}-player Berger completeness or colours.`
+      `Self-check failed: ${size}-player Berger completeness or colors.`
     );
   }
 }
@@ -4767,7 +4767,7 @@ function runColourPairingChecks() {
         {color: "W"}
       ]
     }, "W"),
-    "Self-check failed: unplayed rounds must not reset colour history."
+    "Self-check failed: unplayed rounds must not reset color history."
   );
 
   const context = makeContext();
@@ -4780,7 +4780,7 @@ function runColourPairingChecks() {
     pairings.every(pair =>
       swissColourPenalty(pair.white, pair.black, context) === 0
     ),
-    "Self-check failed: colour-safe pairing."
+    "Self-check failed: color-safe pairing."
   );
 
   const oddContext = makeContext(5, 3);
@@ -4801,7 +4801,7 @@ function runColourPairingChecks() {
         oddContext
       ) === 0
     ),
-    "Self-check failed: colour-safe bye selection."
+    "Self-check failed: color-safe bye selection."
   );
 
   const forcedContext = makeContext();
@@ -4830,7 +4830,7 @@ function runColourPairingChecks() {
         forcedContext
       ), 0
     ) === 2,
-    "Self-check failed: exceptional colour fallback."
+    "Self-check failed: exceptional color fallback."
   );
 }
 
@@ -4882,7 +4882,7 @@ function runColourBalanceChecks() {
         context
       ).balanceExcess === 0
     ),
-    "Self-check failed: colour-balance pairing."
+    "Self-check failed: color-balance pairing."
   );
 
   const scoreContext = makeContext([
@@ -5734,7 +5734,7 @@ function runPairingPriorityChecks() {
     colourPairings.length === 1 &&
     colourPairings[0].white === 1 &&
     colourPairings[0].black === 2,
-    "Self-check failed: reversed colours must avoid colour streaks."
+    "Self-check failed: reversed colors must avoid color streaks."
   );
 }
 
