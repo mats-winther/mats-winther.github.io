@@ -765,9 +765,19 @@
   </button>
 
   <h2>About the Berger-Swiss System</h2>
-
+  <p>
+    Berger-Swiss represents an attempt to combine the predictability
+    of round-robin groups with the flexibility of Swiss pairing.
+    Players are initially grouped by rating, with exchanges between
+    adjacent Berger groups to broaden opposition.
+  </p>
   <p id="about-format-summary"></p>
-
+  <p>
+    Fixed early schedules simplify planning and allow postponed
+    games. The later Swiss phase brings players with similar scores
+    together across the original groups. Ties are resolved using WNT,
+    which combines opponents&rsquo; scores with individual game results.
+  </p>
   <h3>Group construction and interchange</h3>
   <p id="about-layout-rule"></p>
   <p id="about-exchange-rule"></p>
@@ -1464,7 +1474,8 @@ function updateFormatText() {
     `${details.size}-player Berger groups, together with a ` +
     `bottom Swiss group when required. From Round ` +
     `${details.firstCombinedRound}, all remaining active players ` +
-    `enter one Swiss field. Withdrawals can cause earlier conversion.`;
+    `enter one Swiss field. Players retain their scores and ` +
+    `histories. Withdrawals can cause earlier conversion.`;
 
   $("about-layout-rule").textContent = layoutText;
   $("about-exchange-rule").textContent = exchangeText;

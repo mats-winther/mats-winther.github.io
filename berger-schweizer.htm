@@ -776,10 +776,23 @@
   </button>
 
   <h2>Om Berger-Schweizersystemet</h2>
-
+  <p>
+    Berger-Schweizer är ett försök att förena förutsägbarheten i
+    bergergrupper med flexibiliteten i schweizerlottning. Spelarna
+    delas först in efter rating, med byten mellan angränsande 
+    bergergrupper för att bredda motståndet.
+  </p>
   <p id="about-format-summary"></p>
-
+  <p>
+    Det fasta inledande bergerschemat förenklar planeringen och
+    gör det möjligt att skjuta upp partier. Den senare schweizerfasen
+    sammanför spelare med liknande poäng från de ursprungliga grupperna.
+    Vid lika poäng används WNT som särskiljningsmetod, som bygger på en
+    kombination av motståndarnas poäng och spelarens individuella
+    partiresultat.
+  </p>
   <h3>Gruppindelning och byten</h3>
+
   <p id="about-layout-rule"></p>
   <p id="about-exchange-rule"></p>
   <p id="about-tail-exchange-rule"></p>
@@ -1477,6 +1490,7 @@ function updateFormatText() {
     `${details.size} spelare, tillsammans med en nedre schweizergrupp ` +
     `när det behövs. Från rond ${details.firstCombinedRound} deltar alla ` +
     `aktiva spelare i ett gemensamt schweizerfält. ` +
+    `Spelarna behåller sin poäng och historik. ` +
     `Spelaravhopp kan leda till en tidigare övergång.`;
 
   $("setup-field-hint").textContent =
