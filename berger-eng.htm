@@ -1,1396 +1,3191 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="A client-side FIDE Berger round-robin chess pairing and tournament management system running entirely in the browser.">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description"
+      content="Manage up to four independent Berger round-robin chess tournaments.">
 <meta name="author" content="Mats Winther">
-  <link rel="canonical" href="https://mats-winther.github.io/berger-eng.htm">
-  <title>Berger Tournament System (Round-Robin)</title>
-  <style>
-    :root {
-      --primary: #1e3a8a;
-      --primary-hover: #172554;
-      --secondary: #475569;
-      --accent: #2563eb;
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --border: #cbd5e1;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --success: #16a34a;
-      --danger: #dc2626;
-      --warning: #d97706;
-    }
+<link rel="canonical" href="https://mats-winther.github.io/berger-eng.htm">
+<title>Berger Tournament System: Four Tournaments</title>
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+<style>
+  :root {
+    color-scheme: light;
+    --page: #edf2f7;
+    --surface: #ffffff;
+    --ink: #172033;
+    --muted: #59677c;
+    --line: #d1dbea;
+    --blue: #2357b6;
+    --blue-dark: #163d88;
+    --green: #137352;
+    --red: #ae2939;
+    --soft-red: #fff0f1;
+    --soft-blue: #eef4ff;
+    --soft-green: #eaf7f0;
+    --radius: 12px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 22px;
+    background: var(--page);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont,
+                 "Segoe UI", sans-serif;
+    line-height: 1.5;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  button,
+  .file-button {
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: white;
+    color: var(--ink);
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  button:hover {
+    background: #f0f4fa;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  button.primary {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: white;
+  }
+
+  button.primary:hover {
+    background: var(--blue-dark);
+  }
+
+  button.success {
+    background: var(--green);
+    border-color: var(--green);
+    color: white;
+  }
+
+  button.danger {
+    color: var(--red);
+    background: var(--soft-red);
+    border-color: #edbac1;
+  }
+
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 3px solid #96b7ff;
+    outline-offset: 2px;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  textarea,
+  select {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 9px 10px;
+    background: white;
+    color: var(--ink);
+  }
+
+  textarea {
+    resize: vertical;
+  }
+
+  input[type="checkbox"] {
+    width: auto;
+  }
+
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+
+  h1,
+  h2,
+  h3,
+  p {
+    margin-top: 0;
+  }
+
+  h1 {
+    margin-bottom: 5px;
+    font-size: clamp(1.4rem, 3vw, 2rem);
+  }
+
+  h2 {
+    font-size: 1.18rem;
+    margin-bottom: 5px;
+    overflow-wrap: anywhere;
+  }
+
+  h3 {
+    font-size: 1rem;
+    margin-bottom: 10px;
+  }
+
+  .page-header,
+  .workspace-toolbar,
+  .workspace-notice {
+    max-width: 1900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .subtitle,
+  .hint,
+  .metadata {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  .subtitle {
+    margin: 0;
+  }
+
+  .workspace-toolbar {
+    padding: 15px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: white;
+    margin-bottom: 12px;
+  }
+
+  .toolbar,
+  .actions,
+  .round-navigation,
+  .inline-fields {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 9px;
+  }
+
+  .toolbar + .toolbar {
+    margin-top: 12px;
+  }
+
+  .view-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .view-control label {
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .view-control select {
+    width: auto;
+    max-width: 310px;
+  }
+
+  .storage-status {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .workspace-notice {
+    margin-bottom: 15px;
+    padding: 10px 13px;
+    border: 1px solid #e5c777;
+    border-radius: 8px;
+    background: #fff8e4;
+    font-size: 0.85rem;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  #tournamentGrid {
+    max-width: 1900px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 20px;
+  }
+
+  #tournamentGrid.single {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 1150px;
+  }
+
+  .tournament-card {
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-top: 5px solid var(--slot-color);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 3px 12px rgb(20 35 60 / 5%);
+  }
+
+  .card-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 15px;
+  }
+
+  .slot-label {
+    color: var(--slot-color);
+    font-weight: 700;
+    font-size: 0.8rem;
+    margin-bottom: 3px;
+  }
+
+  .badge {
+    display: inline-block;
+    border-radius: 20px;
+    background: var(--soft-blue);
+    color: var(--blue-dark);
+    padding: 3px 9px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .badge.final {
+    background: var(--soft-green);
+    color: var(--green);
+  }
+
+  .actions {
+    margin-bottom: 17px;
+  }
+
+  .field {
+    margin-bottom: 17px;
+  }
+
+  .field .hint {
+    margin: 6px 0 0;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+  }
+
+  .checkbox-label input {
+    margin-top: 5px;
+  }
+
+  .section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+
+  .section-heading h3 {
+    margin: 0;
+  }
+
+  .tie-break-control {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.85rem;
+  }
+
+  .tie-break-control label {
+    margin: 0;
+  }
+
+  .tie-break-control select {
+    width: auto;
+    max-width: 230px;
+    padding: 6px 8px;
+  }
+
+  .round-navigation {
+    background: #f6f8fc;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 11px;
+    margin: 15px 0;
+  }
+
+  .round-navigation select {
+    width: auto;
+    flex: 1;
+    min-width: 130px;
+  }
+
+  .table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 14px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    background: white;
+  }
+
+  th,
+  td {
+    border: 1px solid var(--line);
+    padding: 7px 8px;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  th {
+    background: #f0f4fa;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  td.numeric,
+  th.numeric {
+    text-align: center;
+  }
+
+  td.player-name {
+    min-width: 135px;
+    overflow-wrap: anywhere;
+  }
+
+  .pairings td.player-name {
+    min-width: 125px;
+  }
+
+  .result-select {
+    min-width: 155px;
+    padding: 6px;
+    font-size: 0.82rem;
+  }
+
+  .bye-row {
+    color: var(--muted);
+    background: #f8fafc;
+  }
+
+  .withdrawn {
+    color: var(--red);
+    font-size: 0.75rem;
+  }
+
+  .leader-row {
+    background: #f1f8ff;
+  }
+
+  .matrix th,
+  .matrix td {
+    text-align: center;
+    min-width: 42px;
+  }
+
+  .matrix .matrix-name {
+    min-width: 150px;
+    text-align: left;
+  }
+
+  .matrix .diagonal {
+    background: #e4eaf3;
+  }
+
+  .small-note {
+    color: var(--muted);
+    font-size: 0.78rem;
+    margin-bottom: 10px;
+  }
+
+  .progress-line {
+    margin: 8px 0 0;
+    font-size: 0.83rem;
+    color: var(--muted);
+  }
+
+  .final-summary {
+    background: var(--soft-green);
+    border: 1px solid #b9dec9;
+    border-radius: 8px;
+    padding: 11px;
+    margin-bottom: 15px;
+  }
+
+  dialog {
+    width: min(650px, 94vw);
+    max-height: 88vh;
+    overflow: auto;
+    margin: auto;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 24px;
+    background: white;
+    color: var(--ink);
+    box-shadow: 0 20px 70px rgb(0 0 0 / 25%);
+  }
+
+  dialog::backdrop {
+    background: rgb(15 23 42 / 60%);
+  }
+
+  dialog p,
+  dialog li {
+    font-size: 0.9rem;
+  }
+
+  dialog a {
+    color: var(--blue);
+  }
+
+  .dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 20px;
+  }
+
+  #printRoot {
+    display: none;
+  }
+
+  @media (max-width: 1050px) {
+    #tournamentGrid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 600px) {
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
-      padding: 24px;
+      padding: 10px;
     }
 
-    .container {
-      max-width: 1080px;
-      margin: 0 auto;
-      background: var(--surface);
-      border-radius: 8px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-      padding: 32px;
+    .tournament-card {
+      padding: 13px;
     }
 
-    header {
-      border-bottom: 2px solid var(--border);
-      padding-bottom: 16px;
-      margin-bottom: 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.5rem;
-    }
-    h1 { font-size: 25px; color: var(--primary); font-weight: 700; }
-    header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
-
-    .top-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 24px;
+    .page-header {
+      flex-direction: column;
     }
 
-    button, .file-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px 16px;
-      font-size: 14px;
-      font-weight: 600;
-      border-radius: 6px;
-      border: 1px solid transparent;
-      cursor: pointer;
-      transition: all 0.15s ease-in-out;
-      text-decoration: none;
-    }
-    .btn-primary { background-color: var(--accent); color: #fff; }
-    .btn-primary:hover { background-color: var(--primary); }
-    .btn-secondary { background-color: #fff; border-color: var(--border); color: var(--secondary); }
-    .btn-secondary:hover { background-color: #f1f5f9; color: var(--text); }
-    .btn-dark { background-color: #0f172a; color: #fff; }
-    .btn-dark:hover { background-color: #1e293b; }
-    .btn-danger { background-color: #fee2e2; border-color: #fca5a5; color: var(--danger); }
-    .btn-danger:hover { background-color: #fecaca; }
-    .btn-preround { background-color: #047857; color: #fff; }
-    .btn-preround:hover { background-color: #065f46; }
-
-    input[type="file"] { display: none; }
-    .form-group { margin-bottom: 20px; }
-    label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
-    input[type="text"], textarea, select {
+    .storage-status {
+      margin-left: 0;
       width: 100%;
-      padding: 9px 12px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 14px;
-      font-family: inherit;
-    }
-    input[type="text"]:focus, textarea:focus, select:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-    }
-    .hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
-
-    .checkbox-group {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-    .checkbox-group input { margin-top: 4px; }
-
-    .radio-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      margin-top: 6px;
-      font-size: 14px;
-    }
-    .radio-group label {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-weight: normal;
-      cursor: pointer;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 16px 0 24px 0;
-      font-size: 14px;
+    button {
+      padding: 8px 10px;
     }
-    th, td {
-      border: 1px solid var(--border);
-      padding: 8px 12px;
-      text-align: left;
-    }
-    th {
-      background-color: #f1f5f9;
-      font-weight: 600;
-      color: var(--secondary);
-    }
-    td.text-center, th.text-center { text-align: center; }
+  }
 
-    .round-nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-      background: #f8fafc;
-      padding: 12px 16px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      margin-bottom: 20px;
-    }
-    .round-nav .nav-buttons {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .round-nav h2 {
-      font-size: 18px;
-      color: var(--primary);
+  @media print {
+    @page {
+      size: landscape;
+      margin: 12mm;
     }
 
-    .badge-status {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 9999px;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
+    body {
+      padding: 0;
+      margin: 0;
+      background: white;
+      color: black;
     }
-    .status-active { background: #dcfce7; color: #166534; }
-    .status-bye { background: #e2e8f0; color: #475569; }
-    .status-withdrawn { background: #fee2e2; color: #991b1b; }
 
-    .section-title {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 30px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border);
+    body > :not(#printRoot) {
+      display: none !important;
     }
-    .section-title h3 { font-size: 16px; color: var(--primary); }
 
-    .matrix-table { overflow-x: auto; display: block; }
-    .matrix-table th, .matrix-table td { min-width: 36px; text-align: center; font-size: 13px; }
-    .matrix-table td.matrix-diag { background: #e2e8f0; font-weight: bold; }
+    #printRoot {
+      display: block !important;
+    }
 
-/* Dialog Box Styling */
-dialog {
-  border: 1px solid #cbd5e1; /* Clear, visible border */
-  border-radius: 8px;
-  width: min(650px, 92vw);
-  max-height: 88vh;
-  overflow-y: auto;
-  padding: 1.5rem;
-  
-  /* Force solid light background and dark text */
-  background-color: #ffffff;
-  color: #0f172a;
-  
-  /* Drop shadow to pop out from the backdrop */
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
-  
-  text-align: left;
-  margin: auto;
-}
+    .print-report {
+      break-after: page;
+    }
 
-/* Ensure backdrop dims the rest of the page behind the dialog */
-dialog::backdrop {
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(3px);
-}
-dialog h2 {
-  margin-bottom: 0.75rem;
-  font-size: 1.25rem;
-  color: var(--text);
-}
+    .print-report:last-child {
+      break-after: auto;
+    }
 
-dialog p {
-  margin: 0.6rem 0;
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
+    .print-report h1 {
+      font-size: 19pt;
+    }
 
-dialog ul {
-  margin: 0.75rem 0 1.25rem 1.25rem;
-  font-size: 0.88rem;
-}
+    .print-report h2 {
+      font-size: 14pt;
+      margin-top: 16px;
+    }
 
-dialog li {
-  margin-bottom: 0.35rem;
-}
+    .print-report h3 {
+      font-size: 11pt;
+      margin-top: 16px;
+    }
 
-dialog a {
-  color: var(--primary);
-  text-decoration: underline;
-}
+    .print-report table {
+      font-size: 9pt;
+      margin-bottom: 12px;
+    }
+
+    .print-report th,
+    .print-report td {
+      border: 1px solid #888;
+      padding: 5px;
+    }
+
+    .print-report .table-scroll {
+      overflow: visible;
+    }
+
+    .print-report .matrix .matrix-name {
+      min-width: 110px;
+    }
+
+    .print-report .matrix th,
+    .print-report .matrix td {
+      min-width: 25px;
+    }
+
+    thead {
+      display: table-header-group;
+    }
+
+    tr {
+      break-inside: avoid;
+    }
+
+    .hint,
+    .small-note,
+    .metadata,
+    .withdrawn {
+      color: black;
+    }
+  }
+/* Very light grey for previously white buttons, except About. */
+  button:not(.primary):not(.success):not(.danger):not([data-action="about"]) {
+    background: #f3f4f6;
+  }
+
+  button:not(.primary):not(.success):not(.danger):not([data-action="about"]):hover {
+    background: #e7e9ed;
+  }
+
+  button[data-action="about"] {
+    background: white;
+  }
+
+  /* Main page header. */
+  .page-header h1 {
+    color: var(--blue-dark);
+  }
+
+  /* Compact setup tie-break control beside the import button. */
+  .setup-tie-break {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .setup-tie-break label {
+    margin: 0;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .setup-tie-break select {
+    width: 165px;
+    padding: 6px 8px;
+    font-size: 0.8rem;
+  }
+
+  div.checkbox-label {
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+
 </style>
 </head>
+
 <body>
-<div class="container">
 
-<header>
-  <div class="brand">
-    <h1>Berger Tournament System</h1>
-<p>Official Berger Pairing Tables for 3 to 16 Players According to the FIDE Handbook (C05/Annex 1 &amp; C.07)</p>
-
-  </div>
+<header class="page-header">
   <div>
-    <button id="aboutButton" class="btn btn-secondary" onclick="document.getElementById('aboutDialog').showModal()">About</button>
+    <h1>Berger Tournament System</h1>
+    <p class="subtitle">
+      Up to four independent round-robin tournaments.
+      Each tournament supports 3 to 16 players.
+    </p>
   </div>
+
+  <button type="button" data-action="about">About</button>
 </header>
 
-  <!-- SETUP SECTION -->
-  <section id="setupSection">
-    <div class="top-actions">
-      <button type="button" class="btn-primary" onclick="newTournamentSetup()">Create Tournament</button>
-      <label class="btn-secondary file-btn">
-        Open Saved Tournament (JSON)
-        <input type="file" id="loadJsonInput" accept=".json" onchange="loadTournamentJson(event)">
-      </label>
-      <button type="button" class="btn-secondary" onclick="restoreLastSession()">Restore Last Session</button>
+<section class="workspace-toolbar" aria-label="Workspace controls">
+  <div class="toolbar">
+    <button type="button" class="primary" data-action="create">
+      Create Tournament
+    </button>
+
+    <button type="button" data-action="save-workspace">
+      Save All Tournaments (.json)
+    </button>
+
+    <button type="button" data-action="open-workspace">
+      Open Workspace (.json)
+    </button>
+
+    <button type="button" data-action="restore">
+      Restore Last Session
+    </button>
+
+    <button type="button" data-action="print-all">
+      Print All Started Tournaments
+    </button>
+  </div>
+
+  <div class="toolbar">
+    <div class="view-control">
+      <label for="displayView">Display:</label>
+      <select id="displayView"></select>
     </div>
 
-    <div class="form-group">
-      <label for="tournamentName">Tournament Name</label>
-      <input type="text" id="tournamentName" placeholder="e.g. Club Championship 2026">
-    </div>
+    <span id="storageStatus"
+          class="storage-status"
+          role="status"
+          aria-live="polite">
+      Ready
+    </span>
+  </div>
+</section>
+
+<div id="workspaceNotice"
+     class="workspace-notice"
+     role="status"
+     hidden></div>
+
+<main id="tournamentGrid"></main>
+
+<input id="jsonInput"
+       type="file"
+       accept=".json,application/json"
+       hidden>
+
+<input id="textInput"
+       type="file"
+       accept=".txt,text/plain"
+       hidden>
 
-    <div class="form-group">
-      <label for="playerRoster">Player Roster (one player per line, 3 to 16 players)</label>
-      <textarea id="playerRoster" rows="9" placeholder="Carlsen, Magnus&#10;Nakamura, Hikaru&#10;Caruana, Fabiano..."></textarea>
-      <div style="display: flex; gap: 10px; margin-top: 8px;">
-        <button type="button" class="btn-secondary" onclick="loadSamplePlayers()">Load Sample (16 World Champions)</button>
-        <label class="btn-secondary file-btn">
-          Import Players (.txt)
-          <input type="file" id="loadTxtInput" accept=".txt" onchange="importPlayersTxt(event)">
-        </label>
-      </div>
-    </div>
-
-    <div class="checkbox-group">
-      <input type="checkbox" id="doubleRoundRobin">
-      <div>
-        <label for="doubleRoundRobin" style="margin-bottom: 2px;">Double Round-Robin (two cycles)</label>
-        <div class="hint">FIDE Annex 1 rule: The last two rounds of Cycle 1 are transposed to prevent three consecutive games with the same colour. Cycle 2 follows the base table with reversed colours.</div>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label>Default Tie-Break System (FIDE C.07)</label>
-      <div class="radio-group">
-        <label><input type="radio" name="defaultTb" value="Sonneborn" checked> <strong>Sonneborn-Berger</strong> (Official FIDE Standard)</label>
-        <label><input type="radio" name="defaultTb" value="DirectEncounter"> Direct Encounter</label>
-        <label><input type="radio" name="defaultTb" value="Progressive"> Progressive Score (Cumulative)</label>
-      </div>
-    </div>
-
-    <button type="button" class="btn-primary" style="padding: 10px 24px; font-size: 15px;" onclick="startTournament()">Start Tournament</button>
-  </section>
-
-  <!-- ONGOING TOURNAMENT -->
-  <section id="tournamentSection" style="display: none;">
-    <div class="top-actions">
-      <button type="button" class="btn-secondary" onclick="saveTournamentJson()">Save Tournament (.json)</button>
-      <button type="button" class="btn-danger" onclick="promptWithdraw()">Withdraw Player / Forfeit (w.o.)</button>
-      <button type="button" class="btn-dark" onclick="finishTournament()">Finish &amp; View Final Standings</button>
-    </div>
-
-    <!-- Round Navigation -->
-    <div class="round-nav">
-      <div class="nav-buttons">
-        <button type="button" class="btn-secondary" id="btnPrevRound" onclick="prevRound()">← Previous Round</button>
-        <button type="button" class="btn-secondary" id="btnNextRound" onclick="nextRound()">Next Round →</button>
-      </div>
-      <h2 id="currentRoundTitle">Round 1</h2>
-      <div>
-        <button type="button" class="btn-preround" onclick="printPreRoundSheet()" title="Print pairings and current standings before this round">
-          🖨️ Print Pre-Round Sheet
-        </button>
-      </div>
-    </div>
-
-    <!-- Pairings Table -->
-    <table>
-      <thead>
-        <tr>
-          <th style="width: 70px;" class="text-center">Board</th>
-          <th style="width: 36%;">White</th>
-          <th style="width: 170px;" class="text-center">Result</th>
-          <th style="width: 36%;">Black</th>
-        </tr>
-      </thead>
-      <tbody id="pairingsBody"></tbody>
-    </table>
-
-    <!-- Round Standings -->
-    <div class="section-title">
-      <h3 id="standingsTitle">Current Standings</h3>
-      <div style="font-size: 13px;">
-        <strong>Tie-Break:</strong>
-        <label style="margin-left: 8px; cursor: pointer;">
-          <input type="radio" name="roundTb" value="Sonneborn" onchange="renderRoundStandings()" checked> Sonneborn-B.
-        </label>
-        <label style="margin-left: 8px; cursor: pointer;">
-          <input type="radio" name="roundTb" value="DirectEncounter" onchange="renderRoundStandings()"> Direct Enc.
-        </label>
-        <label style="margin-left: 8px; cursor: pointer;">
-          <input type="radio" name="roundTb" value="Progressive" onchange="renderRoundStandings()"> Progressive
-        </label>
-      </div>
-    </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th class="text-center" style="width: 50px;">Pos.</th>
-          <th class="text-center" style="width: 50px;">No.</th>
-          <th>Name</th>
-          <th class="text-center">Pld</th>
-          <th class="text-center">W</th>
-          <th class="text-center">D</th>
-          <th class="text-center">L</th>
-          <th class="text-center">Pts</th>
-          <th class="text-center" id="colTbHeader" style="width: 110px;">S-B</th>
-          <th class="text-center" style="width: 90px;">Status</th>
-        </tr>
-      </thead>
-      <tbody id="standingsBody"></tbody>
-    </table>
-
-    <div class="top-actions" style="margin-top: 16px;">
-      <button type="button" class="btn-secondary" onclick="printRoundResults()">🖨️ Print Round Results &amp; Standings</button>
-      <button type="button" class="btn-secondary" onclick="saveTournamentJson()">Export (.json)</button>
-    </div>
-  </section>
-
-  <!-- FINAL STANDINGS & CROSSTABLE -->
-  <section id="finalSection" style="display: none;">
-    <div class="top-actions">
-      <button type="button" class="btn-secondary" onclick="backToRounds()">← Back to Rounds</button>
-      <button type="button" class="btn-primary" onclick="newTournamentSetup()">New Tournament</button>
-      <button type="button" class="btn-secondary" onclick="printFinalResults()">🖨️ Print Final Report</button>
-      <button type="button" class="btn-secondary" onclick="saveTournamentJson()">Export (.json)</button>
-    </div>
-
-    <div class="section-title">
-      <h2>Final Standings &amp; Crosstable</h2>
-      <div style="font-size: 13px;">
-        <strong>Tie-Break:</strong>
-        <label style="margin-left: 8px; cursor: pointer;">
-          <input type="radio" name="finalTb" value="Sonneborn" onchange="renderFinals()" checked> Sonneborn-Berger
-        </label>
-        <label style="margin-left: 8px; cursor: pointer;">
-          <input type="radio" name="finalTb" value="DirectEncounter" onchange="renderFinals()"> Direct Encounter
-        </label>
-        <label style="margin-left: 8px; cursor: pointer;">
-          <input type="radio" name="finalTb" value="Progressive" onchange="renderFinals()"> Progressive Score
-        </label>
-      </div>
-    </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th class="text-center" style="width: 55px;">Pos.</th>
-          <th class="text-center" style="width: 55px;">No.</th>
-          <th>Player</th>
-          <th class="text-center" style="width: 70px;">Pld</th>
-          <th class="text-center" style="width: 50px;">W</th>
-          <th class="text-center" style="width: 50px;">D</th>
-          <th class="text-center" style="width: 50px;">L</th>
-          <th class="text-center" style="width: 80px;">Points</th>
-          <th class="text-center" style="width: 120px;" id="finalTbHeader">Sonneborn-B.</th>
-          <th class="text-center" style="width: 90px;">Status</th>
-        </tr>
-      </thead>
-      <tbody id="finalStandingsBody"></tbody>
-    </table>
-
-    <h3 style="margin-top: 32px; margin-bottom: 12px; color: var(--primary);">FIDE Berger Crosstable</h3>
-    <div class="hint" style="margin-bottom: 8px;">Notation: 1, ½, 0 = played game. + = forfeit win (w.o.), - = forfeit loss (w.o.), -- = double forfeit.</div>
-    <div class="matrix-table" id="crosstableContainer"></div>
-  </section>
-</div>
-
-<script>
-let tournament = {
-  name: "",
-  isDouble: false,
-  defaultTieBreak: "Sonneborn",
-  players: [],
-  rounds: [],
-  currentRound: 1,
-  completed: false
-};
-
-const SAMPLE_CHAMPIONS = [
-  "Wilhelm Steinitz", "Emanuel Lasker", "José Raúl Capablanca", "Alexander Alekhine",
-  "Max Euwe", "Mikhail Botvinnik", "Vasily Smyslov", "Mikhail Tal",
-  "Tigran Petrosian", "Boris Spassky", "Bobby Fischer", "Anatoly Karpov",
-  "Garry Kasparov", "Vladimir Kramnik", "Viswanathan Anand", "Magnus Carlsen"
-];
-
-function setAboutButtonVisible(visible) {
-document.getElementById("aboutButton").style.display =
-visible ? "inline-flex" : "none";
-}
-
-function loadSamplePlayers() {
-  document.getElementById("playerRoster").value = SAMPLE_CHAMPIONS.join("\n");
-}
-
-function importPlayersTxt(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    document.getElementById("playerRoster").value = e.target.result;
-  };
-  reader.readAsText(file);
-}
-
-function isByePlayer(playerId) {
-  const p = tournament.players.find(pl => pl.id === playerId);
-  return !p || p.status === "Bye";
-}
-
-function getRoundStatus(roundObj) {
-  const realPairings = roundObj.pairings.filter(p => !isByePlayer(p.white) && !isByePlayer(p.black));
-  if (realPairings.length === 0) {
-    return { total: 0, completed: 0, isComplete: true, isInProgress: false, isNotStarted: true };
-  }
-  const completed = realPairings.filter(p => p.result && p.result !== "*").length;
-  return {
-    total: realPairings.length,
-    completed: completed,
-    isComplete: completed === realPairings.length,
-    isInProgress: completed > 0 && completed < realPairings.length,
-    isNotStarted: completed === 0
-  };
-}
-
-function getStandingsContext(viewingRoundNum) {
-  const viewingRound = tournament.rounds[viewingRoundNum - 1];
-  const status = getRoundStatus(viewingRound);
-
-  if (status.isComplete) {
-    return {
-      title: `Standings after Round ${viewingRoundNum}`,
-      calcUpToRound: viewingRoundNum
-    };
-  } else if (status.isInProgress) {
-    return {
-      title: `Live Standings (Round ${viewingRoundNum} in progress — ${status.completed}/${status.total} games completed)`,
-      calcUpToRound: viewingRoundNum
-    };
-  } else {
-    let prevRoundWithGames = 0;
-    for (let i = viewingRoundNum - 1; i >= 1; i--) {
-      const s = getRoundStatus(tournament.rounds[i - 1]);
-      if (s.completed > 0) {
-        prevRoundWithGames = i;
-        break;
-      }
-    }
-
-    if (prevRoundWithGames === 0) {
-      return {
-        title: `Standings before Round 1 (Initial Seed List)`,
-        calcUpToRound: 0
-      };
-    } else {
-      const prevStatus = getRoundStatus(tournament.rounds[prevRoundWithGames - 1]);
-      const descriptor = prevStatus.isComplete 
-        ? `after Round ${prevRoundWithGames}` 
-        : `during Round ${prevRoundWithGames} (in progress)`;
-      return {
-        title: `Standings ${descriptor} (Before Round ${viewingRoundNum})`,
-        calcUpToRound: prevRoundWithGames
-      };
-    }
-  }
-}
-
-/**
- * FIDE Berger Pairings Algorithm (Annex 1)
- */
-function generateBergerPairings(numPlayers) {
-  const N = (numPlayers % 2 === 0) ? numPlayers : numPlayers + 1;
-  const numRounds = N - 1;
-  const boardsPerRound = N / 2;
-  const rounds = [];
-
-  for (let r = 1; r <= numRounds; r++) {
-    const pairings = [];
-    let p0 = 0;
-
-    if (r % 2 !== 0) {
-      p0 = (r + 1) / 2;
-      pairings.push({ white: p0, black: N, result: "*" });
-    } else {
-      p0 = (r / 2) + (N / 2);
-      pairings.push({ white: N, black: p0, result: "*" });
-    }
-
-    const M = N - 1;
-    for (let k = 1; k < boardsPerRound; k++) {
-      const w = ((p0 + k - 1) % M) + 1;
-      const b = ((p0 - k - 1 + M * 10) % M) + 1;
-      pairings.push({ white: w, black: b, result: "*" });
-    }
-    rounds.push(pairings);
-  }
-  return rounds;
-}
-
-function startTournament() {
-  const name = document.getElementById("tournamentName").value.trim() || "Berger Tournament";
-  const rawRoster = document.getElementById("playerRoster").value.split("\n")
-    .map(s => s.trim())
-    .filter(s => s.length > 0);
-
-  if (rawRoster.length < 3 || rawRoster.length > 16) {
-    alert("Please enter between 3 and 16 players.");
-    return;
-  }
-
-  const isDouble = document.getElementById("doubleRoundRobin").checked;
-  const defaultTb = document.querySelector('input[name="defaultTb"]:checked').value;
-  const isOdd = (rawRoster.length % 2 !== 0);
-
-  const players = rawRoster.map((pName, index) => ({
-    id: index + 1,
-    startNo: index + 1,
-    name: pName,
-    status: "Active"
-  }));
-
-  if (isOdd) {
-    players.push({
-      id: players.length + 1,
-      startNo: players.length + 1,
-      name: "BYE",
-      status: "Bye"
-    });
-  }
-
-  const baseBerger = generateBergerPairings(players.length);
-  let totalRounds = [];
-
-  if (!isDouble) {
-    totalRounds = baseBerger.map((pairs, idx) => ({
-      roundNumber: idx + 1,
-      pairings: pairs
-    }));
-  } else {
-    // FIDE Annex 1: Transpose the last two rounds of Cycle 1
-    const cycle1 = JSON.parse(JSON.stringify(baseBerger));
-    if (cycle1.length >= 2) {
-      const lastIdx = cycle1.length - 1;
-      const secondLastIdx = cycle1.length - 2;
-      const temp = cycle1[lastIdx];
-      cycle1[lastIdx] = cycle1[secondLastIdx];
-      cycle1[secondLastIdx] = temp;
-    }
-
-    // FIDE Annex 1: Cycle 2 follows the base table with reversed colours
-    const cycle2 = baseBerger.map(round =>
-      round.map(p => ({
-        white: p.black,
-        black: p.white,
-        result: "*"
-      }))
-    );
-
-    totalRounds = cycle1.concat(cycle2).map((pairs, idx) => ({
-      roundNumber: idx + 1,
-      pairings: pairs
-    }));
-  }
-
-  tournament = {
-    name,
-    isDouble,
-    defaultTieBreak: defaultTb,
-    players,
-    rounds: totalRounds,
-    currentRound: 1,
-    completed: false
-  };
-
-  saveSession();
-  showTournamentScreen();
-}
-
-function showTournamentScreen() {
-  document.getElementById("setupSection").style.display = "none";
-  document.getElementById("finalSection").style.display = "none";
-  document.getElementById("tournamentSection").style.display = "block";
-  setAboutButtonVisible(false);
-  document.querySelector(`input[name="roundTb"][value="${tournament.defaultTieBreak}"]`).checked = true;
-  renderRound();
-}
-
-function finishTournament() {
-  tournament.completed = true;
-  saveSession();
-  document.getElementById("setupSection").style.display = "none";
-  document.getElementById("tournamentSection").style.display = "none";
-  document.getElementById("finalSection").style.display = "block";
-  setAboutButtonVisible(false);
-  document.querySelector(`input[name="finalTb"][value="${tournament.defaultTieBreak}"]`).checked = true;
-  renderFinals();
-}
-
-function backToRounds() {
-  tournament.completed = false;
-  showTournamentScreen();
-}
-
-function newTournamentSetup() {
-  if (confirm("Are you sure you want to create a new tournament? Current data will be cleared if not exported as JSON.")) {
-    document.getElementById("setupSection").style.display = "block";
-    document.getElementById("tournamentSection").style.display = "none";
-    document.getElementById("finalSection").style.display = "none";
-    setAboutButtonVisible(true);
-    localStorage.removeItem("bergerTournamentSession");
-  }
-}
-
-function getStatusLabel(status) {
-  if (status === "Active") return "Active";
-  if (status === "Withdrawn") return "Withdrawn";
-  if (status === "Bye") return "Bye";
-  return status;
-}
-
-function renderRound() {
-  const roundData = tournament.rounds[tournament.currentRound - 1];
-  document.getElementById("currentRoundTitle").textContent = `Round ${tournament.currentRound} of ${tournament.rounds.length}`;
-
-  document.getElementById("btnPrevRound").disabled = (tournament.currentRound === 1);
-  document.getElementById("btnNextRound").disabled = (tournament.currentRound === tournament.rounds.length);
-
-  const tbody = document.getElementById("pairingsBody");
-  tbody.innerHTML = "";
-
-  roundData.pairings.forEach((pair, idx) => {
-    const wPlayer = tournament.players.find(p => p.id === pair.white);
-    const bPlayer = tournament.players.find(p => p.id === pair.black);
-    const isByeGame = (wPlayer.status === "Bye" || bPlayer.status === "Bye");
-
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td class="text-center"><strong>${idx + 1}</strong></td>
-      <td>${wPlayer.name} ${wPlayer.status === "Bye" ? '<span class="badge-status status-bye">BYE</span>' : ''}</td>
-      <td class="text-center">
-        ${isByeGame ? '<span class="badge-status status-bye">BYE</span>' : `
-          <select onchange="updateResult(${tournament.currentRound}, ${idx}, this.value)">
-            <option value="*" ${pair.result === "*" ? "selected" : ""}>*</option>
-            <option value="1-0" ${pair.result === "1-0" ? "selected" : ""}>1 - 0</option>
-            <option value="1/2-1/2" ${pair.result === "1/2-1/2" ? "selected" : ""}>½ - ½</option>
-            <option value="0-1" ${pair.result === "0-1" ? "selected" : ""}>0 - 1</option>
-            <option value="1-0 WO" ${pair.result === "1-0 WO" ? "selected" : ""}>1 - 0 (w.o.)</option>
-            <option value="0-1 WO" ${pair.result === "0-1 WO" ? "selected" : ""}>0 - 1 (w.o.)</option>
-            <option value="0-0 WO" ${pair.result === "0-0 WO" ? "selected" : ""}>0 - 0 (double w.o.)</option>
-          </select>
-        `}
-      </td>
-      <td>${bPlayer.name} ${bPlayer.status === "Bye" ? '<span class="badge-status status-bye">BYE</span>' : ''}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-
-  renderRoundStandings();
-}
-
-function updateResult(roundNum, pairIdx, res) {
-  tournament.rounds[roundNum - 1].pairings[pairIdx].result = res;
-  saveSession();
-  renderRoundStandings();
-}
-
-function prevRound() {
-  if (tournament.currentRound > 1) {
-    tournament.currentRound--;
-    renderRound();
-  }
-}
-
-function nextRound() {
-  if (tournament.currentRound < tournament.rounds.length) {
-    tournament.currentRound++;
-    renderRound();
-  }
-}
-
-/**
- * Score and Tie-Break Computation (FIDE C.07)
- */
-function calculateScores(upToRound) {
-  const stats = {};
-  tournament.players.forEach(p => {
-    if (p.status !== "Bye") {
-      stats[p.id] = {
-        id: p.id,
-        no: p.startNo,
-        name: p.name,
-        pld: 0,
-        w: 0,
-        d: 0,
-        l: 0,
-        pts: 0,
-        progressive: 0,
-        sonneborn: 0,
-        directWinsAgainst: {},
-        status: p.status
-      };
-    }
-  });
-
-  if (upToRound <= 0) return stats;
-
-  const roundsToProcess = tournament.rounds.filter(r => r.roundNumber <= upToRound);
-
-  // Step 1: Accumulate match points and game counts
-  roundsToProcess.forEach(rd => {
-    rd.pairings.forEach(p => {
-      const w = stats[p.white];
-      const b = stats[p.black];
-      const res = p.result;
-
-      if (!w || !b || !res || res === "*") return;
-
-      if (res === "1-0" || res === "1-0 WO") {
-        w.w++; w.pts += 1.0;
-        b.l++;
-        w.directWinsAgainst[b.id] = (w.directWinsAgainst[b.id] || 0) + 1.0;
-      } else if (res === "0-1" || res === "0-1 WO") {
-        b.w++; b.pts += 1.0;
-        w.l++;
-        b.directWinsAgainst[w.id] = (b.directWinsAgainst[w.id] || 0) + 1.0;
-      } else if (res === "1/2-1/2") {
-        w.d++; w.pts += 0.5;
-        b.d++; b.pts += 0.5;
-        w.directWinsAgainst[b.id] = (w.directWinsAgainst[b.id] || 0) + 0.5;
-        b.directWinsAgainst[w.id] = (b.directWinsAgainst[w.id] || 0) + 0.5;
-      } else if (res === "0-0 WO") {
-        w.l++; b.l++;
-      }
-
-      // Count all resolved/recorded games in Pld (Pld = W + D + L)
-      w.pld++;
-      b.pld++;
-    });
-
-    // Progressive score is strictly accumulated after complete rounds
-    const rdStatus = getRoundStatus(rd);
-    if (rdStatus.isComplete) {
-      Object.values(stats).forEach(s => {
-        s.progressive += s.pts;
-      });
-    }
-  });
-
-  // Step 2: Compute Sonneborn-Berger (FIDE C.07 Art. 9.1 / 9.2)
-  roundsToProcess.forEach(rd => {
-    rd.pairings.forEach(p => {
-      const w = stats[p.white];
-      const b = stats[p.black];
-      const res = p.result;
-      if (!w || !b || !res || res === "*") return;
-
-      if (res === "1-0" || res === "1-0 WO") {
-        w.sonneborn += b.pts;
-      } else if (res === "0-1" || res === "0-1 WO") {
-        b.sonneborn += w.pts;
-      } else if (res === "1/2-1/2") {
-        w.sonneborn += (b.pts * 0.5);
-        b.sonneborn += (w.pts * 0.5);
-      }
-    });
-  });
-
-  return stats;
-}
-
-function getSortedStandings(stats, tieBreakType) {
-  return Object.values(stats).sort((a, b) => {
-    if (b.pts !== a.pts) return b.pts - a.pts;
-
-    if (tieBreakType === "Sonneborn") {
-      if (b.sonneborn !== a.sonneborn) return b.sonneborn - a.sonneborn;
-    } else if (tieBreakType === "DirectEncounter") {
-      const h2h_a = a.directWinsAgainst[b.id] || 0;
-      const h2h_b = b.directWinsAgainst[a.id] || 0;
-      if (h2h_b !== h2h_a) return h2h_b - h2h_a;
-      if (b.sonneborn !== a.sonneborn) return b.sonneborn - a.sonneborn;
-    } else if (tieBreakType === "Progressive") {
-      if (b.progressive !== a.progressive) return b.progressive - a.progressive;
-    }
-
-    if (b.w !== a.w) return b.w - a.w; // FIDE secondary: number of wins
-    return a.no - b.no;
-  });
-}
-
-function getTbValueFormatted(player, tieBreakType) {
-  if (tieBreakType === "Sonneborn") return player.sonneborn.toFixed(2);
-  if (tieBreakType === "Progressive") return player.progressive.toFixed(1);
-  if (tieBreakType === "DirectEncounter") return `SB: ${player.sonneborn.toFixed(2)}`;
-  return "-";
-}
-
-function renderRoundStandings() {
-  const tbType = document.querySelector('input[name="roundTb"]:checked').value;
-  const colHeader = document.getElementById("colTbHeader");
-  colHeader.textContent = tbType === "Sonneborn" ? "Sonneborn-B." : (tbType === "DirectEncounter" ? "Direct / SB" : "Progressive");
-
-  const context = getStandingsContext(tournament.currentRound);
-  document.getElementById("standingsTitle").innerHTML = context.title;
-
-  const stats = calculateScores(context.calcUpToRound);
-  const sorted = getSortedStandings(stats, tbType);
-
-  const tbody = document.getElementById("standingsBody");
-  tbody.innerHTML = "";
-
-  sorted.forEach((p, idx) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td class="text-center"><strong>${idx + 1}</strong></td>
-      <td class="text-center">${p.no}</td>
-      <td>${p.name}</td>
-      <td class="text-center">${p.pld}</td>
-      <td class="text-center">${p.w}</td>
-      <td class="text-center">${p.d}</td>
-      <td class="text-center">${p.l}</td>
-      <td class="text-center"><strong>${p.pts.toFixed(1)}</strong></td>
-      <td class="text-center">${getTbValueFormatted(p, tbType)}</td>
-      <td class="text-center">
-        <span class="badge-status ${p.status === 'Active' ? 'status-active' : 'status-withdrawn'}">${getStatusLabel(p.status)}</span>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-function openPrintWindow(title, contentHtml) {
-  const printWindow = window.open("", "_blank", "width=920,height=800");
-  if (!printWindow) {
-    alert("Popup blocked. Please allow popups for this page in your browser settings to print.");
-    return;
-  }
-  printWindow.document.write(`<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>${title}</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      padding: 24px;
-      color: #0f172a;
-      background: #ffffff;
-      margin: 0;
-    }
-    h1 { font-size: 20px; margin: 0 0 4px 0; color: #1e3a8a; }
-    h2 { font-size: 14px; margin: 0 0 16px 0; color: #475569; font-weight: normal; }
-    h3 {
-      font-size: 13px;
-      margin: 20px 0 6px 0;
-      border-bottom: 1px solid #94a3b8;
-      padding-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #1e293b;
-    }
-    .print-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-      font-size: 13px;
-    }
-    .print-table th, .print-table td {
-      border: 1px solid #64748b;
-      padding: 6px 10px;
-      text-align: left;
-    }
-    .print-table th { background-color: #f1f5f9; font-weight: 600; }
-    .text-center { text-align: center !important; }
-    .matrix-diag { background-color: #e2e8f0; font-weight: bold; }
-    @media print {
-      body { padding: 0; }
-      @page { margin: 1.2cm; }
-    }
-  </style>
-</head>
-<body>
-  ${contentHtml}
-</body>
-</html>`);
-  printWindow.document.close();
-  setTimeout(() => {
-    printWindow.focus();
-    printWindow.print();
-  }, 250);
-}
-
-function printPreRoundSheet() {
-  const currentRoundNum = tournament.currentRound;
-  const currentRoundData = tournament.rounds[currentRoundNum - 1];
-  const tbType = document.querySelector('input[name="roundTb"]:checked').value;
-  const statsBefore = calculateScores(currentRoundNum - 1);
-  const sortedBefore = getSortedStandings(statsBefore, tbType);
-
-  let pairingsHtml = `
-    <table class="print-table">
-      <thead>
-        <tr>
-          <th style="width: 10%;" class="text-center">Board</th>
-          <th style="width: 38%;">White</th>
-          <th style="width: 14%;" class="text-center">Result</th>
-          <th style="width: 38%;">Black</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
-
-  currentRoundData.pairings.forEach((p, i) => {
-    const w = tournament.players.find(pl => pl.id === p.white);
-    const b = tournament.players.find(pl => pl.id === p.black);
-    pairingsHtml += `
-      <tr>
-        <td class="text-center" style="font-weight: bold;">${i + 1}</td>
-        <td>${w.name} ${w.status === "Bye" ? "(BYE)" : ""}</td>
-        <td class="text-center" style="font-family: monospace;">[ &nbsp; : &nbsp; ]</td>
-        <td>${b.name} ${b.status === "Bye" ? "(BYE)" : ""}</td>
-      </tr>
-    `;
-  });
-  pairingsHtml += `</tbody></table>`;
-
-  let standingsHtml = `
-    <table class="print-table">
-      <thead>
-        <tr>
-          <th style="width: 8%;" class="text-center">Pos.</th>
-          <th style="width: 8%;" class="text-center">No.</th>
-          <th>Player</th>
-          <th style="width: 8%;" class="text-center">Pld</th>
-          <th style="width: 8%;" class="text-center">W</th>
-          <th style="width: 8%;" class="text-center">D</th>
-          <th style="width: 8%;" class="text-center">L</th>
-          <th style="width: 10%;" class="text-center">Pts</th>
-          <th style="width: 14%;" class="text-center">Tie-Break</th>
-          <th style="width: 12%;" class="text-center">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
-
-  sortedBefore.forEach((s, idx) => {
-    standingsHtml += `
-      <tr>
-        <td class="text-center">${idx + 1}</td>
-        <td class="text-center">${s.no}</td>
-        <td>${s.name}</td>
-        <td class="text-center">${s.pld}</td>
-        <td class="text-center">${s.w}</td>
-        <td class="text-center">${s.d}</td>
-        <td class="text-center">${s.l}</td>
-        <td class="text-center" style="font-weight: bold;">${s.pts.toFixed(1)}</td>
-        <td class="text-center">${getTbValueFormatted(s, tbType)}</td>
-        <td class="text-center">${getStatusLabel(s.status)}</td>
-      </tr>
-    `;
-  });
-  standingsHtml += `</tbody></table>`;
-
-  const content = `
-    <h1>${tournament.name}</h1>
-    <h2>Round ${currentRoundNum} &mdash; Pairings &amp; Standings Before Round</h2>
-    <h3>Pairings</h3>
-    ${pairingsHtml}
-    <h3>${currentRoundNum === 1 ? "Initial Seed List" : "Standings After Round " + (currentRoundNum - 1)}</h3>
-    ${standingsHtml}
-  `;
-
-  openPrintWindow(`${tournament.name} - Before Round ${currentRoundNum}`, content);
-}
-
-function printRoundResults() {
-  const currentRoundNum = tournament.currentRound;
-  const currentRoundData = tournament.rounds[currentRoundNum - 1];
-  const tbType = document.querySelector('input[name="roundTb"]:checked').value;
-  const context = getStandingsContext(currentRoundNum);
-  const stats = calculateScores(context.calcUpToRound);
-  const sorted = getSortedStandings(stats, tbType);
-
-  let pairingsHtml = `
-    <table class="print-table">
-      <thead>
-        <tr>
-          <th style="width: 10%;" class="text-center">Board</th>
-          <th style="width: 38%;">White</th>
-          <th style="width: 14%;" class="text-center">Result</th>
-          <th style="width: 38%;">Black</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
-
-  currentRoundData.pairings.forEach((p, i) => {
-    const w = tournament.players.find(pl => pl.id === p.white);
-    const b = tournament.players.find(pl => pl.id === p.black);
-    pairingsHtml += `
-      <tr>
-        <td class="text-center" style="font-weight: bold;">${i + 1}</td>
-        <td>${w.name} ${w.status === "Bye" ? "(BYE)" : ""}</td>
-        <td class="text-center" style="font-weight: bold;">${p.result === "*" ? "-" : p.result}</td>
-        <td>${b.name} ${b.status === "Bye" ? "(BYE)" : ""}</td>
-      </tr>
-    `;
-  });
-  pairingsHtml += `</tbody></table>`;
-
-  let standingsHtml = `
-    <table class="print-table">
-      <thead>
-        <tr>
-          <th style="width: 8%;" class="text-center">Pos.</th>
-          <th style="width: 8%;" class="text-center">No.</th>
-          <th>Player</th>
-          <th style="width: 8%;" class="text-center">Pld</th>
-          <th style="width: 8%;" class="text-center">W</th>
-          <th style="width: 8%;" class="text-center">D</th>
-          <th style="width: 8%;" class="text-center">L</th>
-          <th style="width: 10%;" class="text-center">Pts</th>
-          <th style="width: 14%;" class="text-center">Tie-Break</th>
-          <th style="width: 12%;" class="text-center">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
-
-  sorted.forEach((s, idx) => {
-    standingsHtml += `
-      <tr>
-        <td class="text-center">${idx + 1}</td>
-        <td class="text-center">${s.no}</td>
-        <td>${s.name}</td>
-        <td class="text-center">${s.pld}</td>
-        <td class="text-center">${s.w}</td>
-        <td class="text-center">${s.d}</td>
-        <td class="text-center">${s.l}</td>
-        <td class="text-center" style="font-weight: bold;">${s.pts.toFixed(1)}</td>
-        <td class="text-center">${getTbValueFormatted(s, tbType)}</td>
-        <td class="text-center">${getStatusLabel(s.status)}</td>
-      </tr>
-    `;
-  });
-  standingsHtml += `</tbody></table>`;
-
-  const content = `
-    <h1>${tournament.name}</h1>
-    <h2>Round ${currentRoundNum} &mdash; Results &amp; Standings</h2>
-    <h3>Board Results (Round ${currentRoundNum})</h3>
-    ${pairingsHtml}
-    <h3>${context.title}</h3>
-    ${standingsHtml}
-  `;
-
-  openPrintWindow(`${tournament.name} - Round ${currentRoundNum} Results`, content);
-}
-
-function generateCrosstableHtml(stats) {
-  const activeHumans = tournament.players.filter(p => p.status !== "Bye");
-  const mapResults = {};
-
-  activeHumans.forEach(p1 => {
-    mapResults[p1.id] = {};
-    activeHumans.forEach(p2 => {
-      mapResults[p1.id][p2.id] = [];
-    });
-  });
-
-  tournament.rounds.forEach(rd => {
-    rd.pairings.forEach(pair => {
-      if (mapResults[pair.white] && mapResults[pair.white][pair.black]) {
-        if (pair.result === "1-0") {
-          mapResults[pair.white][pair.black].push("1");
-          mapResults[pair.black][pair.white].push("0");
-        } else if (pair.result === "0-1") {
-          mapResults[pair.white][pair.black].push("0");
-          mapResults[pair.black][pair.white].push("1");
-        } else if (pair.result === "1/2-1/2") {
-          mapResults[pair.white][pair.black].push("½");
-          mapResults[pair.black][pair.white].push("½");
-        } else if (pair.result === "1-0 WO") {
-          mapResults[pair.white][pair.black].push("+");
-          mapResults[pair.black][pair.white].push("-");
-        } else if (pair.result === "0-1 WO") {
-          mapResults[pair.white][pair.black].push("-");
-          mapResults[pair.black][pair.white].push("+");
-        } else if (pair.result === "0-0 WO") {
-          mapResults[pair.white][pair.black].push("--");
-          mapResults[pair.black][pair.white].push("--");
-        }
-      }
-    });
-  });
-
-  let ctHtml = `<table class="print-table"><thead><tr><th style="width: 40px;" class="text-center">No.</th><th>Player</th>`;
-  activeHumans.forEach((_, i) => { ctHtml += `<th class="text-center" style="min-width: 32px;">${i + 1}</th>`; });
-  ctHtml += `<th class="text-center" style="width: 50px;">Pts</th><th class="text-center" style="width: 65px;">SB</th></tr></thead><tbody>`;
-
-  activeHumans.forEach(p => {
-    const pStat = stats[p.id];
-    ctHtml += `<tr><td class="text-center">${p.startNo}</td><td style="font-weight: 600;">${p.name}</td>`;
-    activeHumans.forEach(opp => {
-      if (p.id === opp.id) {
-        ctHtml += `<td class="text-center matrix-diag">✕</td>`;
-      } else {
-        const scores = mapResults[p.id][opp.id];
-        ctHtml += `<td class="text-center">${scores.length > 0 ? scores.join(" ") : "-"}</td>`;
-      }
-    });
-    ctHtml += `<td class="text-center font-bold">${pStat ? pStat.pts.toFixed(1) : "0.0"}</td>`;
-    ctHtml += `<td class="text-center">${pStat ? pStat.sonneborn.toFixed(2) : "0.00"}</td></tr>`;
-  });
-  ctHtml += `</tbody></table>`;
-  return ctHtml;
-}
-
-function printFinalResults() {
-  const tbType = document.querySelector('input[name="finalTb"]:checked').value;
-  const stats = calculateScores(tournament.rounds.length);
-  const sorted = getSortedStandings(stats, tbType);
-
-  let standingsHtml = `
-    <table class="print-table">
-      <thead>
-        <tr>
-          <th style="width: 7%;" class="text-center">Pos.</th>
-          <th style="width: 7%;" class="text-center">No.</th>
-          <th>Player</th>
-          <th style="width: 7%;" class="text-center">Pld</th>
-          <th style="width: 6%;" class="text-center">W</th>
-          <th style="width: 6%;" class="text-center">D</th>
-          <th style="width: 6%;" class="text-center">L</th>
-          <th style="width: 10%;" class="text-center">Points</th>
-          <th style="width: 14%;" class="text-center">Tie-Break</th>
-          <th style="width: 12%;" class="text-center">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
-
-  sorted.forEach((p, idx) => {
-    standingsHtml += `
-      <tr>
-        <td class="text-center" style="font-weight: bold;">${idx + 1}</td>
-        <td class="text-center">${p.no}</td>
-        <td><strong>${p.name}</strong></td>
-        <td class="text-center">${p.pld}</td>
-        <td class="text-center">${p.w}</td>
-        <td class="text-center">${p.d}</td>
-        <td class="text-center">${p.l}</td>
-        <td class="text-center" style="font-weight: bold;">${p.pts.toFixed(1)}</td>
-        <td class="text-center">${getTbValueFormatted(p, tbType)}</td>
-        <td class="text-center">${getStatusLabel(p.status)}</td>
-      </tr>
-    `;
-  });
-  standingsHtml += `</tbody></table>`;
-
-  const crosstableHtml = generateCrosstableHtml(stats);
-
-  const content = `
-    <h1>${tournament.name}</h1>
-    <h2>Final Results &amp; Crosstable</h2>
-    <h3>Final Standings</h3>
-    ${standingsHtml}
-    <h3>FIDE Berger Crosstable</h3>
-    ${crosstableHtml}
-  `;
-
-  openPrintWindow(`${tournament.name} - Final Results`, content);
-}
-
-function promptWithdraw() {
-  const activePlayers = tournament.players.filter(p => p.status === "Active");
-  const options = activePlayers.map(p => `${p.id}: ${p.name}`).join("\n");
-  const input = prompt(`Enter pairing number of the withdrawing player:\n\n${options}`);
-  if (!input) return;
-
-  const pId = parseInt(input.trim(), 10);
-  const target = tournament.players.find(p => p.id === pId);
-  if (!target || target.status !== "Active") {
-    alert("Invalid player selected.");
-    return;
-  }
-
-  if (confirm(`Confirm withdrawal for ${target.name}. Remaining unplayed games will be recorded as forfeit losses (w.o.).`)) {
-    target.status = "Withdrawn";
-
-    tournament.rounds.forEach(rd => {
-      if (rd.roundNumber >= tournament.currentRound) {
-        rd.pairings.forEach(p => {
-          if (p.white === pId || p.black === pId) {
-            const oppId = (p.white === pId) ? p.black : p.white;
-            if (isByePlayer(oppId)) return; // Keep Byes untouched
-
-            const opp = tournament.players.find(pl => pl.id === oppId);
-            if (opp && opp.status === "Withdrawn") {
-              p.result = "0-0 WO"; // Both withdrawn: double forfeit
-            } else if (p.result === "*") {
-              p.result = (p.white === pId) ? "0-1 WO" : "1-0 WO";
-            }
-          }
-        });
-      }
-    });
-
-    saveSession();
-    renderRound();
-  }
-}
-
-function renderFinals() {
-  const tbType = document.querySelector('input[name="finalTb"]:checked').value;
-  document.getElementById("finalTbHeader").textContent = tbType === "Sonneborn" ? "Sonneborn-B." : (tbType === "DirectEncounter" ? "Direct / SB" : "Progressive");
-
-  const stats = calculateScores(tournament.rounds.length);
-  const sorted = getSortedStandings(stats, tbType);
-
-  const tbody = document.getElementById("finalStandingsBody");
-  tbody.innerHTML = "";
-  sorted.forEach((p, idx) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td class="text-center font-bold">${idx + 1}</td>
-      <td class="text-center">${p.no}</td>
-      <td><strong>${p.name}</strong></td>
-      <td class="text-center">${p.pld}</td>
-      <td class="text-center">${p.w}</td>
-      <td class="text-center">${p.d}</td>
-      <td class="text-center">${p.l}</td>
-      <td class="text-center"><strong>${p.pts.toFixed(1)}</strong></td>
-      <td class="text-center">${getTbValueFormatted(p, tbType)}</td>
-      <td class="text-center">
-        <span class="badge-status ${p.status === 'Active' ? 'status-active' : 'status-withdrawn'}">${getStatusLabel(p.status)}</span>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-
-  document.getElementById("crosstableContainer").innerHTML = generateCrosstableHtml(stats);
-}
-
-function saveSession() {
-  localStorage.setItem("bergerTournamentSession", JSON.stringify(tournament));
-}
-
-function restoreLastSession() {
-  const saved = localStorage.getItem("bergerTournamentSession");
-  if (!saved) {
-    alert("No saved session found.");
-    return;
-  }
-  tournament = JSON.parse(saved);
-  if (tournament.completed) finishTournament();
-  else showTournamentScreen();
-}
-
-function saveTournamentJson() {
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tournament, null, 2));
-  const downloadAnchor = document.createElement("a");
-  downloadAnchor.setAttribute("href", dataStr);
-  downloadAnchor.setAttribute("download", `${(tournament.name || "tournament").replace(/\s+/g, "_")}.json`);
-  document.body.appendChild(downloadAnchor);
-  downloadAnchor.click();
-  downloadAnchor.remove();
-}
-
-function loadTournamentJson(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      tournament = JSON.parse(e.target.result);
-      saveSession();
-      if (tournament.completed) finishTournament();
-      else showTournamentScreen();
-    } catch (err) {
-      alert("Invalid tournament JSON file.");
-    }
-  };
-  reader.readAsText(file);
-}
-
-window.onload = function() {
-  const saved = localStorage.getItem("bergerTournamentSession");
-  if (saved) {
-    try {
-      tournament = JSON.parse(saved);
-      if (tournament.completed) finishTournament();
-      else showTournamentScreen();
-    } catch (e) {}
-  }
-  setAboutButtonVisible(true);
-};
-</script>
-<!-- ==================== ABOUT DIALOG ==================== -->
 <dialog id="aboutDialog">
   <h2>About Berger Tournament System</h2>
 
   <p>
-    This application generates pairing schedules and standings based on the Berger round-robin pairing system as specified by FIDE.
-    The pairing tables determine the exact color distribution and round-by-round pairings for all participants.
+    This standalone application maintains four separate tournament slots.
+    Each slot has its own roster, schedule, results, selected round,
+    tie-break setting, and withdrawal records.
   </p>
 
   <ul>
     <li>
+      Pairing numbers follow the order of names in the roster.
+    </li>
+    <li>
+      For an odd roster, the unused highest pairing number is a bye.
+      A scheduled rest round awards no points.
+    </li>
+    <li>
+      In a double round-robin, the last two rounds of the first cycle
+      are transposed. The second cycle uses the base schedule with
+      colours reversed.
+    </li>
+    <li>
+      Sonneborn-Berger uses opponents' scores multiplied by points
+      earned against them. Round-robin forfeits are included.
+    </li>
+    <li>
+      Direct Encounter averages repeated encounters with each opponent.
+      It is reapplied to smaller tied groups when appropriate.
+    </li>
+    <li>
+      Progressive Score adds the player's cumulative score after
+      each included round.
+    </li>
+    <li>
+      The selected tie-break is the only tie-break applied.
+      Remaining ties share a position. Pairing number controls
+      display order within an unresolved tie, not sporting rank.
+    </li>
+    <li>
+      Current standings include results through the selected round.
+      Final standings include every round.
+    </li>
+  </ul>
+
+  <p>
+    Withdrawal handling is an administrative convenience:
+    existing results remain unchanged, while unrecorded games from
+    the specified round receive forfeits. The application does not
+    automatically annul earlier results.
+  </p>
+
+  <p>
+    Automatic saving uses this browser's local storage when available.
+    Download JSON backups regularly. This application does not synchronize
+    different devices or browser tabs.
+  </p>
+
+<blockquote>
       <a href="https://handbook.fide.com/chapter/C05Annex1" target="_blank" rel="noopener">
         FIDE Handbook: Details of Berger Table
-      </a>
-    </li>    
-  <li>
-      <a href="https://handbook.fide.com/chapter/TieBreakRegulations032026"
+      </a><br>
+          <a href="https://handbook.fide.com/chapter/TieBreakRegulations032026"
          target="_blank" rel="noopener">Play-Off and Tie-Break Regulations</a>
-    </li>
-
-    <li>
+    <br>
       <a href="https://mats-winther.github.io/bg/chesspairing.htm" target="_blank" rel="noopener">
         Chess Pairings: A Review of Monrad, Swiss, and Berger
       </a>
-    </li>
+</blockquote>
 
-  </ul>
-
-  <div style="text-align: left; margin-top: 1.25rem;">
-    <button class="btn btn-primary" onclick="document.getElementById('aboutDialog').close()">Close</button>
+  <div class="dialog-actions">
+    <button type="button" data-action="close-about">Close</button>
   </div>
 </dialog>
+
+<dialog id="withdrawDialog">
+  <form id="withdrawForm">
+    <h2>Withdraw or reinstate a player</h2>
+
+    <p id="withdrawTournamentName" class="metadata"></p>
+
+    <div class="field">
+      <label for="withdrawPlayer">Player</label>
+      <select id="withdrawPlayer" required></select>
+    </div>
+
+    <div class="field">
+      <label for="withdrawOperation">Operation</label>
+      <select id="withdrawOperation">
+        <option value="withdraw">Withdraw player</option>
+        <option value="reinstate">Reinstate player</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="withdrawRound">Withdrawal effective from round</label>
+      <input id="withdrawRound"
+             type="number"
+             min="1"
+             step="1"
+             required>
+    </div>
+
+    <p class="hint">
+      Recorded manual results are preserved. Unrecorded games from the
+      effective round onward become forfeit losses for the withdrawn
+      player. If both players are withdrawn, the result is a double
+      forfeit.
+    </p>
+
+    <p class="hint">
+      Reinstatement removes automatically assigned forfeits that no
+      longer apply. Manually entered results are not removed.
+      No earlier results are automatically annulled.
+    </p>
+
+    <div class="dialog-actions">
+      <button type="button" data-action="close-withdraw">Cancel</button>
+      <button type="submit" class="primary">Apply</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="printRoot"></div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   Configuration and state
+   ============================================================ */
+
+const SLOT_COUNT = 4;
+const FORMAT = "berger-four-tournaments";
+const FORMAT_VERSION = 1;
+const STORAGE_KEY = "berger-four-tournaments.workspace.v1";
+
+const SLOT_COLORS = [
+  "#2357b6",
+  "#137352",
+  "#8355b7",
+  "#b86a15"
+];
+
+const TIE_BREAKS = {
+  sb: "Sonneborn-Berger",
+  de: "Direct Encounter",
+  ps: "Progressive Score"
+};
+
+const RESULTS = {
+  "1-0": {
+    label: "1 - 0",
+    white: 1,
+    black: 0,
+    played: true
+  },
+  "1/2-1/2": {
+    label: "½ - ½",
+    white: 0.5,
+    black: 0.5,
+    played: true
+  },
+  "0-1": {
+    label: "0 - 1",
+    white: 0,
+    black: 1,
+    played: true
+  },
+  "F1": {
+    label: "+ / - (White w.o.)",
+    white: 1,
+    black: 0,
+    played: false
+  },
+  "F0": {
+    label: "- / + (Black w.o.)",
+    white: 0,
+    black: 1,
+    played: false
+  },
+  "F00": {
+    label: "-- / -- (double w.o.)",
+    white: 0,
+    black: 0,
+    played: false
+  }
+};
+
+const SAMPLE_PLAYERS = [
+  "Wilhelm Steinitz",
+  "Emanuel Lasker",
+  "José Raúl Capablanca",
+  "Alexander Alekhine",
+  "Max Euwe",
+  "Mikhail Botvinnik",
+  "Vasily Smyslov",
+  "Mikhail Tal",
+  "Tigran Petrosian",
+  "Boris Spassky",
+  "Bobby Fischer",
+  "Anatoly Karpov",
+  "Garry Kasparov",
+  "Vladimir Kramnik",
+  "Viswanathan Anand",
+  "Magnus Carlsen"
+];
+
+function newSlot(index) {
+  return {
+    stage: "setup",
+    name: "Tournament " + (index + 1),
+    roster: "",
+    double: false,
+    tb: "sb",
+    players: [],
+    rounds: [],
+    current: 0
+  };
+}
+
+function newWorkspace() {
+  return {
+    view: "all",
+    slots: Array.from(
+      { length: SLOT_COUNT },
+      (_, index) => newSlot(index)
+    )
+  };
+}
+
+let state = newWorkspace();
+let withdrawalSlot = null;
+let initializationError = "";
+
+/* ============================================================
+   General helpers
+   ============================================================ */
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, character => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[character]));
+}
+
+function formatNumber(value) {
+  if (value === null || value === undefined) {
+    return "n/a";
+  }
+
+  if (Number.isInteger(value)) {
+    return String(value);
+  }
+
+  return String(Number(value.toFixed(3)));
+}
+
+function scoreSymbol(value) {
+  return value === 0.5 ? "½" : String(value);
+}
+
+function mod(value, divisor) {
+  return ((value % divisor) + divisor) % divisor;
+}
+
+function isRealGame(game) {
+  return game.w !== null && game.b !== null;
+}
+
+function slotTitle(slot, index) {
+  return slot.name.trim() || "Tournament " + (index + 1);
+}
+
+function showNotice(message) {
+  const element = document.getElementById("workspaceNotice");
+  element.textContent = message;
+  element.hidden = !message;
+}
+
+function setStorageStatus(message) {
+  document.getElementById("storageStatus").textContent = message;
+}
+
+function buttonHTML(action, label, className = "", disabled = false) {
+  return `
+    <button type="button"
+            data-action="${escapeHTML(action)}"
+            class="${escapeHTML(className)}"
+            ${disabled ? "disabled" : ""}>
+      ${escapeHTML(label)}
+    </button>
+  `;
+}
+
+function optionHTML(value, text, selected) {
+  return `
+    <option value="${escapeHTML(value)}"
+            ${selected ? "selected" : ""}>
+      ${escapeHTML(text)}
+    </option>
+  `;
+}
+
+function tieBreakOptions(selected) {
+  return Object.entries(TIE_BREAKS)
+    .map(([key, label]) => optionHTML(key, label, key === selected))
+    .join("");
+}
+
+function participantHTML(slot, id) {
+  if (id === null) {
+    return '<span class="hint">BYE</span>';
+  }
+
+  const player = slot.players[id];
+  const withdrawn = player.withdrawnFrom !== null
+    ? `<br><span class="withdrawn">
+         Withdrawn from R${player.withdrawnFrom + 1}
+       </span>`
+    : "";
+
+  return `${id + 1}. ${escapeHTML(player.name)}${withdrawn}`;
+}
+
+function completedGameCount(slot, limit = slot.rounds.length) {
+  let count = 0;
+
+  for (let round = 0; round < limit; round++) {
+    for (const game of slot.rounds[round]) {
+      if (isRealGame(game) && game.result !== null) {
+        count++;
+      }
+    }
+  }
+
+  return count;
+}
+
+function totalGameCount(slot) {
+  return slot.rounds.reduce(
+    (total, games) => total + games.filter(isRealGame).length,
+    0
+  );
+}
+
+function missingGameCount(slot) {
+  return totalGameCount(slot) - completedGameCount(slot);
+}
+
+function roundIsComplete(slot, round) {
+  return slot.rounds[round].every(
+    game => !isRealGame(game) || game.result !== null
+  );
+}
+
+/* ============================================================
+   Berger schedule generator
+
+   The highest number remains fixed. Other numbers advance by
+   half the padded roster size, modulo the moving group.
+
+   The generated board order and colours match the Berger table.
+   ============================================================ */
+
+function makeSchedule(playerCount, doubleRoundRobin) {
+  if (!Number.isInteger(playerCount) ||
+      playerCount < 3 ||
+      playerCount > 16) {
+    throw new Error("A tournament must have 3 to 16 players.");
+  }
+
+  const paddedCount = playerCount % 2 === 0
+    ? playerCount
+    : playerCount + 1;
+
+  const half = paddedCount / 2;
+  const movingCount = paddedCount - 1;
+  const fixed = paddedCount - 1;
+
+  const normalizePlayer = id => id < playerCount ? id : null;
+
+  const makeGame = (white, black) => ({
+    w: normalizePlayer(white),
+    b: normalizePlayer(black),
+    result: null,
+    auto: false
+  });
+
+  const base = [];
+
+  for (let round = 0; round < movingCount; round++) {
+    const anchor = (round * half) % movingCount;
+    const games = [];
+
+    if (round % 2 === 0) {
+      games.push(makeGame(anchor, fixed));
+    } else {
+      games.push(makeGame(fixed, anchor));
+    }
+
+    for (let board = 1; board < half; board++) {
+      games.push(makeGame(
+        mod(anchor + board, movingCount),
+        mod(anchor - board, movingCount)
+      ));
+    }
+
+    base.push(games);
+  }
+
+  if (!doubleRoundRobin) {
+    return base;
+  }
+
+  const firstCycle = base.map(
+    games => games.map(game => ({ ...game }))
+  );
+
+  const last = firstCycle.length - 1;
+
+  [
+    firstCycle[last - 1],
+    firstCycle[last]
+  ] = [
+    firstCycle[last],
+    firstCycle[last - 1]
+  ];
+
+  const secondCycle = base.map(games =>
+    games.map(game => ({
+      w: game.b,
+      b: game.w,
+      result: null,
+      auto: false
+    }))
+  );
+
+  return firstCycle.concat(secondCycle);
+}
+
+/* ============================================================
+   Standings and tie-breaks
+   ============================================================ */
+
+function groupDescending(items, valueFunction) {
+  const buckets = new Map();
+
+  for (const item of items) {
+    const value = valueFunction(item);
+
+    if (!buckets.has(value)) {
+      buckets.set(value, []);
+    }
+
+    buckets.get(value).push(item);
+  }
+
+  return Array.from(buckets.keys())
+    .sort((a, b) => b - a)
+    .map(value => buckets.get(value));
+}
+
+function resolveDirectEncounter(group, records) {
+  if (group.length < 2) {
+    return [group];
+  }
+
+  /*
+     In incomplete standings, Direct Encounter is applied only
+     when every player in the tied group has a recorded encounter
+     with every other player in that group.
+  */
+  for (const player of group) {
+    for (const opponent of group) {
+      if (player.id === opponent.id) {
+        continue;
+      }
+
+      if (records[player.id][opponent.id].length === 0) {
+        return [group];
+      }
+    }
+  }
+
+  for (const player of group) {
+    let value = 0;
+
+    for (const opponent of group) {
+      if (player.id === opponent.id) {
+        continue;
+      }
+
+      const encounters = records[player.id][opponent.id];
+
+      const total = encounters.reduce(
+        (sum, encounter) => sum + encounter.score,
+        0
+      );
+
+      /*
+         Repeated encounters with the same opponent contribute
+         their average score, not their total.
+      */
+      value += total / encounters.length;
+    }
+
+    player.de = value;
+  }
+
+  const parts = groupDescending(group, player => player.de);
+
+  if (parts.length === 1) {
+    return [group];
+  }
+
+  /*
+     Reapply Direct Encounter to any smaller subgroup that
+     remains tied.
+  */
+  return parts.flatMap(part =>
+    part.length > 1
+      ? resolveDirectEncounter(part, records)
+      : [part]
+  );
+}
+
+function calculateStandings(slot, roundLimit) {
+  const count = slot.players.length;
+
+  const rows = slot.players.map((player, id) => ({
+    id,
+    name: player.name,
+    played: 0,
+    wins: 0,
+    draws: 0,
+    losses: 0,
+    points: 0,
+    sb: 0,
+    ps: 0,
+    de: null,
+    position: 0,
+    tied: false
+  }));
+
+  const records = Array.from(
+    { length: count },
+    () => Array.from({ length: count }, () => [])
+  );
+
+  function addResult(id, opponent, score, code, round, played) {
+    const row = rows[id];
+
+    row.points += score;
+
+    if (played) {
+      row.played++;
+    }
+
+    if (score === 1) {
+      row.wins++;
+    } else if (score === 0.5) {
+      row.draws++;
+    } else {
+      row.losses++;
+    }
+
+    records[id][opponent].push({
+      score,
+      code,
+      round,
+      played
+    });
+  }
+
+  for (let round = 0; round < roundLimit; round++) {
+    for (const game of slot.rounds[round]) {
+      if (!isRealGame(game) || game.result === null) {
+        continue;
+      }
+
+      const result = RESULTS[game.result];
+
+      addResult(
+        game.w,
+        game.b,
+        result.white,
+        game.result,
+        round,
+        result.played
+      );
+
+      addResult(
+        game.b,
+        game.w,
+        result.black,
+        game.result,
+        round,
+        result.played
+      );
+    }
+
+    for (const row of rows) {
+      row.ps += row.points;
+    }
+  }
+
+  for (const player of rows) {
+    for (const opponent of rows) {
+      if (player.id === opponent.id) {
+        continue;
+      }
+
+      for (const encounter of records[player.id][opponent.id]) {
+        player.sb += encounter.score * opponent.points;
+      }
+    }
+  }
+
+  const pointGroups = groupDescending(rows, row => row.points);
+  const rankedGroups = [];
+
+  for (const pointGroup of pointGroups) {
+    if (slot.tb === "de") {
+      rankedGroups.push(
+        ...resolveDirectEncounter(pointGroup, records)
+      );
+    } else {
+      rankedGroups.push(
+        ...groupDescending(pointGroup, row => row[slot.tb])
+      );
+    }
+  }
+
+  const ordered = [];
+  let offset = 0;
+
+  for (const group of rankedGroups) {
+    group.sort((a, b) => a.id - b.id);
+
+    for (const row of group) {
+      row.position = offset + 1;
+      row.tied = group.length > 1;
+      ordered.push(row);
+    }
+
+    offset += group.length;
+  }
+
+  return {
+    rows: ordered,
+    byId: rows,
+    records
+  };
+}
+
+/* ============================================================
+   Withdrawal management
+   ============================================================ */
+
+function withdrawnAt(slot, playerId, round) {
+  const from = slot.players[playerId].withdrawnFrom;
+  return from !== null && round >= from;
+}
+
+function refreshAutomaticForfeits(slot) {
+  for (let round = 0; round < slot.rounds.length; round++) {
+    for (const game of slot.rounds[round]) {
+      if (!isRealGame(game)) {
+        continue;
+      }
+
+      /*
+         Preserve manually recorded results.
+         Recalculate only blank games or automatic forfeits.
+      */
+      if (game.result !== null && !game.auto) {
+        continue;
+      }
+
+      const whiteOut = withdrawnAt(slot, game.w, round);
+      const blackOut = withdrawnAt(slot, game.b, round);
+
+      if (whiteOut && blackOut) {
+        game.result = "F00";
+        game.auto = true;
+      } else if (whiteOut) {
+        game.result = "F0";
+        game.auto = true;
+      } else if (blackOut) {
+        game.result = "F1";
+        game.auto = true;
+      } else {
+        game.result = null;
+        game.auto = false;
+      }
+    }
+  }
+}
+
+/* ============================================================
+   Rendering helpers
+   ============================================================ */
+
+function pairingsTableHTML(slot, index, round, mode) {
+  const editable = mode === "edit";
+  const blank = mode === "blank";
+
+  const rows = slot.rounds[round].map((game, board) => {
+    if (!isRealGame(game)) {
+      return `
+        <tr class="bye-row">
+          <td class="numeric">${board + 1}</td>
+          <td class="player-name">
+            ${participantHTML(slot, game.w)}
+          </td>
+          <td class="numeric">Rest round: 0 points</td>
+          <td class="player-name">
+            ${participantHTML(slot, game.b)}
+          </td>
+        </tr>
+      `;
+    }
+
+    let resultCell;
+
+    if (editable) {
+      const options = [
+        optionHTML("", "Not recorded", game.result === null),
+        ...Object.entries(RESULTS).map(([code, result]) =>
+          optionHTML(code, result.label, game.result === code)
+        )
+      ].join("");
+
+      resultCell = `
+        <select class="result-select"
+                data-result="true"
+                data-round="${round}"
+                data-board="${board}"
+                aria-label="Result for tournament ${index + 1},
+                            round ${round + 1}, board ${board + 1}">
+          ${options}
+        </select>
+        ${game.auto
+          ? '<div class="hint">Automatic withdrawal forfeit</div>'
+          : ""}
+      `;
+    } else if (blank) {
+      resultCell = "";
+    } else {
+      resultCell = game.result === null
+        ? "Not recorded"
+        : escapeHTML(RESULTS[game.result].label);
+    }
+
+    return `
+      <tr>
+        <td class="numeric">${board + 1}</td>
+        <td class="player-name">
+          ${participantHTML(slot, game.w)}
+        </td>
+        <td class="numeric">${resultCell}</td>
+        <td class="player-name">
+          ${participantHTML(slot, game.b)}
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  return `
+    <div class="table-scroll">
+      <table class="pairings">
+        <thead>
+          <tr>
+            <th class="numeric">Board</th>
+            <th>White</th>
+            <th class="numeric">Result</th>
+            <th>Black</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function standingsTableHTML(slot, standings, roundLimit) {
+  const body = standings.rows.map(row => {
+    const player = slot.players[row.id];
+
+    const withdrawn = player.withdrawnFrom !== null &&
+                      player.withdrawnFrom < roundLimit;
+
+    const status = withdrawn
+      ? `Withdrawn R${player.withdrawnFrom + 1}`
+      : "Active";
+
+    return `
+      <tr class="${row.position === 1 ? "leader-row" : ""}">
+        <td class="numeric">
+          ${row.position}${row.tied ? "=" : ""}
+        </td>
+        <td class="numeric">${row.id + 1}</td>
+        <td class="player-name">${escapeHTML(row.name)}</td>
+        <td class="numeric">${row.played}</td>
+        <td class="numeric">${row.wins}</td>
+        <td class="numeric">${row.draws}</td>
+        <td class="numeric">${row.losses}</td>
+        <td class="numeric"><strong>
+          ${formatNumber(row.points)}
+        </strong></td>
+        <td class="numeric">${formatNumber(row.sb)}</td>
+        <td class="numeric">${formatNumber(row.ps)}</td>
+        ${slot.tb === "de"
+          ? `<td class="numeric">${formatNumber(row.de)}</td>`
+          : ""}
+        <td class="${withdrawn ? "withdrawn" : ""}">
+          ${escapeHTML(status)}
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  return `
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="numeric">Pos.</th>
+            <th class="numeric">No.</th>
+            <th>Player</th>
+            <th class="numeric">Pld</th>
+            <th class="numeric">W</th>
+            <th class="numeric">D</th>
+            <th class="numeric">L</th>
+            <th class="numeric">Pts</th>
+            <th class="numeric">S-B</th>
+            <th class="numeric">PS</th>
+            ${slot.tb === "de"
+              ? '<th class="numeric">DE</th>'
+              : ""}
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>
+
+    <p class="small-note">
+      Pld counts over-the-board games.
+      W, D, and L include recorded forfeits.
+      Scheduled rest rounds count neither as games nor as points.
+      An equals sign indicates an unresolved shared position.
+    </p>
+
+    ${slot.tb === "de"
+      ? `<p class="small-note">
+           DE is contextual to the tied group and may be recalculated
+           for smaller tied subgroups. “n/a” indicates that no applicable
+           complete direct-encounter group was evaluated.
+         </p>`
+      : ""}
+  `;
+}
+
+function crosstableSymbol(game, playerId) {
+  if (game.result === null) {
+    return "·";
+  }
+
+  if (game.result === "F00") {
+    return "--";
+  }
+
+  const white = game.w === playerId;
+
+  if (game.result === "F1") {
+    return white ? "+" : "-";
+  }
+
+  if (game.result === "F0") {
+    return white ? "-" : "+";
+  }
+
+  const result = RESULTS[game.result];
+
+  return scoreSymbol(white ? result.white : result.black);
+}
+
+function crosstableHTML(slot, standings) {
+  const count = slot.players.length;
+
+  const cells = Array.from(
+    { length: count },
+    () => Array.from({ length: count }, () => [])
+  );
+
+  for (const games of slot.rounds) {
+    for (const game of games) {
+      if (!isRealGame(game)) {
+        continue;
+      }
+
+      cells[game.w][game.b].push(crosstableSymbol(game, game.w));
+      cells[game.b][game.w].push(crosstableSymbol(game, game.b));
+    }
+  }
+
+  const headings = slot.players.map((player, id) => `
+    <th title="${escapeHTML(player.name)}">${id + 1}</th>
+  `).join("");
+
+  const rows = slot.players.map((player, id) => {
+    const results = slot.players.map((_, opponentId) => {
+      if (id === opponentId) {
+        return '<td class="diagonal">×</td>';
+      }
+
+      return `<td>${escapeHTML(
+        cells[id][opponentId].join(" / ")
+      )}</td>`;
+    }).join("");
+
+    return `
+      <tr>
+        <th>${id + 1}</th>
+        <td class="matrix-name">${escapeHTML(player.name)}</td>
+        ${results}
+        <td><strong>
+          ${formatNumber(standings.byId[id].points)}
+        </strong></td>
+      </tr>
+    `;
+  }).join("");
+
+  return `
+    <div class="table-scroll">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th class="matrix-name">Player</th>
+            ${headings}
+            <th>Pts</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+
+    <p class="small-note">
+      1, ½, 0: played game.
+      +: forfeit win.
+      -: forfeit loss.
+      --: double forfeit.
+      ·: unrecorded game.
+      In double round-robins, entries follow chronological round order.
+    </p>
+  `;
+}
+
+function setupHTML(slot, index) {
+  return `
+    <div class="field">
+      <label for="name-${index}">Tournament name</label>
+      <input id="name-${index}"
+             type="text"
+             maxlength="120"
+             data-field="name"
+             value="${escapeHTML(slot.name)}">
+    </div>
+
+    <div class="field">
+      <label for="roster-${index}">
+        Player roster: one player per line, 3 to 16 players
+      </label>
+
+      <textarea id="roster-${index}"
+                rows="9"
+                maxlength="5000"
+                data-field="roster"
+                placeholder="Enter player names in pairing-number order"
+      >${escapeHTML(slot.roster)}</textarea>
+
+      <p class="hint">
+        The first name receives pairing number 1.
+        Use distinguishing suffixes if two players have the same name.
+      </p>
+    </div>
+
+    <div class="actions">
+      ${buttonHTML("sample", "Load Sample: 16 Champions")}
+      ${buttonHTML("import-players", "Import Players (.txt)")}
+
+      <div class="setup-tie-break">
+        <label for="setup-tb-${index}">Tie-break system</label>
+        <select id="setup-tb-${index}" data-tb="true">
+          ${tieBreakOptions(slot.tb)}
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="checkbox-label">
+        <input type="checkbox"
+               data-field="double"
+               aria-label="Double round-robin: two cycles"
+               ${slot.double ? "checked" : ""}>
+        <span>Double round-robin: two cycles</span>
+      </div>
+
+      <p class="hint">
+        The final two rounds of Cycle 1 are transposed.
+        Cycle 2 follows the base Berger schedule with reversed colours.
+      </p>
+    </div>
+
+    ${buttonHTML("start", "Start Tournament", "primary")}
+  `;
+}
+
+function tournamentHTML(slot, index) {
+  const final = slot.stage === "final";
+
+  const roundLimit = final
+    ? slot.rounds.length
+    : slot.current + 1;
+
+  const standings = calculateStandings(slot, roundLimit);
+
+  const count = slot.players.length;
+  const cycles = slot.double ? "Double" : "Single";
+  const total = totalGameCount(slot);
+  const recorded = completedGameCount(slot);
+
+  const actionButtons = final
+    ? `
+      ${buttonHTML("back", "Back to Rounds")}
+      ${buttonHTML("print-final", "Print Final Report", "success")}
+    `
+    : `
+      ${buttonHTML("withdraw", "Withdraw / Reinstate Player", "danger")}
+      ${buttonHTML("finish", "Finish & View Final Standings", "primary")}
+    `;
+
+  const tieBreakControl = `
+    <div class="tie-break-control">
+      <label for="live-tb-${index}">Tie-break:</label>
+      <select id="live-tb-${index}" data-tb="true">
+        ${tieBreakOptions(slot.tb)}
+      </select>
+    </div>
+  `;
+
+  let content = `
+    <p class="metadata">
+      ${count} players · ${cycles} round-robin ·
+      ${slot.rounds.length} rounds
+    </p>
+
+    <div class="actions">${actionButtons}</div>
+
+    <p class="progress-line">
+      Recorded games: ${recorded} / ${total}
+    </p>
+  `;
+
+  if (final) {
+    content += `
+      <div class="final-summary">
+        All scheduled games have recorded results.
+      </div>
+
+      <div class="section-heading">
+        <h3>Final Standings</h3>
+        ${tieBreakControl}
+      </div>
+
+      ${standingsTableHTML(slot, standings, roundLimit)}
+
+      <div class="section-heading">
+        <h3>Berger Crosstable</h3>
+      </div>
+
+      ${crosstableHTML(slot, standings)}
+    `;
+
+    return content;
+  }
+
+  const roundOptions = slot.rounds.map((_, round) =>
+    optionHTML(
+      String(round),
+      "Round " + (round + 1) +
+        (roundIsComplete(slot, round) ? " ✓" : ""),
+      round === slot.current
+    )
+  ).join("");
+
+  const cycleLength = slot.rounds.length / (slot.double ? 2 : 1);
+
+  const cycle = slot.double
+    ? Math.floor(slot.current / cycleLength) + 1
+    : 1;
+
+  content += `
+    <div class="round-navigation">
+      ${buttonHTML(
+        "previous",
+        "← Previous",
+        "",
+        slot.current === 0
+      )}
+
+      <select data-round-select="true"
+              aria-label="Select round for tournament ${index + 1}">
+        ${roundOptions}
+      </select>
+
+      ${buttonHTML(
+        "next",
+        "Next →",
+        "",
+        slot.current === slot.rounds.length - 1
+      )}
+    </div>
+
+    <h3>
+      Round ${slot.current + 1}
+      ${slot.double ? " · Cycle " + cycle : ""}
+    </h3>
+
+    <div class="actions">
+      ${buttonHTML("print-pre", "Print Pre-Round Sheet", "success")}
+      ${buttonHTML("print-round", "Print Results & Standings")}
+    </div>
+
+    ${pairingsTableHTML(slot, index, slot.current, "edit")}
+
+    <div class="section-heading">
+      <h3>Standings Through Round ${slot.current + 1}</h3>
+      ${tieBreakControl}
+    </div>
+
+    ${standingsTableHTML(slot, standings, roundLimit)}
+
+    <p class="small-note">
+      These standings use recorded results through the selected round.
+      Opponent-dependent tie-breaks remain provisional until the
+      tournament is complete.
+    </p>
+  `;
+
+  return content;
+}
+
+function slotHTML(slot, index) {
+  const stageLabel = {
+    setup: "Setup",
+    running: "In progress",
+    final: "Finished"
+  }[slot.stage];
+
+  return `
+    <article id="slot-${index}"
+             class="tournament-card"
+             data-slot="${index}"
+             style="--slot-color: ${SLOT_COLORS[index]}">
+
+      <div class="card-heading">
+        <div>
+          <div class="slot-label">TOURNAMENT SLOT ${index + 1}</div>
+          <h2 data-title="true">
+            ${escapeHTML(slotTitle(slot, index))}
+          </h2>
+        </div>
+
+        <span class="badge ${slot.stage === "final" ? "final" : ""}">
+          ${stageLabel}
+        </span>
+      </div>
+
+      <div class="actions">
+        ${buttonHTML("save-slot", "Save This Tournament (.json)")}
+        ${buttonHTML("open-slot", "Open Tournament (.json)")}
+        ${buttonHTML("reset-slot", "Clear This Slot", "danger")}
+      </div>
+
+      ${slot.stage === "setup"
+        ? setupHTML(slot, index)
+        : tournamentHTML(slot, index)}
+    </article>
+  `;
+}
+
+function updateViewOptions() {
+  const select = document.getElementById("displayView");
+
+  select.innerHTML = [
+    optionHTML("all", "All four tournaments", state.view === "all"),
+    ...state.slots.map((slot, index) =>
+      optionHTML(
+        String(index),
+        (index + 1) + ": " + slotTitle(slot, index),
+        state.view === String(index)
+      )
+    )
+  ].join("");
+}
+
+function render() {
+  updateViewOptions();
+
+  const grid = document.getElementById("tournamentGrid");
+  grid.classList.toggle("single", state.view !== "all");
+
+  grid.innerHTML = state.slots.map((slot, index) => {
+    if (state.view !== "all" && state.view !== String(index)) {
+      return "";
+    }
+
+    return slotHTML(slot, index);
+  }).join("");
+}
+
+/* ============================================================
+   Saving and validated importing
+   ============================================================ */
+
+function makeEnvelope(kind, data) {
+  return {
+    format: FORMAT,
+    version: FORMAT_VERSION,
+    kind,
+    savedAt: new Date().toISOString(),
+    data
+  };
+}
+
+function persist() {
+  try {
+    const envelope = makeEnvelope("workspace", state);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(envelope));
+
+    setStorageStatus(
+      "Automatically saved at " + new Date().toLocaleTimeString()
+    );
+  } catch (error) {
+    setStorageStatus("Automatic saving unavailable. Download a JSON backup.");
+  }
+}
+
+function validateString(value, maxLength, label, allowEmpty = true) {
+  if (typeof value !== "string" ||
+      value.length > maxLength ||
+      (!allowEmpty && !value.trim())) {
+    throw new Error("Invalid " + label + ".");
+  }
+
+  return value;
+}
+
+function validateSlot(raw, index) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    throw new Error("Invalid tournament slot.");
+  }
+
+  if (!["setup", "running", "final"].includes(raw.stage)) {
+    throw new Error("Invalid tournament stage.");
+  }
+
+  if (typeof raw.double !== "boolean") {
+    throw new Error("Invalid round-robin setting.");
+  }
+
+  if (!Object.prototype.hasOwnProperty.call(TIE_BREAKS, raw.tb)) {
+    throw new Error("Invalid tie-break setting.");
+  }
+
+  const slot = newSlot(index);
+
+  slot.stage = raw.stage;
+  slot.name = validateString(
+    raw.name,
+    120,
+    "tournament name",
+    raw.stage === "setup"
+  );
+
+  slot.roster = validateString(raw.roster, 5000, "player roster");
+  slot.double = raw.double;
+  slot.tb = raw.tb;
+
+  if (raw.stage === "setup") {
+    return slot;
+  }
+
+  if (!Array.isArray(raw.players) ||
+      raw.players.length < 3 ||
+      raw.players.length > 16) {
+    throw new Error("Invalid player list.");
+  }
+
+  const expected = makeSchedule(raw.players.length, raw.double);
+
+  slot.players = raw.players.map(player => {
+    if (!player || typeof player !== "object") {
+      throw new Error("Invalid player record.");
+    }
+
+    const name = validateString(player.name, 120, "player name", false);
+    const from = player.withdrawnFrom;
+
+    if (from !== null &&
+        (!Number.isInteger(from) ||
+         from < 0 ||
+         from >= expected.length)) {
+      throw new Error("Invalid withdrawal round.");
+    }
+
+    return {
+      name,
+      withdrawnFrom: from
+    };
+  });
+
+  if (!Array.isArray(raw.rounds) ||
+      raw.rounds.length !== expected.length) {
+    throw new Error("Invalid number of rounds.");
+  }
+
+  for (let round = 0; round < expected.length; round++) {
+    const importedRound = raw.rounds[round];
+
+    if (!Array.isArray(importedRound) ||
+        importedRound.length !== expected[round].length) {
+      throw new Error("Invalid round structure.");
+    }
+
+    for (let board = 0; board < expected[round].length; board++) {
+      const imported = importedRound[board];
+      const generated = expected[round][board];
+
+      if (!imported ||
+          imported.w !== generated.w ||
+          imported.b !== generated.b) {
+        throw new Error(
+          "The imported pairings do not match the Berger schedule."
+        );
+      }
+
+      if (imported.result !== null &&
+          !Object.prototype.hasOwnProperty.call(RESULTS, imported.result)) {
+        throw new Error("Invalid game result.");
+      }
+
+      if (typeof imported.auto !== "boolean") {
+        throw new Error("Invalid automatic-result marker.");
+      }
+
+      if (!isRealGame(generated) &&
+          (imported.result !== null || imported.auto)) {
+        throw new Error("A scheduled rest round cannot contain a result.");
+      }
+
+      if (imported.auto &&
+          !["F1", "F0", "F00"].includes(imported.result)) {
+        throw new Error("Only forfeits may be marked automatic.");
+      }
+
+      if (imported.auto) {
+        const whiteFrom = slot.players[generated.w].withdrawnFrom;
+        const blackFrom = slot.players[generated.b].withdrawnFrom;
+
+        const whiteOut = whiteFrom !== null && round >= whiteFrom;
+        const blackOut = blackFrom !== null && round >= blackFrom;
+
+        const expectedCode = whiteOut && blackOut
+          ? "F00"
+          : whiteOut
+            ? "F0"
+            : blackOut
+              ? "F1"
+              : null;
+
+        if (imported.result !== expectedCode) {
+          throw new Error(
+            "An automatic forfeit conflicts with the withdrawal records."
+          );
+        }
+      }
+
+      generated.result = imported.result;
+      generated.auto = imported.auto;
+    }
+  }
+
+  if (!Number.isInteger(raw.current) ||
+      raw.current < 0 ||
+      raw.current >= expected.length) {
+    throw new Error("Invalid current round.");
+  }
+
+  slot.rounds = expected;
+  slot.current = raw.current;
+
+  if (slot.stage === "final" && missingGameCount(slot) !== 0) {
+    throw new Error("A finished tournament contains unrecorded games.");
+  }
+
+  return slot;
+}
+
+function validateEnvelope(raw, expectedKind) {
+  if (!raw ||
+      raw.format !== FORMAT ||
+      raw.version !== FORMAT_VERSION ||
+      raw.kind !== expectedKind) {
+    throw new Error(
+      "This file is not a compatible " + expectedKind +
+      " export from the four-tournament version."
+    );
+  }
+
+  if (expectedKind === "tournament") {
+    return validateSlot(raw.data, 0);
+  }
+
+  if (!raw.data ||
+      !Array.isArray(raw.data.slots) ||
+      raw.data.slots.length !== SLOT_COUNT) {
+    throw new Error("A workspace must contain exactly four slots.");
+  }
+
+  const allowedViews = ["all", "0", "1", "2", "3"];
+
+  if (!allowedViews.includes(raw.data.view)) {
+    throw new Error("Invalid workspace display setting.");
+  }
+
+  return {
+    view: raw.data.view,
+    slots: raw.data.slots.map((slot, index) =>
+      validateSlot(slot, index)
+    )
+  };
+}
+
+function downloadJSON(filename, envelope) {
+  const blob = new Blob(
+    [JSON.stringify(envelope, null, 2)],
+    { type: "application/json;charset=utf-8" }
+  );
+
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function safeFilename(name) {
+  return name
+    .trim()
+    .replace(/[<>:"/\\|?*\u0000-\u001f]/g, "_")
+    .replace(/\s+/g, "_")
+    .slice(0, 90) || "tournament";
+}
+
+function saveSlot(index) {
+  const slot = state.slots[index];
+
+  downloadJSON(
+    safeFilename(slotTitle(slot, index)) + ".json",
+    makeEnvelope("tournament", slot)
+  );
+}
+
+function saveWorkspace() {
+  downloadJSON(
+    "berger-four-tournaments.json",
+    makeEnvelope("workspace", state)
+  );
+}
+
+function chooseJSON(kind, index = null) {
+  const input = document.getElementById("jsonInput");
+
+  input.value = "";
+  input.dataset.kind = kind;
+  input.dataset.slot = index === null ? "" : String(index);
+  input.click();
+}
+
+async function importJSON(event) {
+  const input = event.target;
+  const file = input.files[0];
+
+  if (!file) {
+    return;
+  }
+
+  const kind = input.dataset.kind;
+  const index = Number(input.dataset.slot);
+
+  try {
+    if (file.size > 2 * 1024 * 1024) {
+      throw new Error("The JSON file is too large.");
+    }
+
+    const text = await file.text();
+    const raw = JSON.parse(text);
+    const imported = validateEnvelope(raw, kind);
+
+    if (kind === "workspace") {
+      if (!confirm(
+        "Replace all four tournament slots with the imported workspace?"
+      )) {
+        return;
+      }
+
+      state = imported;
+    } else {
+      if (!Number.isInteger(index) ||
+          index < 0 ||
+          index >= SLOT_COUNT) {
+        throw new Error("Invalid destination slot.");
+      }
+
+      if (!confirm(
+        "Replace tournament slot " + (index + 1) +
+        " with the imported tournament?"
+      )) {
+        return;
+      }
+
+      state.slots[index] = imported;
+    }
+
+    showNotice("");
+    persist();
+    render();
+  } catch (error) {
+    alert("Import failed: " + error.message);
+  } finally {
+    input.value = "";
+  }
+}
+
+function restoreSession() {
+  try {
+    const text = localStorage.getItem(STORAGE_KEY);
+
+    if (!text) {
+      alert("No saved session was found in this browser.");
+      return;
+    }
+
+    const imported = validateEnvelope(JSON.parse(text), "workspace");
+
+    if (!confirm("Restore the browser's saved four-tournament workspace?")) {
+      return;
+    }
+
+    state = imported;
+    showNotice("");
+    render();
+    setStorageStatus("Saved session restored.");
+  } catch (error) {
+    alert("The saved session could not be restored: " + error.message);
+  }
+}
+
+/* ============================================================
+   Setup and tournament actions
+   ============================================================ */
+
+function createTournament() {
+  const index = state.slots.findIndex(slot => slot.stage === "setup");
+
+  if (index === -1) {
+    alert(
+      "All four slots contain started tournaments. " +
+      "Export a tournament before clearing a slot."
+    );
+    return;
+  }
+
+  state.view = String(index);
+  persist();
+  render();
+
+  document.getElementById("name-" + index).focus();
+}
+
+function resetSlot(index) {
+  if (!confirm(
+    "Clear tournament slot " + (index + 1) +
+    "? Other tournaments will not be changed. " +
+    "Export this tournament first if you need a backup."
+  )) {
+    return;
+  }
+
+  state.slots[index] = newSlot(index);
+  persist();
+  render();
+}
+
+function startTournament(index) {
+  const slot = state.slots[index];
+
+  if (slot.stage !== "setup") {
+    return;
+  }
+
+  const names = slot.roster
+    .split(/\r?\n/)
+    .map(name => name.trim())
+    .filter(Boolean);
+
+  if (names.length < 3 || names.length > 16) {
+    alert("Enter between 3 and 16 player names.");
+    return;
+  }
+
+  if (names.some(name => name.length > 120)) {
+    alert("Each player name must contain no more than 120 characters.");
+    return;
+  }
+
+  const normalized = names.map(name =>
+    name.normalize("NFKC").toLowerCase()
+  );
+
+  if (new Set(normalized).size !== names.length) {
+    alert(
+      "Two or more names are identical. Add distinguishing suffixes " +
+      "before starting the tournament."
+    );
+    return;
+  }
+
+  slot.name = slotTitle(slot, index);
+
+  slot.players = names.map(name => ({
+    name,
+    withdrawnFrom: null
+  }));
+
+  slot.rounds = makeSchedule(names.length, slot.double);
+  slot.current = 0;
+  slot.stage = "running";
+
+  persist();
+  render();
+}
+
+function moveRound(index, direction) {
+  const slot = state.slots[index];
+
+  if (slot.stage !== "running") {
+    return;
+  }
+
+  const target = slot.current + direction;
+
+  if (target < 0 || target >= slot.rounds.length) {
+    return;
+  }
+
+  if (direction > 0 &&
+      !roundIsComplete(slot, slot.current) &&
+      !confirm(
+        "This round still has unrecorded games. " +
+        "Move to the next round anyway?"
+      )) {
+    return;
+  }
+
+  slot.current = target;
+  persist();
+  render();
+}
+
+function finishTournament(index) {
+  const slot = state.slots[index];
+  const missing = missingGameCount(slot);
+
+  if (missing > 0) {
+    alert(
+      "This tournament has " + missing +
+      " unrecorded game" + (missing === 1 ? "" : "s") +
+      ". Record a result or a forfeit for every game before finishing."
+    );
+    return;
+  }
+
+  slot.stage = "final";
+  persist();
+  render();
+}
+
+function openWithdrawal(index) {
+  const slot = state.slots[index];
+
+  if (slot.stage !== "running") {
+    return;
+  }
+
+  withdrawalSlot = index;
+
+  document.getElementById("withdrawTournamentName").textContent =
+    slotTitle(slot, index);
+
+  document.getElementById("withdrawPlayer").innerHTML =
+    slot.players.map((player, id) =>
+      optionHTML(
+        String(id),
+        (id + 1) + ". " + player.name +
+          (player.withdrawnFrom !== null ? " (withdrawn)" : ""),
+        id === 0
+      )
+    ).join("");
+
+  const roundInput = document.getElementById("withdrawRound");
+
+  roundInput.min = "1";
+  roundInput.max = String(slot.rounds.length);
+  roundInput.value = String(slot.current + 1);
+  roundInput.disabled = false;
+  roundInput.required = true;
+
+  document.getElementById("withdrawOperation").value = "withdraw";
+  document.getElementById("withdrawDialog").showModal();
+}
+
+function applyWithdrawal(event) {
+  event.preventDefault();
+
+  if (withdrawalSlot === null) {
+    return;
+  }
+
+  const slot = state.slots[withdrawalSlot];
+
+  if (slot.stage !== "running") {
+    alert("This tournament is no longer open for withdrawal changes.");
+    return;
+  }
+
+  const playerId = Number(
+    document.getElementById("withdrawPlayer").value
+  );
+
+  const operation =
+    document.getElementById("withdrawOperation").value;
+
+  const fromRound = Number(
+    document.getElementById("withdrawRound").value
+  );
+
+  if (!Number.isInteger(playerId) ||
+      !slot.players[playerId]) {
+    alert("Choose a valid player.");
+    return;
+  }
+
+  if (operation === "withdraw") {
+    if (!Number.isInteger(fromRound) ||
+        fromRound < 1 ||
+        fromRound > slot.rounds.length) {
+      alert("Enter a valid withdrawal round.");
+      return;
+    }
+
+    slot.players[playerId].withdrawnFrom = fromRound - 1;
+  } else {
+    slot.players[playerId].withdrawnFrom = null;
+  }
+
+  refreshAutomaticForfeits(slot);
+
+  document.getElementById("withdrawDialog").close();
+  withdrawalSlot = null;
+
+  persist();
+  render();
+}
+
+function choosePlayerText(index) {
+  const input = document.getElementById("textInput");
+
+  input.value = "";
+  input.dataset.slot = String(index);
+  input.click();
+}
+
+async function importPlayerText(event) {
+  const input = event.target;
+  const file = input.files[0];
+
+  if (!file) {
+    return;
+  }
+
+  const index = Number(input.dataset.slot);
+  const originalSlot = state.slots[index];
+
+  try {
+    if (file.size > 100000) {
+      throw new Error("The player file is too large.");
+    }
+
+    const text = await file.text();
+
+    if (state.slots[index] !== originalSlot ||
+        originalSlot.stage !== "setup") {
+      throw new Error("The destination slot changed during import.");
+    }
+
+    if (text.length > 5000) {
+      throw new Error("The roster text exceeds 5,000 characters.");
+    }
+
+    if (originalSlot.roster.trim() &&
+        !confirm("Replace this slot's existing roster?")) {
+      return;
+    }
+
+    originalSlot.roster = text.replace(/^\uFEFF/, "");
+    persist();
+    render();
+  } catch (error) {
+    alert("Player import failed: " + error.message);
+  } finally {
+    input.value = "";
+  }
+}
+
+/* ============================================================
+   Printing
+   ============================================================ */
+
+function printReportHTML(slot, index, type) {
+  const final = type === "final";
+  const preRound = type === "pre";
+
+  const limit = final
+    ? slot.rounds.length
+    : slot.current + 1;
+
+  const standings = calculateStandings(slot, limit);
+
+  const heading = final
+    ? "Final Standings and Crosstable"
+    : preRound
+      ? "Round " + (slot.current + 1) + ": Pre-Round Sheet"
+      : "Round " + (slot.current + 1) + ": Results and Standings";
+
+  let html = `
+    <section class="print-report">
+      <h1>${escapeHTML(slotTitle(slot, index))}</h1>
+      <h2>${escapeHTML(heading)}</h2>
+
+      <p class="metadata">
+        Tournament slot ${index + 1} ·
+        ${slot.players.length} players ·
+        ${slot.double ? "Double" : "Single"} round-robin ·
+        Tie-break: ${escapeHTML(TIE_BREAKS[slot.tb])}
+      </p>
+  `;
+
+  if (!final) {
+    html += pairingsTableHTML(
+      slot,
+      index,
+      slot.current,
+      preRound ? "blank" : "print"
+    );
+  }
+
+  if (!preRound) {
+    html += `
+      <h3>${final
+        ? "Final standings"
+        : "Standings through Round " + (slot.current + 1)}</h3>
+      ${standingsTableHTML(slot, standings, limit)}
+    `;
+  }
+
+  if (final) {
+    html += `
+      <h3>Berger crosstable</h3>
+      ${crosstableHTML(slot, standings)}
+    `;
+  }
+
+  html += `
+      <p class="small-note">
+        Printed ${escapeHTML(new Date().toLocaleString())}
+      </p>
+    </section>
+  `;
+
+  return html;
+}
+
+let applicationPrintPending = false;
+
+function printHTML(html) {
+  document.getElementById("printRoot").innerHTML = html;
+
+  applicationPrintPending = true;
+
+  try {
+    window.print();
+  } finally {
+    applicationPrintPending = false;
+  }
+}
+
+function printSlot(index, type) {
+  const slot = state.slots[index];
+
+  if (slot.stage === "setup") {
+    alert("Start the tournament before printing a report.");
+    return;
+  }
+
+  if (type === "final" && missingGameCount(slot) !== 0) {
+    alert("The final report requires results for all games.");
+    return;
+  }
+
+  printHTML(printReportHTML(slot, index, type));
+}
+
+function printAll() {
+  const reports = state.slots.map((slot, index) => {
+    if (slot.stage === "setup") {
+      return "";
+    }
+
+    return printReportHTML(
+      slot,
+      index,
+      slot.stage === "final" ? "final" : "round"
+    );
+  }).filter(Boolean);
+
+  if (!reports.length) {
+    alert("There are no started tournaments to print.");
+    return;
+  }
+
+  printHTML(reports.join(""));
+}
+
+/* ============================================================
+   Event handling
+
+   Each card identifies its own slot through data-slot.
+   No tournament action depends on a shared current-tournament
+   variable.
+   ============================================================ */
+
+window.addEventListener("beforeprint", () => {
+  if (applicationPrintPending) {
+    return;
+  }
+
+  const reports = state.slots.map((slot, index) => {
+    if (slot.stage === "setup") {
+      return "";
+    }
+
+    return printReportHTML(
+      slot,
+      index,
+      slot.stage === "final" ? "final" : "round"
+    );
+  }).filter(Boolean);
+
+  document.getElementById("printRoot").innerHTML =
+    reports.length
+      ? reports.join("")
+      : `
+        <section class="print-report">
+          <h1>Berger Tournament System</h1>
+          <p>No tournaments have been started.</p>
+        </section>
+      `;
+});
+
+document.addEventListener("click", event => {
+  const button = event.target.closest("button[data-action]");
+
+  if (!button || button.disabled) {
+    return;
+  }
+
+  const action = button.dataset.action;
+  const card = button.closest("[data-slot]");
+
+  const index = card
+    ? Number(card.dataset.slot)
+    : null;
+
+  switch (action) {
+    case "about":
+      document.getElementById("aboutDialog").showModal();
+      break;
+
+    case "close-about":
+      document.getElementById("aboutDialog").close();
+      break;
+
+    case "close-withdraw":
+      document.getElementById("withdrawDialog").close();
+      withdrawalSlot = null;
+      break;
+
+    case "create":
+      createTournament();
+      break;
+
+    case "save-workspace":
+      saveWorkspace();
+      break;
+
+    case "open-workspace":
+      chooseJSON("workspace");
+      break;
+
+    case "restore":
+      restoreSession();
+      break;
+
+    case "print-all":
+      printAll();
+      break;
+
+    case "save-slot":
+      saveSlot(index);
+      break;
+
+    case "open-slot":
+      chooseJSON("tournament", index);
+      break;
+
+    case "reset-slot":
+      resetSlot(index);
+      break;
+
+    case "sample":
+      state.slots[index].roster = SAMPLE_PLAYERS.join("\n");
+      persist();
+      render();
+      break;
+
+    case "import-players":
+      choosePlayerText(index);
+      break;
+
+    case "start":
+      startTournament(index);
+      break;
+
+    case "previous":
+      moveRound(index, -1);
+      break;
+
+    case "next":
+      moveRound(index, 1);
+      break;
+
+    case "finish":
+      finishTournament(index);
+      break;
+
+    case "back":
+      state.slots[index].stage = "running";
+      persist();
+      render();
+      break;
+
+    case "withdraw":
+      openWithdrawal(index);
+      break;
+
+    case "print-pre":
+      printSlot(index, "pre");
+      break;
+
+    case "print-round":
+      printSlot(index, "round");
+      break;
+
+    case "print-final":
+      printSlot(index, "final");
+      break;
+  }
+});
+
+document.addEventListener("input", event => {
+  const input = event.target;
+
+  if (!input.matches("[data-field]")) {
+    return;
+  }
+
+  const card = input.closest("[data-slot]");
+
+  if (!card) {
+    return;
+  }
+
+  const index = Number(card.dataset.slot);
+  const slot = state.slots[index];
+
+  if (slot.stage !== "setup") {
+    return;
+  }
+
+  const field = input.dataset.field;
+
+  if (!["name", "roster", "double"].includes(field)) {
+    return;
+  }
+
+  slot[field] = field === "double"
+    ? input.checked
+    : input.value;
+
+  if (field === "name") {
+    card.querySelector("[data-title]").textContent =
+      slotTitle(slot, index);
+
+    updateViewOptions();
+  }
+
+  persist();
+});
+
+document.addEventListener("change", event => {
+  const input = event.target;
+
+  if (input.id === "displayView") {
+    state.view = input.value;
+    persist();
+    render();
+    return;
+  }
+
+  if (input.id === "withdrawOperation") {
+    const reinstate = input.value === "reinstate";
+    const roundInput = document.getElementById("withdrawRound");
+
+    roundInput.disabled = reinstate;
+    roundInput.required = !reinstate;
+    return;
+  }
+
+  const card = input.closest("[data-slot]");
+
+  if (!card) {
+    return;
+  }
+
+  const index = Number(card.dataset.slot);
+  const slot = state.slots[index];
+
+  if (input.matches("[data-tb]")) {
+    if (!Object.prototype.hasOwnProperty.call(TIE_BREAKS, input.value)) {
+      return;
+    }
+
+    slot.tb = input.value;
+    persist();
+    render();
+    return;
+  }
+
+  if (input.matches("[data-round-select]")) {
+    const round = Number(input.value);
+
+    if (slot.stage !== "running" ||
+        !Number.isInteger(round) ||
+        round < 0 ||
+        round >= slot.rounds.length) {
+      return;
+    }
+
+    slot.current = round;
+    persist();
+    render();
+    return;
+  }
+
+  if (input.matches("[data-result]")) {
+    if (slot.stage !== "running") {
+      return;
+    }
+
+    const round = Number(input.dataset.round);
+    const board = Number(input.dataset.board);
+    const game = slot.rounds[round]?.[board];
+
+    if (!game || !isRealGame(game)) {
+      return;
+    }
+
+    const result = input.value === "" ? null : input.value;
+
+    if (result !== null &&
+        !Object.prototype.hasOwnProperty.call(RESULTS, result)) {
+      return;
+    }
+
+    /*
+       A manual edit takes ownership of the result.
+       Later withdrawal recalculation will preserve it.
+    */
+    game.result = result;
+    game.auto = false;
+
+    if (result === null) {
+      refreshAutomaticForfeits(slot);
+    }
+
+    persist();
+    render();
+  }
+});
+
+document.getElementById("jsonInput")
+  .addEventListener("change", importJSON);
+
+document.getElementById("textInput")
+  .addEventListener("change", importPlayerText);
+
+document.getElementById("withdrawForm")
+  .addEventListener("submit", applyWithdrawal);
+
+document.getElementById("withdrawDialog")
+  .addEventListener("close", () => {
+    withdrawalSlot = null;
+  });
+
+window.addEventListener("storage", event => {
+  if (event.key === STORAGE_KEY) {
+    showNotice(
+      "Another browser tab changed the saved workspace. " +
+      "This tab has not been replaced automatically. " +
+      "Export its current data before choosing Restore Last Session. " +
+      "Further edits in this tab will overwrite the browser's saved copy."
+    );
+  }
+});
+
+/* ============================================================
+   Startup self-checks
+
+   These checks run locally when the page opens. They verify:
+   - round counts;
+   - one appearance per player in each round;
+   - complete single/double pair coverage;
+   - reversed colours in double round-robins;
+   - a known four-player Berger table;
+   - simple standings calculations;
+   - independent slot allocation.
+   ============================================================ */
+
+function assert(condition, message) {
+  if (!condition) {
+    throw new Error("Self-check failed: " + message);
+  }
+}
+
+function runSelfChecks() {
+  const referenceFour = [
+    [[0, 3], [1, 2]],
+    [[3, 2], [0, 1]],
+    [[1, 3], [2, 0]]
+  ];
+
+  const actualFour = makeSchedule(4, false).map(
+    games => games.map(game => [game.w, game.b])
+  );
+
+  assert(
+    JSON.stringify(actualFour) === JSON.stringify(referenceFour),
+    "four-player Berger reference"
+  );
+
+  for (let count = 3; count <= 16; count++) {
+    for (const double of [false, true]) {
+      const rounds = makeSchedule(count, double);
+      const padded = count % 2 === 0 ? count : count + 1;
+      const cycles = double ? 2 : 1;
+
+      assert(
+        rounds.length === (padded - 1) * cycles,
+        "round count for " + count + " players"
+      );
+
+      const pairings = new Map();
+
+      for (const games of rounds) {
+        const appeared = new Set();
+
+        for (const game of games) {
+          for (const id of [game.w, game.b]) {
+            if (id === null) {
+              continue;
+            }
+
+            assert(!appeared.has(id), "duplicate player within a round");
+            appeared.add(id);
+          }
+
+          if (!isRealGame(game)) {
+            continue;
+          }
+
+          const key = [game.w, game.b]
+            .sort((a, b) => a - b)
+            .join(":");
+
+          if (!pairings.has(key)) {
+            pairings.set(key, []);
+          }
+
+          pairings.get(key).push([game.w, game.b]);
+        }
+
+        assert(
+          appeared.size === count,
+          "every real player appears once per round"
+        );
+      }
+
+      assert(
+        pairings.size === count * (count - 1) / 2,
+        "complete opponent coverage"
+      );
+
+      for (const games of pairings.values()) {
+        assert(
+          games.length === cycles,
+          "correct number of encounters"
+        );
+
+        if (double) {
+          assert(
+            games[0][0] === games[1][1] &&
+            games[0][1] === games[1][0],
+            "reversed colours"
+          );
+        }
+      }
+
+      if (double) {
+        const single = makeSchedule(count, false);
+        const length = single.length;
+
+        const signature = games =>
+          games.map(game => game.w + ":" + game.b).join("|");
+
+        assert(
+          signature(rounds[length - 2]) === signature(single[length - 1]) &&
+          signature(rounds[length - 1]) === signature(single[length - 2]),
+          "first-cycle final-round transposition"
+        );
+      }
+    }
+  }
+
+  const sample = newSlot(0);
+
+  sample.stage = "running";
+  sample.players = ["A", "B", "C", "D"].map(name => ({
+    name,
+    withdrawnFrom: null
+  }));
+
+  sample.rounds = makeSchedule(4, false);
+
+  for (const games of sample.rounds) {
+    for (const game of games) {
+      game.result = "1/2-1/2";
+    }
+  }
+
+  const standings = calculateStandings(sample, sample.rounds.length);
+
+  for (const row of standings.rows) {
+    assert(row.points === 1.5, "draw-only points");
+    assert(row.sb === 2.25, "draw-only Sonneborn-Berger");
+    assert(row.ps === 3, "draw-only progressive score");
+    assert(row.position === 1 && row.tied, "shared positions");
+  }
+
+  sample.tb = "de";
+
+  const direct = calculateStandings(sample, sample.rounds.length);
+
+  for (const row of direct.rows) {
+    assert(row.de === 1.5, "draw-only Direct Encounter");
+  }
+
+  const workspace = newWorkspace();
+  workspace.slots[0].players.push({ name: "Independent" });
+
+  assert(
+    workspace.slots[1].players.length === 0,
+    "independent tournament slots"
+  );
+}
+
+/* ============================================================
+   Initialization
+   ============================================================ */
+
+function initialize() {
+  try {
+    runSelfChecks();
+  } catch (error) {
+    initializationError = error.message;
+    console.error(error);
+
+    showNotice(
+      error.message +
+      ". Do not use this copy for a live tournament until corrected."
+    );
+  }
+
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+
+    if (saved) {
+      state = validateEnvelope(JSON.parse(saved), "workspace");
+      setStorageStatus("Previous session restored automatically.");
+    } else {
+      setStorageStatus("Ready. Changes will be saved automatically.");
+    }
+  } catch (error) {
+    setStorageStatus("Automatic session restoration unavailable.");
+
+    if (!initializationError) {
+      showNotice(
+        "The browser's saved session could not be loaded. " +
+        "If you have a downloaded workspace backup, open that file. " +
+        "Details: " + error.message
+      );
+    }
+  }
+
+  render();
+}
+
+initialize();
+</script>
+
 </body>
 </html>
