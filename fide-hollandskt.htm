@@ -1088,16 +1088,51 @@ function Dutch2026Core() {
       return answer;
     }
 
-    function canRemoveForBye(list, score) {
-      for (const i of list) {
-        tick();
-        if (
-          eligible(i) && players[i].score === score &&
-          perfectMatching(list.filter(j => j !== i))
-        ) return true;
+const byeFeasibilityMemo = new Map();
+
+function canRemoveForBye(list, score) {
+  tick();
+
+  const xs = ordered(list);
+  if (xs.length % 2 === 0) return false;
+
+  const key = xs.join(",") + "|" + score;
+  if (byeFeasibilityMemo.has(key)) {
+    return byeFeasibilityMemo.get(key);
+  }
+
+  // local index map: local -> global
+  const n = xs.length;
+  const dummy = n;
+  const graph = Array.from({ length:n + 1 }, () => []);
+
+  // real-player edges
+  for (let a = 0; a < n; a++) {
+    for (let b = a + 1; b < n; b++) {
+      tick();
+      if (edge[xs[a]][xs[b]]) {
+        graph[a].push(b);
+        graph[b].push(a);
       }
-      return false;
     }
+  }
+
+  // dummy connects only to eligible BYE candidates at this score
+  let hasCandidate = false;
+  for (let a = 0; a < n; a++) {
+    tick();
+    const i = xs[a];
+    if (eligible(i) && players[i].score === score) {
+      hasCandidate = true;
+      graph[dummy].push(a);
+      graph[a].push(dummy);
+    }
+  }
+
+  const ok = hasCandidate && hasPerfectMatchingGraph(graph, tick);
+  byeFeasibilityMemo.set(key, ok);
+  return ok;
+}
 
     phase = "Fastställer C4 och lägsta möjliga poäng för frirond";
     let byeScore = null;
