@@ -34,7 +34,7 @@
 
     .container {
       width: 100%;
-      max-width: 850px;
+      max-width: 875px;
     }
 
     header {
@@ -342,12 +342,43 @@ margin: auto;
 
    .match-history-table th:nth-child(4),
    .match-history-table td:nth-child(4) { width: auto; }
+
+header {
+  position: relative;
+  padding: 0 85px;
+}
+
+button.about-button {
+  position: absolute;
+  top: 8px;
+  right: 0;
+  background: white;
+  color: var(--primary);
+  border: 1px solid var(--border);
+  padding: 7px 12px;
+  font-size: 0.85rem;
+}
+
+button.about-button:hover {
+  background: #f1f5f9;
+}
+
+#wnt-modal .modal-box {
+  max-height: 85vh;
+  overflow-y: auto;
+  width: calc(100% - 32px);
+}
   </style>
 </head>
 <body>
 
 <div class="container">
   <header>
+    <button type="button"
+        class="about-button"
+        onclick="openWntModal(event)">
+  	About
+    </button>
     <h1>Monrad Pairing System</h1>
     <p>Chess tournament management &mdash; local or online</p>
   </header>
@@ -386,7 +417,7 @@ margin: auto;
       <span style="font-weight: 600; color: #334155;">Tie-break:</span>
       <label>
        <input type="radio" class="tb-radio" name="tb-choice-setup" value="wnt" checked onchange="userSetTieBreak(this.value)">
-       <span>WNT<sup class="wnt-asterisk" onclick="openWntModal(event)" title="Information about Winther score">*</sup></span>
+       <span>WNT</span>
       </label>
       <label>
         <input type="radio" class="tb-radio" name="tb-choice-setup" value="cumulative" onchange="userSetTieBreak(this.value)">
@@ -394,7 +425,7 @@ margin: auto;
       </label>
       <label>
         <input type="radio" class="tb-radio" name="tb-choice-setup" value="buchholz" onchange="userSetTieBreak(this.value)">
-        Buchholz Cut-1 (bye: 0-point opponent)
+        Buchholz Cut-1
       </label>
     </div>
 
@@ -506,8 +537,25 @@ margin: auto;
 
 <!-- MODAL: WNT INFORMATION -->
 <div id="wnt-modal" class="modal-overlay hidden" onclick="if(event.target === this) closeWntModal()">
-  <div class="modal-box" style="max-width: 585px;">
-    <h3 style="margin-top: 0; color: var(--primary); font-size: 1.2rem;">Winther Score (WNT)</h3>
+  <div class="modal-box" style="max-width: 685px;">
+    <h3 style="margin-top: 0; color: var(--primary); font-size: 1.2rem;">About Monrad Pairing System</h3>
+<p>
+Monrad is a simplified Swiss system that uses a randomised starting field rather than seeding. This may create some imbalance in the early rounds, with certain top players facing stronger opposition than others. Players may also receive the same colour in three consecutive rounds, or occasionally even more. In amateur and blitz tournaments, however, these drawbacks are usually considered acceptable. The randomised pairings add variety and help prevent repetitive matchups, while the system remains easy to administer.
+</p>
+<p>
+  This program automatically saves the current tournament. When the program is restarted, a dialog box allows the tournament to be resumed. To save the tournament rounds permanently, use the "Save Tournament" function. Saved tournaments can be loaded from the start page.
+</p>
+<p>
+The administrator may select one of three tie-break systems: WNT, Progressive, or Buchholz (Cut-1). These tie-breaks are used to assess the strength of a player's performance and to distinguish between players who finish on the same score. 
+</p>
+<p>
+The Progressive (Cumulative) Score is calculated as the sum of a player's cumulative score after each round. The system rewards strong early performance, giving preference to players who remain near the top of the standings throughout the tournament rather than those who achieve the same final score after a weaker start. 
+</p>
+<p>
+Buchholz (Cut-1) is calculated as the sum of the final scores of all opponents faced, excluding the opponent with the lowest final score. This reduces the impact of having been paired against a particularly weak opponent and provides a more robust measure of the strength of a player's opposition. In this implementation, a BYE round is treated as an opponent with a score of zero. A BYE denotes a vacant round resulting from an uneven number of players.
+</p>
+<h3 style="margin-top: 0; color: var(--primary); font-size: 1.0rem;">Winther Score (WNT)<br><br></h3>
+
     <div style="font-family: monospace, monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.92rem; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; color: #0f172a;">Winther Score (WNT) = 100 × ∑ᵢ [ (Pᵢ / N) × (rᵢ + Pᵢ / (2N)) ]
 
 ∑ᵢ = sum over all opponents faced
@@ -516,9 +564,12 @@ Pᵢ = opponent i's final tournament score
 N = total number of rounds in the tournament
 Pᵢ / N = opponent's score share (ratio expressed as a decimal between 0 and 1)</div>
     <p style="font-size: 0.95rem; line-height: 1.5; color: #334155; margin-bottom: 18px;">
-      When players finish tied on points, they are separated based on the quality of the opposition they have faced. This new method provides a fairer reflection of player performance than traditional tie-break systems, consistently rewarding those who compete on the top boards. Although a player receives no points for a BYE, the WNT system exhibits a pronounced tendency to compensate for this in subsequent rounds. See also: <a href="https://mats-winther.github.io/bg/chesspairing.htm" style="text-decoration:none;" target="_blank" title="Chess Pairings: A Review of Monrad, Swiss, and Berger">Chess pairings: a review of Monrad, Swiss, and Berger</a>.
+      When players finish tied on points, they are separated based on the quality of the opposition they have faced. This new method provides a fairer reflection of player performance than traditional tie-break systems, consistently rewarding those who compete on the top boards. Although a player receives no points for a BYE, the WNT system exhibits a pronounced tendency to compensate for this in subsequent rounds.
+</p> 
+<p>
+See also: <a href="https://mats-winther.github.io/bg/chesspairing.htm" style="text-decoration:none;" target="_blank" title="Chess Pairings: A Review of Monrad, Swiss, and Berger">Chess pairings: a review of Monrad, Swiss, and Berger</a>.<br>&nbsp;</p>
     </p>
-    <div class="btn-group" style="justify-content: flex-end; margin-top: 0;">
+    <div class="btn-group" style="justify-content: flex-start; margin-top: 0;">
       <button type="button" onclick="closeWntModal()">Close</button>
     </div>
   </div>
@@ -624,6 +675,13 @@ function toggleRoundResult(radio) {
 
   autosave();
 }
+
+document.addEventListener("keydown", function (event) {
+  if (event.key === "Escape") {
+    closeWntModal();
+    closeWithdrawModal();
+  }
+});
 
   /** On page load: offer to resume if an autosaved tournament exists. */
   function checkAutosave() {
@@ -1769,6 +1827,7 @@ function calculateBuchholz() {
         margin: 0;
       }
     }
+
   </style>
 </head>
 <body>
