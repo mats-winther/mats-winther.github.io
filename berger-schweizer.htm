@@ -1189,6 +1189,8 @@ let preparedBergerDraw = null;
 
 const originalDocumentTitle = document.title;
 let printTitleTimer = null;
+let applicationPrintInProgress = false;
+let preparingNativePrint = false;
 
 /* ========================================================================
    GENERAL HELPERS
@@ -1428,7 +1430,7 @@ function updateFormatText() {
     `mot positionerna ${positionList(details.bottomSwissUp)} i den nedre ` +
     `schweizergruppen. Positionerna avser den ursprungliga ` +
     `ratingordningen inom grupperna. Om det saknas en nedre ` +
-    `schweizergrupp behåller den sista oparade bergergruppen sina spelare.`;
+    `schweizergrupp behåller den udda och oparade bergergruppen sina spelare.`;
 
   const fieldText =
     `Alla heltalsstorlekar på minst ${details.minimumPlayers} spelare ` +
@@ -4341,7 +4343,7 @@ $("json-input").addEventListener("change", function(event) {
 function openPrintView(
   subtitle,
   content,
-  tournamentName = state?.name || "Berger-Schweizerturnering"
+  tournamentName = state?.name || "Berger-Swiss Tournament"
 ) {
   clearTimeout(printTitleTimer);
 
@@ -4352,10 +4354,90 @@ function openPrintView(
   `;
 
   document.title = `${tournamentName} - ${subtitle}`;
-  window.print();
+
+  /*
+    During beforeprint, prepare content only.
+    Calling window.print() here would request printing recursively.
+  */
+  if (preparingNativePrint) return;
+
+  applicationPrintInProgress = true;
+
+  try {
+    window.print();
+  } catch (error) {
+    applicationPrintInProgress = false;
+    $("print-area").innerHTML = "";
+    document.title = originalDocumentTitle;
+    throw error;
+  }
 }
 
+window.addEventListener("beforeprint", () => {
+  clearTimeout(printTitleTimer);
+
+  /*
+    Application print buttons have already prepared their
+    selected output. Do not replace it with the native default.
+  */
+  if (applicationPrintInProgress || preparingNativePrint) return;
+
+  preparingNativePrint = true;
+
+  try {
+    /*
+      Discard any previous output before preparing a fresh view.
+    */
+    $("print-area").innerHTML = "";
+
+    if (state) {
+      /*
+        Reuse the existing pairing renderer without requesting
+        another print dialog.
+      */
+      printPairings();
+    } else {
+      const tournamentName =
+        $("tournament-name").value.trim() ||
+        "Berger-Swiss Tournament";
+
+      const roster = $("player-input").value.trim();
+      const bergerRounds = selectedBergerRounds();
+      const extraRounds = $("extra-rounds").value.trim();
+
+      openPrintView(
+        "Tournament Setup",
+        `
+          <p>
+            Initial phase: ${bergerRounds} rounds.
+            Extra Swiss rounds: ${escapeHtml(extraRounds || "0")}.
+          </p>
+          <h3>Entered Player Roster</h3>
+          ${
+            roster
+              ? `<pre style="white-space:pre-wrap;overflow-wrap:anywhere">${
+                  escapeHtml(roster)
+                }</pre>`
+              : "<p>No players entered.</p>"
+          }
+        `,
+        tournamentName
+      );
+    }
+  } finally {
+    preparingNativePrint = false;
+  }
+});
+
 window.addEventListener("afterprint", () => {
+  applicationPrintInProgress = false;
+  preparingNativePrint = false;
+
+  /*
+    Never leave a previous print snapshot available for reuse.
+  */
+  $("print-area").innerHTML = "";
+
   printTitleTimer = setTimeout(() => {
     document.title = originalDocumentTitle;
   }, 1000);
@@ -4398,7 +4480,7 @@ function printPairings() {
           ${rematchBadgeHtml(state, round, pair)}
         </td>
         <td class="center">
-          ${black ? "______" : "1-0 (Frirond)"}
+          ${black ? "-" : "1-0 (Frirond)"}
         </td>
         <td>${black ? playerLabel(black, state) : "FRIROND"}</td>
       </tr>
