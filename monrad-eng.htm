@@ -1865,7 +1865,7 @@ function calculateBuchholz() {
     currentPairings.forEach((match, idx) => {
       const boardNum = idx + 1;
       const checked = document.querySelector(`input[name="board_${boardNum}"]:checked`);
-      const resultText = checked ? checked.value : "____ - ____";
+      const resultText = checked ? checked.value : "–";
 
       pairingsHtml += `
         <tr>
