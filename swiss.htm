@@ -138,7 +138,7 @@
       <div>Turneringen sparades automatiskt. Vill du fortsätta turneringen?</div>
       <div class="btn-bar">
         <button type="button" onclick="resumeAutosave()">Fortsätt turneringen</button>
-        <button type="button" class="secondary" onclick="discardAutosave()">Kassera</button>
+        <button type="button" class="secondary" onclick="discardAutosave()">Makulera</button>
       </div>
     </div>
 
@@ -443,7 +443,7 @@ function resumeAutosave() {
 }
 
 function discardAutosave() {
-  if (!confirm('Kassera den sparade turneringen? Det går inte att ångra.')) return;
+  if (!confirm('Makulera den sparade turneringen? Det går inte att ångra.')) return;
   clearAutosave();
   document.getElementById('resume-banner').style.display = 'none';
 }
