@@ -1,0 +1,4338 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description"
+      content="Ratingbudget Turneringssystem: skapa ett komplett spelschema för en schackturnering med personliga ratinggrupper och ratingbudgetar.">
+<title>Ratingbudget Turneringssystem</title>
+
+<style>
+  :root {
+    color-scheme: light;
+    --primary: #1e3a8a;
+    --primary-hover: #172554;
+    --accent: #2563eb;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #cbd5e1;
+    --green: #137352;
+    --red: #b91c1c;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 24px 16px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont,
+                 "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+  }
+
+  button, input, textarea, select {
+    font: inherit;
+  }
+
+  .container {
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+
+  header {
+    position: relative;
+    width: 810px;
+    max-width: 100%;
+    margin: 0 auto 24px;
+    text-align: center;
+    padding: 0 90px;
+  }
+
+  body.tournament-started header {
+    width: 100%;
+  }
+
+  header h1 {
+    margin: 0 0 6px;
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+    color: var(--primary);
+  }
+
+  header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  button {
+    border: none;
+    border-radius: 6px;
+    padding: 9px 15px;
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: var(--primary-hover);
+  }
+
+  button.secondary {
+    background: #64748b;
+  }
+
+  button.secondary:hover {
+    background: #475569;
+  }
+
+  button.danger {
+    background: #dc2626;
+  }
+
+  button.danger:hover {
+    background: #b91c1c;
+  }
+
+  button.success {
+    background: var(--green);
+  }
+
+  button.light {
+    background: #f1f5f9;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  button.light:hover {
+    background: #e2e8f0;
+  }
+
+  button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  button.about-button {
+    position: absolute;
+    top: 8px;
+    right: 0;
+    background: white;
+    color: var(--primary);
+    border: 1px solid var(--border);
+    padding: 7px 12px;
+    font-size: 0.85rem;
+  }
+
+  button.about-button:hover {
+    background: #f1f5f9;
+  }
+
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 3px solid #93b4ff;
+    outline-offset: 2px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 22px;
+    box-shadow: 0 3px 9px rgb(0 0 0 / 4%);
+  }
+
+#storage-status {
+  width: 810px;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 5mm;
+  transform: translateY(-4mm);
+}
+
+body.tournament-started #storage-status {
+  width: 100%;
+}
+
+  #section-setup {
+    width: 810px;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #setup-controls > .btn-group {
+    flex-wrap: nowrap;
+  }
+
+  #setup-controls > .btn-group > button {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 971px) {
+    #setup-controls > .btn-group {
+      flex-wrap: wrap;
+    }
+  }
+
+  h2 {
+    margin: 0 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #f1f5f9;
+    font-size: 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  h3 {
+    margin: 18px 0 9px;
+    font-size: 1.05rem;
+    color: var(--primary);
+  }
+
+  p {
+    margin-top: 0;
+  }
+
+  label {
+    font-weight: 600;
+  }
+
+  .field {
+    margin-bottom: 16px;
+  }
+
+  .field > label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.93rem;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  textarea,
+  select {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    background: white;
+    color: var(--text);
+  }
+
+  input[type="text"], textarea {
+    width: 100%;
+  }
+
+  textarea {
+    min-height: 124px;
+    resize: vertical;
+    font-size: 0.94rem;
+  }
+
+  fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .settings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 22px;
+    margin: 16px 0;
+  }
+
+  .settings .field {
+    margin: 0;
+  }
+
+  .settings input[type="number"] {
+    width: 100px;
+  }
+
+  .btn-group,
+  .inline-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .btn-group {
+    margin-top: 14px;
+  }
+
+  .hint,
+  .metadata,
+  .small-note {
+    color: var(--muted);
+  }
+
+  .hint {
+    font-size: 0.87rem;
+    margin: 6px 0;
+  }
+
+  .small-note {
+    font-size: 0.8rem;
+    margin: 9px 0;
+  }
+
+  .metadata {
+    font-size: 0.9rem;
+  }
+
+  .tournament-tagline {
+    color: var(--accent);
+    font-size: 1rem;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+  }
+
+  .hidden,
+  [hidden] {
+    display: none !important;
+  }
+
+  .notice,
+  .resume-box,
+  .bye-box {
+    border-radius: 7px;
+    padding: 11px 14px;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+  }
+
+  .notice,
+  .resume-box {
+    background: #fffbeb;
+    border: 1px solid #f5d578;
+    color: #713f12;
+  }
+
+  .bye-box {
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    color: #92400e;
+    margin-top: 12px;
+  }
+
+  .round-navigation {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    width: fit-content;
+    max-width: 100%;
+    padding: 6px;
+    background: #f1f5f9;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    margin-bottom: 15px;
+  }
+
+  .round-navigation button {
+    padding: 5px 9px;
+    font-size: 0.82rem;
+  }
+
+  .round-navigation select {
+    width: 175px;
+    max-width: 100%;
+    padding: 5px 7px;
+    font-size: 0.82rem;
+  }
+
+  .table-scroll {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin: 8px 0;
+  }
+
+  th, td {
+    padding: 9px 10px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+  }
+
+  th {
+    background: #f8fafc;
+    color: #475569;
+    white-space: nowrap;
+  }
+
+  .numeric {
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .player-box {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 160px;
+  }
+
+  .piece-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid #94a3b8;
+    flex: 0 0 16px;
+  }
+
+  .piece-white {
+    background: white;
+  }
+
+  .piece-black {
+    background: #1e293b;
+  }
+
+  .badge {
+    display: inline-block;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    background: #e2e8f0;
+    color: #334155;
+    white-space: nowrap;
+  }
+
+  .group-badge {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .result-selector {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 5px;
+  }
+
+  .result-selector label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 7px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: #f1f5f9;
+    cursor: pointer;
+    white-space: nowrap;
+    font-size: 0.82rem;
+  }
+
+  .result-selector label.selected {
+    background: #dbeafe;
+    border-color: #7ea9ed;
+  }
+
+  .forfeit-select {
+    display: block;
+    padding: 3px 5px;
+    font-size: 0.76rem;
+    margin-top: 5px;
+    max-width: 220px;
+  }
+
+  .withdrawn {
+    color: var(--red);
+    font-size: 0.77rem;
+  }
+
+  .leader-row {
+    background: #eff6ff;
+  }
+
+  details {
+    margin-top: 15px;
+  }
+
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--primary);
+  }
+
+  .schedule-pairs {
+    min-width: 250px;
+    overflow-wrap: anywhere;
+  }
+
+  .status-line {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+
+  progress {
+    width: 100%;
+    height: 18px;
+  }
+
+  dialog {
+    width: min(720px, calc(100% - 32px));
+    max-height: 85vh;
+    overflow-y: auto;
+    margin: auto;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 23px;
+    color: var(--text);
+    background: white;
+    box-shadow: 0 20px 70px rgb(0 0 0 / 25%);
+  }
+
+  dialog::backdrop {
+    background: rgb(15 23 42 / 60%);
+  }
+
+  dialog h2 {
+    color: var(--primary);
+  }
+
+  dialog p,
+  dialog li {
+    font-size: 0.92rem;
+  }
+
+  dialog a {
+    color: var(--accent);
+  }
+
+  .formula {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    background: #f1f5f9;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 7px;
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 600px) {
+    body {
+      padding: 12px 8px;
+    }
+
+    .card {
+      padding: 13px;
+    }
+
+    header {
+      padding: 0 75px 0 0;
+      text-align: left;
+    }
+
+    button.about-button {
+      top: 4px;
+    }
+
+    th, td {
+      padding: 7px 6px;
+    }
+  }
+</style>
+</head>
+
+<body>
+<div class="container">
+  <header>
+    <button type="button"
+            class="about-button"
+            onclick="document.getElementById('about-dialog').showModal()">
+      Om
+    </button>
+    <h1>Ratingbudget Turneringssystem</h1>
+    <p>Ett komplett spelschema, skapat före rond 1</p>
+  </header>
+
+  <section id="section-setup" class="card">
+    <div id="resume-banner" class="resume-box" hidden>
+      <strong id="resume-text"></strong>
+      <div class="btn-group">
+        <button type="button" onclick="resumeAutosave()">
+          Återuppta turneringen
+        </button>
+        <button type="button"
+                class="secondary"
+                onclick="discardAutosave()">
+          Ta bort
+        </button>
+      </div>
+    </div>
+
+    <h2>1. Ange spelare och skapa spelschemat</h2>
+
+    <fieldset id="setup-controls">
+      <div class="field">
+        <label for="input-name">Turneringens namn</label>
+        <input id="input-name"
+               type="text"
+               maxlength="120"
+               placeholder="t.ex. Klubbmästerskap i snabbschack">
+      </div>
+
+      <div class="field">
+        <label for="input-players">
+          Spelare och rating: en spelare per rad
+        </label>
+        <textarea id="input-players"
+                  maxlength="40000"
+                  placeholder="Erik Andersson; 2200&#10;Anna Johansson; 2100&#10;Lars Svensson; 2000"></textarea>
+        <p class="hint">
+          Godkända format: Namn; 2200, Namn, 2200 eller Namn 2200.
+          Ange 3–256 spelare och heltalsrating från 0 till 4000.
+          Spelarna sorteras efter rating; vid lika rating behålls
+          inmatningsordningen.
+        </p>
+      </div>
+
+      <div class="settings">
+        <div class="field">
+          <label for="input-rounds">Antal ronder</label>
+          <input id="input-rounds"
+                 type="number"
+                 min="1"
+                 max="256"
+                 value="7"
+                 step="1">
+        </div>
+
+        <div class="field" hidden>
+          <label for="input-effort">Optimeringsnivå</label>
+          <select id="input-effort">
+            <option value="quick">Snabb</option>
+            <option value="normal">Normal</option>
+            <option value="thorough" selected>Grundlig</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="input-bye-points">Poäng vid frirond</label>
+          <select id="input-bye-points">
+            <option value="0">0 poäng</option>
+            <option value="0.5">½ poäng</option>
+            <option value="1" selected>1 poäng</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="input-tb">Särskiljning</label>
+          <select id="input-tb">
+            <option value="wnt">WNT</option>
+            <option value="cumulative">Progressiv</option>
+            <option value="buchholz">Buchholz Cut-1</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="hint">
+        Varje spelare har en personlig ratinggrupp bestående av spelare med närliggande
+	ratingtal i rankingordning, omfattande ungefär en tredjedel av startfältet.
+ 	Det främsta målet är att uppfylla varje spelares ratingbudget så
+ 	nära som möjligt genom att hålla motståndarnas genomsnittliga rating
+ 	nära genomsnittsratingen i spelarens grupp.<br><b>Ratingbudget</b>&nbsp;= antal
+	schemalagda partier&nbsp;× genomsnittlig rating för spelarens grupp.
+      </p>
+
+      <div class="btn-group">
+        <button type="button" onclick="startGeneration()">
+          Skapa komplett spelschema
+        </button>
+        <button type="button"
+                class="secondary"
+                onclick="choosePlayerFile()">
+          Läs in spelare (.txt)
+        </button>
+        <button type="button"
+                class="secondary"
+                onclick="loadSamplePlayers()">
+          Exempel (50 spelare)
+        </button>
+        <button type="button"
+                class="secondary"
+                onclick="chooseTournamentFile()">
+          Öppna sparad turnering
+        </button>
+      </div>
+    </fieldset>
+
+    <div id="generation-panel" hidden style="margin-top: 20px;">
+      <progress id="generation-progress" max="100" value="0"
+                aria-label="Förlopp för schemagenerering"></progress>
+      <p id="generation-status" class="metadata"></p>
+      <button type="button"
+              class="danger"
+              onclick="cancelGeneration()">
+        Avbryt schemagenerering
+      </button>
+    </div>
+  </section>
+
+  <section id="section-round" class="card hidden">
+    <h2>
+      <span id="round-title">Rond 1</span>
+      <span id="round-name" class="tournament-tagline"></span>
+    </h2>
+
+    <div class="round-navigation">
+      <button id="previous-button"
+              type="button"
+              class="light"
+              onclick="moveRound(-1)">
+        ← Föregående
+      </button>
+      <select id="round-select"
+              aria-label="Välj rond"
+              onchange="selectRound(Number(this.value))"></select>
+      <button id="next-button"
+              type="button"
+              class="light"
+              onclick="moveRound(1)">
+        Nästa →
+      </button>
+    </div>
+
+    <p class="hint">
+      Resultat sparas direkt. Klicka på ett valt resultat igen
+      för att ta bort det. Du kan visa eller spela ronderna i valfri ordning.
+    </p>
+
+    <div id="pairings-container"></div>
+    <div id="bye-container"></div>
+
+    <div class="btn-group">
+      <button type="button" onclick="moveRound(1)">
+        Nästa rond →
+      </button>
+      <button type="button"
+              class="danger"
+              onclick="openWithdrawal()">
+        Avanmäl / återanmäl spelare
+      </button>
+      <button type="button"
+              class="secondary"
+              onclick="saveTournament()">
+        Spara turneringen
+      </button>
+      <button type="button"
+              class="secondary"
+              onclick="printAllRounds()">
+        Visa alla ronder
+      </button>
+      <button type="button"
+              class="secondary"
+              onclick="showFinalStandings()">
+        Visa slutlig / aktuell ställning
+      </button>
+    </div>
+  </section>
+
+  <section id="section-standings" class="card hidden">
+    <h2>
+      <span>Aktuell ställning</span>
+      <span id="standings-name" class="tournament-tagline"></span>
+    </h2>
+
+    <div class="inline-controls">
+      <label for="standings-scope">Ta med:</label>
+      <select id="standings-scope"
+              onchange="changeStandingsScope(this.value)">
+        <option value="all">Alla ronder med registrerade resultat</option>
+        <option value="through">Till och med vald rond</option>
+      </select>
+
+      <label for="live-tb">Särskiljning:</label>
+      <select id="live-tb" onchange="changeTieBreak(this.value)">
+        <option value="wnt">WNT</option>
+        <option value="cumulative">Progressiv</option>
+        <option value="buchholz">Buchholz Cut-1</option>
+      </select>
+    </div>
+
+    <div id="standings-container"></div>
+  </section>
+
+  <section id="section-final" class="card hidden">
+    <h2>
+      <span id="final-heading">Slutställning</span>
+      <span id="final-name" class="tournament-tagline"></span>
+    </h2>
+
+    <div id="final-notice" class="notice" hidden></div>
+
+    <div class="inline-controls">
+      <label for="final-tb">Särskiljning:</label>
+      <select id="final-tb" onchange="changeTieBreak(this.value)">
+        <option value="wnt">WNT</option>
+        <option value="cumulative">Progressiv</option>
+        <option value="buchholz">Buchholz Cut-1</option>
+      </select>
+    </div>
+
+    <div id="final-container"></div>
+
+    <div class="btn-group">
+      <button type="button" onclick="backToRounds()">
+        Tillbaka till ronderna
+      </button>
+      <button type="button"
+              class="secondary"
+              onclick="saveTournament()">
+        Spara turneringen
+      </button>
+      <button type="button"
+              class="secondary"
+              onclick="printFinalReport()">
+        Skriv ut ställning och partier
+      </button>
+      <button type="button"
+              class="danger"
+              onclick="newTournament()">
+        Ny turnering
+      </button>
+    </div>
+  </section>
+
+  <section id="section-budget" class="card hidden">
+    <h2>Spelschema och ratingbudgetanalys</h2>
+
+    <div id="schedule-summary"></div>
+    <div id="schedule-warnings" class="notice" hidden></div>
+    <div id="group-summary"></div>
+
+    <details>
+      <summary>Personliga grupper, motståndarbudgetar och färger</summary>
+      <div id="player-budgets"></div>
+    </details>
+
+    <details id="full-schedule-details">
+      <summary>Visa hela det förgenererade spelschemat</summary>
+      <div id="full-schedule-container"></div>
+    </details>
+
+    <div class="btn-group">
+      <button type="button"
+              class="secondary"
+              onclick="printCompleteSchedule()">
+        Skriv ut hela spelschemat
+      </button>
+      <button type="button"
+              class="light"
+              onclick="chooseTournamentFile()">
+        Öppna sparad turnering
+      </button>
+    </div>
+
+    <p class="small-note">
+      De personliga grupperna bestäms av den ursprungliga ratingordningen.
+      Budgetarna baseras på schemalagda partier, exklusive frironder.
+      Budgetarna och schemaanalysen omfattar samtliga schemalagda
+      motståndare, oavsett vilka resultat som har registrerats.
+      Sökningen är heuristisk och garanterar inte ett globalt optimum.
+    </p>
+  </section>
+
+  <div id="storage-status" class="status-line"></div>
+</div>
+
+<input id="player-file"
+       type="file"
+       accept=".txt,text/plain"
+       hidden
+       onchange="importPlayerFile(event)">
+
+<input id="tournament-file"
+       type="file"
+       accept=".json,application/json"
+       hidden
+       onchange="importTournamentFile(event)">
+
+<dialog id="about-dialog">
+  <h2>Om Ratingbudget Turneringssystem</h2>
+
+  <p>
+    Ratingbudgetsystemet skapar hela spelschemat före första ronden.
+    Till skillnad från en schweizerturnering är senare lottningar
+    inte beroende av resultaten.
+  </p>
+  <p>
+    Varje spelare har en personlig grupp med närliggande spelare
+    i ratingordningen. Gruppen omfattar ungefär en tredjedel av
+    startfältet och utesluter spelaren själv.
+    Gruppens medelrating multiplicerad med antalet schemalagda
+    partier ger spelarens ratingbudget: ett målvärde för summan
+    av samtliga motståndares rating.
+    Till exempel ger en medelrating på 1800 över nio partier
+    en budget på 16 200. Vissa motståndare kan vara starkare
+    och andra svagare&nbsp;— målet är att deras sammanlagda rating
+    ska ligga nära budgeten.
+  </p>
+  <p>
+    Att uppfylla dessa budgetar är systemets främsta mål.
+    Systemet försöker även låta varje spelare spela minst hälften
+    av sina partier mot motståndare ur den personliga gruppen,
+    men detta är en målsättning och inte en garanti.
+  </p>
+  <p>
+    Ingen möter samma motståndare två gånger.
+    Antalet vita och svarta partier balanseras så jämnt som möjligt,
+    och systemet försöker undvika långa följder med samma färg.
+    Vid udda spelarantal får en spelare frirond i varje rond,
+    och ingen får mer än en schemalagd frirond.
+    En frirond tillför ingen motståndarrating och minskar
+    spelarens budget med värdet av spelarens personliga målrating.
+    Frirondspoäng i ställningen är separata från ratingbudgeten.
+  </p>
+  <p>
+    Spelschemat är fast när det har skapats, så ronderna kan spelas
+    i valfri ordning. Förbättringarna av färgföljder gäller den
+    genererade rondordningen. Systemet försöker skapa en bra övergripande
+    balans, men garanterar inte det bästa möjliga spelschemat.
+  </p>
+
+  <h3>Personliga ratinggrupper</h3>
+  <p>
+    TPN är spelarens turneringsnummer.
+    TPN 1 tilldelas spelaren med högst rating.
+    Vid lika rating behålls spelarlistans ordning.
+    Varje spelare har en personlig grupp av närliggande spelare
+    i ratingordningen, där spelaren själv ej har räknats med.
+  </p>
+
+  <div class="formula">N = antal spelare
+R = antal schemalagda ronder
+x = spelarens TPN, räknat från 1
+
+h = ceil(N / 6)
+g = 2 × h
+
+FörstaTPN[x] = max(1, min(x − h, N − g))
+SistaTPN[x] = FörstaTPN[x] + g
+
+PersonligGrupp[x] =
+    alla TPN från FörstaTPN[x] till SistaTPN[x],
+    utom x
+
+ceil betyder avrundning uppåt till närmaste heltal.</div>
+
+  <p>
+    Gruppstorleken är N / 3 avrundat uppåt till ett jämnt heltal.
+    Helst finns h motståndare ovanför spelaren och h nedanför.
+    Nära startfältets ändar flyttas de platser som saknas
+    till den andra sidan. Varje personlig grupp innehåller
+    exakt g möjliga motståndare.
+  </p>
+
+  <p>
+    Med 60 spelare är h = 10 och g = 20.
+    Gruppen för TPN 1 innehåller TPN 2–21;
+    gruppen för TPN 30 innehåller TPN 20–29 och 31–40;
+    gruppen för TPN 60 innehåller TPN 40–59.
+    Med 50 spelare är h&nbsp;= 9 och g&nbsp;= 18.
+  </p>
+
+  <h3>Individuella målratingar och budgetar</h3>
+
+  <div class="formula">PersonligMålrating[x] =
+    summan av ratingarna i PersonligGrupp[x] / g
+
+SchemalagdaPartier[x] = R − SchemalagdaFrironder[x]
+
+PersonligBudget[x] =
+    SchemalagdaPartier[x] × PersonligMålrating[x]
+
+Primärt mål:
+Minimera summan över alla spelare av
+    |TilldeladMotståndarratingsumma[x] − PersonligBudget[x]|</div>
+
+  <p>
+    Varje spelare har en egen målrating för motståndet och en egen
+    ratingbudget. Spelarens egen rating ingår inte i den personliga
+    gruppens medelrating. Budgeten beror på schemalagda partier,
+    inte på hur många resultat som har registrerats eller hur
+    många partier som faktiskt har spelats.
+  </p>
+
+  <p>
+    Eftersom de personliga grupperna överlappar varandra bevaras
+    inte nödvändigtvis startfältets totala ratingtal.
+    Därför är en total budgetavvikelse på noll inte alltid möjlig.
+    Diagnostiken inkluderar en nedre gräns för det sammanlagda
+    budgetfelet. För ett udda startfält gäller denna gräns för den
+    aktuella fördelningen av frironder i schemat.
+  </p>
+
+  <h3>Motståndare ur den personliga gruppen som sekundär målsättning</h3>
+
+  <div class="formula">ÖnskatAntalGruppmotståndare[x] =
+    ceil(SchemalagdaPartier[x] / 2)
+
+Gruppunderskott[x] =
+    max(0, ÖnskatAntalGruppmotståndare[x] − Gruppmotståndare[x])
+
+Optimeringsprioriteringar:
+1. Total absolut personlig budgetavvikelse
+2. Totalt underskott av möten inom personliga grupper
+3. Totalt TPN-avstånd</div>
+
+  <p>
+    Minst hälften av varje spelares schemalagda partier bör helst
+    spelas mot medlemmar i spelarens personliga grupp.
+    Inget extra +1 läggs till vid ett jämnt antal partier.
+    En frirond räknas inte som ett parti.
+  </p>
+
+  <p>
+    Ratingbudget har företräde.
+    Målsättningen om minst hälften av partierna inom gruppen är
+    sekundärt och inte ett garanterat krav.
+    Det kan förbli ouppfyllt på grund av budgetprioriteringar,
+    strukturella begränsningar eller den begränsade sökningen.
+    Utan upprepade motståndare kan en spelare inte möta fler än
+    g olika motståndare ur sin personliga grupp.
+  </p>
+
+  <p>
+    Gruppmedlemskap är riktat: en motståndare kan ingå i en spelares
+    personliga grupp utan att det omvända gäller.
+    Varje partis gruppbidrag räknas därför separat för de två spelarna.
+  </p>
+
+  <h3>Så skapas spelschemat</h3>
+  <p>
+    Flera giltiga spelscheman baserade på alla-möter-alla-tabeller
+    skapas. Val av ronder och tillåtna byten inom en rond förbättrar
+    ratingbudgetarna. Byten leder aldrig till upprepade möten mellan
+    spelare eller till att en spelare förekommer flera gånger i samma rond.
+  </p>
+  <p>
+    En balanserad Euler-orientering tilldelar färger.
+    Varje spelare får lika många vita och svarta partier vid ett
+    jämnt antal partier, eller en skillnad på ett vid ett udda antal.
+    Vändning av riktade cykler och byte av rondordning minskar därefter
+    långa färgföljder utan att ändra motståndare eller färgsummor.
+  </p>
+  <p>
+    Detta är en begränsad heuristisk sökning.
+    Kvarvarande budgetavvikelser, gruppunderskott och långa
+    färgföljder redovisas uttryckligen.
+    Att sökningen inte lyckas ta bort ett underskott är inte
+    ett bevis på att detta är matematiskt omöjligt.
+    Eftersom sökningen använder slump kan ett nyskapat spelschema
+    bli bättre, men någon förbättring garanteras inte.
+  </p>
+
+  <h3>Udda spelarantal</h3>
+  <p>
+    En spelare får frirond i varje rond, och ingen får mer än
+    en schemalagd frirond. En frirond tillför ingen motståndarrating.
+    En spelare utan frirond har budgeten R&nbsp;× PersonligMålrating.
+    En spelare med en frirond har budgeten
+    (R&nbsp;− 1)&nbsp;× PersonligMålrating.
+    Detta håller den önskade medelratingen för motståndet oförändrad.
+  </p>
+  <p>
+    I en turnering med nio ronder har till exempel en spelare
+    med personlig målrating 1800 en budget på 16&nbsp;200 för nio
+    partier, eller 14&nbsp;400 för åtta partier och en frirond.
+  </p>
+  <p>
+    Både ratingbudgeten och det önskade antalet gruppmotståndare
+    baseras på schemalagda partier: R partier utan frirond,
+    eller R&nbsp;− 1 partier med frirond.
+    Om ett byte ändrar vem som får frirond räknas båda värdena
+    om för de berörda spelarna.
+  </p>
+  <p>
+    Frirondspoängen kan ställas in och är som standard en poäng.
+    Poängen tilldelas när rondens samtliga partier har registrerade
+    resultat. Frironder räknas varken som vita eller svarta partier.
+    Färgföljder räknas över på varandra följande faktiska partier,
+    utan att mellanliggande frironder bryter följden.
+  </p>
+
+  <h3>Ställning och särskiljning</h3>
+  <p>
+    WNT använder följande formel, där R är det schemalagda antalet
+    ronder, Pᵢ är en motståndares registrerade turneringspoäng
+    och rᵢ är spelarens tilldelade resultat mot den motståndaren:
+  </p>
+
+  <div class="formula">WNT = 100 × Σᵢ [(Pᵢ / R) × (rᵢ + Pᵢ / (2R))]</div>
+
+  <p>
+    Progressiv särskiljning summerar de ackumulerade poängen efter
+    ronder med registrerade resultat, i schemalagd rondordning.
+    Värdet är därför preliminärt när ronderna spelas i annan ordning.
+  </p>
+  <p>
+    Buchholz Cut-1 summerar registrerade motståndares poäng och
+    tar bort det lägsta värdet. Varje tilldelad frirond bidrar
+    med en motståndare med noll poäng.
+    Detta är en enkel, programspecifik behandling och innebär inte
+    att FIDE:s justeringar för ospelade partier tillämpas.
+  </p>
+  <p>
+    Registrerade walkoverresultat bidrar med sina tilldelade poäng
+    till dessa särskiljningsvärden.
+    Spelare som fortfarande är lika efter vald särskiljning delar
+    placering. TPN avgör endast visningsordningen.
+  </p>
+
+  <h3>Avanmälningar och sparande</h3>
+  <p>
+    En avanmälan skapar inte ett nytt spelschema och ändrar inte
+    personliga grupper, schemalagda partiers budgetar eller målratingar.
+    Partier utan resultat från och med den angivna ronden får
+    automatiska walkoverresultat. Befintliga manuella resultat
+    lämnas oförändrade. En återanmälan tar bort automatiska
+    walkoverresultat som inte längre ska gälla.
+  </p>
+  <p>
+    Turneringen sparas automatiskt i webbläsaren när lagring är
+    tillgänglig. Ladda regelbundet ned JSON-säkerhetskopior.
+    Inga uppgifter skickas till en server, och separata
+    webbläsarflikar synkroniseras inte.
+  </p>
+
+  <div class="btn-group">
+    <button type="button"
+            onclick="document.getElementById('about-dialog').close()">
+      Stäng
+    </button>
+  </div>
+</dialog>
+
+<dialog id="withdraw-dialog">
+  <form id="withdraw-form" onsubmit="applyWithdrawal(event)">
+    <h2>Avanmäl eller återanmäl en spelare</h2>
+
+    <div class="field">
+      <label for="withdraw-player">Spelare</label>
+      <select id="withdraw-player" style="width: 100%;"></select>
+    </div>
+
+    <div class="field">
+      <label for="withdraw-operation">Åtgärd</label>
+      <select id="withdraw-operation"
+              onchange="updateWithdrawalOperation()">
+        <option value="withdraw">Avanmäl</option>
+        <option value="reinstate">Återanmäl</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="withdraw-round">Gäller från och med rond</label>
+      <input id="withdraw-round"
+             type="number"
+             min="1"
+             step="1"
+             required>
+    </div>
+
+    <p class="hint">
+      Lottningarna ändras inte. Manuella resultat bevaras.
+      Partier utan resultat från och med den angivna ronden får
+      walkoverresultat. Om båda spelarna är avanmälda tilldelas
+      dubbel walkoverförlust.
+    </p>
+
+    <div class="btn-group">
+      <button type="submit">Verkställ</button>
+      <button type="button"
+              class="secondary"
+              onclick="document.getElementById('withdraw-dialog').close()">
+        Avbryt
+      </button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+"use strict";
+
+/* ============================================================
+   Constants and live state
+   ============================================================ */
+
+const MAX_PLAYERS = 256;
+
+// Retain the storage slot so older autosaves can be found.
+const STORAGE_KEY = "rating-budget-tournament.v1";
+const SIGNATURE = "RBT_CHESS_SAVE";
+const VERSION = 3;
+const BUDGET_MODEL = "personal-groups-games-v2";
+const PREVIOUS_BUDGET_MODEL = "personal-groups-v1";
+const EPS = 1e-7;
+
+const TIE_BREAKS = {
+  wnt: "WNT",
+  cumulative: "Progressiv",
+  buchholz: "Buchholz Cut-1"
+};
+
+const RESULT_DEFINITIONS = {
+  "1-0": {
+    label: "1 - 0",
+    white: 1,
+    black: 0,
+    played: true
+  },
+  "0.5-0.5": {
+    label: "½ - ½",
+    white: 0.5,
+    black: 0.5,
+    played: true
+  },
+  "0-1": {
+    label: "0 - 1",
+    white: 0,
+    black: 1,
+    played: true
+  },
+  F1: {
+    label: "+ / -",
+    white: 1,
+    black: 0,
+    played: false
+  },
+  F0: {
+    label: "- / +",
+    white: 0,
+    black: 1,
+    played: false
+  },
+  F00: {
+    label: "-- / --",
+    white: 0,
+    black: 0,
+    played: false
+  }
+};
+
+// All previous effort settings are retained.
+// The hidden setup selector defaults to Thorough.
+const SEARCH_LEVELS = {
+  quick: {
+    restarts: 2,
+    moves: 25000,
+    colourTrials: 8,
+    colourMoves: 800,
+    orderMoves: 800
+  },
+  normal: {
+    restarts: 6,
+    moves: 90000,
+    colourTrials: 24,
+    colourMoves: 4000,
+    orderMoves: 4000
+  },
+  thorough: {
+    restarts: 12,
+    moves: 260000,
+    colourTrials: 64,
+    colourMoves: 10000,
+    orderMoves: 10000
+  }
+};
+
+let tournament = null;
+let scheduleReport = null;
+let activeJob = null;
+
+/* ============================================================
+   General helpers
+   ============================================================ */
+
+function html(value) {
+  return String(value).replace(/[&<>"']/g, ch => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[ch]));
+}
+
+function formatNumber(value, digits = 2) {
+  if (!Number.isFinite(value)) return "—";
+
+  const rounded = Number(value.toFixed(digits));
+
+  return (Object.is(rounded, -0) ? 0 : rounded).toLocaleString(
+    "sv-SE",
+    {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: digits
+    }
+  );
+}
+
+function formatPoints(value) {
+  if (value % 1 === 0.5) {
+    const whole = Math.floor(value);
+    return whole ? formatNumber(whole, 0) + "½" : "½";
+  }
+  return formatNumber(value);
+}
+
+function randomInt(max) {
+  return Math.floor(Math.random() * max);
+}
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = randomInt(i + 1);
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+function mod(value, divisor) {
+  return ((value % divisor) + divisor) % divisor;
+}
+
+function cloneRawRounds(rounds) {
+  return rounds.map(round => round.map(pair => pair.slice()));
+}
+
+function maximumRounds(count) {
+  return count % 2 === 0 ? count - 1 : count;
+}
+
+function requiredPersonalGroupOpponents(scheduledGames) {
+  return Math.ceil(scheduledGames / 2);
+}
+
+function personalBudget(target, scheduledGames) {
+  return target * scheduledGames;
+}
+
+function setStorageStatus(message) {
+  document.getElementById("storage-status").textContent = message;
+}
+
+function tournamentTitle() {
+  return tournament?.name || "Ratingbudgetturnering";
+}
+
+function isRoundComplete(round) {
+  return round.games.every(game => game.result !== null);
+}
+
+function recordedGameCount() {
+  if (!tournament) return 0;
+  return tournament.rounds.reduce(
+    (sum, round) =>
+      sum + round.games.filter(game => game.result !== null).length,
+    0
+  );
+}
+
+function scheduledGameCount() {
+  if (!tournament) return 0;
+  return tournament.rounds.reduce(
+    (sum, round) => sum + round.games.length,
+    0
+  );
+}
+
+function missingGameCount() {
+  return scheduledGameCount() - recordedGameCount();
+}
+
+function lexCompare(a, b) {
+  if (a.error < b.error - EPS) return -1;
+  if (a.error > b.error + EPS) return 1;
+  if (a.deficit !== b.deficit) return a.deficit - b.deficit;
+  return a.distance - b.distance;
+}
+
+function colourCompare(a, b) {
+  if (a.long !== b.long) return a.long - b.long;
+  return a.triples - b.triples;
+}
+
+async function yieldToBrowser(job, percent, message) {
+  if (job.cancelled) throw new Error("Schemagenereringen avbröts.");
+
+  document.getElementById("generation-progress").value = percent;
+  document.getElementById("generation-status").textContent = message;
+
+  await new Promise(resolve => setTimeout(resolve, 0));
+
+  if (job.cancelled) throw new Error("Schemagenereringen avbröts.");
+}
+
+/* ============================================================
+   Parsing and personal rating groups
+
+   Personal targets are fixed by the roster.
+   Budgets are not fixed here: they depend on the schedule's
+   current game counts and change when a rest moves.
+   ============================================================ */
+
+function parseRoster(text) {
+  const lines = text.replace(/^\uFEFF/, "")
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(Boolean);
+
+  if (lines.length < 3 || lines.length > MAX_PLAYERS) {
+    throw new Error("Ange mellan 3 och " + MAX_PLAYERS + " spelare.");
+  }
+
+  const roster = lines.map((line, index) => {
+    const match =
+      line.match(/^(.*?)\s*[;,\t]\s*(\d{1,4})\s*$/) ||
+      line.match(/^(.*?)\s+(\d{1,4})\s*$/);
+
+    if (!match) {
+      throw new Error(
+        "Rad " + (index + 1) +
+        ": ange ett spelarnamn följt av en heltalsrating."
+      );
+    }
+
+    const name = match[1].trim();
+    const rating = Number(match[2]);
+
+    if (!name || name.length > 120) {
+      throw new Error(
+        "Rad " + (index + 1) + ": ogiltigt eller för långt spelarnamn."
+      );
+    }
+
+    if (!Number.isInteger(rating) || rating < 0 || rating > 4000) {
+      throw new Error(
+        "Rad " + (index + 1) + ": ratingen måste vara mellan 0 och 4000."
+      );
+    }
+
+    return { name, rating, inputOrder: index };
+  });
+
+  const names = roster.map(player =>
+    player.name.normalize("NFKC").toLowerCase()
+  );
+
+  if (new Set(names).size !== names.length) {
+    throw new Error(
+      "Spelarnamnen måste kunna skiljas åt. " +
+      "Lägg till ett tillägg om flera spelare har samma namn."
+    );
+  }
+
+  roster.sort((a, b) =>
+    b.rating - a.rating || a.inputOrder - b.inputOrder
+  );
+
+  return roster.map((player, id) => ({
+    id,
+    tpn: id + 1,
+    name: player.name,
+    rating: player.rating,
+    withdrawnFrom: null
+  }));
+}
+
+function personalGroupInformation(players) {
+  const count = players.length;
+  const half = Math.ceil(count / 6);
+  const groupSize = 2 * half;
+
+  if (groupSize > count - 1) {
+    throw new Error(
+      "Den personliga gruppen är större än antalet tillgängliga motståndare."
+    );
+  }
+
+  const prefix = new Float64Array(count + 1);
+  const lower = new Int16Array(count);
+  const upper = new Int16Array(count);
+  const targets = new Float64Array(count);
+
+  for (let id = 0; id < count; id++) {
+    prefix[id + 1] = prefix[id] + players[id].rating;
+  }
+
+  for (let id = 0; id < count; id++) {
+    const first = Math.max(
+      0,
+      Math.min(id - half, count - groupSize - 1)
+    );
+
+    const last = first + groupSize;
+    const groupRatingSum =
+      prefix[last + 1] - prefix[first] - players[id].rating;
+
+    lower[id] = first;
+    upper[id] = last;
+    targets[id] = groupRatingSum / groupSize;
+  }
+
+  return {
+    count,
+    half,
+    groupSize,
+    lower,
+    upper,
+    targets
+  };
+}
+
+function isPersonalGroupOpponent(information, id, opponent) {
+  return opponent >= 0 &&
+    opponent < information.count &&
+    opponent !== id &&
+    opponent >= information.lower[id] &&
+    opponent <= information.upper[id];
+}
+
+function personalGroupLabel(information, id) {
+  const parts = [];
+  const firstTPN = information.lower[id] + 1;
+  const lastTPN = information.upper[id] + 1;
+  const ownTPN = id + 1;
+
+  function range(first, last) {
+    return first === last ? String(first) : first + "–" + last;
+  }
+
+  if (firstTPN < ownTPN) {
+    parts.push(range(firstTPN, ownTPN - 1));
+  }
+
+  if (ownTPN < lastTPN) {
+    parts.push(range(ownTPN + 1, lastTPN));
+  }
+
+  return parts.join(", ");
+}
+
+/* ============================================================
+   Valid initial schedules
+
+   A complete Berger-style table supplies disjoint round
+   matchings. Any subset has no repeated opponents.
+
+   For odd fields, vertex N is a dummy rest player.
+   No repeated dummy edge means at most one rest per player.
+   ============================================================ */
+
+function makeCompleteRoundRobin(count, ordering) {
+  const padded = count % 2 === 0 ? count : count + 1;
+  const moving = padded - 1;
+  const half = padded / 2;
+  const fixed = padded - 1;
+  const rounds = [];
+
+  for (let round = 0; round < moving; round++) {
+    const anchor = (round * half) % moving;
+    const pairs = [[ordering[anchor], ordering[fixed]]];
+
+    for (let board = 1; board < half; board++) {
+      pairs.push([
+        ordering[mod(anchor + board, moving)],
+        ordering[mod(anchor - board, moving)]
+      ]);
+    }
+
+    rounds.push(pairs);
+  }
+
+  return rounds;
+}
+
+function seedOrdering(players, restart) {
+  const count = players.length;
+  let order;
+
+  if (restart === 0) {
+    order = players.map(player => player.id);
+  } else if (restart === 1) {
+    const spread = Math.ceil(count / 6);
+
+    order = players.map(player => ({
+      id: player.id,
+      key: player.id + (Math.random() - 0.5) * 2 * spread
+    }))
+    .sort((a, b) => a.key - b.key || a.id - b.id)
+    .map(item => item.id);
+  } else {
+    order = shuffle(players.map(player => player.id));
+  }
+
+  if (count % 2 !== 0) order.push(count);
+  return order;
+}
+
+async function selectInitialRounds(
+  players, roundCount, information, restart, job, progress
+) {
+  const count = players.length;
+  const base = makeCompleteRoundRobin(
+    count,
+    seedOrdering(players, restart)
+  );
+
+  if (roundCount === base.length) return base;
+
+  const opponentByRound = base.map(round => {
+    const opponents = new Int32Array(count);
+    opponents.fill(count);
+
+    for (const [a, b] of round) {
+      if (a < count) opponents[a] = b;
+      if (b < count) opponents[b] = a;
+    }
+
+    return opponents;
+  });
+
+  const distances = base.map(round => round.reduce(
+    (sum, [a, b]) =>
+      sum + (a < count && b < count ? Math.abs(a - b) : 0),
+    0
+  ));
+
+  const available = base.map((_, index) => index);
+  const sums = new Float64Array(count);
+  const personal = new Int16Array(count);
+  const games = new Int16Array(count);
+  const selected = [];
+
+  for (let step = 0; step < roundCount; step++) {
+    const candidates = [];
+
+    for (const index of available) {
+      let error = 0;
+      let deficit = 0;
+      const opponents = opponentByRound[index];
+
+      for (let id = 0; id < count; id++) {
+        const opponent = opponents[id];
+        const real = opponent < count ? 1 : 0;
+        const rating = real ? players[opponent].rating : 0;
+        const member = isPersonalGroupOpponent(
+          information, id, opponent
+        ) ? 1 : 0;
+
+        const nextGameCount = games[id] + real;
+        const budget = personalBudget(
+          information.targets[id], nextGameCount
+        );
+
+        error += Math.abs(sums[id] + rating - budget);
+
+        const requested = requiredPersonalGroupOpponents(
+          nextGameCount
+        );
+
+        deficit += Math.max(
+          0,
+          requested - personal[id] - member
+        );
+      }
+
+      candidates.push({
+        index,
+        error,
+        deficit,
+        distance: distances[index]
+      });
+    }
+
+    candidates.sort(lexCompare);
+
+    const chooseFrom = restart === 0
+      ? 1
+      : Math.min(3, candidates.length);
+
+    const chosen = candidates[randomInt(chooseFrom)].index;
+    selected.push(base[chosen].map(pair => pair.slice()));
+
+    const opponents = opponentByRound[chosen];
+
+    for (let id = 0; id < count; id++) {
+      const opponent = opponents[id];
+
+      if (opponent < count) {
+        sums[id] += players[opponent].rating;
+        games[id]++;
+
+        if (isPersonalGroupOpponent(information, id, opponent)) {
+          personal[id]++;
+        }
+      }
+    }
+
+    available.splice(available.indexOf(chosen), 1);
+
+    if (step % 8 === 0) {
+      await yieldToBrowser(
+        job,
+        progress,
+        "Väljer startronder för försök " + (restart + 1) + "…"
+      );
+    }
+  }
+
+  return selected;
+}
+
+/* ============================================================
+   Personal rating-budget optimization
+
+   Legal two-edge exchanges within one round preserve:
+   - one appearance per player in the round;
+   - exactly R rounds;
+   - no repeated real opponents;
+   - at most one rest per player.
+
+   Comparisons are lexicographic:
+   1. total absolute personal-budget error;
+   2. total personal-group encounter shortfall;
+   3. total TPN distance.
+
+   Budget = current scheduled games × personal target.
+   Moving a rest changes both the budget and requested group
+   count for each affected real player.
+   ============================================================ */
+
+function evaluateRawSchedule(players, rounds, information) {
+  const count = players.length;
+  const sums = new Float64Array(count);
+  const personal = new Int16Array(count);
+  const games = new Int16Array(count);
+  let distance = 0;
+
+  for (const round of rounds) {
+    for (const [a, b] of round) {
+      if (a >= count || b >= count) continue;
+
+      sums[a] += players[b].rating;
+      sums[b] += players[a].rating;
+      games[a]++;
+      games[b]++;
+      distance += Math.abs(a - b);
+
+      if (isPersonalGroupOpponent(information, a, b)) personal[a]++;
+      if (isPersonalGroupOpponent(information, b, a)) personal[b]++;
+    }
+  }
+
+  let error = 0;
+  let deficit = 0;
+
+  for (let id = 0; id < count; id++) {
+    const budget = personalBudget(
+      information.targets[id], games[id]
+    );
+
+    error += Math.abs(sums[id] - budget);
+
+    deficit += Math.max(
+      0,
+      requiredPersonalGroupOpponents(games[id]) - personal[id]
+    );
+  }
+
+  return { sums, personal, games, error, deficit, distance };
+}
+
+async function improveRawSchedule(
+  players, rounds, information, moveCount, job,
+  restart, restartCount
+) {
+  const count = players.length;
+  const padded = count % 2 === 0 ? count : count + 1;
+  const used = new Uint8Array(padded * padded);
+
+  function mark(a, b, value) {
+    used[a * padded + b] = value;
+    used[b * padded + a] = value;
+  }
+
+  for (const round of rounds) {
+    for (const [a, b] of round) mark(a, b, 1);
+  }
+
+  let metrics = evaluateRawSchedule(players, rounds, information);
+  const ids = new Int32Array(4);
+  const oldOpponents = new Int32Array(4);
+  const newOpponents = new Int32Array(4);
+  const nextSums = new Float64Array(4);
+  const nextPersonal = new Int16Array(4);
+  const nextGames = new Int16Array(4);
+
+  for (let move = 0; move < moveCount; move++) {
+    const round = rounds[randomInt(rounds.length)];
+
+    if (round.length < 2) break;
+
+    const first = randomInt(round.length);
+    let second = randomInt(round.length - 1);
+    if (second >= first) second++;
+
+    const [a, b] = round[first];
+    const [c, d] = round[second];
+    const variant = randomInt(2);
+
+    const x = variant === 0 ? c : d;
+    const y = variant === 0 ? d : c;
+
+    if (!used[a * padded + x] && !used[b * padded + y]) {
+      ids[0] = a;
+      ids[1] = b;
+      ids[2] = c;
+      ids[3] = d;
+
+      oldOpponents[0] = b;
+      oldOpponents[1] = a;
+      oldOpponents[2] = d;
+      oldOpponents[3] = c;
+
+      newOpponents[0] = x;
+      newOpponents[1] = y;
+      newOpponents[2] = variant === 0 ? a : b;
+      newOpponents[3] = variant === 0 ? b : a;
+
+      let errorChange = 0;
+      let deficitChange = 0;
+
+      for (let k = 0; k < 4; k++) {
+        const id = ids[k];
+        if (id >= count) continue;
+
+        const oldOpponent = oldOpponents[k];
+        const newOpponent = newOpponents[k];
+        const oldReal = oldOpponent < count ? 1 : 0;
+        const newReal = newOpponent < count ? 1 : 0;
+
+        const oldRating = oldReal
+          ? players[oldOpponent].rating : 0;
+
+        const newRating = newReal
+          ? players[newOpponent].rating : 0;
+
+        const oldMember = isPersonalGroupOpponent(
+          information, id, oldOpponent
+        ) ? 1 : 0;
+
+        const newMember = isPersonalGroupOpponent(
+          information, id, newOpponent
+        ) ? 1 : 0;
+
+        nextSums[k] = metrics.sums[id] + newRating - oldRating;
+        nextPersonal[k] =
+          metrics.personal[id] + newMember - oldMember;
+
+        nextGames[k] = metrics.games[id] + newReal - oldReal;
+
+        const target = information.targets[id];
+        const oldBudget = personalBudget(target, metrics.games[id]);
+        const newBudget = personalBudget(target, nextGames[k]);
+
+        errorChange +=
+          Math.abs(nextSums[k] - newBudget) -
+          Math.abs(metrics.sums[id] - oldBudget);
+
+        deficitChange +=
+          Math.max(
+            0,
+            requiredPersonalGroupOpponents(nextGames[k]) -
+              nextPersonal[k]
+          ) -
+          Math.max(
+            0,
+            requiredPersonalGroupOpponents(metrics.games[id]) -
+              metrics.personal[id]
+          );
+      }
+
+      const oldDistance =
+        (a < count && b < count ? Math.abs(a - b) : 0) +
+        (c < count && d < count ? Math.abs(c - d) : 0);
+
+      const newDistance =
+        (a < count && x < count ? Math.abs(a - x) : 0) +
+        (b < count && y < count ? Math.abs(b - y) : 0);
+
+      const candidate = {
+        error: metrics.error + errorChange,
+        deficit: metrics.deficit + deficitChange,
+        distance: metrics.distance + newDistance - oldDistance
+      };
+
+      const comparison = lexCompare(candidate, metrics);
+
+      if (comparison < 0 ||
+          (comparison === 0 && Math.random() < 0.08)) {
+        mark(a, b, 0);
+        mark(c, d, 0);
+        mark(a, x, 1);
+        mark(b, y, 1);
+
+        round[first] = [a, x];
+        round[second] = [b, y];
+
+        for (let k = 0; k < 4; k++) {
+          const id = ids[k];
+
+          if (id < count) {
+            metrics.sums[id] = nextSums[k];
+            metrics.personal[id] = nextPersonal[k];
+            metrics.games[id] = nextGames[k];
+          }
+        }
+
+        metrics.error = candidate.error;
+        metrics.deficit = candidate.deficit;
+        metrics.distance = candidate.distance;
+      }
+    }
+
+    if (move % 4096 === 0) {
+      metrics = evaluateRawSchedule(players, rounds, information);
+    }
+
+    if (move % 1024 === 0) {
+      const progress =
+        70 * (restart + move / Math.max(1, moveCount)) / restartCount;
+
+      await yieldToBrowser(
+        job,
+        progress,
+        "Optimerar spelschema " + (restart + 1) + "/" +
+        restartCount + " — total personlig budgetavvikelse " +
+        formatNumber(metrics.error) + "…"
+      );
+    }
+  }
+
+  return evaluateRawSchedule(players, rounds, information);
+}
+
+async function optimizePairings(players, roundCount, effort, job) {
+  const settings = SEARCH_LEVELS[effort];
+  const information = personalGroupInformation(players);
+  const fullRoundRobin = roundCount === maximumRounds(players.length);
+  const restartCount = fullRoundRobin ? 1 : settings.restarts;
+
+  const moveCount = fullRoundRobin
+    ? 0
+    : Math.min(
+        settings.moves,
+        Math.max(18000, players.length * roundCount * 120)
+      );
+
+  let bestRounds = null;
+  let bestMetrics = null;
+
+  for (let restart = 0; restart < restartCount; restart++) {
+    await yieldToBrowser(
+      job,
+      70 * restart / restartCount,
+      "Förbereder schemaförsök " + (restart + 1) + "…"
+    );
+
+    const rounds = await selectInitialRounds(
+      players,
+      roundCount,
+      information,
+      restart,
+      job,
+      70 * restart / restartCount
+    );
+
+    const metrics = moveCount
+      ? await improveRawSchedule(
+          players, rounds, information, moveCount,
+          job, restart, restartCount
+        )
+      : evaluateRawSchedule(players, rounds, information);
+
+    if (!bestMetrics || lexCompare(metrics, bestMetrics) < 0) {
+      bestMetrics = metrics;
+      bestRounds = cloneRawRounds(rounds);
+    }
+  }
+
+  return bestRounds;
+}
+
+/* ============================================================
+   Balanced colour allocation
+
+   Add a synthetic vertex joined to every odd-degree player.
+   Orient Euler circuits. Removing synthetic edges gives
+   balanced White/Black totals.
+
+   Directed-cycle reversals preserve those totals.
+   ============================================================ */
+
+function buildColourGraph(rawRounds, count) {
+  const edges = [];
+  const degrees = new Int32Array(count);
+
+  rawRounds.forEach((round, roundIndex) => {
+    for (const [a, b] of round) {
+      if (a >= count || b >= count) continue;
+
+      edges.push({ a, b, round: roundIndex, real: true });
+      degrees[a]++;
+      degrees[b]++;
+    }
+  });
+
+  const realEdgeCount = edges.length;
+
+  for (let id = 0; id < count; id++) {
+    if (degrees[id] % 2 !== 0) {
+      edges.push({
+        a: id,
+        b: count,
+        round: -1,
+        real: false
+      });
+    }
+  }
+
+  const adjacency = Array.from(
+    { length: count + 1 },
+    () => []
+  );
+
+  edges.forEach((edge, index) => {
+    adjacency[edge.a].push(index);
+    adjacency[edge.b].push(index);
+  });
+
+  return { edges, adjacency, realEdgeCount };
+}
+
+function balancedEulerOrientation(graph) {
+  const adjacency = graph.adjacency.map(list =>
+    shuffle(list.slice())
+  );
+
+  const positions = new Int32Array(adjacency.length);
+  const used = new Uint8Array(graph.edges.length);
+  const directions = new Uint8Array(graph.edges.length);
+
+  for (let start = 0; start < adjacency.length; start++) {
+    const stack = [start];
+
+    while (stack.length) {
+      const vertex = stack[stack.length - 1];
+      const list = adjacency[vertex];
+
+      while (positions[vertex] < list.length &&
+             used[list[positions[vertex]]]) {
+        positions[vertex]++;
+      }
+
+      if (positions[vertex] >= list.length) {
+        stack.pop();
+        continue;
+      }
+
+      const edgeIndex = list[positions[vertex]++];
+      if (used[edgeIndex]) continue;
+
+      used[edgeIndex] = 1;
+
+      const edge = graph.edges[edgeIndex];
+      const other = edge.a === vertex ? edge.b : edge.a;
+
+      // Direction 0: A is White. Direction 1: B is White.
+      directions[edgeIndex] = edge.a === vertex ? 0 : 1;
+      stack.push(other);
+    }
+  }
+
+  return directions;
+}
+
+function makeColourMatrix(graph, directions, count, roundCount) {
+  const matrix = new Int8Array(count * roundCount);
+
+  for (let index = 0; index < graph.realEdgeCount; index++) {
+    const edge = graph.edges[index];
+    const aColour = directions[index] === 0 ? 1 : -1;
+
+    matrix[edge.a * roundCount + edge.round] = aColour;
+    matrix[edge.b * roundCount + edge.round] = -aColour;
+  }
+
+  return matrix;
+}
+
+function playerColourMetrics(matrix, id, roundCount) {
+  let previous = 0;
+  let run = 0;
+  let maximum = 0;
+  let long = 0;
+  let triples = 0;
+
+  for (let round = 0; round < roundCount; round++) {
+    const colour = matrix[id * roundCount + round];
+
+    // A rest does not break a run of consecutive actual games.
+    if (colour === 0) continue;
+
+    run = colour === previous ? run + 1 : 1;
+    previous = colour;
+    maximum = Math.max(maximum, run);
+
+    if (run >= 3) triples++;
+    if (run >= 4) long++;
+  }
+
+  return { long, triples, maximum };
+}
+
+function allColourMetrics(matrix, count, roundCount) {
+  const perPlayer = [];
+  let long = 0;
+  let triples = 0;
+  let maximum = 0;
+
+  for (let id = 0; id < count; id++) {
+    const metrics = playerColourMetrics(matrix, id, roundCount);
+    perPlayer.push(metrics);
+    long += metrics.long;
+    triples += metrics.triples;
+    maximum = Math.max(maximum, metrics.maximum);
+  }
+
+  return { long, triples, maximum, perPlayer };
+}
+
+function findDirectedCycle(graph, directions, seedIndex) {
+  const seed = graph.edges[seedIndex];
+  const source = directions[seedIndex] === 0 ? seed.a : seed.b;
+  const start = directions[seedIndex] === 0 ? seed.b : seed.a;
+
+  const size = graph.adjacency.length;
+  const parentVertex = new Int32Array(size);
+  const parentEdge = new Int32Array(size);
+  const queue = new Int32Array(size);
+
+  parentVertex.fill(-1);
+  parentEdge.fill(-1);
+  parentVertex[start] = start;
+
+  let head = 0;
+  let tail = 1;
+  queue[0] = start;
+
+  while (head < tail && parentVertex[source] === -1) {
+    const vertex = queue[head++];
+
+    for (const edgeIndex of graph.adjacency[vertex]) {
+      if (edgeIndex === seedIndex) continue;
+
+      const edge = graph.edges[edgeIndex];
+      const from = directions[edgeIndex] === 0 ? edge.a : edge.b;
+      if (from !== vertex) continue;
+
+      const to = from === edge.a ? edge.b : edge.a;
+      if (parentVertex[to] !== -1) continue;
+
+      parentVertex[to] = vertex;
+      parentEdge[to] = edgeIndex;
+      queue[tail++] = to;
+
+      if (to === source) break;
+    }
+  }
+
+  if (parentVertex[source] === -1) return null;
+
+  const cycle = [seedIndex];
+  let vertex = source;
+
+  while (vertex !== start) {
+    cycle.push(parentEdge[vertex]);
+    vertex = parentVertex[vertex];
+  }
+
+  return cycle;
+}
+
+function flipCycle(graph, directions, matrix, roundCount, cycle) {
+  for (const edgeIndex of cycle) {
+    directions[edgeIndex] ^= 1;
+    const edge = graph.edges[edgeIndex];
+
+    if (edge.real) {
+      matrix[edge.a * roundCount + edge.round] *= -1;
+      matrix[edge.b * roundCount + edge.round] *= -1;
+    }
+  }
+}
+
+async function allocateColours(rawRounds, players, effort, job) {
+  const count = players.length;
+  const roundCount = rawRounds.length;
+  const settings = SEARCH_LEVELS[effort];
+  const graph = buildColourGraph(rawRounds, count);
+
+  let bestDirections = null;
+  let bestMatrix = null;
+  let bestMetrics = null;
+
+  for (let trial = 0; trial < settings.colourTrials; trial++) {
+    const directions = balancedEulerOrientation(graph);
+    const matrix = makeColourMatrix(
+      graph, directions, count, roundCount
+    );
+    const metrics = allColourMetrics(matrix, count, roundCount);
+
+    if (!bestMetrics || colourCompare(metrics, bestMetrics) < 0) {
+      bestDirections = directions;
+      bestMatrix = matrix;
+      bestMetrics = metrics;
+    }
+
+    if (bestMetrics.long === 0 && bestMetrics.triples === 0) break;
+
+    if (trial % 2 === 0) {
+      await yieldToBrowser(
+        job,
+        70 + 10 * trial / settings.colourTrials,
+        "Tilldelar balanserade färger…"
+      );
+    }
+  }
+
+  let metrics = bestMetrics;
+  const directions = bestDirections;
+  const matrix = bestMatrix;
+
+  const cycleMoves = Math.min(
+    settings.colourMoves,
+    Math.max(100, Math.floor(
+      20000000 / Math.max(1, graph.realEdgeCount)
+    ))
+  );
+
+  for (let move = 0; move < cycleMoves; move++) {
+    if (metrics.long === 0 && metrics.triples === 0) break;
+
+    const seed = randomInt(graph.realEdgeCount);
+    const cycle = findDirectedCycle(graph, directions, seed);
+
+    if (cycle) {
+      const affected = new Set();
+
+      for (const index of cycle) {
+        const edge = graph.edges[index];
+        if (edge.a < count) affected.add(edge.a);
+        if (edge.b < count) affected.add(edge.b);
+      }
+
+      let oldLong = 0;
+      let oldTriples = 0;
+
+      for (const id of affected) {
+        oldLong += metrics.perPlayer[id].long;
+        oldTriples += metrics.perPlayer[id].triples;
+      }
+
+      flipCycle(graph, directions, matrix, roundCount, cycle);
+
+      const updates = [];
+      let newLong = 0;
+      let newTriples = 0;
+
+      for (const id of affected) {
+        const value = playerColourMetrics(matrix, id, roundCount);
+        updates.push([id, value]);
+        newLong += value.long;
+        newTriples += value.triples;
+      }
+
+      const candidate = {
+        long: metrics.long - oldLong + newLong,
+        triples: metrics.triples - oldTriples + newTriples
+      };
+
+      const comparison = colourCompare(candidate, metrics);
+
+      if (comparison < 0 ||
+          (comparison === 0 && Math.random() < 0.05)) {
+        metrics.long = candidate.long;
+        metrics.triples = candidate.triples;
+
+        for (const [id, value] of updates) {
+          metrics.perPlayer[id] = value;
+        }
+      } else {
+        flipCycle(graph, directions, matrix, roundCount, cycle);
+      }
+    }
+
+    if (move % 64 === 0) {
+      await yieldToBrowser(
+        job,
+        80 + 10 * move / cycleMoves,
+        "Minskar långa färgföljder med balanserade cykelbyten…"
+      );
+    }
+  }
+
+  const rounds = rawRounds.map(round => ({
+    games: [],
+    bye: count % 2 === 0
+      ? null
+      : round.find(([a, b]) => a === count || b === count)
+          .find(id => id !== count)
+  }));
+
+  for (let index = 0; index < graph.realEdgeCount; index++) {
+    const edge = graph.edges[index];
+    const aWhite = directions[index] === 0;
+
+    rounds[edge.round].games.push({
+      w: aWhite ? edge.a : edge.b,
+      b: aWhite ? edge.b : edge.a,
+      result: null,
+      auto: false
+    });
+  }
+
+  for (const round of rounds) {
+    round.games.sort((a, b) =>
+      Math.min(a.w, a.b) - Math.min(b.w, b.b)
+    );
+  }
+
+  // Whole-round reordering preserves opponents, game counts,
+  // rest allocations, budgets, group counts, and colour totals.
+  const orderMoves = roundCount < 2 ? 0 : Math.min(
+    settings.orderMoves,
+    Math.max(40, Math.floor(
+      8000000 / Math.max(1, count * roundCount)
+    ))
+  );
+
+  metrics = allColourMetrics(matrix, count, roundCount);
+
+  for (let move = 0; move < orderMoves; move++) {
+    if (metrics.long === 0 && metrics.triples === 0) break;
+
+    const a = randomInt(roundCount);
+    let b = randomInt(roundCount - 1);
+    if (b >= a) b++;
+
+    for (let id = 0; id < count; id++) {
+      const x = id * roundCount + a;
+      const y = id * roundCount + b;
+      [matrix[x], matrix[y]] = [matrix[y], matrix[x]];
+    }
+
+    const candidate = allColourMetrics(matrix, count, roundCount);
+    const comparison = colourCompare(candidate, metrics);
+
+    if (comparison < 0 ||
+        (comparison === 0 && Math.random() < 0.05)) {
+      [rounds[a], rounds[b]] = [rounds[b], rounds[a]];
+      metrics = candidate;
+    } else {
+      for (let id = 0; id < count; id++) {
+        const x = id * roundCount + a;
+        const y = id * roundCount + b;
+        [matrix[x], matrix[y]] = [matrix[y], matrix[x]];
+      }
+    }
+
+    if (move % 128 === 0) {
+      await yieldToBrowser(
+        job,
+        90 + 9 * move / Math.max(1, orderMoves),
+        "Förbättrar rondordning och färgföljder…"
+      );
+    }
+  }
+
+  return rounds;
+}
+
+/* ============================================================
+   Generation controller
+   ============================================================ */
+
+async function startGeneration() {
+  if (activeJob) return;
+
+  let players;
+  let roundCount;
+
+  try {
+    players = parseRoster(
+      document.getElementById("input-players").value
+    );
+
+    roundCount = Number(
+      document.getElementById("input-rounds").value
+    );
+
+    const maximum = maximumRounds(players.length);
+
+    if (!Number.isInteger(roundCount) ||
+        roundCount < 1 ||
+        roundCount > maximum) {
+      throw new Error(
+        "Med detta spelarantal kan du välja mellan 1 och " + maximum +
+        " ronder utan upprepade motståndare."
+      );
+    }
+  } catch (error) {
+    alert(error.message);
+    return;
+  }
+
+  const effort = document.getElementById("input-effort").value;
+  const job = { cancelled: false };
+  activeJob = job;
+
+  document.getElementById("setup-controls").disabled = true;
+  document.getElementById("generation-panel").hidden = false;
+
+  try {
+    await yieldToBrowser(
+      job, 0,
+      "Förbereder personliga ratinggrupper och budgetar för schemalagda partier…"
+    );
+
+    const rawRounds = await optimizePairings(
+      players, roundCount, effort, job
+    );
+
+    const rounds = await allocateColours(
+      rawRounds, players, effort, job
+    );
+
+    await yieldToBrowser(job, 99, "Kontrollerar det kompletta spelschemat…");
+
+    const candidate = {
+      name: document.getElementById("input-name").value.trim() ||
+        "Ratingbudgetturnering",
+      players,
+      rounds,
+      current: 0,
+      scope: "all",
+      tb: document.getElementById("input-tb").value,
+      byePoints: Number(
+        document.getElementById("input-bye-points").value
+      ),
+      finished: false,
+      engine: {
+        effort,
+        createdAt: new Date().toISOString(),
+        model: BUDGET_MODEL,
+        legacySchedule: false
+      }
+    };
+
+    const validated = validateTournamentData(candidate);
+    const report = calculateScheduleReport(validated);
+
+    await yieldToBrowser(job, 100, "Det kompletta spelschemat har skapats.");
+
+    tournament = validated;
+    scheduleReport = report;
+
+    persist();
+    renderApplication();
+  } catch (error) {
+    if (error.message !== "Schemagenereringen avbröts.") {
+      console.error(error);
+    }
+    alert(error.message);
+  } finally {
+    activeJob = null;
+    document.getElementById("setup-controls").disabled = false;
+    document.getElementById("generation-panel").hidden = true;
+  }
+}
+
+function cancelGeneration() {
+  if (activeJob) activeJob.cancelled = true;
+}
+
+/* ============================================================
+   Schedule diagnostics
+
+   Each budget is derived after counting scheduled games.
+   This also makes the aggregate lower bound consistent with
+   the current rest allocation and adjusted budget policy.
+   ============================================================ */
+
+function calculateScheduleReport(data) {
+  const count = data.players.length;
+  const roundCount = data.rounds.length;
+  const information = personalGroupInformation(data.players);
+
+  const rows = data.players.map(player => ({
+    id: player.id,
+    games: 0,
+    personal: 0,
+    requested: 0,
+    sum: 0,
+    whites: 0,
+    blacks: 0,
+    rests: 0,
+    colours: [],
+    budget: 0,
+    target: information.targets[player.id]
+  }));
+
+  let distance = 0;
+
+  for (const round of data.rounds) {
+    const colours = new Int8Array(count);
+
+    for (const game of round.games) {
+      const white = data.players[game.w];
+      const black = data.players[game.b];
+
+      rows[game.w].games++;
+      rows[game.b].games++;
+
+      rows[game.w].sum += black.rating;
+      rows[game.b].sum += white.rating;
+
+      rows[game.w].whites++;
+      rows[game.b].blacks++;
+
+      colours[game.w] = 1;
+      colours[game.b] = -1;
+
+      if (isPersonalGroupOpponent(information, game.w, game.b)) {
+        rows[game.w].personal++;
+      }
+
+      if (isPersonalGroupOpponent(information, game.b, game.w)) {
+        rows[game.b].personal++;
+      }
+
+      distance += Math.abs(white.tpn - black.tpn);
+    }
+
+    if (round.bye !== null) rows[round.bye].rests++;
+
+    for (let id = 0; id < count; id++) {
+      rows[id].colours.push(colours[id]);
+    }
+  }
+
+  let totalError = 0;
+  let maximumError = 0;
+  let totalDeficit = 0;
+  let actualOpponentTotal = 0;
+  let totalBudget = 0;
+  let impossiblePlayers = 0;
+  let capacityDeficit = 0;
+  let long = 0;
+  let triples = 0;
+  let maximumRun = 0;
+  let balanced = true;
+
+  for (const row of rows) {
+    row.budget = personalBudget(row.target, row.games);
+    row.error = Math.abs(row.sum - row.budget);
+    row.signedError = row.sum - row.budget;
+    row.average = row.games ? row.sum / row.games : null;
+
+    row.requested = requiredPersonalGroupOpponents(row.games);
+    row.deficit = Math.max(0, row.requested - row.personal);
+
+    const distinctCapacity = Math.min(
+      row.games, information.groupSize
+    );
+
+    if (row.requested > distinctCapacity) {
+      impossiblePlayers++;
+      capacityDeficit += row.requested - distinctCapacity;
+    }
+
+    const matrix = Int8Array.from(row.colours);
+    const colour = playerColourMetrics(matrix, 0, roundCount);
+
+    row.maximumRun = colour.maximum;
+    row.colourString = row.colours.map(value =>
+      value === 1 ? "V" : value === -1 ? "S" : "–"
+    ).join("");
+
+    totalError += row.error;
+    maximumError = Math.max(maximumError, row.error);
+    totalDeficit += row.deficit;
+    actualOpponentTotal += row.sum;
+    totalBudget += row.budget;
+
+    long += colour.long;
+    triples += colour.triples;
+    maximumRun = Math.max(maximumRun, colour.maximum);
+
+    if (Math.abs(row.whites - row.blacks) !== row.games % 2) {
+      balanced = false;
+    }
+  }
+
+  const rawLowerBound = Math.abs(actualOpponentTotal - totalBudget);
+  const aggregateLowerBound = rawLowerBound < EPS ? 0 : rawLowerBound;
+  const warnings = [];
+
+  if (data.engine?.legacySchedule) {
+    warnings.push(
+      "Detta spelschema skapades med en tidigare budgetmodell. " +
+      "Lottningar och resultat är oförändrade, men analysen använder nu " +
+      "personliga gruppers målratingar och budgetar för schemalagda " +
+      "partier, exklusive frironder. Spelschemat skapades inte med " +
+      "den aktuella budgetmodellen."
+    );
+  }
+
+  if (impossiblePlayers > 0) {
+    warnings.push(
+      "För " + impossiblePlayers +
+      " spelare överstiger det önskade antalet gruppmotståndare de " +
+      information.groupSize + " olika motståndare som finns i den " +
+      "personliga gruppen utan upprepade möten. Deras sammanlagda " +
+      "oundvikliga kapacitetsunderskott är minst " + capacityDeficit + "."
+    );
+  }
+
+  if (totalDeficit > 0) {
+    warnings.push(
+      "Detta spelschema saknar totalt " + totalDeficit +
+      " möten inom personliga grupper jämfört med " +
+      "ceil(schemalagda partier / 2). Att uppfylla ratingbudgetarna " +
+      "är det primära målet, så gruppantalet är ett sekundärt önskemål " +
+      "och inte ett garanterat minimum. Strukturella begränsningar " +
+      "och den begränsade sökningen kan också lämna ett underskott."
+    );
+  }
+
+  if (long > 0) {
+    warnings.push(
+      "Efter färgoptimeringen återstår " + long +
+      " överlappande fyrpartifönster med samma färg inom följder av " +
+      "fyra eller fler partier. Det önskade maximumet uppnåddes inte. " +
+      "Innan resultat registreras kan ett nytt spelschema ge ett " +
+      "bättre resultat, men förbättring garanteras inte."
+    );
+  }
+
+  return {
+    information,
+    rows,
+    totalError,
+    maximumError,
+    totalDeficit,
+    aggregateLowerBound,
+    actualOpponentTotal,
+    totalBudget,
+    distance,
+    long,
+    triples,
+    maximumRun,
+    balanced,
+    warnings
+  };
+}
+
+/* ============================================================
+   Results and withdrawals
+   ============================================================ */
+
+function automaticForfeitCode(data, game, roundIndex) {
+  const whiteFrom = data.players[game.w].withdrawnFrom;
+  const blackFrom = data.players[game.b].withdrawnFrom;
+
+  const whiteOut = whiteFrom !== null && roundIndex >= whiteFrom;
+  const blackOut = blackFrom !== null && roundIndex >= blackFrom;
+
+  return whiteOut && blackOut ? "F00"
+    : whiteOut ? "F0"
+    : blackOut ? "F1"
+    : null;
+}
+
+function refreshAutomaticForfeits(data) {
+  data.rounds.forEach((round, roundIndex) => {
+    for (const game of round.games) {
+      if (game.result !== null && !game.auto) continue;
+
+      const result = automaticForfeitCode(data, game, roundIndex);
+      game.result = result;
+      game.auto = result !== null;
+    }
+  });
+}
+
+function setManualResult(board, result) {
+  if (!tournament || tournament.finished) return;
+
+  const game = tournament.rounds[tournament.current].games[board];
+  if (!game) return;
+
+  if (result !== null &&
+      !Object.prototype.hasOwnProperty.call(
+        RESULT_DEFINITIONS, result
+      )) {
+    return;
+  }
+
+  game.result = result;
+  game.auto = false;
+
+  if (result === null) refreshAutomaticForfeits(tournament);
+
+  updateResultControls(board);
+  updateRoundNavigation();
+  renderStandings();
+  persist();
+}
+
+function updateResultControls(board) {
+  const game = tournament.rounds[tournament.current].games[board];
+  const row = document.querySelector('[data-board-row="' + board + '"]');
+  if (!row) return;
+
+  row.querySelectorAll("input[data-result-radio]").forEach(radio => {
+    radio.checked = radio.value === game.result;
+    radio.closest("label").classList.toggle(
+      "selected", radio.checked
+    );
+  });
+
+  row.querySelector("[data-forfeit]").value =
+    ["F1", "F0", "F00"].includes(game.result) ? game.result : "";
+
+  const note = row.querySelector("[data-auto-note]");
+  note.hidden = !game.auto;
+}
+
+document.addEventListener("click", event => {
+  const radio = event.target.closest("input[data-result-radio]");
+  if (!radio || !tournament || tournament.finished) return;
+
+  const board = Number(radio.dataset.board);
+  const game = tournament.rounds[tournament.current].games[board];
+
+  setManualResult(
+    board,
+    game.result === radio.value ? null : radio.value
+  );
+});
+
+document.addEventListener("change", event => {
+  const select = event.target.closest("select[data-forfeit]");
+  if (!select || !tournament || tournament.finished) return;
+
+  setManualResult(
+    Number(select.dataset.board),
+    select.value || null
+  );
+});
+
+function openWithdrawal() {
+  if (!tournament || tournament.finished) return;
+
+  document.getElementById("withdraw-player").innerHTML =
+    tournament.players.map(player => `
+      <option value="${player.id}">
+        ${html(player.tpn + ". " + player.name +
+          (player.withdrawnFrom !== null ? " (avanmäld)" : ""))}
+      </option>
+    `).join("");
+
+  const roundInput = document.getElementById("withdraw-round");
+  roundInput.max = String(tournament.rounds.length);
+  roundInput.value = String(tournament.current + 1);
+  roundInput.disabled = false;
+  roundInput.required = true;
+
+  document.getElementById("withdraw-operation").value = "withdraw";
+  document.getElementById("withdraw-dialog").showModal();
+}
+
+function updateWithdrawalOperation() {
+  const reinstate =
+    document.getElementById("withdraw-operation").value === "reinstate";
+
+  const input = document.getElementById("withdraw-round");
+  input.disabled = reinstate;
+  input.required = !reinstate;
+}
+
+function applyWithdrawal(event) {
+  event.preventDefault();
+  if (!tournament || tournament.finished) return;
+
+  const id = Number(document.getElementById("withdraw-player").value);
+  const operation =
+    document.getElementById("withdraw-operation").value;
+
+  const round = Number(
+    document.getElementById("withdraw-round").value
+  );
+
+  if (!Number.isInteger(id) || !tournament.players[id]) {
+    alert("Välj en giltig spelare.");
+    return;
+  }
+
+  if (operation === "withdraw" &&
+      (!Number.isInteger(round) ||
+       round < 1 ||
+       round > tournament.rounds.length)) {
+    alert("Välj en giltig rond för avanmälan.");
+    return;
+  }
+
+  tournament.players[id].withdrawnFrom =
+    operation === "withdraw" ? round - 1 : null;
+
+  refreshAutomaticForfeits(tournament);
+  document.getElementById("withdraw-dialog").close();
+
+  persist();
+  renderApplication();
+}
+
+/* ============================================================
+   Standings
+
+   Scoring and tie-breaks are separate from rating budgets.
+   ============================================================ */
+
+function calculateStandings(useAllRounds = false) {
+  const data = tournament;
+
+  const rows = data.players.map(player => ({
+    id: player.id,
+    points: 0,
+    played: 0,
+    wins: 0,
+    draws: 0,
+    losses: 0,
+    byes: 0,
+    cumulative: 0,
+    buchholz: 0,
+    wnt: 0,
+    opponents: [],
+    records: [],
+    position: 0,
+    tied: false
+  }));
+
+  const limit = useAllRounds || data.scope === "all"
+    ? data.rounds.length
+    : data.current + 1;
+
+  for (let roundIndex = 0; roundIndex < limit; roundIndex++) {
+    const round = data.rounds[roundIndex];
+    const hasResults = round.games.some(game => game.result !== null);
+
+    if (!hasResults) continue;
+
+    for (const game of round.games) {
+      if (game.result === null) continue;
+
+      const result = RESULT_DEFINITIONS[game.result];
+
+      addResult(game.w, game.b, result.white, result.played);
+      addResult(game.b, game.w, result.black, result.played);
+    }
+
+    if (round.bye !== null && isRoundComplete(round)) {
+      rows[round.bye].points += data.byePoints;
+      rows[round.bye].byes++;
+    }
+
+    for (const row of rows) {
+      row.cumulative += row.points;
+    }
+  }
+
+  function addResult(id, opponent, score, played) {
+    const row = rows[id];
+    row.points += score;
+    if (played) row.played++;
+
+    if (score === 1) row.wins++;
+    else if (score === 0.5) row.draws++;
+    else row.losses++;
+
+    row.opponents.push(opponent);
+    row.records.push({ opponent, score });
+  }
+
+  for (const row of rows) {
+    const opponentScores = row.opponents.map(id => rows[id].points);
+
+    for (let bye = 0; bye < row.byes; bye++) {
+      opponentScores.push(0);
+    }
+
+    if (opponentScores.length) {
+      const sum = opponentScores.reduce(
+        (total, score) => total + score, 0
+      );
+
+      row.buchholz = sum - Math.min(...opponentScores);
+    }
+
+    for (const record of row.records) {
+      const ratio = rows[record.opponent].points / data.rounds.length;
+      row.wnt += 100 * ratio * (record.score + ratio / 2);
+    }
+  }
+
+  const ordered = rows.slice().sort((a, b) => {
+    if (a.points !== b.points) return b.points - a.points;
+
+    const difference = b[data.tb] - a[data.tb];
+    if (Math.abs(difference) > EPS) return difference;
+
+    return a.id - b.id;
+  });
+
+  let index = 0;
+
+  while (index < ordered.length) {
+    let end = index + 1;
+
+    while (end < ordered.length &&
+           ordered[end].points === ordered[index].points &&
+           Math.abs(
+             ordered[end][data.tb] - ordered[index][data.tb]
+           ) <= EPS) {
+      end++;
+    }
+
+    for (let item = index; item < end; item++) {
+      ordered[item].position = index + 1;
+      ordered[item].tied = end - index > 1;
+    }
+
+    index = end;
+  }
+
+  return { rows: ordered, byId: rows };
+}
+
+/* ============================================================
+   Rendering
+   ============================================================ */
+
+function playerHTML(id, roundIndex, piece = "") {
+  const player = tournament.players[id];
+  const information = scheduleReport.information;
+  const withdrawn = player.withdrawnFrom !== null &&
+    roundIndex >= player.withdrawnFrom;
+
+  const groupSpan =
+    (information.lower[id] + 1) + "–" +
+    (information.upper[id] + 1);
+
+  const groupTitle =
+    "Motståndare i personlig grupp: TPN " +
+    personalGroupLabel(information, id) +
+    ". Målrating: " + formatNumber(information.targets[id]);
+
+  return `
+    <div class="player-box">
+      ${piece ? `
+        <span class="piece-icon piece-${piece}"
+              title="${piece === "white" ? "Vit" : "Svart"}"></span>
+      ` : ""}
+      <strong>${player.tpn}. ${html(player.name)}</strong>
+      <span class="badge">${formatNumber(player.rating, 0)}</span>
+      <span class="badge group-badge" title="${html(groupTitle)}">
+        G ${groupSpan}
+      </span>
+      ${withdrawn ? `
+        <span class="withdrawn">
+          Avanmäld från rond ${player.withdrawnFrom + 1}
+        </span>
+      ` : ""}
+    </div>
+  `;
+}
+
+function pairingsTableHTML(roundIndex, editable) {
+  const round = tournament.rounds[roundIndex];
+
+  const body = round.games.map((game, board) => {
+    let resultHTML;
+
+    if (editable) {
+      const options = [
+        ["1-0", "1 - 0"],
+        ["0.5-0.5", "½ - ½"],
+        ["0-1", "0 - 1"]
+      ];
+
+      resultHTML = `
+        <div class="result-selector">
+          ${options.map(([value, label]) => `
+            <label class="${game.result === value ? "selected" : ""}">
+              <input type="radio"
+                     name="board_${board}"
+                     value="${value}"
+                     data-result-radio
+                     data-board="${board}"
+                     aria-label="Bord ${board + 1}: ${label}"
+                     ${game.result === value ? "checked" : ""}>
+              <span>${label}</span>
+            </label>
+          `).join("")}
+        </div>
+
+        <select class="forfeit-select"
+                data-forfeit
+                data-board="${board}"
+                aria-label="Walkoverresultat för bord ${board + 1}">
+          <option value="">Walkover / ta bort resultat…</option>
+          <option value="F1" ${game.result === "F1" ? "selected" : ""}>
+            + / - : Vit vinner på walkover
+          </option>
+          <option value="F0" ${game.result === "F0" ? "selected" : ""}>
+            - / + : Svart vinner på walkover
+          </option>
+          <option value="F00" ${game.result === "F00" ? "selected" : ""}>
+            -- / -- : Dubbel walkoverförlust
+          </option>
+        </select>
+
+        <div class="small-note"
+             data-auto-note
+             ${game.auto ? "" : "hidden"}>
+          Automatisk walkover efter avanmälan
+        </div>
+      `;
+    } else {
+      resultHTML = game.result === null
+        ? "–"
+        : html(RESULT_DEFINITIONS[game.result].label);
+    }
+
+    return `
+      <tr ${editable ? `data-board-row="${board}"` : ""}>
+        <td class="numeric">${board + 1}</td>
+        <td>${playerHTML(game.w, roundIndex, "white")}</td>
+        <td class="numeric">${resultHTML}</td>
+        <td>${playerHTML(game.b, roundIndex, "black")}</td>
+      </tr>
+    `;
+  }).join("");
+
+  return `
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="numeric">Bord</th>
+            <th>Vit</th>
+            <th class="numeric">
+              <span style="display: inline-block; transform: translateX(-11mm);">
+                Resultat
+              </span>
+            </th>
+            <th>Svart</th>
+          </tr>
+        </thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>
+    <p class="small-note">
+      G visar den personliga gruppens TPN-intervall, exklusive spelarens eget TPN.
+    </p>
+  `;
+}
+
+function byeHTML(roundIndex) {
+  const bye = tournament.rounds[roundIndex].bye;
+  if (bye === null) return "";
+
+  const player = tournament.players[bye];
+  const credited = isRoundComplete(tournament.rounds[roundIndex]);
+
+  return `
+    <div class="bye-box">
+      <strong>Frirond:</strong>
+      ${player.tpn}. ${html(player.name)}
+      — ${formatPoints(tournament.byePoints)} poäng
+      ${credited ? "(tilldelade)" : "(tilldelas när ronden är färdig)"}.
+      Ingen motståndarrating tillkommer; ratingbudgeten är minskad
+      med en personlig målrating.
+    </div>
+  `;
+}
+
+function standingsTableHTML(standings) {
+  const information = scheduleReport.information;
+
+  const body = standings.rows.map(row => {
+    const player = tournament.players[row.id];
+
+    return `
+      <tr class="${row.position === 1 ? "leader-row" : ""}">
+        <td class="numeric">
+          ${row.position}${row.tied ? "=" : ""}
+        </td>
+        <td class="numeric">${player.tpn}</td>
+        <td>
+          <strong>${html(player.name)}</strong>
+          ${player.withdrawnFrom !== null ? `
+            <br><span class="withdrawn">
+              Avanmäld från rond ${player.withdrawnFrom + 1}
+            </span>
+          ` : ""}
+        </td>
+        <td class="numeric">${formatNumber(player.rating, 0)}</td>
+        <td class="numeric">
+          ${formatNumber(information.targets[row.id])}
+        </td>
+        <td class="numeric">${row.played}</td>
+        <td class="numeric">${row.wins}</td>
+        <td class="numeric">${row.draws}</td>
+        <td class="numeric">${row.losses}</td>
+        <td class="numeric">
+          <strong>${formatPoints(row.points)}</strong>
+        </td>
+        <td class="numeric">
+          ${formatNumber(row[tournament.tb], 2)}
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  return `
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="numeric">Plac.</th>
+            <th class="numeric" title="Turneringsnummer">TPN</th>
+            <th>Spelare</th>
+            <th class="numeric">Rating</th>
+            <th class="numeric">Målrating</th>
+            <th class="numeric">Spelade</th>
+            <th class="numeric" title="Vinster">V</th>
+            <th class="numeric" title="Remier">R</th>
+            <th class="numeric" title="Förluster">F</th>
+            <th class="numeric">Poäng</th>
+            <th class="numeric">${html(TIE_BREAKS[tournament.tb])}</th>
+          </tr>
+        </thead>
+        <tbody>${body}</tbody>
+      </table>
+    </div>
+
+    <p class="small-note">
+      Målrating är den fasta medelratingen för spelarens personliga
+      grupp och påverkar inte ställningen.
+      Spelade räknar faktiskt spelade partier.
+      V/R/F = vinster/remier/förluster och inkluderar registrerade
+      walkoverresultat.
+      Frirondspoäng tilldelas endast för färdiga ronder.
+      ”=” anger delad placering efter vald särskiljning.
+      Alla särskiljningsvärden är preliminära tills samtliga
+      schemalagda partier har registrerade resultat.
+    </p>
+
+    ${tournament.tb === "cumulative" ? `
+      <p class="small-note">
+        Progressiv särskiljning använder schemalagd rondordning
+        och omfattar ronder med registrerade resultat,
+        inte ordningen i vilken resultaten matades in.
+      </p>
+    ` : ""}
+  `;
+}
+
+function updateRoundNavigation() {
+  if (!tournament) return;
+
+  const select = document.getElementById("round-select");
+  select.innerHTML = tournament.rounds.map((round, index) => {
+    const recorded = round.games.filter(
+      game => game.result !== null
+    ).length;
+
+    const label = "Rond " + (index + 1) +
+      (isRoundComplete(round)
+        ? " ✓"
+        : " · " + recorded + "/" + round.games.length);
+
+    return `
+      <option value="${index}"
+              ${index === tournament.current ? "selected" : ""}>
+        ${html(label)}
+      </option>
+    `;
+  }).join("");
+
+  document.getElementById("previous-button").disabled =
+    tournament.current === 0;
+
+  document.getElementById("next-button").disabled =
+    tournament.current === tournament.rounds.length - 1;
+
+  document.getElementById("round-title").textContent =
+    "Rond " + (tournament.current + 1);
+
+  document.getElementById("bye-container").innerHTML =
+    byeHTML(tournament.current);
+}
+
+function renderRound() {
+  if (!tournament) return;
+
+  updateRoundNavigation();
+  document.getElementById("pairings-container").innerHTML =
+    pairingsTableHTML(tournament.current, true);
+}
+
+function renderStandings() {
+  if (!tournament) return;
+
+  document.getElementById("standings-scope").value = tournament.scope;
+  document.getElementById("live-tb").value = tournament.tb;
+  document.getElementById("final-tb").value = tournament.tb;
+
+  document.getElementById("standings-container").innerHTML =
+    standingsTableHTML(calculateStandings(false));
+
+  if (tournament.finished) {
+    const missing = missingGameCount();
+
+    document.getElementById("final-heading").textContent =
+      missing ? "Aktuell ställning — ofullständiga resultat" : "Slutställning";
+
+    const notice = document.getElementById("final-notice");
+    notice.hidden = missing === 0;
+    notice.textContent = missing
+      ? formatNumber(missing, 0) + " schemalagda partier saknar resultat. " +
+        "Denna ställning omfattar endast registrerade resultat. " +
+        "Gå tillbaka till ronderna för att fortsätta."
+      : "";
+
+    document.getElementById("final-container").innerHTML =
+      standingsTableHTML(calculateStandings(true));
+  }
+}
+
+function groupSummaryHTML() {
+  const info = scheduleReport.information;
+  const minimumTarget = Math.min(...info.targets);
+  const maximumTarget = Math.max(...info.targets);
+
+  // Use the actual schedule-specific budgets, including rests.
+  const budgets = scheduleReport.rows.map(row => row.budget);
+  const minimumBudget = Math.min(...budgets);
+  const maximumBudget = Math.max(...budgets);
+
+  return `
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="numeric">Spelare</th>
+            <th class="numeric">Motståndare i personlig grupp</th>
+            <th class="numeric">Idealt ovanför / nedanför</th>
+            <th class="numeric">Målratingsintervall</th>
+            <th class="numeric">Personligt budgetintervall</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="numeric">${info.count}</td>
+            <td class="numeric">${info.groupSize}</td>
+            <td class="numeric">${info.half} / ${info.half}</td>
+            <td class="numeric">
+              ${formatNumber(minimumTarget)}–${formatNumber(maximumTarget)}
+            </td>
+            <td class="numeric">
+              ${formatNumber(minimumBudget)}–${formatNumber(maximumBudget)}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="small-note">
+      Gruppstorlek = 2 × ceil(N / 6).
+      Nära startfältets ändar flyttas platser som saknas till den andra sidan.
+      Varje grupp utesluter sin egen spelare.
+      Budget = schemalagda partier × personlig grupps medelrating.
+      En frirond minskar budgeten med en personlig målrating.
+      Det sekundära gruppönskemålet är ceil(schemalagda partier / 2).
+      ceil betyder avrundning uppåt till närmaste heltal.
+    </p>
+  `;
+}
+
+function playerBudgetsHTML() {
+  const information = scheduleReport.information;
+
+  return `
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="numeric">TPN</th>
+            <th>Spelare</th>
+            <th>TPN för motståndare i personlig grupp</th>
+            <th class="numeric">Målrating</th>
+            <th class="numeric">Partier</th>
+            <th class="numeric">Inom grupp</th>
+            <th class="numeric">Önskat antal</th>
+            <th class="numeric">Underskott</th>
+            <th class="numeric">Motståndarratingsumma</th>
+            <th class="numeric">Budget</th>
+            <th class="numeric">Avvikelse</th>
+            <th class="numeric">Motståndarens medelrating</th>
+            <th class="numeric">Vit / svart</th>
+            <th>Färgföljd</th>
+            <th class="numeric">Längsta följd</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${scheduleReport.rows.map(row => {
+            const player = tournament.players[row.id];
+
+            return `
+              <tr>
+                <td class="numeric">${player.tpn}</td>
+                <td>${html(player.name)}</td>
+                <td>${personalGroupLabel(information, row.id)}</td>
+                <td class="numeric">${formatNumber(row.target)}</td>
+                <td class="numeric">${row.games}</td>
+                <td class="numeric">${row.personal}</td>
+                <td class="numeric">${row.requested}</td>
+                <td class="numeric">${row.deficit}</td>
+                <td class="numeric">${formatNumber(row.sum)}</td>
+                <td class="numeric">${formatNumber(row.budget)}</td>
+                <td class="numeric">${formatNumber(row.signedError)}</td>
+                <td class="numeric">${formatNumber(row.average)}</td>
+                <td class="numeric">${row.whites} / ${row.blacks}</td>
+                <td style="font-family: monospace; overflow-wrap: anywhere;">
+                  ${row.colourString}
+                </td>
+                <td class="numeric">${row.maximumRun}</td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>
+    <p class="small-note">
+      V = vit, S = svart, – = frirond.
+      Avvikelse = motståndarratingsumma minus personlig budget.
+      Inom grupp räknar gruppmedlemskap ur denna spelares perspektiv.
+      Önskat antal = ceil(schemalagda partier / 2), ett sekundärt önskemål.
+      Budget = schemalagda partier × personlig målrating.
+      Frironder tillför ingen motståndarrating och minskar budgeten
+      med en personlig målrating.
+      Registrerade resultat och walkoverresultat ändrar inte
+      budgetarna för schemalagda partier.
+    </p>
+  `;
+}
+
+function completeScheduleHTML(interactive = true) {
+  return `
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Rond</th>
+            <th>Lottningar: vit TPN – svart TPN</th>
+            <th>Frirond</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tournament.rounds.map((round, index) => `
+            <tr>
+              <td>
+                ${interactive ? `
+                  <button type="button"
+                          class="light"
+                          onclick="selectRound(${index})">
+                    ${index + 1}
+                  </button>
+                ` : index + 1}
+              </td>
+              <td class="schedule-pairs">
+                ${round.games.map(game =>
+                  (game.w + 1) + "–" + (game.b + 1)
+                ).join(" &nbsp; | &nbsp; ")}
+              </td>
+              <td>
+                ${round.bye === null ? "—" :
+                  (round.bye + 1) + ". " +
+                  html(tournament.players[round.bye].name)}
+              </td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderBudgetDiagnostics() {
+  const report = scheduleReport;
+  const oddField = tournament.players.length % 2 !== 0;
+
+  document.getElementById("schedule-summary").innerHTML = `
+    <p class="metadata">
+      ${tournament.players.length} spelare ·
+      ${tournament.rounds.length} förgenererade ronder ·
+      Total absolut personlig budgetavvikelse:
+      <strong>${formatNumber(report.totalError)}</strong> ·
+      Genomsnittlig avvikelse:
+      ${formatNumber(report.totalError / tournament.players.length)} ·
+      Största individuella avvikelse: ${formatNumber(report.maximumError)}
+    </p>
+    <p class="metadata">
+      Nedre gräns för total budgetavvikelse, baserad på totalsummorna:
+      <strong>${formatNumber(report.aggregateLowerBound)}</strong>
+      ${oddField
+        ? "(för denna fördelning av frironder)"
+        : "(för alla giltiga spelscheman)"} ·
+      Underskott av möten inom personliga grupper: ${report.totalDeficit}
+    </p>
+    <p class="metadata">
+      Totalt TPN-avstånd: ${formatNumber(report.distance, 0)} ·
+      Färgtotaler: ${report.balanced ? "optimalt balanserade" : "obalanserade"} ·
+      Trepartifönster med samma färg: ${report.triples} ·
+      Längsta följd med samma färg: ${report.maximumRun}
+    </p>
+  `;
+
+  const warnings = document.getElementById("schedule-warnings");
+  warnings.hidden = report.warnings.length === 0;
+  warnings.innerHTML = report.warnings.length
+    ? "<ul style='margin:0; padding-left:20px;'>" +
+      report.warnings.map(
+        warning => "<li>" + html(warning) + "</li>"
+      ).join("") +
+      "</ul>"
+    : "";
+
+  document.getElementById("group-summary").innerHTML = groupSummaryHTML();
+  document.getElementById("player-budgets").innerHTML = playerBudgetsHTML();
+
+  if (document.getElementById("full-schedule-details").open) {
+    document.getElementById("full-schedule-container").innerHTML =
+      completeScheduleHTML();
+  }
+}
+
+document.getElementById("full-schedule-details")
+  .addEventListener("toggle", event => {
+    if (event.target.open && tournament) {
+      document.getElementById("full-schedule-container").innerHTML =
+        completeScheduleHTML();
+    }
+  });
+
+function renderApplication() {
+  const started = tournament !== null;
+  document.body.classList.toggle("tournament-started", started);
+
+  document.getElementById("section-setup").classList.toggle(
+    "hidden", started
+  );
+
+  document.getElementById("section-round").classList.toggle(
+    "hidden", !started || tournament.finished
+  );
+
+  document.getElementById("section-standings").classList.toggle(
+    "hidden", !started || tournament.finished
+  );
+
+  document.getElementById("section-final").classList.toggle(
+    "hidden", !started || !tournament.finished
+  );
+
+  document.getElementById("section-budget").classList.toggle(
+    "hidden", !started
+  );
+
+  if (!started) return;
+
+  for (const id of ["round-name", "standings-name", "final-name"]) {
+    document.getElementById(id).textContent = tournamentTitle();
+  }
+
+  renderRound();
+  renderStandings();
+  renderBudgetDiagnostics();
+}
+
+function selectRound(index) {
+  if (!tournament ||
+      !Number.isInteger(index) ||
+      index < 0 ||
+      index >= tournament.rounds.length) {
+    return;
+  }
+
+  tournament.current = index;
+  tournament.finished = false;
+
+  persist();
+  renderApplication();
+
+  document.getElementById("section-round").scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+function moveRound(direction) {
+  if (!tournament) return;
+
+  const target = tournament.current + direction;
+  if (target < 0 || target >= tournament.rounds.length) return;
+
+  selectRound(target);
+}
+
+function changeStandingsScope(value) {
+  if (!tournament || !["all", "through"].includes(value)) return;
+
+  tournament.scope = value;
+  renderStandings();
+  persist();
+}
+
+function changeTieBreak(value) {
+  if (!tournament ||
+      !Object.prototype.hasOwnProperty.call(TIE_BREAKS, value)) {
+    return;
+  }
+
+  tournament.tb = value;
+  renderStandings();
+  persist();
+}
+
+function showFinalStandings() {
+  if (!tournament) return;
+
+  const missing = missingGameCount();
+
+  if (missing && !confirm(
+    formatNumber(missing, 0) + " schemalagda partier saknar resultat. " +
+    "Vill du visa ställningen med endast registrerade resultat? " +
+    "Du kan gå tillbaka till ronderna efteråt."
+  )) {
+    return;
+  }
+
+  tournament.finished = true;
+  persist();
+  renderApplication();
+}
+
+function backToRounds() {
+  if (!tournament) return;
+
+  tournament.finished = false;
+  persist();
+  renderApplication();
+}
+
+function newTournament() {
+  if (!confirm(
+    "Vill du starta en ny turnering? Ladda först ned en " +
+    "JSON-säkerhetskopia om du vill behålla denna turnering."
+  )) {
+    return;
+  }
+
+  clearAutosave();
+  tournament = null;
+  scheduleReport = null;
+
+  document.getElementById("resume-banner").hidden = true;
+  document.getElementById("full-schedule-container").innerHTML = "";
+  document.getElementById("full-schedule-details").open = false;
+
+  renderApplication();
+  setStorageStatus("Redo för en ny turnering.");
+}
+
+/* ============================================================
+   Validation, JSON saving, and browser autosave
+
+   Version 3 uses scheduled-game budgets.
+   Versions 1 and 2 can be converted after confirmation.
+   Existing pairings, results and standings settings are kept.
+   Personal groups and budgets are derived, never trusted
+   from saved diagnostic fields.
+   ============================================================ */
+
+function validateTournamentData(raw) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    throw new Error("Ogiltiga turneringsdata.");
+  }
+
+  if (typeof raw.name !== "string" || raw.name.length > 120) {
+    throw new Error("Ogiltigt turneringsnamn.");
+  }
+
+  if (!Array.isArray(raw.players) ||
+      raw.players.length < 3 ||
+      raw.players.length > MAX_PLAYERS) {
+    throw new Error("Ogiltig spelarlista.");
+  }
+
+  const count = raw.players.length;
+  const names = new Set();
+
+  const players = raw.players.map((player, id) => {
+    if (!player || typeof player !== "object" ||
+        player.id !== id ||
+        player.tpn !== id + 1 ||
+        typeof player.name !== "string" ||
+        !player.name.trim() ||
+        player.name.length > 120 ||
+        !Number.isInteger(player.rating) ||
+        player.rating < 0 ||
+        player.rating > 4000) {
+      throw new Error("Ogiltig spelarpost.");
+    }
+
+    if (id && raw.players[id - 1].rating < player.rating) {
+      throw new Error("Spelarna är inte sorterade i fallande ratingordning.");
+    }
+
+    const normalized =
+      player.name.trim().normalize("NFKC").toLowerCase();
+
+    if (names.has(normalized)) {
+      throw new Error("Spelarlistan innehåller dubbla namn.");
+    }
+    names.add(normalized);
+
+    return {
+      id,
+      tpn: id + 1,
+      name: player.name.trim(),
+      rating: player.rating,
+      withdrawnFrom: player.withdrawnFrom
+    };
+  });
+
+  if (!Array.isArray(raw.rounds) ||
+      raw.rounds.length < 1 ||
+      raw.rounds.length > maximumRounds(count)) {
+    throw new Error("Ogiltigt antal ronder.");
+  }
+
+  const roundCount = raw.rounds.length;
+
+  for (const player of players) {
+    if (player.withdrawnFrom !== null &&
+        (!Number.isInteger(player.withdrawnFrom) ||
+         player.withdrawnFrom < 0 ||
+         player.withdrawnFrom >= roundCount)) {
+      throw new Error("Ogiltig rond för avanmälan.");
+    }
+  }
+
+  const seenPairs = new Set();
+  const restCounts = new Int16Array(count);
+  const whites = new Int16Array(count);
+  const blacks = new Int16Array(count);
+
+  const rounds = raw.rounds.map((round, roundIndex) => {
+    if (!round || !Array.isArray(round.games) ||
+        round.games.length !== Math.floor(count / 2)) {
+      throw new Error("Ogiltig rondstruktur.");
+    }
+
+    const appeared = new Set();
+
+    const games = round.games.map(game => {
+      if (!game ||
+          !Number.isInteger(game.w) ||
+          !Number.isInteger(game.b) ||
+          game.w < 0 || game.w >= count ||
+          game.b < 0 || game.b >= count ||
+          game.w === game.b) {
+        throw new Error("Ogiltig partilottning.");
+      }
+
+      if (appeared.has(game.w) || appeared.has(game.b)) {
+        throw new Error("En spelare förekommer två gånger i samma rond.");
+      }
+
+      appeared.add(game.w);
+      appeared.add(game.b);
+
+      const key = Math.min(game.w, game.b) + ":" +
+        Math.max(game.w, game.b);
+
+      if (seenPairs.has(key)) {
+        throw new Error("Spelschemat innehåller upprepade motståndare.");
+      }
+
+      seenPairs.add(key);
+
+      if (game.result !== null &&
+          !Object.prototype.hasOwnProperty.call(
+            RESULT_DEFINITIONS, game.result
+          )) {
+        throw new Error("Ogiltigt partiresultat.");
+      }
+
+      if (typeof game.auto !== "boolean") {
+        throw new Error("Ogiltig markering för automatiskt resultat.");
+      }
+
+      const clean = {
+        w: game.w,
+        b: game.b,
+        result: game.result,
+        auto: game.auto
+      };
+
+      if (clean.auto) {
+        const expected = automaticForfeitCode(
+          { players }, clean, roundIndex
+        );
+
+        if (!expected || clean.result !== expected) {
+          throw new Error(
+            "Ett automatiskt walkoverresultat stämmer inte med avanmälningarna."
+          );
+        }
+      }
+
+      whites[clean.w]++;
+      blacks[clean.b]++;
+
+      return clean;
+    });
+
+    let bye = null;
+
+    if (count % 2 !== 0) {
+      if (!Number.isInteger(round.bye) ||
+          round.bye < 0 ||
+          round.bye >= count ||
+          appeared.has(round.bye)) {
+        throw new Error("Ogiltig spelare för frirond.");
+      }
+
+      bye = round.bye;
+      appeared.add(bye);
+      restCounts[bye]++;
+
+      if (restCounts[bye] > 1) {
+        throw new Error("En spelare har mer än en schemalagd frirond.");
+      }
+    } else if (round.bye !== null) {
+      throw new Error("Ett jämnt spelarantal kan inte ha en schemalagd frirond.");
+    }
+
+    if (appeared.size !== count) {
+      throw new Error("En rond omfattar inte alla spelare.");
+    }
+
+    return { games, bye };
+  });
+
+  for (let id = 0; id < count; id++) {
+    const games = whites[id] + blacks[id];
+
+    if (Math.abs(whites[id] - blacks[id]) !== games % 2) {
+      throw new Error("Spelschemats färgtotaler är inte balanserade.");
+    }
+  }
+
+  if (!Number.isInteger(raw.current) ||
+      raw.current < 0 ||
+      raw.current >= roundCount) {
+    throw new Error("Ogiltig vald rond.");
+  }
+
+  if (!["all", "through"].includes(raw.scope) ||
+      !Object.prototype.hasOwnProperty.call(TIE_BREAKS, raw.tb) ||
+      ![0, 0.5, 1].includes(raw.byePoints) ||
+      typeof raw.finished !== "boolean") {
+    throw new Error("Ogiltiga turneringsinställningar.");
+  }
+
+  return {
+    name: raw.name.trim() || "Ratingbudgetturnering",
+    players,
+    rounds,
+    current: raw.current,
+    scope: raw.scope,
+    tb: raw.tb,
+    byePoints: raw.byePoints,
+    finished: raw.finished,
+    engine: {
+      effort: Object.prototype.hasOwnProperty.call(
+        SEARCH_LEVELS, raw.engine?.effort
+      ) ? raw.engine.effort : "normal",
+      createdAt: typeof raw.engine?.createdAt === "string"
+        ? raw.engine.createdAt.slice(0, 100)
+        : "",
+      model: BUDGET_MODEL,
+      legacySchedule: raw.engine?.legacySchedule === true
+    }
+  };
+}
+
+function makeEnvelope() {
+  return {
+    fileSignature: SIGNATURE,
+    version: VERSION,
+    savedAt: new Date().toISOString(),
+    data: tournament
+  };
+}
+
+function validateEnvelope(raw) {
+  if (!raw ||
+      raw.fileSignature !== SIGNATURE ||
+      ![1, 2, VERSION].includes(raw.version)) {
+    throw new Error("Detta är inte en kompatibel RBT-turneringsfil.");
+  }
+
+  if (raw.version === 2 &&
+      raw.data?.engine?.model !== PREVIOUS_BUDGET_MODEL) {
+    throw new Error("Den tidigare ratingbudgetmodellen stöds inte.");
+  }
+
+  if (raw.version === VERSION &&
+      raw.data?.engine?.model !== BUDGET_MODEL) {
+    throw new Error("Ratingbudgetmodellen stöds inte.");
+  }
+
+  const data = validateTournamentData(raw.data);
+
+  if (raw.version < VERSION) {
+    data.engine.legacySchedule = true;
+  }
+
+  return data;
+}
+
+function confirmLegacyConversion(envelope) {
+  if (envelope.version === VERSION) return true;
+
+  const previousModel = envelope.version === 1
+    ? "den tidigare modellen med fasta ratingnivåer"
+    : "den tidigare rondbaserade personliga budgetmodellen";
+
+  return confirm(
+    "Denna turnering sparades med " + previousModel + ". " +
+    "Vill du behålla lottningar, resultat och inställningar för " +
+    "ställningen, men räkna om analysen med personliga gruppers " +
+    "målratingar och budgetar för schemalagda partier? " +
+    "En frirond minskar nu budgeten med en personlig målrating. " +
+    "Spelschemat skapas inte om och markeras som ett äldre schema. " +
+    "Behåll den ursprungliga JSON-säkerhetskopian om du behöver " +
+    "den gamla modellen."
+  );
+}
+
+function persist() {
+  if (!tournament) return;
+
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(makeEnvelope()));
+    setStorageStatus(
+      "Sparades automatiskt kl. " + new Date().toLocaleTimeString("sv-SE")
+    );
+  } catch (error) {
+    setStorageStatus(
+      "Automatiskt sparande är inte tillgängligt. " +
+      "Ladda ned en JSON-säkerhetskopia."
+    );
+  }
+}
+
+function clearAutosave() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (error) {
+    // Manual file saving remains available.
+  }
+}
+
+function readAutosave() {
+  try {
+    const text = localStorage.getItem(STORAGE_KEY);
+    return text ? JSON.parse(text) : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function checkAutosave() {
+  const saved = readAutosave();
+  if (!saved) return;
+
+  const name = typeof saved.data?.name === "string"
+    ? saved.data.name : "Turnering";
+
+  const olderFormat = saved.version === 1
+    ? " Tidigare format med fasta ratingnivåer."
+    : saved.version === 2
+      ? " Tidigare format med rondbaserade budgetar."
+      : "";
+
+  document.getElementById("resume-text").textContent =
+    'En sparad RBT-turnering hittades: ”' + name + '”.' + olderFormat;
+
+  document.getElementById("resume-banner").hidden = false;
+}
+
+function installTournament(data) {
+  const report = calculateScheduleReport(data);
+  tournament = data;
+  scheduleReport = report;
+
+  document.getElementById("resume-banner").hidden = true;
+  document.getElementById("full-schedule-container").innerHTML = "";
+
+  persist();
+  renderApplication();
+}
+
+function resumeAutosave() {
+  if (activeJob) return;
+
+  try {
+    const saved = readAutosave();
+
+    if (!saved) {
+      throw new Error("Ingen läsbar sparad turnering hittades.");
+    }
+
+    const data = validateEnvelope(saved);
+    if (!confirmLegacyConversion(saved)) return;
+
+    installTournament(data);
+  } catch (error) {
+    alert("Turneringen kunde inte återställas: " + error.message);
+  }
+}
+
+function discardAutosave() {
+  if (!confirm("Vill du ta bort den automatiskt sparade turneringen?")) return;
+
+  clearAutosave();
+  document.getElementById("resume-banner").hidden = true;
+}
+
+function safeFilename(name) {
+  return name.trim()
+    .replace(/[<>:"/\\|?*\u0000-\u001f]/g, "_")
+    .replace(/\s+/g, "_")
+    .slice(0, 90) || "rbt-turnering";
+}
+
+function saveTournament() {
+  if (!tournament) return;
+
+  const blob = new Blob(
+    [JSON.stringify(makeEnvelope(), null, 2)],
+    { type: "application/json;charset=utf-8" }
+  );
+
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+
+  anchor.href = url;
+  anchor.download = safeFilename(tournamentTitle()) + ".json";
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function chooseTournamentFile() {
+  if (activeJob) {
+    alert("Avbryt schemagenereringen innan du öppnar en turnering.");
+    return;
+  }
+
+  const input = document.getElementById("tournament-file");
+  input.value = "";
+  input.click();
+}
+
+async function importTournamentFile(event) {
+  const input = event.target;
+  const file = input.files[0];
+  if (!file) return;
+
+  try {
+    if (activeJob) throw new Error("Schemagenereringen pågår fortfarande.");
+
+    if (file.size > 8 * 1024 * 1024) {
+      throw new Error("Filen är för stor.");
+    }
+
+    let raw;
+    try {
+      raw = JSON.parse(await file.text());
+    } catch (error) {
+      throw new Error("Filen kunde inte läsas som giltig JSON.");
+    }
+
+    const imported = validateEnvelope(raw);
+
+    if (activeJob) throw new Error("Schemagenereringen pågår fortfarande.");
+
+    if (tournament && !confirm(
+      "Vill du ersätta den aktuella turneringen? " +
+      "Spara först en JSON-säkerhetskopia om du vill behålla den."
+    )) {
+      return;
+    }
+
+    if (!confirmLegacyConversion(raw)) return;
+
+    installTournament(imported);
+  } catch (error) {
+    alert("Importen misslyckades: " + error.message);
+  } finally {
+    input.value = "";
+  }
+}
+
+function choosePlayerFile() {
+  const input = document.getElementById("player-file");
+  input.value = "";
+  input.click();
+}
+
+async function importPlayerFile(event) {
+  const input = event.target;
+  const file = input.files[0];
+  if (!file) return;
+
+  try {
+    if (file.size > 200000) {
+      throw new Error("Spelarfilen är för stor.");
+    }
+
+    const text = (await file.text()).replace(/^\uFEFF/, "");
+
+    if (text.length > 40000) {
+      throw new Error("Spelarlistan överstiger 40 000 tecken.");
+    }
+
+    if (activeJob) {
+      throw new Error("Avbryt schemagenereringen innan du ändrar spelarlistan.");
+    }
+
+    document.getElementById("input-players").value = text;
+  } catch (error) {
+    alert("Spelarimporten misslyckades: " + error.message);
+  } finally {
+    input.value = "";
+  }
+}
+
+function loadSamplePlayers() {
+  const names = [
+    "Erik Andersson", "Anna Johansson", "Sven Karlsson", "Karin Nilsson",
+    "Johan Eriksson", "Anders Larsson", "Sofia Olsson", "Per Persson",
+    "Emma Svensson", "Ingrid Gustafsson", "Yusuf Al-Mansoor", "Maria Pettersson",
+    "Nils Jonsson", "Oskar Jansson", "Elin Hansson", "Thomas Bengtsson",
+    "Fatima Hassan", "Aisha Rahman", "Gustav Jönsson", "Linnea Lindberg",
+    "Karl Jakobsson", "Leo Magnusson", "Johanna Lindström", "Bengt Lindqvist",
+    "Lilly Lindgren", "Eva Berg", "Kofi Mensah", "Daniel Axelsson",
+    "Lukas Lundberg", "Adam Bergström", "Ella Lundgren", "Samuel Lundqvist",
+    "Hanna Mattsson", "Freya Patel", "Alexander Berglund", "Amara Diallo",
+    "Mia Fredriksson", "Noah Sandberg", "Liam Henriksson", "Astrid Sjöberg",
+    "Alva Forsberg", "Emil Lind", "Arthur Wallin", "Klara Engström",
+    "Felix Eklund", "Nina Holm", "Adrian Söderström", "Priya Shah",
+    "Elena Rossi", "David Okafor"
+  ];
+
+  document.getElementById("input-players").value =
+    names.map(
+      (name, index) => name + "; " + (2400 - index * 15)
+    ).join("\n");
+
+  document.getElementById("input-rounds").value = "7";
+
+  if (!document.getElementById("input-name").value.trim()) {
+    document.getElementById("input-name").value = "Exempelturnering med RBT";
+  }
+}
+
+/* ============================================================
+   Printing
+   ============================================================ */
+
+function openPrintPage(title, content) {
+  const printWindow = window.open("", "_blank");
+
+  if (!printWindow) {
+    alert("Tillåt popup-fönster för att öppna utskriftsrapporten.");
+    return;
+  }
+
+  printWindow.document.open();
+  printWindow.document.write(`<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<title>${html(title)}</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    margin: 24px;
+    color: #111827;
+    line-height: 1.4;
+  }
+  h1 { font-size: 1.5rem; margin-bottom: 5px; }
+  h2 { font-size: 1.15rem; margin: 22px 0 8px; }
+  h3 { font-size: 1rem; margin: 18px 0 7px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0 15px;
+    font-size: 0.8rem;
+  }
+  th, td {
+    border: 1px solid #b8c2cf;
+    padding: 6px 7px;
+    text-align: left;
+    vertical-align: middle;
+  }
+  th { background: #f1f5f9; }
+  .numeric { text-align: center; white-space: nowrap; }
+  .player-box { display: block; }
+  .badge { font-size: 0.75rem; margin-left: 4px; }
+  .piece-icon { display: none; }
+  .small-note, .metadata { font-size: 0.8rem; color: #475569; }
+  .withdrawn { font-size: 0.75rem; }
+  .bye-box {
+    border: 1px solid #b8c2cf;
+    padding: 7px 10px;
+    font-size: 0.85rem;
+    margin: 8px 0 15px;
+  }
+  .toolbar { display: flex; gap: 10px; margin-bottom: 20px; }
+  button {
+    padding: 7px 12px;
+    border: 1px solid #b8c2cf;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .schedule-pairs { overflow-wrap: anywhere; }
+  thead { display: table-header-group; }
+  tr { break-inside: avoid; }
+  @media print {
+    @page { size: landscape; margin: 10mm; }
+    body { margin: 0; }
+    .toolbar { display: none; }
+    .table-scroll { overflow: visible; }
+  }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <button onclick="window.print()">Skriv ut</button>
+  <button onclick="window.close()">Stäng</button>
+</div>
+${content}
+</body>
+</html>`);
+  printWindow.document.close();
+  printWindow.focus();
+}
+
+function reportHeader(subtitle) {
+  return `
+    <h1>${html(tournamentTitle())}</h1>
+    <h2>${html(subtitle)}</h2>
+    <p class="metadata">
+      ${tournament.players.length} spelare ·
+      ${tournament.rounds.length} ronder ·
+      Personliga budgetar för schemalagda partier ·
+      Särskiljning: ${html(TIE_BREAKS[tournament.tb])} ·
+      Utskrift ${html(new Date().toLocaleString("sv-SE"))}
+    </p>
+    ${tournament.engine.legacySchedule ? `
+      <p class="small-note">
+        Äldre spelschema: lottningarna har bevarats från en tidigare
+        budgetmodell; visade målratingar och budgetar använder den
+        aktuella modellen med personliga grupper och schemalagda partier.
+      </p>
+    ` : ""}
+  `;
+}
+
+function printAllRounds() {
+  if (!tournament) return;
+
+  let content = reportHeader("Alla ronder");
+
+  tournament.rounds.forEach((_, index) => {
+    content +=
+      "<h2>Rond " + (index + 1) + "</h2>" +
+      pairingsTableHTML(index, false) +
+      byeHTML(index);
+  });
+
+  openPrintPage(tournamentTitle() + " — Alla ronder", content);
+}
+
+function printCompleteSchedule() {
+  if (!tournament) return;
+
+  const information = scheduleReport.information;
+
+  const roster = `
+    <h2>Spelarlista och personliga grupper</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>TPN</th>
+          <th>Spelare</th>
+          <th>Rating</th>
+          <th>TPN för motståndare i personlig grupp</th>
+          <th>Målrating</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tournament.players.map(player => `
+          <tr>
+            <td>${player.tpn}</td>
+            <td>${html(player.name)}</td>
+            <td>${formatNumber(player.rating, 0)}</td>
+            <td>${personalGroupLabel(information, player.id)}</td>
+            <td>${formatNumber(information.targets[player.id])}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+
+  const content =
+    reportHeader("Komplett förgenererat spelschema") +
+    roster +
+    groupSummaryHTML() +
+    completeScheduleHTML(false) +
+    "<h2>Individuella budgetar och färger</h2>" +
+    playerBudgetsHTML();
+
+  openPrintPage(
+    tournamentTitle() + " — Komplett spelschema",
+    content
+  );
+}
+
+function printFinalReport() {
+  if (!tournament) return;
+
+  const missing = missingGameCount();
+  const subtitle = missing
+    ? "Ställning — ofullständiga resultat"
+    : "Slutställning";
+
+  let content =
+    reportHeader(subtitle) +
+    (missing ? `
+      <p>${formatNumber(missing, 0)} schemalagda partier saknar resultat.</p>
+    ` : "") +
+    standingsTableHTML(calculateStandings(true));
+
+  tournament.rounds.forEach((_, index) => {
+    content +=
+      "<h2>Rond " + (index + 1) + "</h2>" +
+      pairingsTableHTML(index, false) +
+      byeHTML(index);
+  });
+
+  openPrintPage(tournamentTitle() + " — Ställning och partier", content);
+}
+
+/* ============================================================
+   Browser storage notice and initialization
+   ============================================================ */
+
+window.addEventListener("storage", event => {
+  if (event.key === STORAGE_KEY && tournament) {
+    setStorageStatus(
+      "En annan flik ändrade den sparade turneringen. " +
+      "Denna flik har inte uppdaterats. Ytterligare ändringar här " +
+      "skriver över webbläsarens sparade kopia; " +
+      "ladda först ned en säkerhetskopia."
+    );
+  }
+});
+
+function initialize() {
+  setStorageStatus(
+    "Redo. Skapade turneringar och resultat sparas automatiskt " +
+    "när lagring i webbläsaren är tillgänglig."
+  );
+
+  renderApplication();
+  checkAutosave();
+}
+
+initialize();
+</script>
+</body>
+</html>
