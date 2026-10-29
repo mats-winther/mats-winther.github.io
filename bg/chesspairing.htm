@@ -255,6 +255,23 @@
   together across the original groups. Ties are resolved using WNT, which combines opponents&rsquo; scores with
   individual game results.<br>
   <br>
+  <a href="../RBT-tournamentsystem.htm" title="Rating Budget Tournament System for Chess">Rating Budget
+Tournament System</a> is a new tournament concept in which a complete pairing schedule for all rounds is generated before
+the tournament begins. My idea is based on a rating budget, which is defined as follows:</p>
+<blockquote>
+  <b>rating budget</b> = number of scheduled games × the average rating of the player&rsquo;s group.
+</blockquote>
+<p>Each player has a personal rating group consisting of players with nearby ratings in the ranking list, comprising
+approximately one-third of the field. The primary objective of the algorithm is to match each player&rsquo;s rating budget
+as closely as possible by keeping the average rating of their opponents close to the average rating of the player&rsquo;s
+group.<br>
+<br>
+The system also seeks to ensure that each player plays at least half of their games against opponents from their own
+group, although this cannot be guaranteed in every individual case. The result is a predefined schedule for the entire
+tournament that closely emulates a Swiss tournament. Unlike the Berger system, the method scales well and can be used
+for tournaments with well over one hundred participants. For blitz and rapid chess in particular, this results in
+shorter waiting times between rounds and significantly less administrative work for the tournament organizers.
+  <br><br>
   <span class="bigger">Overview of Pairing Systems</span></p>
   <table class="c1">
     <thead>

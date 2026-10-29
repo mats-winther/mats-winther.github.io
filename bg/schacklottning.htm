@@ -247,15 +247,32 @@
     rättvisa och passar därför särskilt bra för schackklubbar. Under de två första ronderna möter den starkaste gruppen
     mellangruppen, medan den svagaste gruppen spelar inbördes. Därefter lottas hela startfältet som en enda grupp.<br>
     <br>
-    Mitt <a href="../berger-schweizer.htm">Berger-Schweizer Turneringssystem</a> är ett försök att förena förutsägbarheten i bergergrupper
-    med flexibiliteten i schweizerlottning. Spelarna delas först in efter rating, med byten mellan angränsande
-    bergergrupper för att bredda motståndet. Beroende på antalet spelare kan det behövas ett ytterligare fält för
-    återstoden som inte ryms i fullständiga bergergrupper. Detta fält använder schweizerlottning från start. Efter fem
-    eller sju ronder går alla aktiva spelare in i en gemensam schweizergrupp och behåller sin poäng och historik. Det
-    fasta inledande bergerschemat förenklar planeringen och gör det möjligt att skjuta upp partier. Den senare
-    schweizerfasen sammanför spelare med liknande poäng från de ursprungliga grupperna. Vid lika poäng används WNT som
-    särskiljningsmetod, som bygger på en kombination av motståndarnas poäng och spelarens individuella
-    partiresultat.</p>
+    Mitt <a href="../berger-schweizer.htm">Berger-Schweizer Turneringssystem</a> är ett försök att förena
+    förutsägbarheten i bergergrupper med flexibiliteten i schweizerlottning. Spelarna delas först in efter rating, med
+    byten mellan angränsande bergergrupper för att bredda motståndet. Beroende på antalet spelare kan det behövas ett
+    ytterligare fält för återstoden som inte ryms i fullständiga bergergrupper. Detta fält använder schweizerlottning
+    från start. Efter fem eller sju ronder går alla aktiva spelare in i en gemensam schweizergrupp och behåller sin
+    poäng och historik. Det fasta inledande bergerschemat förenklar planeringen och gör det möjligt att skjuta upp
+    partier. Den senare schweizerfasen sammanför spelare med liknande poäng från de ursprungliga grupperna. Vid lika
+    poäng används WNT som särskiljningsmetod, som bygger på en kombination av motståndarnas poäng och spelarens
+    individuella partiresultat.<br>
+    <br>
+    <a href="../RBT-turneringssystem.htm" title="Ratingbudget Turneringssystem för schack">Ratingbudget
+    Turneringssystem</a> är ett nytt turneringskoncept där ett komplett spelschema för alla ronder genereras före
+    turneringsstart. Min idé baseras på en ratingbudget, som definieras enligt följande:</p>
+    <blockquote>
+      <b>ratingbudget</b> = antalet schemalagda partier&nbsp;× den genomsnittliga ratingen i spelarens grupp.
+    </blockquote>
+    <p>Varje spelare har en personlig ratinggrupp bestående av spelare med närliggande ratingtal i rankingordning,
+    omfattande ungefär en tredjedel av startfältet. Det främsta målet för algoritmen är att uppfylla varje spelares
+    ratingbudget så nära som möjligt genom att hålla motståndarnas genomsnittliga rating nära genomsnittsratingen i
+    spelarens grupp.<br>
+    <br>
+    Systemet strävar efter att ge varje spelare minst hälften av partierna mot motståndare från den egna gruppen, även
+    om detta inte kan garanteras i varje enskilt fall. Resultatet är ett fördefinierat spelschema för hela turneringen
+    som i stor utsträckning emulerar en schweizerturnering. Till skillnad från Berger-systemet skalar metoden väl och
+    kan användas även i turneringar med långt över hundra deltagare. För blixt- och snabbschack innebär detta kortare
+    väntetider mellan ronderna och avsevärt mindre administrativt arbete för turneringsledningen.</p>
     <p><span class="bigger">Schematisk översikt</span></p>
     <table class="c1">
       <thead>
