@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description"
       content="Ratingbudget Turneringssystem: skapa ett komplett spelschema för en schackturnering med personliga ratinggrupper och ratingbudgetar.">
-<meta name="author" content="Mats Winther">
-<link rel="canonical" href="https://mats-winther.github.io/RBT-turneringssystem.htm">
 <title>Ratingbudget Turneringssystem</title>
 
 <style>
@@ -1127,9 +1125,7 @@ Optimeringsprioriteringar:
     Inga uppgifter skickas till en server, och separata
     webbläsarflikar synkroniseras inte.
   </p>
-  <p>
-    Ratingbudget Turneringssystem utvecklades av Mats Winther i oktober 2026.
-  </p>
+
   <div class="btn-group">
     <button type="button"
             onclick="document.getElementById('about-dialog').close()">
@@ -4093,33 +4089,65 @@ async function importPlayerFile(event) {
 }
 
 function loadSamplePlayers() {
-  const names = [
-    "Erik Andersson", "Anna Johansson", "Sven Karlsson", "Karin Nilsson",
-    "Johan Eriksson", "Anders Larsson", "Sofia Olsson", "Per Persson",
-    "Emma Svensson", "Ingrid Gustafsson", "Yusuf Al-Mansoor", "Maria Pettersson",
-    "Nils Jonsson", "Oskar Jansson", "Elin Hansson", "Thomas Bengtsson",
-    "Fatima Hassan", "Aisha Rahman", "Gustav Jönsson", "Linnea Lindberg",
-    "Karl Jakobsson", "Leo Magnusson", "Johanna Lindström", "Bengt Lindqvist",
-    "Lilly Lindgren", "Eva Berg", "Kofi Mensah", "Daniel Axelsson",
-    "Lukas Lundberg", "Adam Bergström", "Ella Lundgren", "Samuel Lundqvist",
-    "Hanna Mattsson", "Freya Patel", "Alexander Berglund", "Amara Diallo",
-    "Mia Fredriksson", "Noah Sandberg", "Liam Henriksson", "Astrid Sjöberg",
-    "Alva Forsberg", "Emil Lind", "Arthur Wallin", "Klara Engström",
-    "Felix Eklund", "Nina Holm", "Adrian Söderström", "Priya Shah",
-    "Elena Rossi", "David Okafor"
-  ];
-
-  document.getElementById("input-players").value =
-    names.map(
-      (name, index) => name + "; " + (2400 - index * 15)
-    ).join("\n");
+  document.getElementById("input-players").value = 
+`Erik Andersson; 2400
+Anna Johansson; 2385
+Karin Nilsson; 2355
+Johan Eriksson; 2340
+Anders Larsson; 2325
+Sofia Olsson; 2310
+Per Persson; 2295
+Emma Svensson; 2280
+Ingrid Gustafsson; 2265
+Oskar Jansson; 2205
+Elin Hansson; 2190
+Thomas Bengtsson; 2175
+Fatima Hassan; 2160
+Aisha Rahman; 2145
+Linnea Lindberg; 2115
+Karl Jakobsson; 2100
+Leo Magnusson; 2085
+Johanna Lindström; 2070
+Bengt Lindqvist; 2055
+Lilly Lindgren; 2040
+Eva Berg; 2025
+Kofi Mensah; 2010
+Daniel Axelsson; 1995
+Lukas Lundberg; 1980
+Adam Bergström; 1965
+Ella Lundgren; 1950
+Samuel Lundqvist; 1935
+Hanna Mattsson; 1920
+Freya Patel; 1905
+Alexander Berglund; 1890
+Amara Diallo; 1875
+Mia Fredriksson; 1860
+Sven Karlsson; 1850
+Noah Sandberg; 1845
+Liam Henriksson; 1830
+Astrid Sjöberg; 1815
+Alva Forsberg; 1800
+Gustav Jönsson; 1790
+Emil Lind; 1785
+Arthur Wallin; 1770
+Klara Engström; 1755
+Yusuf Al-Mansoor; 1750
+Maria Pettersson; 1745
+Felix Eklund; 1740
+Nina Holm; 1725
+Adrian Söderström; 1710
+Priya Shah; 1695
+Elena Rossi; 1680
+David Okafor; 1665
+Nils Jonsson; 1660`;
 
   document.getElementById("input-rounds").value = "7";
 
   if (!document.getElementById("input-name").value.trim()) {
-    document.getElementById("input-name").value = "Exempelturnering med RBT";
+    document.getElementById("input-name").value = "Sample RBT Tournament";
   }
 }
+
 
 /* ============================================================
    Printing
