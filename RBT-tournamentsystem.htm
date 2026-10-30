@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description"
       content="Rating-Budget Tournament System: generate an entire chess tournament schedule using personal rating-group budgets.">
-<meta name="author" content="Mats Winther">
-<link rel="canonical" href="https://mats-winther.github.io/RBT-tournamentsystem.htm">
-
 <title>Rating-Budget Tournament System</title>
 
 <style>
@@ -1113,9 +1110,7 @@ Optimization priorities:
     available. Download JSON backups regularly. No data is sent
     to a server, and separate browser tabs do not synchronize.
   </p>
-  <p>
-    The Rating-Budget Tournament System was developed by Mats Winther in October 2026.
-  </p>
+
   <div class="btn-group">
     <button type="button"
             onclick="document.getElementById('about-dialog').close()">
@@ -4046,26 +4041,56 @@ async function importPlayerFile(event) {
 }
 
 function loadSamplePlayers() {
-  const names = [
-    "James Smith", "Emily Taylor", "Oliver Brown", "Charlotte Davies",
-    "Harry Wilson", "Nathan Brooks", "Sophie Evans", "George Thomas",
-    "Olivia Roberts", "Isabella Reed", "Yusuf Al-Mansoor", "Amelia Walker",
-    "Jack Johnson", "Oscar Bennett", "Chloe Green", "Thomas Wright",
-    "Fatima Hassan", "Aisha Rahman", "William Hall", "Grace Lewis",
-    "Charlie Clarke", "Leo Morgan", "Jessica Robinson", "Benjamin Harris",
-    "Lily Turner", "Eva Richardson", "Kofi Mensah", "Daniel Clark",
-    "Lucas Wood", "Adam Hughes", "Ella Cooper", "Samuel King",
-    "Hannah Baker", "Freya Patel", "Alexander Scott", "Amara Diallo",
-    "Mia Phillips", "Noah Williams", "Liam Campbell", "Zoe Mitchell",
-    "Ruby Anderson", "Ethan Adams", "Arthur Collins", "Clara Foster",
-    "Felix Grant", "Nina Sullivan", "Adrian Walsh", "Priya Shah",
-    "Elena Rossi", "David Okafor"
-  ];
-
-  document.getElementById("input-players").value =
-    names.map(
-      (name, index) => name + "; " + (2400 - index * 15)
-    ).join("\n");
+  document.getElementById("input-players").value = `James Smith; 2400
+Oliver Brown; 2370
+Charlotte Davies; 2355
+Harry Wilson; 2340
+Nathan Brooks; 2325
+Sophie Evans; 2310
+Olivia Roberts; 2280
+Isabella Reed; 2265
+Yusuf Al-Mansoor; 2250
+Chloe Green; 2190
+Thomas Wright; 2175
+Fatima Hassan; 2160
+Aisha Rahman; 2145
+William Hall; 2130
+Grace Lewis; 2115
+Charlie Clarke; 2100
+Leo Morgan; 2085
+Jessica Robinson; 2070
+Benjamin Harris; 2055
+Lily Turner; 2040
+Eva Richardson; 2025
+Kofi Mensah; 2010
+Daniel Clark; 1995
+Lucas Wood; 1980
+Adam Hughes; 1965
+Ella Cooper; 1950
+Samuel King; 1935
+Emily Taylor; 1925
+Hannah Baker; 1920
+Freya Patel; 1905
+George Thomas; 1870
+Alexander Scott; 1850
+Amara Diallo; 1835
+Mia Phillips; 1825
+Noah Williams; 1815
+Liam Campbell; 1810
+Zoe Mitchell; 1800
+Ruby Anderson; 1790
+Ethan Adams; 1785
+Arthur Collins; 1770
+Clara Foster; 1755
+Felix Grant; 1740
+Amelia Walker; 1735
+Oscar Bennett; 1730
+Nina Sullivan; 1725
+Adrian Walsh; 1710
+Priya Shah; 1695
+Elena Rossi; 1680
+David Okafor; 1665
+Jack Johnson; 1640`;
 
   document.getElementById("input-rounds").value = "7";
 
