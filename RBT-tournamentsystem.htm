@@ -3042,12 +3042,12 @@ function pairingsTableHTML(roundIndex, editable) {
         <thead>
           <tr>
             <th class="numeric">Board</th>
-            <th>White</th>
-            <th class="numeric">
-              <span style="display: inline-block; transform: translateX(-11mm);">
-                Result
-              </span>
-            </th>
+             <th>White</th>
+		<th class="numeric">
+  		<span style="display: inline-block; transform: translateX(${editable ? "-11mm" : "0mm"});">
+    		  Result
+  		</span>
+	     </th>
             <th>Black</th>
           </tr>
         </thead>

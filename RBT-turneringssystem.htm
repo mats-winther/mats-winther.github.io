@@ -3071,12 +3071,13 @@ function pairingsTableHTML(roundIndex, editable) {
         <thead>
           <tr>
             <th class="numeric">Bord</th>
-            <th>Vit</th>
-            <th class="numeric">
-              <span style="display: inline-block; transform: translateX(-11mm);">
-                Resultat
-              </span>
-            </th>
+             <th>Vit</th>
+		<th class="numeric">
+  		 <span style="display: inline-block; transform: translateX(${editable ? "-11mm" : "0mm"});">
+    		   Resultat
+  		 </span>
+	        </th>
+	     </th>
             <th>Svart</th>
           </tr>
         </thead>
