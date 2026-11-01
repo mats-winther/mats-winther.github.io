@@ -568,9 +568,13 @@ body.tournament-started #storage-status {
 <div class="container">
   <header>
     <button type="button"
-            class="about-button"
-            onclick="document.getElementById('about-dialog').showModal()">
-      Om
+        class="about-button"
+        onclick="
+          const dialog = document.getElementById('about-dialog');
+          dialog.showModal();
+          dialog.scrollTop = 0;
+        ">
+        Om
     </button>
     <h1>Ratingbudget Turneringssystem</h1>
     <p>Ett komplett spelschema, skapat före rond 1</p>

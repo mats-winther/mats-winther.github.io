@@ -568,9 +568,13 @@ body.tournament-started #storage-status {
 <div class="container">
   <header>
     <button type="button"
-            class="about-button"
-            onclick="document.getElementById('about-dialog').showModal()">
-      About
+        class="about-button"
+        onclick="
+          const dialog = document.getElementById('about-dialog');
+          dialog.showModal();
+          dialog.scrollTop = 0;
+        ">
+        About
     </button>
     <h1>Rating-Budget Tournament System</h1>
     <p>A complete rated schedule, generated before Round 1</p>
