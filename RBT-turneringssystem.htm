@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description"
-      content="Ratingbudget Turneringssystem: skapa ett komplett spelschema för en schackturnering med personliga ratinggrupper och ratingbudgetar.">
+      content="Ratingbudget Turneringssystem: skapa ett komplett RBT-spelschema med en valfri resultatbaserad schweizerfas.">
 <title>Ratingbudget Turneringssystem</title>
 
 <style>
@@ -22,9 +22,7 @@
     --red: #b91c1c;
   }
 
-  * {
-    box-sizing: border-box;
-  }
+  * { box-sizing: border-box; }
 
   body {
     margin: 0;
@@ -36,9 +34,7 @@
     line-height: 1.5;
   }
 
-  button, input, textarea, select {
-    font: inherit;
-  }
+  button, input, textarea, select { font: inherit; }
 
   .container {
     max-width: 1180px;
@@ -54,9 +50,7 @@
     padding: 0 90px;
   }
 
-  body.tournament-started header {
-    width: 100%;
-  }
+  body.tournament-started header { width: 100%; }
 
   header h1 {
     margin: 0 0 6px;
@@ -81,29 +75,12 @@
     cursor: pointer;
   }
 
-  button:hover {
-    background: var(--primary-hover);
-  }
-
-  button.secondary {
-    background: #64748b;
-  }
-
-  button.secondary:hover {
-    background: #475569;
-  }
-
-  button.danger {
-    background: #dc2626;
-  }
-
-  button.danger:hover {
-    background: #b91c1c;
-  }
-
-  button.success {
-    background: var(--green);
-  }
+  button:hover { background: var(--primary-hover); }
+  button.secondary { background: #64748b; }
+  button.secondary:hover { background: #475569; }
+  button.danger { background: #dc2626; }
+  button.danger:hover { background: #b91c1c; }
+  button.success { background: var(--green); }
 
   button.light {
     background: #f1f5f9;
@@ -111,9 +88,7 @@
     color: var(--text);
   }
 
-  button.light:hover {
-    background: #e2e8f0;
-  }
+  button.light:hover { background: #e2e8f0; }
 
   button:disabled {
     opacity: 0.45;
@@ -131,9 +106,7 @@
     font-size: 0.85rem;
   }
 
-  button.about-button:hover {
-    background: #f1f5f9;
-  }
+  button.about-button:hover { background: #f1f5f9; }
 
   button:focus-visible,
   input:focus-visible,
@@ -153,18 +126,16 @@
     box-shadow: 0 3px 9px rgb(0 0 0 / 4%);
   }
 
-#storage-status {
-  width: 810px;
-  max-width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 5mm;
-  transform: translateY(-4mm);
-}
+  #storage-status {
+    width: 810px;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 5mm;
+    transform: translateY(-4mm);
+  }
 
-body.tournament-started #storage-status {
-  width: 100%;
-}
+  body.tournament-started #storage-status { width: 100%; }
 
   #section-setup {
     width: 810px;
@@ -173,9 +144,7 @@ body.tournament-started #storage-status {
     margin-right: auto;
   }
 
-  #setup-controls > .btn-group {
-    flex-wrap: nowrap;
-  }
+  #setup-controls > .btn-group { flex-wrap: nowrap; }
 
   #setup-controls > .btn-group > button {
     flex-shrink: 0;
@@ -183,9 +152,7 @@ body.tournament-started #storage-status {
   }
 
   @media (max-width: 971px) {
-    #setup-controls > .btn-group {
-      flex-wrap: wrap;
-    }
+    #setup-controls > .btn-group { flex-wrap: wrap; }
   }
 
   h2 {
@@ -206,17 +173,9 @@ body.tournament-started #storage-status {
     color: var(--primary);
   }
 
-  p {
-    margin-top: 0;
-  }
-
-  label {
-    font-weight: 600;
-  }
-
-  .field {
-    margin-bottom: 16px;
-  }
+  p { margin-top: 0; }
+  label { font-weight: 600; }
+  .field { margin-bottom: 16px; }
 
   .field > label {
     display: block;
@@ -235,9 +194,7 @@ body.tournament-started #storage-status {
     color: var(--text);
   }
 
-  input[type="text"], textarea {
-    width: 100%;
-  }
+  input[type="text"], textarea { width: 100%; }
 
   textarea {
     min-height: 124px;
@@ -259,13 +216,8 @@ body.tournament-started #storage-status {
     margin: 16px 0;
   }
 
-  .settings .field {
-    margin: 0;
-  }
-
-  .settings input[type="number"] {
-    width: 100px;
-  }
+  .settings .field { margin: 0; }
+  .settings input[type="number"] { width: 100px; }
 
   .btn-group,
   .inline-controls {
@@ -275,15 +227,9 @@ body.tournament-started #storage-status {
     flex-wrap: wrap;
   }
 
-  .btn-group {
-    margin-top: 14px;
-  }
+  .btn-group { margin-top: 14px; }
 
-  .hint,
-  .metadata,
-  .small-note {
-    color: var(--muted);
-  }
+  .hint, .metadata, .small-note { color: var(--muted); }
 
   .hint {
     font-size: 0.87rem;
@@ -295,9 +241,7 @@ body.tournament-started #storage-status {
     margin: 9px 0;
   }
 
-  .metadata {
-    font-size: 0.9rem;
-  }
+  .metadata { font-size: 0.9rem; }
 
   .tournament-tagline {
     color: var(--accent);
@@ -306,22 +250,16 @@ body.tournament-started #storage-status {
     overflow-wrap: anywhere;
   }
 
-  .hidden,
-  [hidden] {
-    display: none !important;
-  }
+  .hidden, [hidden] { display: none !important; }
 
-  .notice,
-  .resume-box,
-  .bye-box {
+  .notice, .resume-box, .bye-box {
     border-radius: 7px;
     padding: 11px 14px;
     margin-bottom: 15px;
     font-size: 0.9rem;
   }
 
-  .notice,
-  .resume-box {
+  .notice, .resume-box {
     background: #fffbeb;
     border: 1px solid #f5d578;
     color: #713f12;
@@ -354,7 +292,7 @@ body.tournament-started #storage-status {
   }
 
   .round-navigation select {
-    width: 175px;
+    width: 230px;
     max-width: 100%;
     padding: 5px 7px;
     font-size: 0.82rem;
@@ -406,13 +344,8 @@ body.tournament-started #storage-status {
     flex: 0 0 16px;
   }
 
-  .piece-white {
-    background: white;
-  }
-
-  .piece-black {
-    background: #1e293b;
-  }
+  .piece-white { background: white; }
+  .piece-black { background: #1e293b; }
 
   .badge {
     display: inline-block;
@@ -428,6 +361,12 @@ body.tournament-started #storage-status {
   .group-badge {
     background: #dbeafe;
     color: #1e40af;
+  }
+
+  .rematch-badge {
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    color: #92400e;
   }
 
   .result-selector {
@@ -467,13 +406,8 @@ body.tournament-started #storage-status {
     font-size: 0.77rem;
   }
 
-  .leader-row {
-    background: #eff6ff;
-  }
-
-  details {
-    margin-top: 15px;
-  }
+  .leader-row { background: #eff6ff; }
+  details { margin-top: 15px; }
 
   summary {
     cursor: pointer;
@@ -510,22 +444,10 @@ body.tournament-started #storage-status {
     box-shadow: 0 20px 70px rgb(0 0 0 / 25%);
   }
 
-  dialog::backdrop {
-    background: rgb(15 23 42 / 60%);
-  }
-
-  dialog h2 {
-    color: var(--primary);
-  }
-
-  dialog p,
-  dialog li {
-    font-size: 0.92rem;
-  }
-
-  dialog a {
-    color: var(--accent);
-  }
+  dialog::backdrop { background: rgb(15 23 42 / 60%); }
+  dialog h2 { color: var(--primary); }
+  dialog p, dialog li { font-size: 0.92rem; }
+  dialog a { color: var(--accent); }
 
   .formula {
     white-space: pre-wrap;
@@ -540,26 +462,16 @@ body.tournament-started #storage-status {
   }
 
   @media (max-width: 600px) {
-    body {
-      padding: 12px 8px;
-    }
-
-    .card {
-      padding: 13px;
-    }
+    body { padding: 12px 8px; }
+    .card { padding: 13px; }
 
     header {
       padding: 0 75px 0 0;
       text-align: left;
     }
 
-    button.about-button {
-      top: 4px;
-    }
-
-    th, td {
-      padding: 7px 6px;
-    }
+    button.about-button { top: 4px; }
+    th, td { padding: 7px 6px; }
   }
 </style>
 </head>
@@ -568,16 +480,16 @@ body.tournament-started #storage-status {
 <div class="container">
   <header>
     <button type="button"
-        class="about-button"
-        onclick="
-          const dialog = document.getElementById('about-dialog');
-          dialog.showModal();
-          dialog.scrollTop = 0;
-        ">
-        Om
+            class="about-button"
+            onclick="
+              const dialog = document.getElementById('about-dialog');
+              dialog.showModal();
+              dialog.scrollTop = 0;
+            ">
+      Om
     </button>
     <h1>Ratingbudget Turneringssystem</h1>
-    <p>Ett komplett spelschema, skapat före rond 1</p>
+    <p>Ett fast RBT-spelschema med valfri schweizeravslutning</p>
   </header>
 
   <section id="section-setup" class="card">
@@ -623,12 +535,22 @@ body.tournament-started #storage-status {
 
       <div class="settings">
         <div class="field">
-          <label for="input-rounds">Antal ronder</label>
+          <label for="input-rounds">RBT-ronder</label>
           <input id="input-rounds"
                  type="number"
                  min="1"
                  max="256"
                  value="7"
+                 step="1">
+        </div>
+
+        <div class="field">
+          <label for="input-swiss-rounds">Schweizerronder</label>
+          <input id="input-swiss-rounds"
+                 type="number"
+                 min="0"
+                 max="256"
+                 value="0"
                  step="1">
         </div>
 
@@ -661,17 +583,28 @@ body.tournament-started #storage-status {
       </div>
 
       <p class="hint">
-        Varje spelare har en personlig ratinggrupp bestående av spelare med närliggande
-	ratingtal i rankingordning, omfattande ungefär en tredjedel av startfältet.
- 	Det främsta målet är att uppfylla varje spelares ratingbudget så
- 	nära som möjligt genom att hålla motståndarnas genomsnittliga rating
- 	nära genomsnittsratingen i spelarens grupp.<br><b>Ratingbudget</b>&nbsp;= antal
-	schemalagda partier&nbsp;× genomsnittlig rating för spelarens grupp.
+        Varje spelare har en personlig ratinggrupp bestående av spelare
+        med närliggande ratingtal i rankingordning, omfattande ungefär
+        en tredjedel av startfältet.
+        Det främsta målet är att uppfylla varje spelares ratingbudget så
+        nära som möjligt genom att hålla motståndarnas genomsnittliga
+        rating nära genomsnittsratingen i spelarens grupp.<br>
+        <b>Ratingbudget</b>&nbsp;= antal schemalagda RBT-partier&nbsp;×
+        genomsnittlig rating för spelarens grupp.
+      </p>
+
+      <p class="hint">
+        Schweizerronder = 0 behåller det ursprungliga arbetssättet med
+        enbart RBT. Annars måste samtliga RBT-resultat registreras innan
+        schweizerfasen startas.
+        Schweizerronder skapas en i taget utifrån inlämnade resultat.
+        Poäng, spelade motståndare, spelade färger och tidigare frironder
+        förs vidare. Ratingbudgetanalysen omfattar endast RBT-fasen.
       </p>
 
       <div class="btn-group">
         <button type="button" onclick="startGeneration()">
-          Skapa komplett spelschema
+          Skapa spelschema
         </button>
         <button type="button"
                 class="secondary"
@@ -691,7 +624,7 @@ body.tournament-started #storage-status {
       </div>
     </fieldset>
 
-    <div id="generation-panel" hidden style="margin-top: 20px;">
+    <div id="generation-panel" hidden style="margin-top:20px">
       <progress id="generation-progress" max="100" value="0"
                 aria-label="Förlopp för schemagenerering"></progress>
       <p id="generation-status" class="metadata"></p>
@@ -727,19 +660,27 @@ body.tournament-started #storage-status {
       </button>
     </div>
 
-    <p class="hint">
-      Resultat sparas direkt. Klicka på ett valt resultat igen
-      för att ta bort det. Du kan visa eller spela ronderna i valfri ordning.
-    </p>
+    <p id="round-play-hint" class="hint"></p>
+    <p id="phase-status" class="metadata" hidden></p>
 
     <div id="pairings-container"></div>
     <div id="bye-container"></div>
 
     <div class="btn-group">
-      <button type="button" onclick="moveRound(1)">
+      <button id="round-action-button"
+              type="button"
+              onclick="roundAction()">
         Nästa rond →
       </button>
-      <button type="button"
+      <button id="finish-swiss-button"
+              type="button"
+              class="danger"
+              onclick="finishSwissEarly()"
+              hidden>
+        Avsluta schweizerfasen efter denna rond
+      </button>
+      <button id="withdraw-button"
+              type="button"
               class="danger"
               onclick="openWithdrawal()">
         Avanmäl / återanmäl spelare
@@ -841,7 +782,7 @@ body.tournament-started #storage-status {
     </details>
 
     <details id="full-schedule-details">
-      <summary>Visa hela det förgenererade spelschemat</summary>
+      <summary>Visa hela det förgenererade RBT-spelschemat</summary>
       <div id="full-schedule-container"></div>
     </details>
 
@@ -849,7 +790,7 @@ body.tournament-started #storage-status {
       <button type="button"
               class="secondary"
               onclick="printCompleteSchedule()">
-        Skriv ut hela spelschemat
+        Skriv ut RBT-spelschemat
       </button>
       <button type="button"
               class="light"
@@ -860,9 +801,11 @@ body.tournament-started #storage-status {
 
     <p class="small-note">
       De personliga grupperna bestäms av den ursprungliga ratingordningen.
-      Budgetarna baseras på schemalagda partier, exklusive frironder.
-      Budgetarna och schemaanalysen omfattar samtliga schemalagda
-      motståndare, oavsett vilka resultat som har registrerats.
+      Budgetarna baseras på schemalagda RBT-partier, exklusive
+      schemalagda RBT-frironder.
+      Analysen omfattar samtliga schemalagda RBT-motståndare,
+      oavsett vilka resultat som har registrerats.
+      Schweizerronder ändrar inte dessa budgetar eller analysvärden.
       Sökningen är heuristisk och garanterar inte ett globalt optimum.
     </p>
   </section>
@@ -886,56 +829,56 @@ body.tournament-started #storage-status {
   <h2>Om Ratingbudget Turneringssystem</h2>
 
   <p>
-    Ratingbudgetsystemet skapar hela spelschemat före första ronden.
-    Till skillnad från en schweizerturnering är senare lottningar
-    inte beroende av resultaten.
+    RBT-fasen genererar hela spelschemat före den första ronden.
+    Lottningarna är därmed oberoende av resultaten. En valfri andra
+    fas använder schweizerlottning för att para samman de aktiva
+    spelarna utifrån deras sammanlagda resultat.
+    Ange noll schweizerronder för att använda det ursprungliga
+    systemet med enbart RBT.
   </p>
+
   <p>
     Varje spelare har en personlig grupp med närliggande spelare
     i ratingordningen. Gruppen omfattar ungefär en tredjedel av
     startfältet och utesluter spelaren själv.
     Gruppens medelrating multiplicerad med antalet schemalagda
-    partier ger spelarens ratingbudget: ett målvärde för summan
-    av samtliga motståndares rating.
+    RBT-partier ger spelarens ratingbudget: ett målvärde för summan
+    av samtliga RBT-motståndares rating.
     Till exempel ger en medelrating på 1800 över nio partier
-    en budget på 16 200. Vissa motståndare kan vara starkare
-    och andra svagare&nbsp;— målet är att deras sammanlagda rating
-    ska ligga nära budgeten.
+    en budget på 16&nbsp;200. Vissa motståndare kan vara starkare
+    och andra svagare, men målet är att deras sammanlagda rating ska
+    ligga så nära ratingbudgeten som möjligt.
   </p>
+
   <p>
     Att uppfylla dessa budgetar är systemets främsta mål.
-    Systemet strävar efter att ge varje spelare minst hälften av
-    partierna mot motståndare från den egna gruppen, även om detta
-    inte kan garanteras i varje enskilt fall.
+    Systemet strävar också efter att ge varje spelare minst hälften
+    av RBT-partierna mot motståndare från den egna gruppen,
+    även om detta inte kan garanteras.
   </p>
+
   <p>
-    Ingen möter samma motståndare två gånger.
-    Antalet vita och svarta partier balanseras så jämnt som möjligt,
-    och systemet försöker undvika långa följder med samma färg.
-    Vid udda spelarantal får en spelare frirond i varje rond,
-    och ingen får mer än en schemalagd frirond.
-    En frirond tillför ingen motståndarrating och minskar
-    spelarens budget med värdet av spelarens personliga målrating.
-    Frirondspoäng i ställningen är separata från ratingbudgeten.
-  </p>
-  <p>
-    Spelschemat är fast när det har skapats, så ronderna kan spelas
-    i valfri ordning. Förbättringarna av färgföljder gäller den
-    genererade rondordningen. Systemet försöker skapa en bra övergripande
-    balans, men garanterar inte det bästa möjliga spelschemat.
+    Ingen möter samma schemalagda motståndare två gånger i RBT-fasen.
+    Antalet schemalagda vita och svarta partier balanseras så jämnt
+    som möjligt, och systemet försöker undvika långa följder med
+    samma färg. Vid udda ursprungligt spelarantal får en spelare
+    frirond i varje RBT-rond, och ingen får mer än en schemalagd
+    RBT-frirond. En frirond tillför ingen motståndarrating och
+    minskar spelarens budget med värdet av spelarens personliga
+    målrating.
   </p>
 
   <h3>Personliga ratinggrupper</h3>
+
   <p>
     TPN är spelarens turneringsnummer.
     TPN 1 tilldelas spelaren med högst rating.
     Vid lika rating behålls spelarlistans ordning.
-    Varje spelare har en personlig grupp av närliggande spelare
-    i ratingordningen, där spelaren själv ej har räknats med.
+    Spelarnas permanenta TPN ändras aldrig.
   </p>
 
   <div class="formula">N = antal spelare
-R = antal schemalagda ronder
+R = antal schemalagda RBT-ronder
 x = spelarens TPN, räknat från 1
 
 h = ceil(N / 6)
@@ -956,14 +899,11 @@ ceil betyder avrundning uppåt till närmaste heltal.</div>
     Nära startfältets ändar flyttas de platser som saknas
     till den andra sidan. Varje personlig grupp innehåller
     exakt g möjliga motståndare.
-  </p>
-
-  <p>
     Med 60 spelare är h = 10 och g = 20.
     Gruppen för TPN 1 innehåller TPN 2–21;
     gruppen för TPN 30 innehåller TPN 20–29 och 31–40;
     gruppen för TPN 60 innehåller TPN 40–59.
-    Med 50 spelare är h&nbsp;= 9 och g&nbsp;= 18.
+    Med 50 spelare är h = 9 och g = 18.
   </p>
 
   <h3>Individuella målratingar och budgetar</h3>
@@ -971,36 +911,31 @@ ceil betyder avrundning uppåt till närmaste heltal.</div>
   <div class="formula">PersonligMålrating[x] =
     summan av ratingarna i PersonligGrupp[x] / g
 
-SchemalagdaPartier[x] = R − SchemalagdaFrironder[x]
+SchemalagdaRBTPartier[x] = R − SchemalagdaRBTFrironder[x]
 
 PersonligBudget[x] =
-    SchemalagdaPartier[x] × PersonligMålrating[x]
+    SchemalagdaRBTPartier[x] × PersonligMålrating[x]
 
 Primärt mål:
 Minimera summan över alla spelare av
-    |TilldeladMotståndarratingsumma[x] − PersonligBudget[x]|</div>
+    |TilldeladRBTMotståndarratingsumma[x] − PersonligBudget[x]|</div>
 
   <p>
-    Varje spelare har en egen målrating för motståndet och en egen
-    ratingbudget. Spelarens egen rating ingår inte i den personliga
-    gruppens medelrating. Budgeten beror på schemalagda partier,
-    inte på hur många resultat som har registrerats eller hur
-    många partier som faktiskt har spelats.
-  </p>
-
-  <p>
+    Spelarens egen rating ingår inte i den personliga gruppens
+    medelrating. Budgetarna beror på schemalagda RBT-partier,
+    inte på registrerade resultat eller faktiskt spelade partier.
+    Schweizerronder ingår inte i ratingbudgetanalysen.
     Eftersom de personliga grupperna överlappar varandra bevaras
     inte nödvändigtvis startfältets totala ratingtal.
     Därför är en total budgetavvikelse på noll inte alltid möjlig.
-    Diagnostiken inkluderar en nedre gräns för det sammanlagda
-    budgetfelet. För ett udda startfält gäller denna gräns för den
-    aktuella fördelningen av frironder i schemat.
+    För ett udda startfält gäller den sammanlagda nedre gränsen
+    för den aktuella fördelningen av frironder i schemat.
   </p>
 
   <h3>Motståndare ur den personliga gruppen som sekundär målsättning</h3>
 
   <div class="formula">ÖnskatAntalGruppmotståndare[x] =
-    ceil(SchemalagdaPartier[x] / 2)
+    ceil(SchemalagdaRBTPartier[x] / 2)
 
 Gruppunderskott[x] =
     max(0, ÖnskatAntalGruppmotståndare[x] − Gruppmotståndare[x])
@@ -1011,123 +946,264 @@ Optimeringsprioriteringar:
 3. Totalt TPN-avstånd</div>
 
   <p>
-    Minst hälften av varje spelares schemalagda partier bör helst
-    spelas mot medlemmar i spelarens personliga grupp.
     Inget extra +1 läggs till vid ett jämnt antal partier.
     En frirond räknas inte som ett parti.
-  </p>
-
-  <p>
     Ratingbudget har företräde.
-    Målsättningen om minst hälften av partierna inom gruppen är
-    sekundärt och inte ett garanterat krav.
-    Det kan förbli ouppfyllt på grund av budgetprioriteringar,
+    Gruppunderskott kan kvarstå på grund av budgetprioriteringar,
     strukturella begränsningar eller den begränsade sökningen.
     Utan upprepade motståndare kan en spelare inte möta fler än
     g olika motståndare ur sin personliga grupp.
+    Gruppmedlemskap är riktat och räknas separat för de två
+    spelarna i varje parti.
   </p>
 
-  <p>
-    Gruppmedlemskap är riktat: en motståndare kan ingå i en spelares
-    personliga grupp utan att det omvända gäller.
-    Varje partis gruppbidrag räknas därför separat för de två spelarna.
-  </p>
+  <h3>Så skapas RBT-spelschemat</h3>
 
-  <h3>Så skapas spelschemat</h3>
   <p>
     Flera giltiga spelscheman baserade på alla-möter-alla-tabeller
     skapas. Val av ronder och tillåtna byten inom en rond förbättrar
-    ratingbudgetarna. Byten leder aldrig till upprepade möten mellan
-    spelare eller till att en spelare förekommer flera gånger i samma rond.
-  </p>
-  <p>
-    En balanserad Euler-orientering tilldelar färger.
-    Varje spelare får lika många vita och svarta partier vid ett
-    jämnt antal partier, eller en skillnad på ett vid ett udda antal.
-    Vändning av riktade cykler och byte av rondordning minskar därefter
-    långa färgföljder utan att ändra motståndare eller färgsummor.
-  </p>
-  <p>
-    Detta är en begränsad heuristisk sökning.
-    Kvarvarande budgetavvikelser, gruppunderskott och långa
-    färgföljder redovisas uttryckligen.
-    Att sökningen inte lyckas ta bort ett underskott är inte
-    ett bevis på att detta är matematiskt omöjligt.
-    Eftersom sökningen använder slump kan ett nyskapat spelschema
-    bli bättre, men någon förbättring garanteras inte.
+    ratingbudgetarna utan upprepade möten eller flerfaldig
+    förekomst i en rond.
   </p>
 
-  <h3>Udda spelarantal</h3>
   <p>
-    En spelare får frirond i varje rond, och ingen får mer än
-    en schemalagd frirond. En frirond tillför ingen motståndarrating.
+    En balanserad Euler-orientering tilldelar färger.
+    Varje spelare får lika många schemalagda vita och svarta partier
+    vid ett jämnt antal RBT-partier, eller en skillnad på ett vid
+    ett udda antal. Vändning av riktade cykler och byte av
+    rondordning minskar därefter långa färgföljder utan att ändra
+    motståndare eller färgsummor.
+  </p>
+
+  <p>
+    Detta är en slumpbaserad, begränsad heuristisk sökning,
+    inte en garanti för ett globalt optimum.
+    Kvarvarande budgetavvikelser, gruppunderskott och långa
+    färgföljder redovisas.
+    Innan resultat registreras kan ett nytt spelschema ge ett
+    bättre resultat, men förbättring garanteras inte.
+  </p>
+
+  <h3>RBT-frironder</h3>
+
+  <p>
     En spelare utan frirond har budgeten R&nbsp;× PersonligMålrating.
     En spelare med en frirond har budgeten
     (R&nbsp;− 1)&nbsp;× PersonligMålrating.
-    Detta håller den önskade medelratingen för motståndet oförändrad.
-  </p>
-  <p>
-    I en turnering med nio ronder har till exempel en spelare
-    med personlig målrating 1800 en budget på 16&nbsp;200 för nio
-    partier, eller 14&nbsp;400 för åtta partier och en frirond.
-  </p>
-  <p>
-    Både ratingbudgeten och det önskade antalet gruppmotståndare
-    baseras på schemalagda partier: R partier utan frirond,
-    eller R&nbsp;− 1 partier med frirond.
-    Om ett byte ändrar vem som får frirond räknas båda värdena
-    om för de berörda spelarna.
-  </p>
-  <p>
+    Det önskade antalet gruppmotståndare baseras också på
+    schemalagda partier. Om en frirond flyttas räknas båda
+    värdena om.
     Frirondspoängen kan ställas in och är som standard en poäng.
-    Poängen tilldelas när rondens samtliga partier har registrerade
-    resultat. Frironder räknas varken som vita eller svarta partier.
-    Färgföljder räknas över på varandra följande faktiska partier,
-    utan att mellanliggande frironder bryter följden.
+    Poängen tilldelas när rondens samtliga RBT-partier har
+    registrerade resultat.
+  </p>
+
+  <h3>Valfri schweizerfas</h3>
+
+  <p>
+    Samtliga RBT-partier måste ha registrerade resultat eller
+    uttryckligen tilldelade walkoverresultat innan den första
+    schweizerronden kan lottas. Därefter låses RBT-resultaten.
+    Schweizerronder lottas och registreras i ordningsföljd.
+    Resultaten i en fortfarande oregistrerad schweizerrond kan sparas,
+    men påverkar inte poängställning, särskiljning eller
+    lottningshistorik. En registrerad schweizerrond är låst.
+  </p>
+
+  <p>
+    RBT-ronderna kan spelas i valfri ordning innan schweizerfasen
+    börjar. För färghistoriken i schweizerfasen används den
+    schemalagda kronologiska rondordningen, inte ordningen i vilken
+    partier spelades eller resultat registrerades.
+    Rekommendationer om färgföljder gäller därför den ordningen.
+  </p>
+
+  <p>
+    Lottningsordningen i schweizerfasen är fallande poäng,
+    fallande WNT och stigande TPN, oavsett vilken särskiljning
+    som valts för visningen.
+    Den högst placerade återstående spelaren lottas först.
+    Vid lottningen jämförs möjliga motståndare efter poängskillnad,
+    färgbalans och placeringsordning. Varje val måste möjliggöra en
+    komplett lottning.
+  </p>
+
+  <p>
+    Sökningen prövar först alla möjliga lottningar utan upprepade möten.
+    Först när inga sådana lottningar återstår tillåts upprepade möten.
+    Därefter söks lottningar som undviker ett tredje faktiskt spelat
+    parti i följd med samma färg.
+    Vid varje gräns för färgföljder prövas behöriga frirondsmottagare i
+    omvänd ordning efter placering i schweizerställningen. Den första
+    mottagare som möjliggör en komplett lottning väljs innan poängskillnader
+    och total färgbalans optimeras.</p>
+
+  <p>
+    För den valda mottagaren prioriterar sökningen lottningar där skillnaden
+    mellan antalet vita och svarta partier är högst två. Maximala
+    poängskillnader på noll, en halv poäng, en poäng
+    och obegränsad skillnad prövas i den ordningen.
+    Vid behov släpps kravet på total färgbalans och samma
+    poängskillnader prövas igen.
+    Gränsen för färgföljder höjs först när ingen behörig
+    frirondsmottagare möjliggör en komplett lottning vid
+    den aktuella gränsen.
+  </p>
+
+  <p>
+    Upprepade möten tillåts bara om ingen komplett lottning utan
+    upprepningar finns för någon behörig frirondsmottagare,
+    även sedan färg- och poängskillnadskraven släppts.
+    I detta reservläge föredras först tidigare ospelade
+    motståndare, därefter färre tidigare möten, poängskillnad,
+    färgmässiga prioriteringar och placeringsordning.
+    Denna prioritering uppifrån och ned garanterar inte minsta
+    möjliga totala antal upprepade möten.
+    Upprepade möten markeras.
+  </p>
+
+  <h3>Färger och frironder i schweizerfasen</h3>
+
+  <p>
+    Båda färgtilldelningarna jämförs.
+    Prioritet ges åt att begränsa följder med samma färg,
+    minska överträdelser av färgföljdsmål, upprätthålla
+    total färgbalans och växla färg.
+    Om alternativen är likvärdiga får spelaren med färre
+    tidigare vita partier vit, eller spelaren med högre TPN
+    om antalet är lika.
+    Spelade RBT-färger förs vidare.
+    Frironder och walkoverpartier tillför ingen spelad färg
+    och bryter inte en följd av faktiskt spelade färger.
+  </p>
+
+  <p>
+    Tilldelade RBT-frironder räknas in vid bedömningen av vem som
+    kan tilldelas frirond i schweizerfasen, även om frirondspoängen
+    är inställd på noll.
+    Behöriga aktiva spelare är de som har minst antal tidigare
+    frironder. En upprepad frirond är möjlig bara när samtliga
+    aktiva spelare redan fått minst en.
+    Frironder i schweizerfasen använder den inställda
+    frirondspoängen och ger inget direkt WNT-bidrag.
+    En walkovervinst räknas inte som en frirond.
+  </p>
+
+  <p>
+    Spelade RBT-möten förs vidare.
+    En walkoverlottning räknas inte som ett faktiskt spelat
+    möte och kan därför lottas igen.
+    Avanmälda spelare behåller tidigare poäng och resultat.
+    Om färre än två aktiva spelare återstår avslutas
+    schweizerfasen.
+    Planerade RBT-ronder plus schweizerronder begränsas till
+    N&nbsp;− 1 vid jämnt ursprungligt spelarantal eller N
+    vid udda spelarantal.
+    Detta är en programpolicy, inte en garanti för en
+    fortsättning utan upprepade möten.
   </p>
 
   <h3>Ställning och särskiljning</h3>
-  <p>
-    WNT använder följande formel, där R är det schemalagda antalet
-    ronder, Pᵢ är en motståndares registrerade turneringspoäng
-    och rᵢ är spelarens tilldelade resultat mot den motståndaren:
-  </p>
-
-  <div class="formula">WNT = 100 × Σᵢ [(Pᵢ / R) × (rᵢ + Pᵢ / (2R))]</div>
 
   <p>
-    Progressiv särskiljning summerar de ackumulerade poängen efter
-    ronder med registrerade resultat, i schemalagd rondordning.
-    Värdet är därför preliminärt när ronderna spelas i annan ordning.
+    Med noll schweizerronder behålls de ursprungliga
+    RBT-reglerna för poäng och särskiljning.
+    Registrerade enskilda resultat påverkar ställningen direkt,
+    WNT inkluderar walkoverresultat och nämnaren är det
+    schemalagda antalet RBT-ronder.
   </p>
+
+  <div class="formula">WNT för enbart RBT =
+100 × Σ [(Pᵢ / R) × (rᵢ + Pᵢ / (2R))]
+
+R = schemalagt antal RBT-ronder
+Pᵢ = motståndarens registrerade turneringspoäng
+rᵢ = tilldelat resultat, inklusive walkoverresultat</div>
+
   <p>
-    Buchholz Cut-1 summerar registrerade motståndares poäng och
-    tar bort det lägsta värdet. Varje tilldelad frirond bidrar
-    med en motståndare med noll poäng.
-    Detta är en enkel, programspecifik behandling och innebär inte
-    att FIDE:s justeringar för ospelade partier tillämpas.
+    I en kombinerad RBT–schweizerturnering omfattar ställningen
+    endast färdiga RBT-ronder och registrerade schweizerronder.
+    Under RBT-fasen kan färdiga ronder fortfarande redigeras
+    tills schweizerfasen börjar.
+    WNT i den kombinerade turneringen utesluter direkta
+    bidrag från walkoverpartier och frironder.
+    Motståndarnas turneringspoäng inkluderar fortfarande
+    samtliga tilldelade poäng.
   </p>
+
+  <div class="formula">WNT för kombinerad RBT–schweizerturnering =
+100 × Σ [(Pᵢ / K) × (rᵢ + Pᵢ / (2K))]
+
+K = medräknade färdiga RBT-ronder + inlämnade schweizerronder
+Pᵢ = motståndarens aktuella medräknade turneringspoäng
+rᵢ = resultat i ett faktiskt spelat parti: 1, ½ eller 0
+
+Summan omfattar endast faktiskt spelade partier.
+Upprepade spelade möten bidrar separat.</div>
+
   <p>
-    Registrerade walkoverresultat bidrar med sina tilldelade poäng
-    till dessa särskiljningsvärden.
-    Spelare som fortfarande är lika efter vald särskiljning delar
-    placering. TPN avgör endast visningsordningen.
+    Progressiv särskiljning summerar de ackumulerade poängen
+    i schemalagd rondordning.
+    Med enbart RBT omfattar den ronder med registrerade resultat.
+    I kombinerat läge omfattar den färdiga RBT-ronder och
+    inlämnade schweizerronder.
+    Buchholz Cut-1 summerar medräknade motståndares poäng
+    och tar bort det lägsta värdet.
+    Varje tilldelad frirond räknas som en motståndare med
+    noll poäng.
+    Walkoverlottningar räknas fortfarande med i programmets
+    Buchholz. Dessa behandlingar är programspecifika och
+    innebär inte att FIDE:s justeringar för ospelade partier
+    tillämpas.
+  </p>
+
+  <p>
+    V/R/F inkluderar walkoverresultat, medan ”Spelade” räknar
+    faktiskt spelade partier.
+    Spelare som fortfarande är lika efter vald särskiljning
+    delar placering. TPN avgör bara visningsordningen.
+    Schweizerlottningen använder alltid WNT.
+    Visning av slutlig eller aktuell ställning registrerar inte in en
+    schweizerrond, låser inte upp resultat och avslutar inte
+    en pågående schweizerfas.
   </p>
 
   <h3>Avanmälningar och sparande</h3>
+
   <p>
-    En avanmälan skapar inte ett nytt spelschema och ändrar inte
-    personliga grupper, schemalagda partiers budgetar eller målratingar.
-    Partier utan resultat från och med den angivna ronden får
-    automatiska walkoverresultat. Befintliga manuella resultat
-    lämnas oförändrade. En återanmälan tar bort automatiska
-    walkoverresultat som inte längre ska gälla.
+    Före schweizerfasens start behåller avanmälan och återanmälan
+    det fasta RBT-spelschemat.
+    Berörda RBT-partier utan resultat får automatiska
+    walkoverresultat. Manuella resultat lämnas oförändrade.
+    En återanmälan tar bort automatiska walkoverresultat
+    som inte längre ska gälla.
+    I en kombinerad turnering kan en avanmälan också anges att gälla
+    från den första schweizerronden.
   </p>
+
   <p>
-    Turneringen sparas automatiskt i webbläsaren när lagring är
-    tillgänglig. Ladda regelbundet ned JSON-säkerhetskopior.
+    Efter schweizerfasens start registreras avanmälningar i den senaste
+    rond vars resultat ännu inte har registrerats. Avanmälningen träder
+    i kraft från och med nästa rond som ännu inte har lottats. Aktuella
+    lottningar och resultat ändras inte, och inga
+    walkoverresultat tilldelas automatiskt i schweizerfasen.
+    Avanmälningar i schweizerfasen kan inte återkallas i detta
+    gränssnitt. Ange ett uttryckligt walkoverresultat om ett
+    aktuellt schemalagt parti inte spelades.
+  </p>
+
+  <p>
+    Ladda regelbundet ned JSON-säkerhetskopior.
+    Turneringen sparas automatiskt i webbläsaren när lagring
+    är tillgänglig.
     Inga uppgifter skickas till en server, och separata
     webbläsarflikar synkroniseras inte.
+  </p>
+
+  <p class="small-note">
+    Programmet använder en egen schweizermotor från Berger-Swiss,
+    inte FIDE Dutch, och gör inte anspråk på FIDE-godkännande.
+    Exempelspelarna är endast illustrativa.
   </p>
 
   <div class="btn-group">
@@ -1140,11 +1216,11 @@ Optimeringsprioriteringar:
 
 <dialog id="withdraw-dialog">
   <form id="withdraw-form" onsubmit="applyWithdrawal(event)">
-    <h2>Avanmäl eller återanmäl en spelare</h2>
+    <h2 id="withdraw-heading">Avanmäl eller återanmäl en spelare</h2>
 
     <div class="field">
       <label for="withdraw-player">Spelare</label>
-      <select id="withdraw-player" style="width: 100%;"></select>
+      <select id="withdraw-player" style="width:100%"></select>
     </div>
 
     <div class="field">
@@ -1165,12 +1241,7 @@ Optimeringsprioriteringar:
              required>
     </div>
 
-    <p class="hint">
-      Lottningarna ändras inte. Manuella resultat bevaras.
-      Partier utan resultat från och med den angivna ronden får
-      walkoverresultat. Om båda spelarna är avanmälda tilldelas
-      dubbel walkoverförlust.
-    </p>
+    <p id="withdraw-hint" class="hint"></p>
 
     <div class="btn-group">
       <button type="submit">Verkställ</button>
@@ -1187,18 +1258,18 @@ Optimeringsprioriteringar:
 "use strict";
 
 /* ============================================================
-   Constants and live state
+   Constants and persistent state
    ============================================================ */
 
 const MAX_PLAYERS = 256;
-
-// Retain the storage slot so older autosaves can be found.
 const STORAGE_KEY = "rating-budget-tournament.v1";
 const SIGNATURE = "RBT_CHESS_SAVE";
-const VERSION = 3;
+const VERSION = 4;
 const BUDGET_MODEL = "personal-groups-games-v2";
 const PREVIOUS_BUDGET_MODEL = "personal-groups-v1";
 const EPS = 1e-7;
+
+const $ = id => document.getElementById(id);
 
 const TIE_BREAKS = {
   wnt: "WNT",
@@ -1208,45 +1279,25 @@ const TIE_BREAKS = {
 
 const RESULT_DEFINITIONS = {
   "1-0": {
-    label: "1 - 0",
-    white: 1,
-    black: 0,
-    played: true
+    label: "1 - 0", white: 1, black: 0, played: true
   },
   "0.5-0.5": {
-    label: "½ - ½",
-    white: 0.5,
-    black: 0.5,
-    played: true
+    label: "½ - ½", white: 0.5, black: 0.5, played: true
   },
   "0-1": {
-    label: "0 - 1",
-    white: 0,
-    black: 1,
-    played: true
+    label: "0 - 1", white: 0, black: 1, played: true
   },
   F1: {
-    label: "+ / -",
-    white: 1,
-    black: 0,
-    played: false
+    label: "+ / -", white: 1, black: 0, played: false
   },
   F0: {
-    label: "- / +",
-    white: 0,
-    black: 1,
-    played: false
+    label: "- / +", white: 0, black: 1, played: false
   },
   F00: {
-    label: "-- / --",
-    white: 0,
-    black: 0,
-    played: false
+    label: "-- / --", white: 0, black: 0, played: false
   }
 };
 
-// All previous effort settings are retained.
-// The hidden setup selector defaults to Thorough.
 const SEARCH_LEVELS = {
   quick: {
     restarts: 2,
@@ -1274,9 +1325,19 @@ const SEARCH_LEVELS = {
 let tournament = null;
 let scheduleReport = null;
 let activeJob = null;
+let swissChecksPassed = false;
 
 /* ============================================================
-   General helpers
+   General and phase helpers
+
+   IDs remain zero-based, as in the original RBT program.
+   Displayed TPNs are one-based.
+
+   rounds always contains the whole fixed RBT schedule, followed
+   only by Swiss rounds already published.
+
+   finished is the original final-view flag.
+   swissEnded is a separate permanent Swiss-completion flag.
    ============================================================ */
 
 function html(value) {
@@ -1287,6 +1348,14 @@ function html(value) {
     '"': "&quot;",
     "'": "&#39;"
   }[ch]));
+}
+
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function requireCondition(condition, message) {
+  if (!condition) throw new Error(message);
 }
 
 function formatNumber(value, digits = 2) {
@@ -1335,16 +1404,16 @@ function maximumRounds(count) {
   return count % 2 === 0 ? count - 1 : count;
 }
 
-function requiredPersonalGroupOpponents(scheduledGames) {
-  return Math.ceil(scheduledGames / 2);
+function requiredPersonalGroupOpponents(games) {
+  return Math.ceil(games / 2);
 }
 
-function personalBudget(target, scheduledGames) {
-  return target * scheduledGames;
+function personalBudget(target, games) {
+  return target * games;
 }
 
 function setStorageStatus(message) {
-  document.getElementById("storage-status").textContent = message;
+  $("storage-status").textContent = message;
 }
 
 function tournamentTitle() {
@@ -1355,20 +1424,60 @@ function isRoundComplete(round) {
   return round.games.every(game => game.result !== null);
 }
 
+function isHybrid(data = tournament) {
+  return !!data && data.swissRounds > 0;
+}
+
+function isSwissRound(data, index) {
+  return index >= data.rbtRounds;
+}
+
+function swissStarted(data = tournament) {
+  return isHybrid(data) && data.rounds.length > data.rbtRounds;
+}
+
+function rbtLocked(data = tournament) {
+  return isHybrid(data) && (swissStarted(data) || data.swissEnded);
+}
+
+function plannedRounds(data = tournament) {
+  return data.rbtRounds + data.swissRounds;
+}
+
+function publishedSwissRounds(data = tournament) {
+  return data.rounds.length - data.rbtRounds;
+}
+
+function activePlayerIds(data, roundIndex) {
+  return data.players.filter(player =>
+    player.withdrawnFrom === null ||
+    roundIndex < player.withdrawnFrom
+  ).map(player => player.id);
+}
+
+function canEditRound(data, index) {
+  if (!data || data.finished) return false;
+
+  if (!isSwissRound(data, index)) {
+    return !rbtLocked(data);
+  }
+
+  return !data.swissEnded &&
+    index === data.rounds.length - 1 &&
+    !data.rounds[index].closed;
+}
+
 function recordedGameCount() {
   if (!tournament) return 0;
-  return tournament.rounds.reduce(
-    (sum, round) =>
-      sum + round.games.filter(game => game.result !== null).length,
-    0
+  return tournament.rounds.reduce((sum, round) =>
+    sum + round.games.filter(game => game.result !== null).length, 0
   );
 }
 
 function scheduledGameCount() {
   if (!tournament) return 0;
   return tournament.rounds.reduce(
-    (sum, round) => sum + round.games.length,
-    0
+    (sum, round) => sum + round.games.length, 0
   );
 }
 
@@ -1391,8 +1500,8 @@ function colourCompare(a, b) {
 async function yieldToBrowser(job, percent, message) {
   if (job.cancelled) throw new Error("Schemagenereringen avbröts.");
 
-  document.getElementById("generation-progress").value = percent;
-  document.getElementById("generation-status").textContent = message;
+  $("generation-progress").value = percent;
+  $("generation-status").textContent = message;
 
   await new Promise(resolve => setTimeout(resolve, 0));
 
@@ -1401,10 +1510,6 @@ async function yieldToBrowser(job, percent, message) {
 
 /* ============================================================
    Parsing and personal rating groups
-
-   Personal targets are fixed by the roster.
-   Budgets are not fixed here: they depend on the schedule's
-   current game counts and change when a rest moves.
    ============================================================ */
 
 function parseRoster(text) {
@@ -1444,7 +1549,7 @@ function parseRoster(text) {
       );
     }
 
-    return { name, rating, inputOrder: index };
+    return {name, rating, inputOrder: index};
   });
 
   const names = roster.map(player =>
@@ -1493,66 +1598,46 @@ function personalGroupInformation(players) {
 
   for (let id = 0; id < count; id++) {
     const first = Math.max(
-      0,
-      Math.min(id - half, count - groupSize - 1)
+      0, Math.min(id - half, count - groupSize - 1)
     );
-
     const last = first + groupSize;
-    const groupRatingSum =
-      prefix[last + 1] - prefix[first] - players[id].rating;
 
     lower[id] = first;
     upper[id] = last;
-    targets[id] = groupRatingSum / groupSize;
+    targets[id] =
+      (prefix[last + 1] - prefix[first] - players[id].rating) /
+      groupSize;
   }
 
-  return {
-    count,
-    half,
-    groupSize,
-    lower,
-    upper,
-    targets
-  };
+  return {count, half, groupSize, lower, upper, targets};
 }
 
-function isPersonalGroupOpponent(information, id, opponent) {
+function isPersonalGroupOpponent(info, id, opponent) {
   return opponent >= 0 &&
-    opponent < information.count &&
+    opponent < info.count &&
     opponent !== id &&
-    opponent >= information.lower[id] &&
-    opponent <= information.upper[id];
+    opponent >= info.lower[id] &&
+    opponent <= info.upper[id];
 }
 
-function personalGroupLabel(information, id) {
+function personalGroupLabel(info, id) {
   const parts = [];
-  const firstTPN = information.lower[id] + 1;
-  const lastTPN = information.upper[id] + 1;
-  const ownTPN = id + 1;
+  const first = info.lower[id] + 1;
+  const last = info.upper[id] + 1;
+  const own = id + 1;
 
-  function range(first, last) {
-    return first === last ? String(first) : first + "–" + last;
+  function range(a, b) {
+    return a === b ? String(a) : a + "–" + b;
   }
 
-  if (firstTPN < ownTPN) {
-    parts.push(range(firstTPN, ownTPN - 1));
-  }
-
-  if (ownTPN < lastTPN) {
-    parts.push(range(ownTPN + 1, lastTPN));
-  }
+  if (first < own) parts.push(range(first, own - 1));
+  if (own < last) parts.push(range(own + 1, last));
 
   return parts.join(", ");
 }
 
 /* ============================================================
-   Valid initial schedules
-
-   A complete Berger-style table supplies disjoint round
-   matchings. Any subset has no repeated opponents.
-
-   For odd fields, vertex N is a dummy rest player.
-   No repeated dummy edge means at most one rest per player.
+   Original fixed RBT schedule generation
    ============================================================ */
 
 function makeCompleteRoundRobin(count, ordering) {
@@ -1603,12 +1688,11 @@ function seedOrdering(players, restart) {
 }
 
 async function selectInitialRounds(
-  players, roundCount, information, restart, job, progress
+  players, roundCount, info, restart, job, progress
 ) {
   const count = players.length;
   const base = makeCompleteRoundRobin(
-    count,
-    seedOrdering(players, restart)
+    count, seedOrdering(players, restart)
   );
 
   if (roundCount === base.length) return base;
@@ -1627,8 +1711,7 @@ async function selectInitialRounds(
 
   const distances = base.map(round => round.reduce(
     (sum, [a, b]) =>
-      sum + (a < count && b < count ? Math.abs(a - b) : 0),
-    0
+      sum + (a < count && b < count ? Math.abs(a - b) : 0), 0
   ));
 
   const available = base.map((_, index) => index);
@@ -1650,39 +1733,31 @@ async function selectInitialRounds(
         const real = opponent < count ? 1 : 0;
         const rating = real ? players[opponent].rating : 0;
         const member = isPersonalGroupOpponent(
-          information, id, opponent
+          info, id, opponent
         ) ? 1 : 0;
 
-        const nextGameCount = games[id] + real;
-        const budget = personalBudget(
-          information.targets[id], nextGameCount
-        );
-
-        error += Math.abs(sums[id] + rating - budget);
-
-        const requested = requiredPersonalGroupOpponents(
-          nextGameCount
+        const nextGames = games[id] + real;
+        error += Math.abs(
+          sums[id] + rating -
+          personalBudget(info.targets[id], nextGames)
         );
 
         deficit += Math.max(
           0,
-          requested - personal[id] - member
+          requiredPersonalGroupOpponents(nextGames) -
+            personal[id] - member
         );
       }
 
       candidates.push({
-        index,
-        error,
-        deficit,
-        distance: distances[index]
+        index, error, deficit, distance: distances[index]
       });
     }
 
     candidates.sort(lexCompare);
 
     const chooseFrom = restart === 0
-      ? 1
-      : Math.min(3, candidates.length);
+      ? 1 : Math.min(3, candidates.length);
 
     const chosen = candidates[randomInt(chooseFrom)].index;
     selected.push(base[chosen].map(pair => pair.slice()));
@@ -1695,10 +1770,7 @@ async function selectInitialRounds(
       if (opponent < count) {
         sums[id] += players[opponent].rating;
         games[id]++;
-
-        if (isPersonalGroupOpponent(information, id, opponent)) {
-          personal[id]++;
-        }
+        if (isPersonalGroupOpponent(info, id, opponent)) personal[id]++;
       }
     }
 
@@ -1706,8 +1778,7 @@ async function selectInitialRounds(
 
     if (step % 8 === 0) {
       await yieldToBrowser(
-        job,
-        progress,
+        job, progress,
         "Väljer startronder för försök " + (restart + 1) + "…"
       );
     }
@@ -1716,26 +1787,7 @@ async function selectInitialRounds(
   return selected;
 }
 
-/* ============================================================
-   Personal rating-budget optimization
-
-   Legal two-edge exchanges within one round preserve:
-   - one appearance per player in the round;
-   - exactly R rounds;
-   - no repeated real opponents;
-   - at most one rest per player.
-
-   Comparisons are lexicographic:
-   1. total absolute personal-budget error;
-   2. total personal-group encounter shortfall;
-   3. total TPN distance.
-
-   Budget = current scheduled games × personal target.
-   Moving a rest changes both the budget and requested group
-   count for each affected real player.
-   ============================================================ */
-
-function evaluateRawSchedule(players, rounds, information) {
+function evaluateRawSchedule(players, rounds, info) {
   const count = players.length;
   const sums = new Float64Array(count);
   const personal = new Int16Array(count);
@@ -1752,8 +1804,8 @@ function evaluateRawSchedule(players, rounds, information) {
       games[b]++;
       distance += Math.abs(a - b);
 
-      if (isPersonalGroupOpponent(information, a, b)) personal[a]++;
-      if (isPersonalGroupOpponent(information, b, a)) personal[b]++;
+      if (isPersonalGroupOpponent(info, a, b)) personal[a]++;
+      if (isPersonalGroupOpponent(info, b, a)) personal[b]++;
     }
   }
 
@@ -1761,24 +1813,19 @@ function evaluateRawSchedule(players, rounds, information) {
   let deficit = 0;
 
   for (let id = 0; id < count; id++) {
-    const budget = personalBudget(
-      information.targets[id], games[id]
+    error += Math.abs(
+      sums[id] - personalBudget(info.targets[id], games[id])
     );
-
-    error += Math.abs(sums[id] - budget);
-
     deficit += Math.max(
-      0,
-      requiredPersonalGroupOpponents(games[id]) - personal[id]
+      0, requiredPersonalGroupOpponents(games[id]) - personal[id]
     );
   }
 
-  return { sums, personal, games, error, deficit, distance };
+  return {sums, personal, games, error, deficit, distance};
 }
 
 async function improveRawSchedule(
-  players, rounds, information, moveCount, job,
-  restart, restartCount
+  players, rounds, info, moveCount, job, restart, restartCount
 ) {
   const count = players.length;
   const padded = count % 2 === 0 ? count : count + 1;
@@ -1793,7 +1840,7 @@ async function improveRawSchedule(
     for (const [a, b] of round) mark(a, b, 1);
   }
 
-  let metrics = evaluateRawSchedule(players, rounds, information);
+  let metrics = evaluateRawSchedule(players, rounds, info);
   const ids = new Int32Array(4);
   const oldOpponents = new Int32Array(4);
   const newOpponents = new Int32Array(4);
@@ -1803,7 +1850,6 @@ async function improveRawSchedule(
 
   for (let move = 0; move < moveCount; move++) {
     const round = rounds[randomInt(rounds.length)];
-
     if (round.length < 2) break;
 
     const first = randomInt(round.length);
@@ -1813,25 +1859,17 @@ async function improveRawSchedule(
     const [a, b] = round[first];
     const [c, d] = round[second];
     const variant = randomInt(2);
-
     const x = variant === 0 ? c : d;
     const y = variant === 0 ? d : c;
 
     if (!used[a * padded + x] && !used[b * padded + y]) {
-      ids[0] = a;
-      ids[1] = b;
-      ids[2] = c;
-      ids[3] = d;
-
-      oldOpponents[0] = b;
-      oldOpponents[1] = a;
-      oldOpponents[2] = d;
-      oldOpponents[3] = c;
-
-      newOpponents[0] = x;
-      newOpponents[1] = y;
-      newOpponents[2] = variant === 0 ? a : b;
-      newOpponents[3] = variant === 0 ? b : a;
+      ids.set([a, b, c, d]);
+      oldOpponents.set([b, a, d, c]);
+      newOpponents.set([
+        x, y,
+        variant === 0 ? a : b,
+        variant === 0 ? b : a
+      ]);
 
       let errorChange = 0;
       let deficitChange = 0;
@@ -1845,39 +1883,32 @@ async function improveRawSchedule(
         const oldReal = oldOpponent < count ? 1 : 0;
         const newReal = newOpponent < count ? 1 : 0;
 
-        const oldRating = oldReal
-          ? players[oldOpponent].rating : 0;
-
-        const newRating = newReal
-          ? players[newOpponent].rating : 0;
-
+        const oldRating = oldReal ? players[oldOpponent].rating : 0;
+        const newRating = newReal ? players[newOpponent].rating : 0;
         const oldMember = isPersonalGroupOpponent(
-          information, id, oldOpponent
+          info, id, oldOpponent
         ) ? 1 : 0;
-
         const newMember = isPersonalGroupOpponent(
-          information, id, newOpponent
+          info, id, newOpponent
         ) ? 1 : 0;
 
         nextSums[k] = metrics.sums[id] + newRating - oldRating;
         nextPersonal[k] =
           metrics.personal[id] + newMember - oldMember;
-
         nextGames[k] = metrics.games[id] + newReal - oldReal;
 
-        const target = information.targets[id];
-        const oldBudget = personalBudget(target, metrics.games[id]);
-        const newBudget = personalBudget(target, nextGames[k]);
+        const target = info.targets[id];
 
         errorChange +=
-          Math.abs(nextSums[k] - newBudget) -
-          Math.abs(metrics.sums[id] - oldBudget);
+          Math.abs(nextSums[k] - personalBudget(target, nextGames[k])) -
+          Math.abs(
+            metrics.sums[id] - personalBudget(target, metrics.games[id])
+          );
 
         deficitChange +=
           Math.max(
             0,
-            requiredPersonalGroupOpponents(nextGames[k]) -
-              nextPersonal[k]
+            requiredPersonalGroupOpponents(nextGames[k]) - nextPersonal[k]
           ) -
           Math.max(
             0,
@@ -1914,7 +1945,6 @@ async function improveRawSchedule(
 
         for (let k = 0; k < 4; k++) {
           const id = ids[k];
-
           if (id < count) {
             metrics.sums[id] = nextSums[k];
             metrics.personal[id] = nextPersonal[k];
@@ -1929,7 +1959,7 @@ async function improveRawSchedule(
     }
 
     if (move % 4096 === 0) {
-      metrics = evaluateRawSchedule(players, rounds, information);
+      metrics = evaluateRawSchedule(players, rounds, info);
     }
 
     if (move % 1024 === 0) {
@@ -1937,8 +1967,7 @@ async function improveRawSchedule(
         70 * (restart + move / Math.max(1, moveCount)) / restartCount;
 
       await yieldToBrowser(
-        job,
-        progress,
+        job, progress,
         "Optimerar spelschema " + (restart + 1) + "/" +
         restartCount + " — total personlig budgetavvikelse " +
         formatNumber(metrics.error) + "…"
@@ -1946,47 +1975,39 @@ async function improveRawSchedule(
     }
   }
 
-  return evaluateRawSchedule(players, rounds, information);
+  return evaluateRawSchedule(players, rounds, info);
 }
 
 async function optimizePairings(players, roundCount, effort, job) {
   const settings = SEARCH_LEVELS[effort];
-  const information = personalGroupInformation(players);
+  const info = personalGroupInformation(players);
   const fullRoundRobin = roundCount === maximumRounds(players.length);
   const restartCount = fullRoundRobin ? 1 : settings.restarts;
 
-  const moveCount = fullRoundRobin
-    ? 0
-    : Math.min(
-        settings.moves,
-        Math.max(18000, players.length * roundCount * 120)
-      );
+  const moveCount = fullRoundRobin ? 0 : Math.min(
+    settings.moves,
+    Math.max(18000, players.length * roundCount * 120)
+  );
 
   let bestRounds = null;
   let bestMetrics = null;
 
   for (let restart = 0; restart < restartCount; restart++) {
     await yieldToBrowser(
-      job,
-      70 * restart / restartCount,
+      job, 70 * restart / restartCount,
       "Förbereder schemaförsök " + (restart + 1) + "…"
     );
 
     const rounds = await selectInitialRounds(
-      players,
-      roundCount,
-      information,
-      restart,
-      job,
+      players, roundCount, info, restart, job,
       70 * restart / restartCount
     );
 
     const metrics = moveCount
       ? await improveRawSchedule(
-          players, rounds, information, moveCount,
-          job, restart, restartCount
+          players, rounds, info, moveCount, job, restart, restartCount
         )
-      : evaluateRawSchedule(players, rounds, information);
+      : evaluateRawSchedule(players, rounds, info);
 
     if (!bestMetrics || lexCompare(metrics, bestMetrics) < 0) {
       bestMetrics = metrics;
@@ -1998,13 +2019,7 @@ async function optimizePairings(players, roundCount, effort, job) {
 }
 
 /* ============================================================
-   Balanced colour allocation
-
-   Add a synthetic vertex joined to every odd-degree player.
-   Orient Euler circuits. Removing synthetic edges gives
-   balanced White/Black totals.
-
-   Directed-cycle reversals preserve those totals.
+   Original balanced RBT colour allocation
    ============================================================ */
 
 function buildColourGraph(rawRounds, count) {
@@ -2014,8 +2029,7 @@ function buildColourGraph(rawRounds, count) {
   rawRounds.forEach((round, roundIndex) => {
     for (const [a, b] of round) {
       if (a >= count || b >= count) continue;
-
-      edges.push({ a, b, round: roundIndex, real: true });
+      edges.push({a, b, round: roundIndex, real: true});
       degrees[a]++;
       degrees[b]++;
     }
@@ -2025,33 +2039,22 @@ function buildColourGraph(rawRounds, count) {
 
   for (let id = 0; id < count; id++) {
     if (degrees[id] % 2 !== 0) {
-      edges.push({
-        a: id,
-        b: count,
-        round: -1,
-        real: false
-      });
+      edges.push({a: id, b: count, round: -1, real: false});
     }
   }
 
-  const adjacency = Array.from(
-    { length: count + 1 },
-    () => []
-  );
+  const adjacency = Array.from({length: count + 1}, () => []);
 
   edges.forEach((edge, index) => {
     adjacency[edge.a].push(index);
     adjacency[edge.b].push(index);
   });
 
-  return { edges, adjacency, realEdgeCount };
+  return {edges, adjacency, realEdgeCount};
 }
 
 function balancedEulerOrientation(graph) {
-  const adjacency = graph.adjacency.map(list =>
-    shuffle(list.slice())
-  );
-
+  const adjacency = graph.adjacency.map(list => shuffle(list.slice()));
   const positions = new Int32Array(adjacency.length);
   const used = new Uint8Array(graph.edges.length);
   const directions = new Uint8Array(graph.edges.length);
@@ -2077,11 +2080,9 @@ function balancedEulerOrientation(graph) {
       if (used[edgeIndex]) continue;
 
       used[edgeIndex] = 1;
-
       const edge = graph.edges[edgeIndex];
       const other = edge.a === vertex ? edge.b : edge.a;
 
-      // Direction 0: A is White. Direction 1: B is White.
       directions[edgeIndex] = edge.a === vertex ? 0 : 1;
       stack.push(other);
     }
@@ -2096,7 +2097,6 @@ function makeColourMatrix(graph, directions, count, roundCount) {
   for (let index = 0; index < graph.realEdgeCount; index++) {
     const edge = graph.edges[index];
     const aColour = directions[index] === 0 ? 1 : -1;
-
     matrix[edge.a * roundCount + edge.round] = aColour;
     matrix[edge.b * roundCount + edge.round] = -aColour;
   }
@@ -2113,8 +2113,6 @@ function playerColourMetrics(matrix, id, roundCount) {
 
   for (let round = 0; round < roundCount; round++) {
     const colour = matrix[id * roundCount + round];
-
-    // A rest does not break a run of consecutive actual games.
     if (colour === 0) continue;
 
     run = colour === previous ? run + 1 : 1;
@@ -2125,7 +2123,7 @@ function playerColourMetrics(matrix, id, roundCount) {
     if (run >= 4) long++;
   }
 
-  return { long, triples, maximum };
+  return {long, triples, maximum};
 }
 
 function allColourMetrics(matrix, count, roundCount) {
@@ -2142,7 +2140,7 @@ function allColourMetrics(matrix, count, roundCount) {
     maximum = Math.max(maximum, metrics.maximum);
   }
 
-  return { long, triples, maximum, perPlayer };
+  return {long, triples, maximum, perPlayer};
 }
 
 function findDirectedCycle(graph, directions, seedIndex) {
@@ -2198,15 +2196,45 @@ function findDirectedCycle(graph, directions, seedIndex) {
 }
 
 function flipCycle(graph, directions, matrix, roundCount, cycle) {
-  for (const edgeIndex of cycle) {
-    directions[edgeIndex] ^= 1;
-    const edge = graph.edges[edgeIndex];
+  for (const index of cycle) {
+    directions[index] ^= 1;
+    const edge = graph.edges[index];
 
     if (edge.real) {
       matrix[edge.a * roundCount + edge.round] *= -1;
       matrix[edge.b * roundCount + edge.round] *= -1;
     }
   }
+}
+
+function materializeColourRounds(rawRounds, count, graph, directions) {
+  const rounds = rawRounds.map(round => ({
+    games: [],
+    bye: count % 2 === 0
+      ? null
+      : round.find(([a, b]) => a === count || b === count)
+          .find(id => id !== count)
+  }));
+
+  for (let index = 0; index < graph.realEdgeCount; index++) {
+    const edge = graph.edges[index];
+    const aWhite = directions[index] === 0;
+
+    rounds[edge.round].games.push({
+      w: aWhite ? edge.a : edge.b,
+      b: aWhite ? edge.b : edge.a,
+      result: null,
+      auto: false
+    });
+  }
+
+  for (const round of rounds) {
+    round.games.sort((a, b) =>
+      Math.min(a.w, a.b) - Math.min(b.w, b.b)
+    );
+  }
+
+  return rounds;
 }
 
 async function allocateColours(rawRounds, players, effort, job) {
@@ -2236,8 +2264,7 @@ async function allocateColours(rawRounds, players, effort, job) {
 
     if (trial % 2 === 0) {
       await yieldToBrowser(
-        job,
-        70 + 10 * trial / settings.colourTrials,
+        job, 70 + 10 * trial / settings.colourTrials,
         "Tilldelar balanserade färger…"
       );
     }
@@ -2257,8 +2284,9 @@ async function allocateColours(rawRounds, players, effort, job) {
   for (let move = 0; move < cycleMoves; move++) {
     if (metrics.long === 0 && metrics.triples === 0) break;
 
-    const seed = randomInt(graph.realEdgeCount);
-    const cycle = findDirectedCycle(graph, directions, seed);
+    const cycle = findDirectedCycle(
+      graph, directions, randomInt(graph.realEdgeCount)
+    );
 
     if (cycle) {
       const affected = new Set();
@@ -2301,10 +2329,7 @@ async function allocateColours(rawRounds, players, effort, job) {
           (comparison === 0 && Math.random() < 0.05)) {
         metrics.long = candidate.long;
         metrics.triples = candidate.triples;
-
-        for (const [id, value] of updates) {
-          metrics.perPlayer[id] = value;
-        }
+        for (const [id, value] of updates) metrics.perPlayer[id] = value;
       } else {
         flipCycle(graph, directions, matrix, roundCount, cycle);
       }
@@ -2312,41 +2337,16 @@ async function allocateColours(rawRounds, players, effort, job) {
 
     if (move % 64 === 0) {
       await yieldToBrowser(
-        job,
-        80 + 10 * move / cycleMoves,
+        job, 80 + 10 * move / cycleMoves,
         "Minskar långa färgföljder med balanserade cykelbyten…"
       );
     }
   }
 
-  const rounds = rawRounds.map(round => ({
-    games: [],
-    bye: count % 2 === 0
-      ? null
-      : round.find(([a, b]) => a === count || b === count)
-          .find(id => id !== count)
-  }));
+  const rounds = materializeColourRounds(
+    rawRounds, count, graph, directions
+  );
 
-  for (let index = 0; index < graph.realEdgeCount; index++) {
-    const edge = graph.edges[index];
-    const aWhite = directions[index] === 0;
-
-    rounds[edge.round].games.push({
-      w: aWhite ? edge.a : edge.b,
-      b: aWhite ? edge.b : edge.a,
-      result: null,
-      auto: false
-    });
-  }
-
-  for (const round of rounds) {
-    round.games.sort((a, b) =>
-      Math.min(a.w, a.b) - Math.min(b.w, b.b)
-    );
-  }
-
-  // Whole-round reordering preserves opponents, game counts,
-  // rest allocations, budgets, group counts, and colour totals.
   const orderMoves = roundCount < 2 ? 0 : Math.min(
     settings.orderMoves,
     Math.max(40, Math.floor(
@@ -2386,8 +2386,7 @@ async function allocateColours(rawRounds, players, effort, job) {
 
     if (move % 128 === 0) {
       await yieldToBrowser(
-        job,
-        90 + 9 * move / Math.max(1, orderMoves),
+        job, 90 + 9 * move / Math.max(1, orderMoves),
         "Förbättrar rondordning och färgföljder…"
       );
     }
@@ -2405,37 +2404,54 @@ async function startGeneration() {
 
   let players;
   let roundCount;
+  let swissRounds;
 
   try {
-    players = parseRoster(
-      document.getElementById("input-players").value
+    players = parseRoster($("input-players").value);
+    roundCount = Number($("input-rounds").value);
+
+    const swissText = $("input-swiss-rounds").value.trim();
+
+    requireCondition(
+      /^\d+$/.test(swissText),
+      "Antalet schweizerronder måste vara ett heltal som är noll eller större."
     );
 
-    roundCount = Number(
-      document.getElementById("input-rounds").value
-    );
-
+    swissRounds = Number(swissText);
     const maximum = maximumRounds(players.length);
 
-    if (!Number.isInteger(roundCount) ||
-        roundCount < 1 ||
-        roundCount > maximum) {
-      throw new Error(
-        "Med detta spelarantal kan du välja mellan 1 och " + maximum +
-        " ronder utan upprepade motståndare."
-      );
-    }
+    requireCondition(
+      Number.isInteger(roundCount) &&
+      roundCount >= 1 && roundCount <= maximum,
+      "Med detta spelarantal kan du välja mellan 1 och " + maximum +
+      " RBT-ronder utan upprepade motståndare."
+    );
+
+    requireCondition(
+      Number.isSafeInteger(swissRounds) &&
+      swissRounds >= 0 &&
+      roundCount + swissRounds <= maximum,
+      "Antalet RBT-ronder plus schweizerronder får inte överstiga " +
+      maximum + " med detta spelarantal. Detta är en längdbegränsning, " +
+      "inte en garanti för en schweizerfortsättning utan upprepade möten."
+    );
+
+    requireCondition(
+      swissRounds === 0 || swissChecksPassed,
+      "De interna schweizerkontrollerna misslyckades. " +
+      "Kontrollera webbläsarens konsol."
+    );
   } catch (error) {
     alert(error.message);
     return;
   }
 
-  const effort = document.getElementById("input-effort").value;
-  const job = { cancelled: false };
+  const effort = $("input-effort").value;
+  const job = {cancelled: false};
   activeJob = job;
 
-  document.getElementById("setup-controls").disabled = true;
-  document.getElementById("generation-panel").hidden = false;
+  $("setup-controls").disabled = true;
+  $("generation-panel").hidden = false;
 
   try {
     await yieldToBrowser(
@@ -2451,19 +2467,21 @@ async function startGeneration() {
       rawRounds, players, effort, job
     );
 
-    await yieldToBrowser(job, 99, "Kontrollerar det kompletta spelschemat…");
+    await yieldToBrowser(
+      job, 99, "Kontrollerar det kompletta RBT-spelschemat…"
+    );
 
     const candidate = {
-      name: document.getElementById("input-name").value.trim() ||
-        "Ratingbudgetturnering",
+      name: $("input-name").value.trim() || "Ratingbudgetturnering",
       players,
       rounds,
+      rbtRounds: roundCount,
+      swissRounds,
+      swissEnded: false,
       current: 0,
       scope: "all",
-      tb: document.getElementById("input-tb").value,
-      byePoints: Number(
-        document.getElementById("input-bye-points").value
-      ),
+      tb: $("input-tb").value,
+      byePoints: Number($("input-bye-points").value),
       finished: false,
       engine: {
         effort,
@@ -2476,22 +2494,24 @@ async function startGeneration() {
     const validated = validateTournamentData(candidate);
     const report = calculateScheduleReport(validated);
 
-    await yieldToBrowser(job, 100, "Det kompletta spelschemat har skapats.");
+    await yieldToBrowser(
+      job, 100,
+      swissRounds
+        ? "RBT-spelschemat har skapats. Schweizerronderna lottas senare."
+        : "Det kompletta spelschemat har skapats."
+    );
 
     tournament = validated;
     scheduleReport = report;
-
     persist();
     renderApplication();
   } catch (error) {
-    if (error.message !== "Schemagenereringen avbröts.") {
-      console.error(error);
-    }
+    if (error.message !== "Schemagenereringen avbröts.") console.error(error);
     alert(error.message);
   } finally {
     activeJob = null;
-    document.getElementById("setup-controls").disabled = false;
-    document.getElementById("generation-panel").hidden = true;
+    $("setup-controls").disabled = false;
+    $("generation-panel").hidden = true;
   }
 }
 
@@ -2500,17 +2520,13 @@ function cancelGeneration() {
 }
 
 /* ============================================================
-   Schedule diagnostics
-
-   Each budget is derived after counting scheduled games.
-   This also makes the aggregate lower bound consistent with
-   the current rest allocation and adjusted budget policy.
+   RBT-only budget diagnostics
    ============================================================ */
 
 function calculateScheduleReport(data) {
   const count = data.players.length;
-  const roundCount = data.rounds.length;
-  const information = personalGroupInformation(data.players);
+  const roundCount = data.rbtRounds;
+  const info = personalGroupInformation(data.players);
 
   const rows = data.players.map(player => ({
     id: player.id,
@@ -2523,12 +2539,12 @@ function calculateScheduleReport(data) {
     rests: 0,
     colours: [],
     budget: 0,
-    target: information.targets[player.id]
+    target: info.targets[player.id]
   }));
 
   let distance = 0;
 
-  for (const round of data.rounds) {
+  for (const round of data.rounds.slice(0, roundCount)) {
     const colours = new Int8Array(count);
 
     for (const game of round.games) {
@@ -2537,21 +2553,17 @@ function calculateScheduleReport(data) {
 
       rows[game.w].games++;
       rows[game.b].games++;
-
       rows[game.w].sum += black.rating;
       rows[game.b].sum += white.rating;
-
       rows[game.w].whites++;
       rows[game.b].blacks++;
-
       colours[game.w] = 1;
       colours[game.b] = -1;
 
-      if (isPersonalGroupOpponent(information, game.w, game.b)) {
+      if (isPersonalGroupOpponent(info, game.w, game.b)) {
         rows[game.w].personal++;
       }
-
-      if (isPersonalGroupOpponent(information, game.b, game.w)) {
+      if (isPersonalGroupOpponent(info, game.b, game.w)) {
         rows[game.b].personal++;
       }
 
@@ -2559,10 +2571,7 @@ function calculateScheduleReport(data) {
     }
 
     if (round.bye !== null) rows[round.bye].rests++;
-
-    for (let id = 0; id < count; id++) {
-      rows[id].colours.push(colours[id]);
-    }
+    for (let id = 0; id < count; id++) rows[id].colours.push(colours[id]);
   }
 
   let totalError = 0;
@@ -2582,21 +2591,19 @@ function calculateScheduleReport(data) {
     row.error = Math.abs(row.sum - row.budget);
     row.signedError = row.sum - row.budget;
     row.average = row.games ? row.sum / row.games : null;
-
     row.requested = requiredPersonalGroupOpponents(row.games);
     row.deficit = Math.max(0, row.requested - row.personal);
 
-    const distinctCapacity = Math.min(
-      row.games, information.groupSize
-    );
+    const capacity = Math.min(row.games, info.groupSize);
 
-    if (row.requested > distinctCapacity) {
+    if (row.requested > capacity) {
       impossiblePlayers++;
-      capacityDeficit += row.requested - distinctCapacity;
+      capacityDeficit += row.requested - capacity;
     }
 
-    const matrix = Int8Array.from(row.colours);
-    const colour = playerColourMetrics(matrix, 0, roundCount);
+    const colour = playerColourMetrics(
+      Int8Array.from(row.colours), 0, roundCount
+    );
 
     row.maximumRun = colour.maximum;
     row.colourString = row.colours.map(value =>
@@ -2608,7 +2615,6 @@ function calculateScheduleReport(data) {
     totalDeficit += row.deficit;
     actualOpponentTotal += row.sum;
     totalBudget += row.budget;
-
     long += colour.long;
     triples += colour.triples;
     maximumRun = Math.max(maximumRun, colour.maximum);
@@ -2618,8 +2624,8 @@ function calculateScheduleReport(data) {
     }
   }
 
-  const rawLowerBound = Math.abs(actualOpponentTotal - totalBudget);
-  const aggregateLowerBound = rawLowerBound < EPS ? 0 : rawLowerBound;
+  const rawBound = Math.abs(actualOpponentTotal - totalBudget);
+  const aggregateLowerBound = rawBound < EPS ? 0 : rawBound;
   const warnings = [];
 
   if (data.engine?.legacySchedule) {
@@ -2627,8 +2633,7 @@ function calculateScheduleReport(data) {
       "Detta spelschema skapades med en tidigare budgetmodell. " +
       "Lottningar och resultat är oförändrade, men analysen använder nu " +
       "personliga gruppers målratingar och budgetar för schemalagda " +
-      "partier, exklusive frironder. Spelschemat skapades inte med " +
-      "den aktuella budgetmodellen."
+      "partier, exklusive frironder."
     );
   }
 
@@ -2636,9 +2641,9 @@ function calculateScheduleReport(data) {
     warnings.push(
       "För " + impossiblePlayers +
       " spelare överstiger det önskade antalet gruppmotståndare de " +
-      information.groupSize + " olika motståndare som finns i den " +
-      "personliga gruppen utan upprepade möten. Deras sammanlagda " +
-      "oundvikliga kapacitetsunderskott är minst " + capacityDeficit + "."
+      info.groupSize + " olika motståndare som finns i den personliga " +
+      "gruppen utan upprepade möten. Deras sammanlagda oundvikliga " +
+      "kapacitetsunderskott är minst " + capacityDeficit + "."
     );
   }
 
@@ -2646,10 +2651,8 @@ function calculateScheduleReport(data) {
     warnings.push(
       "Detta spelschema saknar totalt " + totalDeficit +
       " möten inom personliga grupper jämfört med " +
-      "ceil(schemalagda partier / 2). Att uppfylla ratingbudgetarna " +
-      "är det primära målet, så gruppantalet är ett sekundärt önskemål " +
-      "och inte ett garanterat minimum. Strukturella begränsningar " +
-      "och den begränsade sökningen kan också lämna ett underskott."
+      "ceil(schemalagda partier / 2). Detta är en sekundär målsättning, " +
+      "inte ett garanterat minimum."
     );
   }
 
@@ -2657,14 +2660,13 @@ function calculateScheduleReport(data) {
     warnings.push(
       "Efter färgoptimeringen återstår " + long +
       " överlappande fyrpartifönster med samma färg inom följder av " +
-      "fyra eller fler partier. Det önskade maximumet uppnåddes inte. " +
-      "Innan resultat registreras kan ett nytt spelschema ge ett " +
-      "bättre resultat, men förbättring garanteras inte."
+      "fyra eller fler partier. Innan resultat registreras kan ett " +
+      "nytt spelschema ge ett bättre resultat, men förbättring garanteras inte."
     );
   }
 
   return {
-    information,
+    information: info,
     rows,
     totalError,
     maximumError,
@@ -2682,7 +2684,733 @@ function calculateScheduleReport(data) {
 }
 
 /* ============================================================
-   Results and withdrawals
+   Hybrid statistics
+
+   Complete RBT rounds and submitted Swiss rounds contribute.
+   Played games alone contribute encounters, colours and WNT.
+   Forfeits still award points and count in W/D/L and Buchholz.
+   ============================================================ */
+
+function computeHybridStats(data, limit = data.rounds.length) {
+  const byId = new Map(data.players.map(player => [
+    player.id,
+    {
+      id: player.id,
+      tpn: player.tpn,
+      score2: 0,
+      whites: 0,
+      blacks: 0,
+      byes: 0,
+      played: 0,
+      wins: 0,
+      draws: 0,
+      losses: 0,
+      cumulative: 0,
+      buchholz: 0,
+      opponents: new Set(),
+      history: [],
+      wntKey: 0,
+      wnt: 0
+    }
+  ]));
+
+  const included = [];
+
+  for (let index = 0; index < Math.min(limit, data.rounds.length); index++) {
+    const round = data.rounds[index];
+    const counted = index < data.rbtRounds
+      ? isRoundComplete(round)
+      : round.closed === true;
+
+    if (counted) included.push({round, index});
+  }
+
+  const N = included.length;
+
+  function addResult(id, opponent, result2, colour, played, index) {
+    const row = byId.get(id);
+    row.score2 += result2;
+
+    if (result2 === 2) row.wins++;
+    else if (result2 === 1) row.draws++;
+    else row.losses++;
+
+    if (played) {
+      row.played++;
+      if (colour === "W") row.whites++;
+      else row.blacks++;
+      row.opponents.add(opponent);
+    }
+
+    row.history.push({
+      round: index + 1,
+      opponent,
+      color: played ? colour : "F",
+      result2,
+      forfeit: !played,
+      postponed: false
+    });
+  }
+
+  for (const {round, index} of included) {
+    for (const game of round.games) {
+      const result = RESULT_DEFINITIONS[game.result];
+
+      requireCondition(
+        !!result,
+        "En medräknad rond innehåller ett saknat eller ogiltigt resultat."
+      );
+
+      addResult(
+        game.w, game.b, 2 * result.white, "W", result.played, index
+      );
+      addResult(
+        game.b, game.w, 2 * result.black, "B", result.played, index
+      );
+    }
+
+    if (round.bye !== null) {
+      const row = byId.get(round.bye);
+      const result2 = 2 * data.byePoints;
+
+      row.score2 += result2;
+      row.byes++;
+      row.history.push({
+        round: index + 1,
+        opponent: null,
+        color: "-",
+        result2,
+        forfeit: false,
+        postponed: false
+      });
+    }
+
+    for (const row of byId.values()) {
+      row.cumulative += row.score2 / 2;
+    }
+  }
+
+  for (const row of byId.values()) {
+    const opponentScores = row.history.map(entry =>
+      entry.opponent === null
+        ? 0
+        : byId.get(entry.opponent).score2 / 2
+    );
+
+    if (opponentScores.length) {
+      row.buchholz = opponentScores.reduce((sum, score) => sum + score, 0) -
+        Math.min(...opponentScores);
+    }
+
+    if (N > 0) {
+      let numerator = 0;
+
+      for (const entry of row.history) {
+        if (entry.opponent === null || entry.forfeit) continue;
+
+        const score2 = byId.get(entry.opponent).score2;
+        numerator +=
+          2 * N * score2 * entry.result2 + score2 * score2;
+      }
+
+      row.wntKey = numerator;
+      row.wnt = 100 * numerator / (8 * N * N);
+    }
+  }
+
+  return {byId, N};
+}
+
+function compareStats(a, b) {
+  return b.score2 - a.score2 ||
+    b.wntKey - a.wntKey ||
+    a.tpn - b.tpn;
+}
+
+/* ============================================================
+   Swiss colour rules from berger-swiss.txt
+   ============================================================ */
+
+function colourRunAfter(stats, colour) {
+  let run = 1;
+  const history = stats.history || [];
+
+  for (let index = history.length - 1; index >= 0; index--) {
+    const previous = history[index].color;
+    if (previous !== "W" && previous !== "B") continue;
+    if (previous !== colour) break;
+    run++;
+  }
+
+  return run;
+}
+
+function assessSwissColours(whiteId, blackId, context) {
+  const white = context.byId.get(whiteId);
+  const black = context.byId.get(blackId);
+
+  const whiteDifference =
+    (white.whites || 0) + 1 - (white.blacks || 0);
+  const blackDifference =
+    (black.whites || 0) - ((black.blacks || 0) + 1);
+
+  const whiteRun = colourRunAfter(white, "W");
+  const blackRun = colourRunAfter(black, "B");
+  const longestRun = Math.max(whiteRun, blackRun);
+
+  return {
+    white: whiteId,
+    black: blackId,
+    balanceExcess:
+      Math.max(0, Math.abs(whiteDifference) - 2) +
+      Math.max(0, Math.abs(blackDifference) - 2),
+    totalImbalance:
+      Math.abs(whiteDifference) + Math.abs(blackDifference),
+    streakViolations:
+      Number(whiteRun >= 3) + Number(blackRun >= 3),
+    repeatedColours:
+      Number(whiteRun >= 2) + Number(blackRun >= 2),
+    longestRun,
+    runExcess: Math.max(0, longestRun - 2)
+  };
+}
+
+function preferredWhiteId(firstId, secondId, context) {
+  const first = context.byId.get(firstId);
+  const second = context.byId.get(secondId);
+
+  const defaultWhite = first.whites !== second.whites
+    ? (first.whites < second.whites ? firstId : secondId)
+    : (first.tpn > second.tpn ? firstId : secondId);
+
+  const firstWhite = assessSwissColours(firstId, secondId, context);
+  const secondWhite = assessSwissColours(secondId, firstId, context);
+
+  const comparison =
+    firstWhite.runExcess - secondWhite.runExcess ||
+    firstWhite.streakViolations - secondWhite.streakViolations ||
+    firstWhite.balanceExcess - secondWhite.balanceExcess ||
+    firstWhite.totalImbalance - secondWhite.totalImbalance ||
+    firstWhite.repeatedColours - secondWhite.repeatedColours;
+
+  if (comparison < 0) return firstId;
+  if (comparison > 0) return secondId;
+  return defaultWhite;
+}
+
+function swissColourAssessment(firstId, secondId, context) {
+  const whiteId = preferredWhiteId(firstId, secondId, context);
+  return assessSwissColours(
+    whiteId, whiteId === firstId ? secondId : firstId, context
+  );
+}
+
+/* ============================================================
+   General-graph perfect matching from berger-swiss.txt
+
+   Edmonds blossom algorithm.
+   ============================================================ */
+
+function perfectMatching(ids, allowed) {
+  const n = ids.length;
+  if (n === 0) return new Map();
+  if (n % 2 !== 0) return null;
+
+  const indexOf = new Map(ids.map((id, index) => [id, index]));
+
+  const graph = ids.map(id =>
+    [...(allowed.get(id) || [])]
+      .filter(other => indexOf.has(other))
+      .map(other => indexOf.get(other))
+  );
+
+  const mate = Array(n).fill(-1);
+  const parent = Array(n).fill(-1);
+  const base = Array.from({length: n}, (_, i) => i);
+  const used = Array(n).fill(false);
+  const blossom = Array(n).fill(false);
+
+  function lowestCommonAncestor(a, b) {
+    const path = Array(n).fill(false);
+
+    while (true) {
+      a = base[a];
+      path[a] = true;
+      if (mate[a] === -1) break;
+      a = parent[mate[a]];
+    }
+
+    while (true) {
+      b = base[b];
+      if (path[b]) return b;
+      b = parent[mate[b]];
+    }
+  }
+
+  function markPath(vertex, commonBase, child) {
+    while (base[vertex] !== commonBase) {
+      blossom[base[vertex]] = true;
+      blossom[base[mate[vertex]]] = true;
+      parent[vertex] = child;
+      child = mate[vertex];
+      vertex = parent[mate[vertex]];
+    }
+  }
+
+  function findAugmentingPath(root) {
+    used.fill(false);
+    parent.fill(-1);
+    for (let i = 0; i < n; i++) base[i] = i;
+
+    const queue = [root];
+    let head = 0;
+    used[root] = true;
+
+    while (head < queue.length) {
+      const vertex = queue[head++];
+
+      for (const neighbor of graph[vertex]) {
+        if (base[vertex] === base[neighbor] || mate[vertex] === neighbor) {
+          continue;
+        }
+
+        if (neighbor === root ||
+            (mate[neighbor] !== -1 && parent[mate[neighbor]] !== -1)) {
+          const commonBase = lowestCommonAncestor(vertex, neighbor);
+
+          blossom.fill(false);
+          markPath(vertex, commonBase, neighbor);
+          markPath(neighbor, commonBase, vertex);
+
+          for (let i = 0; i < n; i++) {
+            if (!blossom[base[i]]) continue;
+            base[i] = commonBase;
+
+            if (!used[i]) {
+              used[i] = true;
+              queue.push(i);
+            }
+          }
+        } else if (parent[neighbor] === -1) {
+          parent[neighbor] = vertex;
+          if (mate[neighbor] === -1) return neighbor;
+
+          const matched = mate[neighbor];
+          used[matched] = true;
+          queue.push(matched);
+        }
+      }
+    }
+
+    return -1;
+  }
+
+  for (let root = 0; root < n; root++) {
+    if (mate[root] !== -1) continue;
+
+    let vertex = findAugmentingPath(root);
+    if (vertex === -1) continue;
+
+    while (vertex !== -1) {
+      const previous = parent[vertex];
+      const next = previous === -1 ? -1 : mate[previous];
+
+      mate[vertex] = previous;
+      if (previous !== -1) mate[previous] = vertex;
+      vertex = next;
+    }
+  }
+
+  if (mate.some(value => value === -1)) return null;
+
+  return new Map(ids.map((id, index) => [id, ids[mate[index]]]));
+}
+
+function topDownMatching(orderedIds, allowed, compareCandidates = null) {
+  let remaining = [...orderedIds];
+  let witness = perfectMatching(remaining, allowed);
+
+  if (witness === null) return null;
+
+  const pairs = [];
+
+  while (remaining.length > 0) {
+    const first = remaining[0];
+
+    const candidates = remaining.slice(1)
+      .filter(second => allowed.get(first).has(second));
+
+    if (compareCandidates) {
+      candidates.sort((a, b) => compareCandidates(first, a, b));
+    }
+
+    let selected = false;
+
+    for (const second of candidates) {
+      const next = remaining.filter(id => id !== first && id !== second);
+      let nextWitness;
+
+      if (witness.get(first) === second) {
+        nextWitness = new Map(witness);
+        nextWitness.delete(first);
+        nextWitness.delete(second);
+      } else {
+        nextWitness = perfectMatching(next, allowed);
+      }
+
+      if (nextWitness === null) continue;
+
+      pairs.push([first, second]);
+      remaining = next;
+      witness = nextWitness;
+      selected = true;
+      break;
+    }
+
+    if (!selected) {
+      throw new Error("Internt konsekvensfel i matchningen.");
+    }
+  }
+
+  return pairs;
+}
+
+/* ============================================================
+   Swiss pairing search from berger-swiss.txt
+
+   No first-round rating bye is forced: this Swiss phase always
+   follows an RBT history.
+   ============================================================ */
+
+function minimumByeCandidates(ids, getByeCount) {
+  if (ids.length === 0) return [];
+
+  const minimum = ids.reduce(
+    (lowest, id) => Math.min(lowest, getByeCount(id)), Infinity
+  );
+
+  return ids.filter(id => getByeCount(id) === minimum);
+}
+
+function makeSwissPairings(ids, context) {
+  if (ids.length === 0) return [];
+
+  const ordered = [...ids].sort((a, b) =>
+    compareStats(context.byId.get(a), context.byId.get(b))
+  );
+
+  const rank = new Map(ordered.map((id, index) => [id, index]));
+  const assessments = new Map(ordered.map(id => [id, new Map()]));
+  const edges = [];
+  let maximumRun = 2;
+
+  for (let i = 0; i < ordered.length; i++) {
+    for (let j = i + 1; j < ordered.length; j++) {
+      const a = ordered[i];
+      const b = ordered[j];
+      const first = context.byId.get(a);
+      const second = context.byId.get(b);
+
+      const rematch =
+        first.opponents.has(b) || second.opponents.has(a);
+
+      const previousMeetings = Math.max(
+        first.history.filter(h => h.opponent === b && !h.forfeit).length,
+        second.history.filter(h => h.opponent === a && !h.forfeit).length,
+        Number(rematch)
+      );
+
+      const assessment = {
+        ...swissColourAssessment(a, b, context),
+        gap2: Math.abs(first.score2 - second.score2),
+        rematch,
+        previousMeetings
+      };
+
+      assessments.get(a).set(b, assessment);
+      assessments.get(b).set(a, assessment);
+      edges.push({a, b, assessment});
+      maximumRun = Math.max(maximumRun, assessment.longestRun);
+    }
+  }
+
+  const byeCandidates = ordered.length % 2 !== 0
+    ? minimumByeCandidates(
+        [...ordered].reverse(), id => context.byId.get(id).byes
+      )
+    : [null];
+
+  requireCondition(
+    byeCandidates.length > 0,
+    "Ingen behörig frirondsmottagare hittades för schweizerronden."
+  );
+
+  function compareCandidates(first, a, b) {
+    const A = assessments.get(first).get(a);
+    const B = assessments.get(first).get(b);
+
+    return Number(A.rematch) - Number(B.rematch) ||
+      A.previousMeetings - B.previousMeetings ||
+      A.gap2 - B.gap2 ||
+      A.balanceExcess - B.balanceExcess ||
+      A.streakViolations - B.streakViolations ||
+      A.totalImbalance - B.totalImbalance ||
+      A.repeatedColours - B.repeatedColours ||
+      rank.get(a) - rank.get(b);
+  }
+
+  function buildGraph(
+    allowRematches, maximumColourRun, requireBalance, maximumGap2
+  ) {
+    const graph = new Map(ordered.map(id => [id, new Set()]));
+
+    for (const {a, b, assessment} of edges) {
+      if (!allowRematches && assessment.rematch) continue;
+      if (assessment.longestRun > maximumColourRun) continue;
+      if (requireBalance && assessment.balanceExcess > 0) continue;
+      if (assessment.gap2 > maximumGap2) continue;
+
+      graph.get(a).add(b);
+      graph.get(b).add(a);
+    }
+
+    return graph;
+  }
+
+  for (const allowRematches of [false, true]) {
+    for (
+      let maximumColourRun = 2;
+      maximumColourRun <= maximumRun;
+      maximumColourRun++
+    ) {
+      const completeGraph = buildGraph(
+        allowRematches, maximumColourRun, false, Infinity
+      );
+
+      for (const byeId of byeCandidates) {
+        const toPair = ordered.filter(id => id !== byeId);
+
+        if (perfectMatching(toPair, completeGraph) === null) continue;
+
+        for (const requireBalance of [true, false]) {
+          for (const maximumGap2 of [0, 1, 2, Infinity]) {
+            const graph = !requireBalance && maximumGap2 === Infinity
+              ? completeGraph
+              : buildGraph(
+                  allowRematches, maximumColourRun,
+                  requireBalance, maximumGap2
+                );
+
+            const matching = topDownMatching(
+              toPair, graph, compareCandidates
+            );
+
+            if (matching === null) continue;
+
+            const pairings = matching.map(([first, second]) => {
+              const assessment = assessments.get(first).get(second);
+
+              return {
+                white: assessment.white,
+                black: assessment.black,
+                result: ""
+              };
+            });
+
+            if (byeId !== null) {
+              pairings.push({white: byeId, black: null, result: "BYE"});
+            }
+
+            return pairings;
+          }
+        }
+      }
+    }
+  }
+
+  throw new Error(
+    "Ingen komplett schweizerlottning kunde skapas " +
+    "för någon behörig frirondsmottagare."
+  );
+}
+
+function generateSwissRound(data) {
+  const index = data.rounds.length;
+  const ids = activePlayerIds(data, index);
+
+  requireCondition(
+    ids.length >= 2, "Färre än två aktiva spelare återstår."
+  );
+
+  const context = computeHybridStats(data);
+  const pairings = makeSwissPairings(ids, context);
+
+  return {
+    games: pairings.filter(pair => pair.black !== null).map(pair => ({
+      w: pair.white,
+      b: pair.black,
+      result: null,
+      auto: false
+    })),
+    bye: pairings.find(pair => pair.black === null)?.white ?? null,
+    closed: false
+  };
+}
+
+/* ============================================================
+   Swiss phase transition and transactional submission
+   ============================================================ */
+
+function requireCompleteRBT(data) {
+  const locations = [];
+
+  data.rounds.slice(0, data.rbtRounds).forEach((round, index) => {
+    round.games.forEach((game, board) => {
+      if (game.result === null) {
+        locations.push("Rond " + (index + 1) + ", bord " + (board + 1));
+      }
+    });
+  });
+
+  requireCondition(
+    locations.length === 0,
+    "Registrera resultat för samtliga RBT-partier innan " +
+    "schweizerfasen startas.\n\n" +
+    locations.slice(0, 20).join("\n") +
+    (locations.length > 20 ? "\n…och fler." : "") +
+    "\n\nAnge uttryckliga walkoverresultat för partier som inte spelades."
+  );
+}
+
+function startSwissPhase() {
+  if (!tournament || !isHybrid() || rbtLocked() || tournament.finished) {
+    return;
+  }
+
+  try {
+    requireCondition(
+      swissChecksPassed, "De interna schweizerkontrollerna misslyckades."
+    );
+    requireCompleteRBT(tournament);
+
+    if (!confirm(
+      "Vill du starta schweizerfasen?\n\n" +
+      "Samtliga RBT-resultat låses. Poäng, spelade motståndare, " +
+      "spelade färger och tidigare frironder förs vidare."
+    )) return;
+
+    const draft = clone(tournament);
+    const active = activePlayerIds(draft, draft.rbtRounds);
+
+    if (active.length < 2) {
+      draft.swissEnded = true;
+      draft.finished = true;
+    } else {
+      draft.rounds.push(generateSwissRound(draft));
+      draft.current = draft.rounds.length - 1;
+    }
+
+    const validated = validateTournamentData(draft);
+    tournament = validated;
+    persist();
+    renderApplication();
+
+    if (active.length < 2) {
+      alert(
+        "Schweizerfortsättningen avslutades eftersom färre än " +
+        "två aktiva spelare återstår."
+      );
+    }
+  } catch (error) {
+    alert("Schweizerfasen kunde inte startas:\n" + error.message);
+  }
+}
+
+function submitSwissRound(stopAfterRound = false) {
+  if (!tournament || tournament.finished || tournament.swissEnded) return;
+  if (tournament.current !== tournament.rounds.length - 1) return;
+  if (!isSwissRound(tournament, tournament.current)) return;
+
+  try {
+    const current = tournament.rounds[tournament.current];
+
+    requireCondition(
+      !current.closed, "Denna schweizerrond har redan lämnats in."
+    );
+
+    const pending = current.games.findIndex(game => game.result === null);
+
+    requireCondition(
+      pending === -1,
+      "Ange ett resultat för bord " + (pending + 1) + "."
+    );
+
+    const draft = clone(tournament);
+    draft.rounds[draft.current].closed = true;
+
+    const nextIndex = draft.rounds.length;
+    const tooFew = activePlayerIds(draft, nextIndex).length < 2;
+    const reachedPlan = nextIndex === plannedRounds(draft);
+
+    if (stopAfterRound || tooFew || reachedPlan) {
+      draft.swissEnded = true;
+      draft.finished = true;
+    } else {
+      draft.rounds.push(generateSwissRound(draft));
+      draft.current = draft.rounds.length - 1;
+    }
+
+    const validated = validateTournamentData(draft);
+    tournament = validated;
+    persist();
+    renderApplication();
+
+    if (tooFew && !reachedPlan && !stopAfterRound) {
+      alert(
+        "Turneringen avslutades eftersom färre än två aktiva spelare återstår."
+      );
+    }
+  } catch (error) {
+    alert(
+      "Schweizerronden kunde inte lämnas in:\n" + error.message +
+      "\n\nRegistrerade resultat och avanmälningar har behållits. " +
+      "Den aktuella ronden är fortfarande inte inlämnad."
+    );
+  }
+}
+
+function finishSwissEarly() {
+  if (!tournament || tournament.swissEnded || tournament.finished) return;
+  if (tournament.current !== tournament.rounds.length - 1) return;
+  if (!isSwissRound(tournament, tournament.current)) return;
+
+  if (confirm(
+    "Vill du lämna in denna schweizerrond och avsluta turneringen i förtid?\n" +
+    "Samtliga partier i ronden måste ha ett resultat."
+  )) {
+    submitSwissRound(true);
+  }
+}
+
+function roundAction() {
+  if (!tournament) return;
+
+  if (!isHybrid()) {
+    moveRound(1);
+    return;
+  }
+
+  if (tournament.current < tournament.rounds.length - 1) {
+    moveRound(1);
+  } else if (!rbtLocked()) {
+    startSwissPhase();
+  } else if (isSwissRound(tournament, tournament.current)) {
+    submitSwissRound(false);
+  }
+}
+
+/* ============================================================
+   Results and phase-aware withdrawals
    ============================================================ */
 
 function automaticForfeitCode(data, game, roundIndex) {
@@ -2699,11 +3427,13 @@ function automaticForfeitCode(data, game, roundIndex) {
 }
 
 function refreshAutomaticForfeits(data) {
-  data.rounds.forEach((round, roundIndex) => {
+  const limit = data.rbtRounds ?? data.rounds.length;
+
+  data.rounds.slice(0, limit).forEach((round, index) => {
     for (const game of round.games) {
       if (game.result !== null && !game.auto) continue;
 
-      const result = automaticForfeitCode(data, game, roundIndex);
+      const result = automaticForfeitCode(data, game, index);
       game.result = result;
       game.auto = result !== null;
     }
@@ -2711,22 +3441,22 @@ function refreshAutomaticForfeits(data) {
 }
 
 function setManualResult(board, result) {
-  if (!tournament || tournament.finished) return;
+  if (!tournament || !canEditRound(tournament, tournament.current)) return;
 
   const game = tournament.rounds[tournament.current].games[board];
   if (!game) return;
 
   if (result !== null &&
-      !Object.prototype.hasOwnProperty.call(
-        RESULT_DEFINITIONS, result
-      )) {
+      !Object.prototype.hasOwnProperty.call(RESULT_DEFINITIONS, result)) {
     return;
   }
 
   game.result = result;
   game.auto = false;
 
-  if (result === null) refreshAutomaticForfeits(tournament);
+  if (result === null && !isSwissRound(tournament, tournament.current)) {
+    refreshAutomaticForfeits(tournament);
+  }
 
   updateResultControls(board);
   updateRoundNavigation();
@@ -2741,113 +3471,246 @@ function updateResultControls(board) {
 
   row.querySelectorAll("input[data-result-radio]").forEach(radio => {
     radio.checked = radio.value === game.result;
-    radio.closest("label").classList.toggle(
-      "selected", radio.checked
-    );
+    radio.closest("label").classList.toggle("selected", radio.checked);
   });
 
   row.querySelector("[data-forfeit]").value =
     ["F1", "F0", "F00"].includes(game.result) ? game.result : "";
 
-  const note = row.querySelector("[data-auto-note]");
-  note.hidden = !game.auto;
+  row.querySelector("[data-auto-note]").hidden = !game.auto;
 }
 
 document.addEventListener("click", event => {
   const radio = event.target.closest("input[data-result-radio]");
-  if (!radio || !tournament || tournament.finished) return;
+
+  if (!radio || !tournament ||
+      !canEditRound(tournament, tournament.current)) return;
 
   const board = Number(radio.dataset.board);
   const game = tournament.rounds[tournament.current].games[board];
 
-  setManualResult(
-    board,
-    game.result === radio.value ? null : radio.value
-  );
+  setManualResult(board, game.result === radio.value ? null : radio.value);
 });
 
 document.addEventListener("change", event => {
   const select = event.target.closest("select[data-forfeit]");
-  if (!select || !tournament || tournament.finished) return;
 
-  setManualResult(
-    Number(select.dataset.board),
-    select.value || null
-  );
+  if (!select || !tournament ||
+      !canEditRound(tournament, tournament.current)) return;
+
+  setManualResult(Number(select.dataset.board), select.value || null);
 });
 
+function canOpenWithdrawal() {
+  if (!tournament || tournament.finished) return false;
+
+  if (!isHybrid() || !rbtLocked()) return true;
+  if (tournament.swissEnded) return false;
+
+  return tournament.current === tournament.rounds.length - 1 &&
+    isSwissRound(tournament, tournament.current) &&
+    !tournament.rounds[tournament.current].closed &&
+    tournament.rounds.length < plannedRounds() &&
+    tournament.players.some(player => player.withdrawnFrom === null);
+}
+
 function openWithdrawal() {
-  if (!tournament || tournament.finished) return;
+  if (!canOpenWithdrawal()) return;
 
-  document.getElementById("withdraw-player").innerHTML =
-    tournament.players.map(player => `
-      <option value="${player.id}">
-        ${html(player.tpn + ". " + player.name +
-          (player.withdrawnFrom !== null ? " (avanmäld)" : ""))}
-      </option>
-    `).join("");
+  const inSwiss = rbtLocked();
+  const candidates = inSwiss
+    ? tournament.players.filter(player => player.withdrawnFrom === null)
+    : tournament.players;
 
-  const roundInput = document.getElementById("withdraw-round");
-  roundInput.max = String(tournament.rounds.length);
-  roundInput.value = String(tournament.current + 1);
-  roundInput.disabled = false;
-  roundInput.required = true;
+  $("withdraw-player").innerHTML = candidates.map(player => `
+    <option value="${player.id}">
+      ${html(player.tpn + ". " + player.name +
+        (player.withdrawnFrom !== null ? " (avanmäld)" : ""))}
+    </option>
+  `).join("");
 
-  document.getElementById("withdraw-operation").value = "withdraw";
-  document.getElementById("withdraw-dialog").showModal();
+  $("withdraw-heading").textContent = inSwiss
+    ? "Avanmäl en spelare efter den publicerade schweizerronden"
+    : "Avanmäl eller återanmäl en spelare";
+
+  const operation = $("withdraw-operation");
+  operation.value = "withdraw";
+  operation.disabled = inSwiss;
+
+  const input = $("withdraw-round");
+
+  if (inSwiss) {
+    input.min = String(tournament.rounds.length + 1);
+    input.max = String(tournament.rounds.length + 1);
+    input.value = String(tournament.rounds.length + 1);
+    input.disabled = true;
+    input.required = false;
+
+    $("withdraw-hint").textContent =
+      "Spelaren är kvar i den aktuella publicerade ronden och utesluts " +
+      "från och med nästa ännu inte lottade rond. Lottningar och resultat " +
+      "lämnas oförändrade. Inga walkoverresultat tilldelas automatiskt " +
+      "i schweizerfasen. Denna avanmälan kan inte återkallas här.";
+  } else {
+    const maximum = tournament.rbtRounds + (isHybrid() ? 1 : 0);
+
+    input.min = "1";
+    input.max = String(maximum);
+    input.value = String(tournament.current + 1);
+    input.disabled = false;
+    input.required = true;
+
+    $("withdraw-hint").textContent =
+      "RBT-lottningarna ändras inte. Manuella resultat bevaras. " +
+      "Berörda RBT-partier utan resultat får automatiska walkoverresultat. " +
+      "Om båda spelarna är avanmälda tilldelas dubbel walkoverförlust." +
+      (isHybrid()
+        ? " Du kan välja rond " + (tournament.rbtRounds + 1) +
+          " för att avanmäla spelaren från den första schweizerronden " +
+          "utan att ändra RBT-partier."
+        : "");
+  }
+
+  $("withdraw-dialog").showModal();
 }
 
 function updateWithdrawalOperation() {
-  const reinstate =
-    document.getElementById("withdraw-operation").value === "reinstate";
+  const inSwiss = rbtLocked();
+  const reinstate = $("withdraw-operation").value === "reinstate";
+  const input = $("withdraw-round");
 
-  const input = document.getElementById("withdraw-round");
-  input.disabled = reinstate;
-  input.required = !reinstate;
+  input.disabled = inSwiss || reinstate;
+  input.required = !inSwiss && !reinstate;
 }
 
 function applyWithdrawal(event) {
   event.preventDefault();
-  if (!tournament || tournament.finished) return;
+  if (!canOpenWithdrawal()) return;
 
-  const id = Number(document.getElementById("withdraw-player").value);
-  const operation =
-    document.getElementById("withdraw-operation").value;
+  try {
+    const id = Number($("withdraw-player").value);
+    const inSwiss = rbtLocked();
+    const operation = inSwiss ? "withdraw" : $("withdraw-operation").value;
+    const round = inSwiss
+      ? tournament.rounds.length + 1
+      : Number($("withdraw-round").value);
 
-  const round = Number(
-    document.getElementById("withdraw-round").value
-  );
+    requireCondition(
+      Number.isInteger(id) && !!tournament.players[id],
+      "Välj en giltig spelare."
+    );
 
-  if (!Number.isInteger(id) || !tournament.players[id]) {
-    alert("Välj en giltig spelare.");
-    return;
+    requireCondition(
+      ["withdraw", "reinstate"].includes(operation),
+      "Välj en giltig åtgärd."
+    );
+
+    if (inSwiss) {
+      requireCondition(
+        tournament.players[id].withdrawnFrom === null,
+        "Denna spelare har redan en avanmälan."
+      );
+
+      if (!confirm(
+        "Vill du avanmäla " + tournament.players[id].name +
+        " efter rond " + tournament.rounds.length + "?\n\n" +
+        "Den aktuella ronden behålls. Detta kan inte återkallas här."
+      )) return;
+    } else if (operation === "withdraw") {
+      const maximum = tournament.rbtRounds + (isHybrid() ? 1 : 0);
+
+      requireCondition(
+        Number.isInteger(round) && round >= 1 && round <= maximum,
+        "Välj en giltig rond för avanmälan."
+      );
+    }
+
+    const draft = clone(tournament);
+    draft.players[id].withdrawnFrom =
+      operation === "withdraw" ? round - 1 : null;
+
+    if (!inSwiss) refreshAutomaticForfeits(draft);
+
+    tournament = validateTournamentData(draft);
+    $("withdraw-dialog").close();
+    persist();
+    renderApplication();
+  } catch (error) {
+    alert(error.message);
   }
-
-  if (operation === "withdraw" &&
-      (!Number.isInteger(round) ||
-       round < 1 ||
-       round > tournament.rounds.length)) {
-    alert("Välj en giltig rond för avanmälan.");
-    return;
-  }
-
-  tournament.players[id].withdrawnFrom =
-    operation === "withdraw" ? round - 1 : null;
-
-  refreshAutomaticForfeits(tournament);
-  document.getElementById("withdraw-dialog").close();
-
-  persist();
-  renderApplication();
 }
 
 /* ============================================================
    Standings
 
-   Scoring and tie-breaks are separate from rating budgets.
+   The original RBT-only calculation is retained unchanged.
+   Hybrid scoring is routed through computeHybridStats().
    ============================================================ */
 
+function rankStandings(rows, tb) {
+  const ordered = rows.slice().sort((a, b) => {
+    if (a.points !== b.points) return b.points - a.points;
+    const difference = b[tb] - a[tb];
+    if (Math.abs(difference) > EPS) return difference;
+    return a.id - b.id;
+  });
+
+  let index = 0;
+
+  while (index < ordered.length) {
+    let end = index + 1;
+
+    while (end < ordered.length &&
+           ordered[end].points === ordered[index].points &&
+           Math.abs(ordered[end][tb] - ordered[index][tb]) <= EPS) {
+      end++;
+    }
+
+    for (let item = index; item < end; item++) {
+      ordered[item].position = index + 1;
+      ordered[item].tied = end - index > 1;
+    }
+
+    index = end;
+  }
+
+  return {rows: ordered, byId: rows};
+}
+
+function calculateHybridStandings(useAllRounds) {
+  const limit = useAllRounds || tournament.scope === "all"
+    ? tournament.rounds.length
+    : tournament.current + 1;
+
+  const context = computeHybridStats(tournament, limit);
+
+  const rows = tournament.players.map(player => {
+    const stats = context.byId.get(player.id);
+
+    return {
+      id: player.id,
+      points: stats.score2 / 2,
+      played: stats.played,
+      wins: stats.wins,
+      draws: stats.draws,
+      losses: stats.losses,
+      byes: stats.byes,
+      cumulative: stats.cumulative,
+      buchholz: stats.buchholz,
+      wnt: stats.wnt,
+      position: 0,
+      tied: false
+    };
+  });
+
+  const ranked = rankStandings(rows, tournament.tb);
+  ranked.N = context.N;
+  return ranked;
+}
+
 function calculateStandings(useAllRounds = false) {
+  if (isHybrid()) return calculateHybridStandings(useAllRounds);
+
   const data = tournament;
 
   const rows = data.players.map(player => ({
@@ -2871,15 +3734,13 @@ function calculateStandings(useAllRounds = false) {
     ? data.rounds.length
     : data.current + 1;
 
-  for (let roundIndex = 0; roundIndex < limit; roundIndex++) {
-    const round = data.rounds[roundIndex];
+  for (let index = 0; index < limit; index++) {
+    const round = data.rounds[index];
     const hasResults = round.games.some(game => game.result !== null);
-
     if (!hasResults) continue;
 
     for (const game of round.games) {
       if (game.result === null) continue;
-
       const result = RESULT_DEFINITIONS[game.result];
 
       addResult(game.w, game.b, result.white, result.played);
@@ -2891,9 +3752,7 @@ function calculateStandings(useAllRounds = false) {
       rows[round.bye].byes++;
     }
 
-    for (const row of rows) {
-      row.cumulative += row.points;
-    }
+    for (const row of rows) row.cumulative += row.points;
   }
 
   function addResult(id, opponent, score, played) {
@@ -2906,21 +3765,15 @@ function calculateStandings(useAllRounds = false) {
     else row.losses++;
 
     row.opponents.push(opponent);
-    row.records.push({ opponent, score });
+    row.records.push({opponent, score});
   }
 
   for (const row of rows) {
     const opponentScores = row.opponents.map(id => rows[id].points);
-
-    for (let bye = 0; bye < row.byes; bye++) {
-      opponentScores.push(0);
-    }
+    for (let bye = 0; bye < row.byes; bye++) opponentScores.push(0);
 
     if (opponentScores.length) {
-      const sum = opponentScores.reduce(
-        (total, score) => total + score, 0
-      );
-
+      const sum = opponentScores.reduce((total, score) => total + score, 0);
       row.buchholz = sum - Math.min(...opponentScores);
     }
 
@@ -2930,37 +3783,7 @@ function calculateStandings(useAllRounds = false) {
     }
   }
 
-  const ordered = rows.slice().sort((a, b) => {
-    if (a.points !== b.points) return b.points - a.points;
-
-    const difference = b[data.tb] - a[data.tb];
-    if (Math.abs(difference) > EPS) return difference;
-
-    return a.id - b.id;
-  });
-
-  let index = 0;
-
-  while (index < ordered.length) {
-    let end = index + 1;
-
-    while (end < ordered.length &&
-           ordered[end].points === ordered[index].points &&
-           Math.abs(
-             ordered[end][data.tb] - ordered[index][data.tb]
-           ) <= EPS) {
-      end++;
-    }
-
-    for (let item = index; item < end; item++) {
-      ordered[item].position = index + 1;
-      ordered[item].tied = end - index > 1;
-    }
-
-    index = end;
-  }
-
-  return { rows: ordered, byId: rows };
+  return rankStandings(rows, data.tb);
 }
 
 /* ============================================================
@@ -2969,18 +3792,14 @@ function calculateStandings(useAllRounds = false) {
 
 function playerHTML(id, roundIndex, piece = "") {
   const player = tournament.players[id];
-  const information = scheduleReport.information;
+  const info = scheduleReport.information;
   const withdrawn = player.withdrawnFrom !== null &&
     roundIndex >= player.withdrawnFrom;
 
-  const groupSpan =
-    (information.lower[id] + 1) + "–" +
-    (information.upper[id] + 1);
-
-  const groupTitle =
-    "Motståndare i personlig grupp: TPN " +
-    personalGroupLabel(information, id) +
-    ". Målrating: " + formatNumber(information.targets[id]);
+  const span = (info.lower[id] + 1) + "–" + (info.upper[id] + 1);
+  const title = "Motståndare i personlig grupp: TPN " +
+    personalGroupLabel(info, id) +
+    ". Målrating: " + formatNumber(info.targets[id]);
 
   return `
     <div class="player-box">
@@ -2990,8 +3809,8 @@ function playerHTML(id, roundIndex, piece = "") {
       ` : ""}
       <strong>${player.tpn}. ${html(player.name)}</strong>
       <span class="badge">${formatNumber(player.rating, 0)}</span>
-      <span class="badge group-badge" title="${html(groupTitle)}">
-        G ${groupSpan}
+      <span class="badge group-badge" title="${html(title)}">
+        G ${span}
       </span>
       ${withdrawn ? `
         <span class="withdrawn">
@@ -3000,6 +3819,17 @@ function playerHTML(id, roundIndex, piece = "") {
       ` : ""}
     </div>
   `;
+}
+
+function wasPreviouslyPlayed(a, b, roundIndex) {
+  return tournament.rounds.slice(0, roundIndex).some(round =>
+    round.games.some(game =>
+      game.result !== null &&
+      RESULT_DEFINITIONS[game.result].played &&
+      ((game.w === a && game.b === b) ||
+       (game.w === b && game.b === a))
+    )
+  );
 }
 
 function pairingsTableHTML(roundIndex, editable) {
@@ -3030,7 +3860,6 @@ function pairingsTableHTML(roundIndex, editable) {
             </label>
           `).join("")}
         </div>
-
         <select class="forfeit-select"
                 data-forfeit
                 data-board="${board}"
@@ -3046,23 +3875,30 @@ function pairingsTableHTML(roundIndex, editable) {
             -- / -- : Dubbel walkoverförlust
           </option>
         </select>
-
-        <div class="small-note"
-             data-auto-note
-             ${game.auto ? "" : "hidden"}>
+        <div class="small-note" data-auto-note ${game.auto ? "" : "hidden"}>
           Automatisk walkover efter avanmälan
         </div>
       `;
     } else {
       resultHTML = game.result === null
-        ? "–"
-        : html(RESULT_DEFINITIONS[game.result].label);
+        ? "–" : html(RESULT_DEFINITIONS[game.result].label);
     }
+
+    const rematch = isSwissRound(tournament, roundIndex) &&
+      wasPreviouslyPlayed(game.w, game.b, roundIndex);
 
     return `
       <tr ${editable ? `data-board-row="${board}"` : ""}>
         <td class="numeric">${board + 1}</td>
-        <td>${playerHTML(game.w, roundIndex, "white")}</td>
+        <td>
+          ${playerHTML(game.w, roundIndex, "white")}
+          ${rematch ? `
+            <span class="badge rematch-badge"
+                  title="Dessa spelare har ett tidigare faktiskt spelat möte">
+              Upprepat möte
+            </span>
+          ` : ""}
+        </td>
         <td class="numeric">${resultHTML}</td>
         <td>${playerHTML(game.b, roundIndex, "black")}</td>
       </tr>
@@ -3075,13 +3911,12 @@ function pairingsTableHTML(roundIndex, editable) {
         <thead>
           <tr>
             <th class="numeric">Bord</th>
-             <th>Vit</th>
-		<th class="numeric">
-  		 <span style="display: inline-block; transform: translateX(${editable ? "-11mm" : "0mm"});">
-    		   Resultat
-  		 </span>
-	        </th>
-	     </th>
+            <th>Vit</th>
+            <th class="numeric">
+              <span style="display:inline-block;transform:translateX(${editable ? "-11mm" : "0mm"});">
+                Resultat
+              </span>
+            </th>
             <th>Svart</th>
           </tr>
         </thead>
@@ -3089,41 +3924,52 @@ function pairingsTableHTML(roundIndex, editable) {
       </table>
     </div>
     <p class="small-note">
-      G visar den personliga gruppens TPN-intervall, exklusive spelarens eget TPN.
+      G visar den personliga gruppens TPN-intervall,
+      exklusive spelarens eget TPN.
+      ${isSwissRound(tournament, roundIndex)
+        ? "De personliga grupperna visas endast som information i schweizerfasen."
+        : ""}
     </p>
   `;
 }
 
 function byeHTML(roundIndex) {
-  const bye = tournament.rounds[roundIndex].bye;
+  const round = tournament.rounds[roundIndex];
+  const bye = round.bye;
   if (bye === null) return "";
 
   const player = tournament.players[bye];
-  const credited = isRoundComplete(tournament.rounds[roundIndex]);
+  const swiss = isSwissRound(tournament, roundIndex);
+  const credited = swiss ? round.closed : isRoundComplete(round);
 
   return `
     <div class="bye-box">
-      <strong>Frirond:</strong>
+      <strong>${swiss ? "Frirond i schweizerfasen:" : "Frirond:"}</strong>
       ${player.tpn}. ${html(player.name)}
       — ${formatPoints(tournament.byePoints)} poäng
-      ${credited ? "(tilldelade)" : "(tilldelas när ronden är färdig)"}.
-      Ingen motståndarrating tillkommer; ratingbudgeten är minskad
-      med en personlig målrating.
+      ${credited
+        ? "(tilldelade)"
+        : swiss
+          ? "(tilldelas när ronden lämnas in)"
+          : "(tilldelas när ronden är färdig)"}.
+      ${swiss
+        ? "Ingen spelad färg, inget spelat möte och inget direkt WNT-bidrag " +
+          "tillkommer. RBT-budgetarna är oförändrade."
+        : "Ingen motståndarrating tillkommer; ratingbudgeten är minskad " +
+          "med en personlig målrating."}
     </div>
   `;
 }
 
 function standingsTableHTML(standings) {
-  const information = scheduleReport.information;
+  const info = scheduleReport.information;
 
   const body = standings.rows.map(row => {
     const player = tournament.players[row.id];
 
     return `
       <tr class="${row.position === 1 ? "leader-row" : ""}">
-        <td class="numeric">
-          ${row.position}${row.tied ? "=" : ""}
-        </td>
+        <td class="numeric">${row.position}${row.tied ? "=" : ""}</td>
         <td class="numeric">${player.tpn}</td>
         <td>
           <strong>${html(player.name)}</strong>
@@ -3134,19 +3980,13 @@ function standingsTableHTML(standings) {
           ` : ""}
         </td>
         <td class="numeric">${formatNumber(player.rating, 0)}</td>
-        <td class="numeric">
-          ${formatNumber(information.targets[row.id])}
-        </td>
+        <td class="numeric">${formatNumber(info.targets[row.id])}</td>
         <td class="numeric">${row.played}</td>
         <td class="numeric">${row.wins}</td>
         <td class="numeric">${row.draws}</td>
         <td class="numeric">${row.losses}</td>
-        <td class="numeric">
-          <strong>${formatPoints(row.points)}</strong>
-        </td>
-        <td class="numeric">
-          ${formatNumber(row[tournament.tb], 2)}
-        </td>
+        <td class="numeric"><strong>${formatPoints(row.points)}</strong></td>
+        <td class="numeric">${formatNumber(row[tournament.tb], 2)}</td>
       </tr>
     `;
   }).join("");
@@ -3160,7 +4000,7 @@ function standingsTableHTML(standings) {
             <th class="numeric" title="Turneringsnummer">TPN</th>
             <th>Spelare</th>
             <th class="numeric">Rating</th>
-            <th class="numeric">Målrating</th>
+            <th class="numeric">RBT-målrating</th>
             <th class="numeric">Spelade</th>
             <th class="numeric" title="Vinster">V</th>
             <th class="numeric" title="Remier">R</th>
@@ -3172,23 +4012,25 @@ function standingsTableHTML(standings) {
         <tbody>${body}</tbody>
       </table>
     </div>
-
     <p class="small-note">
       Målrating är den fasta medelratingen för spelarens personliga
       grupp och påverkar inte ställningen.
-      Spelade räknar faktiskt spelade partier.
+      ”Spelade” räknar faktiskt spelade partier.
       V/R/F = vinster/remier/förluster och inkluderar registrerade
       walkoverresultat.
-      Frirondspoäng tilldelas endast för färdiga ronder.
       ”=” anger delad placering efter vald särskiljning.
-      Alla särskiljningsvärden är preliminära tills samtliga
-      schemalagda partier har registrerade resultat.
+      ${isHybrid()
+        ? "Endast färdiga RBT-ronder och inlämnade schweizerronder räknas med. " +
+          "WNT utesluter direkta bidrag från walkoverpartier och frironder; " +
+          "nämnaren är antalet medräknade ronder (" + standings.N + "). " +
+          "Schweizerlottningen använder alltid poäng, WNT och TPN."
+        : "Frirondspoäng tilldelas endast för färdiga ronder. " +
+          "Alla särskiljningsvärden är preliminära tills samtliga " +
+          "schemalagda partier har registrerade resultat."}
     </p>
-
     ${tournament.tb === "cumulative" ? `
       <p class="small-note">
-        Progressiv särskiljning använder schemalagd rondordning
-        och omfattar ronder med registrerade resultat,
+        Progressiv särskiljning använder schemalagd rondordning,
         inte ordningen i vilken resultaten matades in.
       </p>
     ` : ""}
@@ -3198,84 +4040,188 @@ function standingsTableHTML(standings) {
 function updateRoundNavigation() {
   if (!tournament) return;
 
-  const select = document.getElementById("round-select");
-  select.innerHTML = tournament.rounds.map((round, index) => {
-    const recorded = round.games.filter(
-      game => game.result !== null
-    ).length;
+  $("round-select").innerHTML = tournament.rounds.map((round, index) => {
+    const recorded = round.games.filter(game => game.result !== null).length;
+    const swiss = isSwissRound(tournament, index);
+
+    let suffix;
+    if (swiss) {
+      suffix = round.closed
+        ? " ✓ inlämnad"
+        : isRoundComplete(round)
+          ? " · klar att lämnas in"
+          : " · " + recorded + "/" + round.games.length;
+    } else {
+      suffix = isRoundComplete(round)
+        ? " ✓" : " · " + recorded + "/" + round.games.length;
+    }
 
     const label = "Rond " + (index + 1) +
-      (isRoundComplete(round)
-        ? " ✓"
-        : " · " + recorded + "/" + round.games.length);
+      (isHybrid() ? (swiss ? " · Schweizer" : " · RBT") : "") + suffix;
 
     return `
-      <option value="${index}"
-              ${index === tournament.current ? "selected" : ""}>
+      <option value="${index}" ${index === tournament.current ? "selected" : ""}>
         ${html(label)}
       </option>
     `;
   }).join("");
 
-  document.getElementById("previous-button").disabled =
-    tournament.current === 0;
-
-  document.getElementById("next-button").disabled =
+  $("previous-button").disabled = tournament.current === 0;
+  $("next-button").disabled =
     tournament.current === tournament.rounds.length - 1;
 
-  document.getElementById("round-title").textContent =
-    "Rond " + (tournament.current + 1);
+  const currentSwiss = isSwissRound(tournament, tournament.current);
 
-  document.getElementById("bye-container").innerHTML =
-    byeHTML(tournament.current);
+  $("round-title").textContent =
+    "Rond " + (tournament.current + 1) +
+    (isHybrid() ? (currentSwiss ? " — Schweizer" : " — RBT") : "");
+
+  $("bye-container").innerHTML = byeHTML(tournament.current);
+
+  const action = $("round-action-button");
+  action.disabled = false;
+
+  if (!isHybrid() || tournament.current < tournament.rounds.length - 1) {
+    action.textContent = "Nästa rond →";
+  } else if (!rbtLocked()) {
+    action.textContent = "Starta schweizerfasen";
+  } else if (tournament.swissEnded) {
+    action.textContent = "Schweizerfasen är avslutad";
+    action.disabled = true;
+  } else {
+    action.textContent =
+      tournament.rounds.length === plannedRounds()
+        ? "Lämna in den sista schweizerronden"
+        : "Lämna in resultat och lotta nästa schweizerrond";
+  }
+
+  $("finish-swiss-button").hidden =
+    !isHybrid() || !currentSwiss || tournament.swissEnded ||
+    tournament.current !== tournament.rounds.length - 1 ||
+    tournament.rounds[tournament.current].closed;
+
+  $("withdraw-button").disabled = !canOpenWithdrawal();
+  $("withdraw-button").textContent = rbtLocked()
+    ? "Avanmäl spelare" : "Avanmäl / återanmäl spelare";
+
+  $("phase-status").hidden = !isHybrid();
+
+  if (isHybrid()) {
+    const submitted = tournament.rounds.slice(tournament.rbtRounds)
+      .filter(round => round.closed).length;
+
+    $("phase-status").textContent =
+      tournament.rbtRounds + " fasta RBT-ronder + " +
+      tournament.swissRounds + " planerade schweizerronder. " +
+      publishedSwissRounds() + " schweizerronder publicerade; " +
+      submitted + " inlämnade. " +
+      (tournament.swissEnded
+        ? "Schweizerfortsättningen är avslutad."
+        : rbtLocked()
+          ? "RBT-resultaten är låsta."
+          : "Registrera samtliga RBT-resultat innan schweizerfasen startas.");
+  }
+
+  $("round-play-hint").textContent = !isHybrid()
+    ? "Resultat sparas direkt. Klicka på ett valt resultat igen " +
+      "för att ta bort det. Ronderna kan visas och spelas i valfri ordning."
+    : !rbtLocked()
+      ? "RBT-resultat sparas direkt och kan registreras i valfri ordning. " +
+        "Ställningen i kombinerat läge räknar endast färdiga RBT-ronder. " +
+        "Registrera samtliga RBT-resultat och välj sedan Starta schweizerfasen."
+      : !currentSwiss
+        ? "Dessa RBT-resultat är låsta eftersom schweizerfasen har startats."
+        : tournament.rounds[tournament.current].closed
+          ? "Denna inlämnade schweizerrond är låst."
+          : "Ange samtliga resultat och lämna sedan in schweizerronden. " +
+            "Registrerade resultat sparas men påverkar inte ställningen " +
+            "förrän ronden lämnas in. Avanmälningar gäller nästa ännu " +
+            "inte lottade rond.";
 }
 
 function renderRound() {
   if (!tournament) return;
-
   updateRoundNavigation();
-  document.getElementById("pairings-container").innerHTML =
-    pairingsTableHTML(tournament.current, true);
+  $("pairings-container").innerHTML = pairingsTableHTML(
+    tournament.current, canEditRound(tournament, tournament.current)
+  );
+}
+
+function finalViewInfo() {
+  const missing = missingGameCount();
+
+  if (!isHybrid()) {
+    return {
+      heading: missing
+        ? "Aktuell ställning — ofullständiga resultat" : "Slutställning",
+      notice: missing
+        ? formatNumber(missing, 0) + " schemalagda partier saknar resultat. " +
+          "Denna ställning omfattar endast registrerade resultat. " +
+          "Gå tillbaka till ronderna för att fortsätta."
+        : ""
+    };
+  }
+
+  if (tournament.swissEnded) {
+    return {heading: "Slutställning", notice: ""};
+  }
+
+  const unpublished = tournament.swissRounds - publishedSwissRounds();
+  const open = tournament.rounds.slice(tournament.rbtRounds)
+    .filter(round => !round.closed).length;
+
+  const parts = [];
+  if (missing) {
+    parts.push(
+      formatNumber(missing, 0) + " publicerade partier saknar resultat."
+    );
+  }
+  if (unpublished) {
+    parts.push(
+      unpublished + " planerade schweizerronder är ännu inte lottade."
+    );
+  }
+  if (open) {
+    parts.push("Den senaste schweizerronden har inte lämnats in.");
+  }
+
+  parts.push(
+    "Ställningen omfattar endast färdiga RBT-ronder och inlämnade " +
+    "schweizerronder. Denna vy avslutar inte schweizerfasen. " +
+    "Gå tillbaka till ronderna för att fortsätta."
+  );
+
+  return {
+    heading: "Aktuell ställning — turneringen pågår",
+    notice: parts.join(" ")
+  };
 }
 
 function renderStandings() {
   if (!tournament) return;
 
-  document.getElementById("standings-scope").value = tournament.scope;
-  document.getElementById("live-tb").value = tournament.tb;
-  document.getElementById("final-tb").value = tournament.tb;
+  $("standings-scope").value = tournament.scope;
+  $("standings-scope").options[0].textContent = isHybrid()
+    ? "Alla medräknade ronder" : "Alla ronder med registrerade resultat";
+  $("live-tb").value = tournament.tb;
+  $("final-tb").value = tournament.tb;
 
-  document.getElementById("standings-container").innerHTML =
+  $("standings-container").innerHTML =
     standingsTableHTML(calculateStandings(false));
 
   if (tournament.finished) {
-    const missing = missingGameCount();
-
-    document.getElementById("final-heading").textContent =
-      missing ? "Aktuell ställning — ofullständiga resultat" : "Slutställning";
-
-    const notice = document.getElementById("final-notice");
-    notice.hidden = missing === 0;
-    notice.textContent = missing
-      ? formatNumber(missing, 0) + " schemalagda partier saknar resultat. " +
-        "Denna ställning omfattar endast registrerade resultat. " +
-        "Gå tillbaka till ronderna för att fortsätta."
-      : "";
-
-    document.getElementById("final-container").innerHTML =
+    const info = finalViewInfo();
+    $("final-heading").textContent = info.heading;
+    $("final-notice").hidden = !info.notice;
+    $("final-notice").textContent = info.notice;
+    $("final-container").innerHTML =
       standingsTableHTML(calculateStandings(true));
   }
 }
 
 function groupSummaryHTML() {
   const info = scheduleReport.information;
-  const minimumTarget = Math.min(...info.targets);
-  const maximumTarget = Math.max(...info.targets);
-
-  // Use the actual schedule-specific budgets, including rests.
   const budgets = scheduleReport.rows.map(row => row.budget);
-  const minimumBudget = Math.min(...budgets);
-  const maximumBudget = Math.max(...budgets);
 
   return `
     <div class="table-scroll">
@@ -3295,30 +4241,27 @@ function groupSummaryHTML() {
             <td class="numeric">${info.groupSize}</td>
             <td class="numeric">${info.half} / ${info.half}</td>
             <td class="numeric">
-              ${formatNumber(minimumTarget)}–${formatNumber(maximumTarget)}
+              ${formatNumber(Math.min(...info.targets))}–${formatNumber(Math.max(...info.targets))}
             </td>
             <td class="numeric">
-              ${formatNumber(minimumBudget)}–${formatNumber(maximumBudget)}
+              ${formatNumber(Math.min(...budgets))}–${formatNumber(Math.max(...budgets))}
             </td>
           </tr>
         </tbody>
       </table>
     </div>
-
     <p class="small-note">
-      Gruppstorlek = 2 × ceil(N / 6).
-      Nära startfältets ändar flyttas platser som saknas till den andra sidan.
-      Varje grupp utesluter sin egen spelare.
-      Budget = schemalagda partier × personlig grupps medelrating.
-      En frirond minskar budgeten med en personlig målrating.
-      Det sekundära gruppönskemålet är ceil(schemalagda partier / 2).
+      Gruppstorlek = 2 × ceil(N / 6). Varje grupp utesluter sin egen spelare.
+      Budget = schemalagda RBT-partier × personlig grupps medelrating.
+      En schemalagd frirond minskar budgeten med en personlig målrating.
+      Den sekundära målsättningen för gruppen är ceil(schemalagda RBT-partier / 2).
       ceil betyder avrundning uppåt till närmaste heltal.
     </p>
   `;
 }
 
 function playerBudgetsHTML() {
-  const information = scheduleReport.information;
+  const info = scheduleReport.information;
 
   return `
     <div class="table-scroll">
@@ -3336,51 +4279,44 @@ function playerBudgetsHTML() {
             <th class="numeric">Motståndarratingsumma</th>
             <th class="numeric">Budget</th>
             <th class="numeric">Avvikelse</th>
-            <th class="numeric">Motståndarens medelrating</th>
+            <th class="numeric">Motståndarnas medelrating</th>
             <th class="numeric">Vit / svart</th>
             <th>Färgföljd</th>
             <th class="numeric">Längsta följd</th>
           </tr>
         </thead>
         <tbody>
-          ${scheduleReport.rows.map(row => {
-            const player = tournament.players[row.id];
-
-            return `
-              <tr>
-                <td class="numeric">${player.tpn}</td>
-                <td>${html(player.name)}</td>
-                <td>${personalGroupLabel(information, row.id)}</td>
-                <td class="numeric">${formatNumber(row.target)}</td>
-                <td class="numeric">${row.games}</td>
-                <td class="numeric">${row.personal}</td>
-                <td class="numeric">${row.requested}</td>
-                <td class="numeric">${row.deficit}</td>
-                <td class="numeric">${formatNumber(row.sum)}</td>
-                <td class="numeric">${formatNumber(row.budget)}</td>
-                <td class="numeric">${formatNumber(row.signedError)}</td>
-                <td class="numeric">${formatNumber(row.average)}</td>
-                <td class="numeric">${row.whites} / ${row.blacks}</td>
-                <td style="font-family: monospace; overflow-wrap: anywhere;">
-                  ${row.colourString}
-                </td>
-                <td class="numeric">${row.maximumRun}</td>
-              </tr>
-            `;
-          }).join("")}
+          ${scheduleReport.rows.map(row => `
+            <tr>
+              <td class="numeric">${tournament.players[row.id].tpn}</td>
+              <td>${html(tournament.players[row.id].name)}</td>
+              <td>${personalGroupLabel(info, row.id)}</td>
+              <td class="numeric">${formatNumber(row.target)}</td>
+              <td class="numeric">${row.games}</td>
+              <td class="numeric">${row.personal}</td>
+              <td class="numeric">${row.requested}</td>
+              <td class="numeric">${row.deficit}</td>
+              <td class="numeric">${formatNumber(row.sum)}</td>
+              <td class="numeric">${formatNumber(row.budget)}</td>
+              <td class="numeric">${formatNumber(row.signedError)}</td>
+              <td class="numeric">${formatNumber(row.average)}</td>
+              <td class="numeric">${row.whites} / ${row.blacks}</td>
+              <td style="font-family:monospace;overflow-wrap:anywhere">
+                ${row.colourString}
+              </td>
+              <td class="numeric">${row.maximumRun}</td>
+            </tr>
+          `).join("")}
         </tbody>
       </table>
     </div>
     <p class="small-note">
-      V = vit, S = svart, – = frirond.
+      Endast RBT-fasen. V = vit, S = svart, – = frirond.
       Avvikelse = motståndarratingsumma minus personlig budget.
       Inom grupp räknar gruppmedlemskap ur denna spelares perspektiv.
-      Önskat antal = ceil(schemalagda partier / 2), ett sekundärt önskemål.
-      Budget = schemalagda partier × personlig målrating.
-      Frironder tillför ingen motståndarrating och minskar budgeten
-      med en personlig målrating.
-      Registrerade resultat och walkoverresultat ändrar inte
-      budgetarna för schemalagda partier.
+      Önskat antal = ceil(schemalagda RBT-partier / 2).
+      Registrerade resultat, walkoverresultat och schweizerronder
+      ändrar inte dessa budgetar.
     </p>
   `;
 }
@@ -3391,19 +4327,17 @@ function completeScheduleHTML(interactive = true) {
       <table>
         <thead>
           <tr>
-            <th>Rond</th>
+            <th>RBT-rond</th>
             <th>Lottningar: vit TPN – svart TPN</th>
             <th>Frirond</th>
           </tr>
         </thead>
         <tbody>
-          ${tournament.rounds.map((round, index) => `
+          ${tournament.rounds.slice(0, tournament.rbtRounds).map((round, index) => `
             <tr>
               <td>
                 ${interactive ? `
-                  <button type="button"
-                          class="light"
-                          onclick="selectRound(${index})">
+                  <button type="button" class="light" onclick="selectRound(${index})">
                     ${index + 1}
                   </button>
                 ` : index + 1}
@@ -3415,25 +4349,30 @@ function completeScheduleHTML(interactive = true) {
               </td>
               <td>
                 ${round.bye === null ? "—" :
-                  (round.bye + 1) + ". " +
-                  html(tournament.players[round.bye].name)}
+                  (round.bye + 1) + ". " + html(tournament.players[round.bye].name)}
               </td>
             </tr>
           `).join("")}
         </tbody>
       </table>
     </div>
+    ${isHybrid() ? `
+      <p class="small-note">
+        De ${tournament.swissRounds} planerade schweizerronderna
+        lottas senare, en i taget. De ingår inte i detta fasta spelschema.
+      </p>
+    ` : ""}
   `;
 }
 
 function renderBudgetDiagnostics() {
   const report = scheduleReport;
-  const oddField = tournament.players.length % 2 !== 0;
+  const odd = tournament.players.length % 2 !== 0;
 
-  document.getElementById("schedule-summary").innerHTML = `
+  $("schedule-summary").innerHTML = `
     <p class="metadata">
       ${tournament.players.length} spelare ·
-      ${tournament.rounds.length} förgenererade ronder ·
+      ${tournament.rbtRounds} förgenererade RBT-ronder ·
       Total absolut personlig budgetavvikelse:
       <strong>${formatNumber(report.totalError)}</strong> ·
       Genomsnittlig avvikelse:
@@ -3443,74 +4382,53 @@ function renderBudgetDiagnostics() {
     <p class="metadata">
       Nedre gräns för total budgetavvikelse, baserad på totalsummorna:
       <strong>${formatNumber(report.aggregateLowerBound)}</strong>
-      ${oddField
-        ? "(för denna fördelning av frironder)"
-        : "(för alla giltiga spelscheman)"} ·
+      ${odd ? "(för denna fördelning av frironder)" : "(för alla giltiga RBT-spelscheman)"} ·
       Underskott av möten inom personliga grupper: ${report.totalDeficit}
     </p>
     <p class="metadata">
       Totalt TPN-avstånd: ${formatNumber(report.distance, 0)} ·
-      Färgtotaler: ${report.balanced ? "optimalt balanserade" : "obalanserade"} ·
-      Trepartifönster med samma färg: ${report.triples} ·
+      RBT-färgtotaler:
+      ${report.balanced ? "optimalt balanserade" : "obalanserade"} ·
+      Trepartisekvenser med samma färg: ${report.triples} ·
       Längsta följd med samma färg: ${report.maximumRun}
     </p>
   `;
 
-  const warnings = document.getElementById("schedule-warnings");
-  warnings.hidden = report.warnings.length === 0;
-  warnings.innerHTML = report.warnings.length
-    ? "<ul style='margin:0; padding-left:20px;'>" +
-      report.warnings.map(
-        warning => "<li>" + html(warning) + "</li>"
-      ).join("") +
+  $("schedule-warnings").hidden = report.warnings.length === 0;
+  $("schedule-warnings").innerHTML = report.warnings.length
+    ? "<ul style='margin:0;padding-left:20px'>" +
+      report.warnings.map(warning => "<li>" + html(warning) + "</li>").join("") +
       "</ul>"
     : "";
 
-  document.getElementById("group-summary").innerHTML = groupSummaryHTML();
-  document.getElementById("player-budgets").innerHTML = playerBudgetsHTML();
+  $("group-summary").innerHTML = groupSummaryHTML();
+  $("player-budgets").innerHTML = playerBudgetsHTML();
 
-  if (document.getElementById("full-schedule-details").open) {
-    document.getElementById("full-schedule-container").innerHTML =
-      completeScheduleHTML();
+  if ($("full-schedule-details").open) {
+    $("full-schedule-container").innerHTML = completeScheduleHTML();
   }
 }
 
-document.getElementById("full-schedule-details")
-  .addEventListener("toggle", event => {
-    if (event.target.open && tournament) {
-      document.getElementById("full-schedule-container").innerHTML =
-        completeScheduleHTML();
-    }
-  });
+$("full-schedule-details").addEventListener("toggle", event => {
+  if (event.target.open && tournament) {
+    $("full-schedule-container").innerHTML = completeScheduleHTML();
+  }
+});
 
 function renderApplication() {
   const started = tournament !== null;
   document.body.classList.toggle("tournament-started", started);
 
-  document.getElementById("section-setup").classList.toggle(
-    "hidden", started
-  );
-
-  document.getElementById("section-round").classList.toggle(
-    "hidden", !started || tournament.finished
-  );
-
-  document.getElementById("section-standings").classList.toggle(
-    "hidden", !started || tournament.finished
-  );
-
-  document.getElementById("section-final").classList.toggle(
-    "hidden", !started || !tournament.finished
-  );
-
-  document.getElementById("section-budget").classList.toggle(
-    "hidden", !started
-  );
+  $("section-setup").classList.toggle("hidden", started);
+  $("section-round").classList.toggle("hidden", !started || tournament.finished);
+  $("section-standings").classList.toggle("hidden", !started || tournament.finished);
+  $("section-final").classList.toggle("hidden", !started || !tournament.finished);
+  $("section-budget").classList.toggle("hidden", !started);
 
   if (!started) return;
 
   for (const id of ["round-name", "standings-name", "final-name"]) {
-    document.getElementById(id).textContent = tournamentTitle();
+    $(id).textContent = tournamentTitle();
   }
 
   renderRound();
@@ -3519,12 +4437,8 @@ function renderApplication() {
 }
 
 function selectRound(index) {
-  if (!tournament ||
-      !Number.isInteger(index) ||
-      index < 0 ||
-      index >= tournament.rounds.length) {
-    return;
-  }
+  if (!tournament || !Number.isInteger(index) ||
+      index < 0 || index >= tournament.rounds.length) return;
 
   tournament.current = index;
   tournament.finished = false;
@@ -3532,24 +4446,18 @@ function selectRound(index) {
   persist();
   renderApplication();
 
-  document.getElementById("section-round").scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-  });
+  $("section-round").scrollIntoView({behavior: "smooth", block: "start"});
 }
 
 function moveRound(direction) {
   if (!tournament) return;
-
   const target = tournament.current + direction;
   if (target < 0 || target >= tournament.rounds.length) return;
-
   selectRound(target);
 }
 
 function changeStandingsScope(value) {
   if (!tournament || !["all", "through"].includes(value)) return;
-
   tournament.scope = value;
   renderStandings();
   persist();
@@ -3557,9 +4465,7 @@ function changeStandingsScope(value) {
 
 function changeTieBreak(value) {
   if (!tournament ||
-      !Object.prototype.hasOwnProperty.call(TIE_BREAKS, value)) {
-    return;
-  }
+      !Object.prototype.hasOwnProperty.call(TIE_BREAKS, value)) return;
 
   tournament.tb = value;
   renderStandings();
@@ -3571,13 +4477,15 @@ function showFinalStandings() {
 
   const missing = missingGameCount();
 
-  if (missing && !confirm(
-    formatNumber(missing, 0) + " schemalagda partier saknar resultat. " +
-    "Vill du visa ställningen med endast registrerade resultat? " +
-    "Du kan gå tillbaka till ronderna efteråt."
-  )) {
-    return;
-  }
+  if (!isHybrid()) {
+    if (missing && !confirm(
+      formatNumber(missing, 0) + " schemalagda partier saknar resultat. " +
+      "Vill du visa ställningen med endast registrerade resultat? " +
+      "Du kan gå tillbaka till ronderna efteråt."
+    )) return;
+  } else if (!tournament.swissEnded && !confirm(
+    finalViewInfo().notice + "\n\nVill du visa aktuell ställning?"
+  )) return;
 
   tournament.finished = true;
   persist();
@@ -3586,7 +4494,6 @@ function showFinalStandings() {
 
 function backToRounds() {
   if (!tournament) return;
-
   tournament.finished = false;
   persist();
   renderApplication();
@@ -3596,33 +4503,28 @@ function newTournament() {
   if (!confirm(
     "Vill du starta en ny turnering? Ladda först ned en " +
     "JSON-säkerhetskopia om du vill behålla denna turnering."
-  )) {
-    return;
-  }
+  )) return;
 
   clearAutosave();
   tournament = null;
   scheduleReport = null;
 
-  document.getElementById("resume-banner").hidden = true;
-  document.getElementById("full-schedule-container").innerHTML = "";
-  document.getElementById("full-schedule-details").open = false;
+  $("resume-banner").hidden = true;
+  $("full-schedule-container").innerHTML = "";
+  $("full-schedule-details").open = false;
 
   renderApplication();
   setStorageStatus("Redo för en ny turnering.");
 }
 
 /* ============================================================
-   Validation, JSON saving, and browser autosave
+   Original fixed-schedule validation
 
-   Version 3 uses scheduled-game budgets.
-   Versions 1 and 2 can be converted after confirmation.
-   Existing pairings, results and standings settings are kept.
-   Personal groups and budgets are derived, never trusted
-   from saved diagnostic fields.
+   Used unchanged for RBT-only tournaments and for the fixed
+   RBT portion of a hybrid tournament.
    ============================================================ */
 
-function validateTournamentData(raw) {
+function validateFixedRBTData(raw) {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
     throw new Error("Ogiltiga turneringsdata.");
   }
@@ -3632,8 +4534,7 @@ function validateTournamentData(raw) {
   }
 
   if (!Array.isArray(raw.players) ||
-      raw.players.length < 3 ||
-      raw.players.length > MAX_PLAYERS) {
+      raw.players.length < 3 || raw.players.length > MAX_PLAYERS) {
     throw new Error("Ogiltig spelarlista.");
   }
 
@@ -3642,14 +4543,10 @@ function validateTournamentData(raw) {
 
   const players = raw.players.map((player, id) => {
     if (!player || typeof player !== "object" ||
-        player.id !== id ||
-        player.tpn !== id + 1 ||
-        typeof player.name !== "string" ||
-        !player.name.trim() ||
-        player.name.length > 120 ||
-        !Number.isInteger(player.rating) ||
-        player.rating < 0 ||
-        player.rating > 4000) {
+        player.id !== id || player.tpn !== id + 1 ||
+        typeof player.name !== "string" || !player.name.trim() ||
+        player.name.length > 120 || !Number.isInteger(player.rating) ||
+        player.rating < 0 || player.rating > 4000) {
       throw new Error("Ogiltig spelarpost.");
     }
 
@@ -3657,9 +4554,7 @@ function validateTournamentData(raw) {
       throw new Error("Spelarna är inte sorterade i fallande ratingordning.");
     }
 
-    const normalized =
-      player.name.trim().normalize("NFKC").toLowerCase();
-
+    const normalized = player.name.trim().normalize("NFKC").toLowerCase();
     if (names.has(normalized)) {
       throw new Error("Spelarlistan innehåller dubbla namn.");
     }
@@ -3674,8 +4569,7 @@ function validateTournamentData(raw) {
     };
   });
 
-  if (!Array.isArray(raw.rounds) ||
-      raw.rounds.length < 1 ||
+  if (!Array.isArray(raw.rounds) || raw.rounds.length < 1 ||
       raw.rounds.length > maximumRounds(count)) {
     throw new Error("Ogiltigt antal ronder.");
   }
@@ -3696,7 +4590,7 @@ function validateTournamentData(raw) {
   const whites = new Int16Array(count);
   const blacks = new Int16Array(count);
 
-  const rounds = raw.rounds.map((round, roundIndex) => {
+  const rounds = raw.rounds.map((round, index) => {
     if (!round || !Array.isArray(round.games) ||
         round.games.length !== Math.floor(count / 2)) {
       throw new Error("Ogiltig rondstruktur.");
@@ -3705,12 +4599,10 @@ function validateTournamentData(raw) {
     const appeared = new Set();
 
     const games = round.games.map(game => {
-      if (!game ||
-          !Number.isInteger(game.w) ||
+      if (!game || !Number.isInteger(game.w) ||
           !Number.isInteger(game.b) ||
           game.w < 0 || game.w >= count ||
-          game.b < 0 || game.b >= count ||
-          game.w === game.b) {
+          game.b < 0 || game.b >= count || game.w === game.b) {
         throw new Error("Ogiltig partilottning.");
       }
 
@@ -3721,19 +4613,15 @@ function validateTournamentData(raw) {
       appeared.add(game.w);
       appeared.add(game.b);
 
-      const key = Math.min(game.w, game.b) + ":" +
-        Math.max(game.w, game.b);
+      const key = Math.min(game.w, game.b) + ":" + Math.max(game.w, game.b);
 
       if (seenPairs.has(key)) {
         throw new Error("Spelschemat innehåller upprepade motståndare.");
       }
-
       seenPairs.add(key);
 
       if (game.result !== null &&
-          !Object.prototype.hasOwnProperty.call(
-            RESULT_DEFINITIONS, game.result
-          )) {
+          !Object.prototype.hasOwnProperty.call(RESULT_DEFINITIONS, game.result)) {
         throw new Error("Ogiltigt partiresultat.");
       }
 
@@ -3742,17 +4630,11 @@ function validateTournamentData(raw) {
       }
 
       const clean = {
-        w: game.w,
-        b: game.b,
-        result: game.result,
-        auto: game.auto
+        w: game.w, b: game.b, result: game.result, auto: game.auto
       };
 
       if (clean.auto) {
-        const expected = automaticForfeitCode(
-          { players }, clean, roundIndex
-        );
-
+        const expected = automaticForfeitCode({players}, clean, index);
         if (!expected || clean.result !== expected) {
           throw new Error(
             "Ett automatiskt walkoverresultat stämmer inte med avanmälningarna."
@@ -3762,7 +4644,6 @@ function validateTournamentData(raw) {
 
       whites[clean.w]++;
       blacks[clean.b]++;
-
       return clean;
     });
 
@@ -3770,8 +4651,7 @@ function validateTournamentData(raw) {
 
     if (count % 2 !== 0) {
       if (!Number.isInteger(round.bye) ||
-          round.bye < 0 ||
-          round.bye >= count ||
+          round.bye < 0 || round.bye >= count ||
           appeared.has(round.bye)) {
         throw new Error("Ogiltig spelare för frirond.");
       }
@@ -3784,27 +4664,27 @@ function validateTournamentData(raw) {
         throw new Error("En spelare har mer än en schemalagd frirond.");
       }
     } else if (round.bye !== null) {
-      throw new Error("Ett jämnt spelarantal kan inte ha en schemalagd frirond.");
+      throw new Error(
+        "Ett jämnt spelarantal kan inte ha en schemalagd frirond."
+      );
     }
 
     if (appeared.size !== count) {
       throw new Error("En rond omfattar inte alla spelare.");
     }
 
-    return { games, bye };
+    return {games, bye};
   });
 
   for (let id = 0; id < count; id++) {
     const games = whites[id] + blacks[id];
-
     if (Math.abs(whites[id] - blacks[id]) !== games % 2) {
       throw new Error("Spelschemats färgtotaler är inte balanserade.");
     }
   }
 
   if (!Number.isInteger(raw.current) ||
-      raw.current < 0 ||
-      raw.current >= roundCount) {
+      raw.current < 0 || raw.current >= roundCount) {
     throw new Error("Ogiltig vald rond.");
   }
 
@@ -3829,13 +4709,241 @@ function validateTournamentData(raw) {
         SEARCH_LEVELS, raw.engine?.effort
       ) ? raw.engine.effort : "normal",
       createdAt: typeof raw.engine?.createdAt === "string"
-        ? raw.engine.createdAt.slice(0, 100)
-        : "",
+        ? raw.engine.createdAt.slice(0, 100) : "",
       model: BUDGET_MODEL,
       legacySchedule: raw.engine?.legacySchedule === true
     }
   };
 }
+
+/* ============================================================
+   Phase-aware validation
+
+   Swiss validation verifies coverage, chronological submission,
+   colours, minimum bye counts and last-resort rematch eligibility.
+   ============================================================ */
+
+function validateTournamentData(raw) {
+  requireCondition(
+    raw && typeof raw === "object" && !Array.isArray(raw),
+    "Ogiltiga turneringsdata."
+  );
+
+  requireCondition(
+    Array.isArray(raw.players) && Array.isArray(raw.rounds),
+    "Spelarlista eller rondlista saknas."
+  );
+
+  requireCondition(
+    Number.isInteger(raw.rbtRounds) && raw.rbtRounds >= 1 &&
+    Number.isInteger(raw.swissRounds) && raw.swissRounds >= 0 &&
+    typeof raw.swissEnded === "boolean" &&
+    raw.rbtRounds + raw.swissRounds <= maximumRounds(raw.players.length) &&
+    raw.rounds.length >= raw.rbtRounds &&
+    raw.rounds.length <= raw.rbtRounds + raw.swissRounds,
+    "Ogiltig plan för RBT-ronder och schweizerronder."
+  );
+
+  requireCondition(
+    Number.isInteger(raw.current) &&
+    raw.current >= 0 && raw.current < raw.rounds.length,
+    "Ogiltig vald rond."
+  );
+
+  if (raw.swissRounds === 0) {
+    requireCondition(
+      raw.rounds.length === raw.rbtRounds && !raw.swissEnded,
+      "Ogiltigt fasläge för en turnering med enbart RBT."
+    );
+
+    return {
+      ...validateFixedRBTData(raw),
+      rbtRounds: raw.rbtRounds,
+      swissRounds: 0,
+      swissEnded: false
+    };
+  }
+
+  const started = raw.rounds.length > raw.rbtRounds;
+  const total = raw.rbtRounds + raw.swissRounds;
+
+  for (const player of raw.players) {
+    requireCondition(!!player, "Ogiltig spelarpost.");
+
+    const from = player.withdrawnFrom;
+
+    requireCondition(
+      from === null ||
+      (Number.isInteger(from) && from >= 0 && from < total &&
+       from <= (started ? raw.rounds.length : raw.rbtRounds)),
+      "Ogiltig rond för avanmälan i den kombinerade turneringen."
+    );
+  }
+
+  /*
+    A withdrawal beginning at or after Swiss entry is irrelevant
+    to fixed-RBT validation. Restore its original value afterward.
+  */
+  const fixedRaw = {
+    ...raw,
+    players: raw.players.map(player => ({
+      ...player,
+      withdrawnFrom: player.withdrawnFrom !== null &&
+        player.withdrawnFrom >= raw.rbtRounds
+          ? null : player.withdrawnFrom
+    })),
+    rounds: raw.rounds.slice(0, raw.rbtRounds),
+    current: Math.min(raw.current, raw.rbtRounds - 1)
+  };
+
+  const fixed = validateFixedRBTData(fixedRaw);
+
+  const data = {
+    ...fixed,
+    players: fixed.players.map((player, id) => ({
+      ...player,
+      withdrawnFrom: raw.players[id].withdrawnFrom
+    })),
+    rounds: fixed.rounds,
+    current: raw.current,
+    rbtRounds: raw.rbtRounds,
+    swissRounds: raw.swissRounds,
+    swissEnded: raw.swissEnded
+  };
+
+  if (started || data.swissEnded) {
+    requireCondition(
+      data.rounds.every(isRoundComplete),
+      "Samtliga RBT-resultat måste vara registrerade när " +
+      "schweizerfasen har startats eller avslutats."
+    );
+  }
+
+  if (data.swissEnded && !started) {
+    requireCondition(
+      activePlayerIds(data, data.rbtRounds).length < 2,
+      "Schweizerfasen får avslutas utan en publicerad rond endast " +
+      "om färre än två spelare återstår."
+    );
+  }
+
+  for (let index = data.rbtRounds; index < raw.rounds.length; index++) {
+    const round = raw.rounds[index];
+    const mustBeClosed = data.swissEnded || index < raw.rounds.length - 1;
+
+    requireCondition(
+      round && Array.isArray(round.games) &&
+      typeof round.closed === "boolean" &&
+      round.closed === mustBeClosed,
+      "Endast den senaste pågående schweizerronden får vara ej inlämnad."
+    );
+
+    const ids = activePlayerIds(data, index);
+    const active = new Set(ids);
+    const context = computeHybridStats(data);
+
+    requireCondition(
+      ids.length >= 2 && round.games.length === Math.floor(ids.length / 2),
+      "Felaktigt aktivt startfält eller antal bord i schweizerronden."
+    );
+
+    const eligible = ids.length % 2 !== 0
+      ? minimumByeCandidates(ids, id => context.byId.get(id).byes)
+      : [null];
+
+    const used = new Set();
+    let containsRematch = false;
+
+    const games = round.games.map(game => {
+      requireCondition(
+        game && Number.isInteger(game.w) && Number.isInteger(game.b) &&
+        active.has(game.w) && active.has(game.b) && game.w !== game.b &&
+        !used.has(game.w) && !used.has(game.b),
+        "Ogiltig, inaktiv eller dubblerad spelare i schweizerronden."
+      );
+
+      used.add(game.w);
+      used.add(game.b);
+
+      requireCondition(
+        game.auto === false &&
+        (game.result === null ||
+         Object.prototype.hasOwnProperty.call(RESULT_DEFINITIONS, game.result)) &&
+        (!round.closed || game.result !== null),
+        "Ogiltigt schweizerresultat eller markering för automatisk walkover."
+      );
+
+      requireCondition(
+        game.w === preferredWhiteId(game.w, game.b, context),
+        "En färgtilldelning i schweizerronden bryter mot lottningsregeln."
+      );
+
+      if (context.byId.get(game.w).opponents.has(game.b)) {
+        containsRematch = true;
+      }
+
+      return {w: game.w, b: game.b, result: game.result, auto: false};
+    });
+
+    let bye = null;
+
+    if (ids.length % 2 !== 0) {
+      requireCondition(
+        Number.isInteger(round.bye) &&
+        active.has(round.bye) && !used.has(round.bye) &&
+        eligible.includes(round.bye),
+        "En frirond i schweizerfasen måste gå till en aktiv spelare " +
+        "med minst antal tidigare frironder."
+      );
+
+      bye = round.bye;
+      used.add(bye);
+    } else {
+      requireCondition(
+        round.bye === null,
+        "Ett jämnt aktivt spelarantal i schweizerfasen kan inte ha en frirond."
+      );
+    }
+
+    requireCondition(
+      used.size === ids.length, "Ofullständig schweizerrond."
+    );
+
+    if (containsRematch) {
+      const graph = new Map(ids.map(id => [id, new Set()]));
+
+      for (let i = 0; i < ids.length; i++) {
+        for (let j = i + 1; j < ids.length; j++) {
+          const a = ids[i];
+          const b = ids[j];
+
+          if (!context.byId.get(a).opponents.has(b)) {
+            graph.get(a).add(b);
+            graph.get(b).add(a);
+          }
+        }
+      }
+
+      const withoutRematches = eligible.some(byeId =>
+        perfectMatching(ids.filter(id => id !== byeId), graph) !== null
+      );
+
+      requireCondition(
+        !withoutRematches,
+        "Ett upprepat möte finns i schweizerronden trots att en komplett " +
+        "lottning utan upprepade möten var möjlig."
+      );
+    }
+
+    data.rounds.push({games, bye, closed: round.closed});
+  }
+
+  return data;
+}
+
+/* ============================================================
+   JSON saving, migration and browser autosave
+   ============================================================ */
 
 function makeEnvelope() {
   return {
@@ -3847,47 +4955,62 @@ function makeEnvelope() {
 }
 
 function validateEnvelope(raw) {
-  if (!raw ||
-      raw.fileSignature !== SIGNATURE ||
-      ![1, 2, VERSION].includes(raw.version)) {
-    throw new Error("Detta är inte en kompatibel RBT-turneringsfil.");
+  requireCondition(
+    raw && raw.fileSignature === SIGNATURE &&
+    [1, 2, 3, VERSION].includes(raw.version),
+    "Detta är inte en kompatibel RBT-turneringsfil."
+  );
+
+  if (raw.version === 2) {
+    requireCondition(
+      raw.data?.engine?.model === PREVIOUS_BUDGET_MODEL,
+      "Den tidigare ratingbudgetmodellen stöds inte."
+    );
   }
 
-  if (raw.version === 2 &&
-      raw.data?.engine?.model !== PREVIOUS_BUDGET_MODEL) {
-    throw new Error("Den tidigare ratingbudgetmodellen stöds inte.");
+  if (raw.version >= 3) {
+    requireCondition(
+      raw.data?.engine?.model === BUDGET_MODEL,
+      "Ratingbudgetmodellen stöds inte."
+    );
   }
 
-  if (raw.version === VERSION &&
-      raw.data?.engine?.model !== BUDGET_MODEL) {
-    throw new Error("Ratingbudgetmodellen stöds inte.");
-  }
-
-  const data = validateTournamentData(raw.data);
+  let source = raw.data;
 
   if (raw.version < VERSION) {
-    data.engine.legacySchedule = true;
+    requireCondition(
+      source && Array.isArray(source.rounds),
+      "Ogiltiga äldre turneringsdata."
+    );
+
+    source = {
+      ...source,
+      rbtRounds: source.rounds.length,
+      swissRounds: 0,
+      swissEnded: false
+    };
   }
 
+  const data = validateTournamentData(source);
+  if (raw.version < 3) data.engine.legacySchedule = true;
   return data;
 }
 
 function confirmLegacyConversion(envelope) {
-  if (envelope.version === VERSION) return true;
+  if (envelope.version >= 3) return true;
 
-  const previousModel = envelope.version === 1
+  const previous = envelope.version === 1
     ? "den tidigare modellen med fasta ratingnivåer"
     : "den tidigare rondbaserade personliga budgetmodellen";
 
   return confirm(
-    "Denna turnering sparades med " + previousModel + ". " +
+    "Denna turnering sparades med " + previous + ". " +
     "Vill du behålla lottningar, resultat och inställningar för " +
     "ställningen, men räkna om analysen med personliga gruppers " +
     "målratingar och budgetar för schemalagda partier? " +
     "En frirond minskar nu budgeten med en personlig målrating. " +
     "Spelschemat skapas inte om och markeras som ett äldre schema. " +
-    "Behåll den ursprungliga JSON-säkerhetskopian om du behöver " +
-    "den gamla modellen."
+    "Behåll den ursprungliga JSON-säkerhetskopian."
   );
 }
 
@@ -3911,7 +5034,7 @@ function clearAutosave() {
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch (error) {
-    // Manual file saving remains available.
+    // Manual saving remains available.
   }
 }
 
@@ -3931,16 +5054,15 @@ function checkAutosave() {
   const name = typeof saved.data?.name === "string"
     ? saved.data.name : "Turnering";
 
-  const olderFormat = saved.version === 1
+  const older = saved.version === 1
     ? " Tidigare format med fasta ratingnivåer."
     : saved.version === 2
       ? " Tidigare format med rondbaserade budgetar."
       : "";
 
-  document.getElementById("resume-text").textContent =
-    'En sparad RBT-turnering hittades: ”' + name + '”.' + olderFormat;
-
-  document.getElementById("resume-banner").hidden = false;
+  $("resume-text").textContent =
+    'En sparad RBT-turnering hittades: ”' + name + '”.' + older;
+  $("resume-banner").hidden = false;
 }
 
 function installTournament(data) {
@@ -3948,8 +5070,10 @@ function installTournament(data) {
   tournament = data;
   scheduleReport = report;
 
-  document.getElementById("resume-banner").hidden = true;
-  document.getElementById("full-schedule-container").innerHTML = "";
+  $("input-rounds").value = data.rbtRounds;
+  $("input-swiss-rounds").value = data.swissRounds;
+  $("resume-banner").hidden = true;
+  $("full-schedule-container").innerHTML = "";
 
   persist();
   renderApplication();
@@ -3960,14 +5084,12 @@ function resumeAutosave() {
 
   try {
     const saved = readAutosave();
-
-    if (!saved) {
-      throw new Error("Ingen läsbar sparad turnering hittades.");
-    }
+    requireCondition(
+      !!saved, "Ingen läsbar sparad turnering hittades."
+    );
 
     const data = validateEnvelope(saved);
     if (!confirmLegacyConversion(saved)) return;
-
     installTournament(data);
   } catch (error) {
     alert("Turneringen kunde inte återställas: " + error.message);
@@ -3975,10 +5097,11 @@ function resumeAutosave() {
 }
 
 function discardAutosave() {
-  if (!confirm("Vill du ta bort den automatiskt sparade turneringen?")) return;
-
+  if (!confirm(
+    "Vill du ta bort den automatiskt sparade turneringen?"
+  )) return;
   clearAutosave();
-  document.getElementById("resume-banner").hidden = true;
+  $("resume-banner").hidden = true;
 }
 
 function safeFilename(name) {
@@ -3993,7 +5116,7 @@ function saveTournament() {
 
   const blob = new Blob(
     [JSON.stringify(makeEnvelope(), null, 2)],
-    { type: "application/json;charset=utf-8" }
+    {type: "application/json;charset=utf-8"}
   );
 
   const url = URL.createObjectURL(blob);
@@ -4014,9 +5137,8 @@ function chooseTournamentFile() {
     return;
   }
 
-  const input = document.getElementById("tournament-file");
-  input.value = "";
-  input.click();
+  $("tournament-file").value = "";
+  $("tournament-file").click();
 }
 
 async function importTournamentFile(event) {
@@ -4025,32 +5147,26 @@ async function importTournamentFile(event) {
   if (!file) return;
 
   try {
-    if (activeJob) throw new Error("Schemagenereringen pågår fortfarande.");
-
+    if (activeJob) {
+      throw new Error("Schemagenereringen pågår fortfarande.");
+    }
     if (file.size > 8 * 1024 * 1024) {
       throw new Error("Filen är för stor.");
     }
 
-    let raw;
-    try {
-      raw = JSON.parse(await file.text());
-    } catch (error) {
-      throw new Error("Filen kunde inte läsas som giltig JSON.");
-    }
-
+    const raw = JSON.parse(await file.text());
     const imported = validateEnvelope(raw);
 
-    if (activeJob) throw new Error("Schemagenereringen pågår fortfarande.");
+    if (activeJob) {
+      throw new Error("Schemagenereringen pågår fortfarande.");
+    }
 
     if (tournament && !confirm(
       "Vill du ersätta den aktuella turneringen? " +
       "Spara först en JSON-säkerhetskopia om du vill behålla den."
-    )) {
-      return;
-    }
+    )) return;
 
     if (!confirmLegacyConversion(raw)) return;
-
     installTournament(imported);
   } catch (error) {
     alert("Importen misslyckades: " + error.message);
@@ -4060,9 +5176,8 @@ async function importTournamentFile(event) {
 }
 
 function choosePlayerFile() {
-  const input = document.getElementById("player-file");
-  input.value = "";
-  input.click();
+  $("player-file").value = "";
+  $("player-file").click();
 }
 
 async function importPlayerFile(event) {
@@ -4076,16 +5191,16 @@ async function importPlayerFile(event) {
     }
 
     const text = (await file.text()).replace(/^\uFEFF/, "");
-
     if (text.length > 40000) {
       throw new Error("Spelarlistan överstiger 40 000 tecken.");
     }
-
     if (activeJob) {
-      throw new Error("Avbryt schemagenereringen innan du ändrar spelarlistan.");
+      throw new Error(
+        "Avbryt schemagenereringen innan du ändrar spelarlistan."
+      );
     }
 
-    document.getElementById("input-players").value = text;
+    $("input-players").value = text;
   } catch (error) {
     alert("Spelarimporten misslyckades: " + error.message);
   } finally {
@@ -4094,7 +5209,7 @@ async function importPlayerFile(event) {
 }
 
 function loadSamplePlayers() {
-  document.getElementById("input-players").value = 
+  $("input-players").value =
 `Erik Andersson; 2400
 Anna Johansson; 2385
 Karin Nilsson; 2355
@@ -4146,13 +5261,10 @@ Elena Rossi; 1680
 David Okafor; 1665
 Nils Jonsson; 1660`;
 
-  document.getElementById("input-rounds").value = "7";
-
-  if (!document.getElementById("input-name").value.trim()) {
-    document.getElementById("input-name").value = "Sample RBT Tournament";
+  if (!$("input-name").value.trim()) {
+    $("input-name").value = "Exempel på RBT-turnering";
   }
 }
-
 
 /* ============================================================
    Printing
@@ -4199,6 +5311,7 @@ function openPrintPage(title, content) {
   .numeric { text-align: center; white-space: nowrap; }
   .player-box { display: block; }
   .badge { font-size: 0.75rem; margin-left: 4px; }
+  .rematch-badge { color: #92400e; }
   .piece-icon { display: none; }
   .small-note, .metadata { font-size: 0.8rem; color: #475569; }
   .withdrawn { font-size: 0.75rem; }
@@ -4244,31 +5357,41 @@ function reportHeader(subtitle) {
     <h2>${html(subtitle)}</h2>
     <p class="metadata">
       ${tournament.players.length} spelare ·
-      ${tournament.rounds.length} ronder ·
-      Personliga budgetar för schemalagda partier ·
+      ${tournament.rbtRounds} RBT-ronder
+      ${isHybrid()
+        ? " + " + tournament.swissRounds + " planerade schweizerronder (" +
+          publishedSwissRounds() + " publicerade)"
+        : ""} ·
+      RBT-budgetar för schemalagda partier ·
       Särskiljning: ${html(TIE_BREAKS[tournament.tb])} ·
       Utskrift ${html(new Date().toLocaleString("sv-SE"))}
     </p>
     ${tournament.engine.legacySchedule ? `
       <p class="small-note">
         Äldre spelschema: lottningarna har bevarats från en tidigare
-        budgetmodell; visade målratingar och budgetar använder den
-        aktuella modellen med personliga grupper och schemalagda partier.
+        budgetmodell. Visade budgetar använder den aktuella modellen
+        för schemalagda partier.
       </p>
     ` : ""}
   `;
 }
 
+function roundReportHeading(index) {
+  return "Rond " + (index + 1) +
+    (isHybrid()
+      ? isSwissRound(tournament, index) ? " — Schweizer" : " — RBT"
+      : "");
+}
+
 function printAllRounds() {
   if (!tournament) return;
-
-  let content = reportHeader("Alla ronder");
+  let content = reportHeader(
+    isHybrid() ? "Alla publicerade ronder" : "Alla ronder"
+  );
 
   tournament.rounds.forEach((_, index) => {
-    content +=
-      "<h2>Rond " + (index + 1) + "</h2>" +
-      pairingsTableHTML(index, false) +
-      byeHTML(index);
+    content += "<h2>" + roundReportHeading(index) + "</h2>" +
+      pairingsTableHTML(index, false) + byeHTML(index);
   });
 
   openPrintPage(tournamentTitle() + " — Alla ronder", content);
@@ -4276,19 +5399,15 @@ function printAllRounds() {
 
 function printCompleteSchedule() {
   if (!tournament) return;
-
-  const information = scheduleReport.information;
+  const info = scheduleReport.information;
 
   const roster = `
     <h2>Spelarlista och personliga grupper</h2>
     <table>
       <thead>
         <tr>
-          <th>TPN</th>
-          <th>Spelare</th>
-          <th>Rating</th>
-          <th>TPN för motståndare i personlig grupp</th>
-          <th>Målrating</th>
+          <th>TPN</th><th>Spelare</th><th>Rating</th>
+          <th>TPN för motståndare i personlig grupp</th><th>Målrating</th>
         </tr>
       </thead>
       <tbody>
@@ -4297,55 +5416,346 @@ function printCompleteSchedule() {
             <td>${player.tpn}</td>
             <td>${html(player.name)}</td>
             <td>${formatNumber(player.rating, 0)}</td>
-            <td>${personalGroupLabel(information, player.id)}</td>
-            <td>${formatNumber(information.targets[player.id])}</td>
+            <td>${personalGroupLabel(info, player.id)}</td>
+            <td>${formatNumber(info.targets[player.id])}</td>
           </tr>
         `).join("")}
       </tbody>
     </table>
   `;
 
-  const content =
-    reportHeader("Komplett förgenererat spelschema") +
-    roster +
-    groupSummaryHTML() +
-    completeScheduleHTML(false) +
-    "<h2>Individuella budgetar och färger</h2>" +
-    playerBudgetsHTML();
-
   openPrintPage(
-    tournamentTitle() + " — Komplett spelschema",
-    content
+    tournamentTitle() + " — Komplett RBT-spelschema",
+    reportHeader("Komplett förgenererat RBT-spelschema") +
+    roster + groupSummaryHTML() + completeScheduleHTML(false) +
+    "<h2>Individuella RBT-budgetar och färger</h2>" + playerBudgetsHTML()
   );
 }
 
 function printFinalReport() {
   if (!tournament) return;
+  const info = finalViewInfo();
 
-  const missing = missingGameCount();
-  const subtitle = missing
-    ? "Ställning — ofullständiga resultat"
-    : "Slutställning";
-
-  let content =
-    reportHeader(subtitle) +
-    (missing ? `
-      <p>${formatNumber(missing, 0)} schemalagda partier saknar resultat.</p>
-    ` : "") +
+  let content = reportHeader(info.heading) +
+    (info.notice ? "<p>" + html(info.notice) + "</p>" : "") +
     standingsTableHTML(calculateStandings(true));
 
   tournament.rounds.forEach((_, index) => {
-    content +=
-      "<h2>Rond " + (index + 1) + "</h2>" +
-      pairingsTableHTML(index, false) +
-      byeHTML(index);
+    content += "<h2>" + roundReportHeading(index) + "</h2>" +
+      pairingsTableHTML(index, false) + byeHTML(index);
   });
 
   openPrintPage(tournamentTitle() + " — Ställning och partier", content);
 }
 
 /* ============================================================
-   Browser storage notice and initialization
+   Self-checks
+
+   Small checks run at initialization.
+   Larger checks are optional:
+       runSwissStressChecks()
+   in the browser console.
+
+   Tests use separate objects and do not alter the live tournament.
+   ============================================================ */
+
+function makePairingTestContext(count) {
+  return {
+    byId: new Map(Array.from({length: count}, (_, id) => [
+      id,
+      {
+        id,
+        tpn: id + 1,
+        score2: 0,
+        wntKey: 0,
+        whites: 0,
+        blacks: 0,
+        byes: 0,
+        opponents: new Set(),
+        history: []
+      }
+    ]))
+  };
+}
+
+function makeHybridTestData(count, rbtRounds, swissRounds, byePoints = 1) {
+  const players = Array.from({length: count}, (_, id) => ({
+    id,
+    tpn: id + 1,
+    name: "Testspelare " + (id + 1),
+    rating: 2800 - id,
+    withdrawnFrom: null
+  }));
+
+  const ordering = players.map(player => player.id);
+  if (count % 2 !== 0) ordering.push(count);
+
+  const raw = makeCompleteRoundRobin(count, ordering).slice(0, rbtRounds);
+  const graph = buildColourGraph(raw, count);
+  const rounds = materializeColourRounds(
+    raw, count, graph, balancedEulerOrientation(graph)
+  );
+
+  for (const round of rounds) {
+    for (const game of round.games) game.result = "0.5-0.5";
+  }
+
+  return {
+    name: "Internt test av kombinerad turnering",
+    players,
+    rounds,
+    rbtRounds,
+    swissRounds,
+    swissEnded: false,
+    current: 0,
+    scope: "all",
+    tb: "wnt",
+    byePoints,
+    finished: false,
+    engine: {
+      effort: "quick",
+      createdAt: "",
+      model: BUDGET_MODEL,
+      legacySchedule: false
+    }
+  };
+}
+
+function requireTestRejection(action, message) {
+  let rejected = false;
+  try {
+    action();
+  } catch (error) {
+    rejected = true;
+  }
+  requireCondition(rejected, message);
+}
+
+function runSwissSelfChecks() {
+  const trap = new Map([
+    [0, new Set([1, 2])],
+    [1, new Set([0, 3])],
+    [2, new Set([0])],
+    [3, new Set([1])]
+  ]);
+
+  requireCondition(
+    JSON.stringify(topDownMatching([0, 1, 2, 3], trap)) ===
+      JSON.stringify([[0, 2], [1, 3]]),
+    "Schweizersjälvtest misslyckades: möjlighet till komplett lottning."
+  );
+
+  const oddCycle = new Map([
+    [0, new Set([1, 2, 3])],
+    [1, new Set([0, 2, 4])],
+    [2, new Set([0, 1, 5])],
+    [3, new Set([0])],
+    [4, new Set([1])],
+    [5, new Set([2])]
+  ]);
+
+  requireCondition(
+    perfectMatching([0, 1, 2, 3, 4, 5], oddCycle) !== null,
+    "Schweizersjälvtest misslyckades: blossom-hantering av udda cykler."
+  );
+
+  const byeContext = makePairingTestContext(3);
+  byeContext.byId.get(0).score2 = 4;
+
+  requireCondition(
+    makeSwissPairings([0, 1, 2], byeContext)
+      .some(pair => pair.black === null && pair.white === 2),
+    "Schweizersjälvtest misslyckades: prioritet för lägst placerad " +
+    "möjlig frirondsmottagare."
+  );
+
+  byeContext.byId.get(0).opponents.add(1);
+  byeContext.byId.get(1).opponents.add(0);
+
+  requireCondition(
+    makeSwissPairings([0, 1, 2], byeContext)
+      .some(pair => pair.black === null && pair.white === 1),
+    "Schweizersjälvtest misslyckades: alternativ frirondsmottagare " +
+    "måste prövas före upprepat möte."
+  );
+
+  const colourContext = makePairingTestContext(2);
+  const histories = [
+    ["W", "B", "W", "W", "B", "B"],
+    ["B", "W", "B", "B", "W", "W"]
+  ];
+
+  histories.forEach((colours, id) => {
+    const player = colourContext.byId.get(id);
+    player.whites = 3;
+    player.blacks = 3;
+    player.history = colours.map(color => ({color}));
+  });
+
+  requireCondition(
+    preferredWhiteId(0, 1, colourContext) === 0,
+    "Schweizersjälvtest misslyckades: omvänd färgtilldelning."
+  );
+
+  requireCondition(
+    colourRunAfter({
+      history: [{color: "W"}, {color: "-"}, {color: "F"}, {color: "W"}]
+    }, "W") === 3,
+    "Schweizersjälvtest misslyckades: ospelade ronder får inte bryta färgföljder."
+  );
+
+  for (const byePoints of [0, 0.5, 1]) {
+    let data = makeHybridTestData(5, 2, 2, byePoints);
+    const forfeited = data.rounds[0].games[0];
+    forfeited.result = "F1";
+
+    data = validateTournamentData(data);
+    const before = computeHybridStats(data);
+    const white = before.byId.get(forfeited.w);
+
+    requireCondition(
+      !white.opponents.has(forfeited.b) &&
+      white.history.some(entry =>
+        entry.opponent === forfeited.b &&
+        entry.forfeit && entry.color === "F"
+      ),
+      "Schweizersjälvtest misslyckades: walkovermöten ska uteslutas."
+    );
+
+    for (const row of before.byId.values()) {
+      let expected = 0;
+
+      for (const entry of row.history) {
+        if (entry.opponent === null || entry.forfeit) continue;
+        const P = before.byId.get(entry.opponent).score2 / 2;
+        const r = entry.result2 / 2;
+        expected += 100 * (P / before.N) * (r + P / (2 * before.N));
+      }
+
+      requireCondition(
+        Math.abs(row.wnt - expected) < EPS,
+        "Schweizersjälvtest misslyckades: WNT-formeln."
+      );
+    }
+
+    const eligible = minimumByeCandidates(
+      activePlayerIds(data, data.rbtRounds),
+      id => before.byId.get(id).byes
+    );
+
+    const reportBefore = calculateScheduleReport(data);
+    data.rounds.push(generateSwissRound(data));
+    data.current = data.rounds.length - 1;
+    data = validateTournamentData(data);
+
+    requireCondition(
+      rbtLocked(data) &&
+      !canEditRound(data, 0) &&
+      canEditRound(data, data.current) &&
+      eligible.includes(data.rounds[data.current].bye),
+      "Schweizersjälvtest misslyckades: fasövergång, låsning " +
+      "eller överföring av frironder."
+    );
+
+    requireCondition(
+      computeHybridStats(data).N === before.N &&
+      calculateScheduleReport(data).totalError === reportBefore.totalError,
+      "Schweizersjälvtest misslyckades: poäng i ej inlämnad rond " +
+      "eller avgränsning av RBT-budgetar."
+    );
+
+    const corrupted = clone(data);
+    corrupted.rounds[0].games[0].result = null;
+
+    requireTestRejection(
+      () => validateTournamentData(corrupted),
+      "Schweizersjälvtest misslyckades: ofullständig RBT-fasövergång " +
+      "ska avvisas."
+    );
+
+    for (const game of data.rounds[data.current].games) {
+      game.result = "0.5-0.5";
+    }
+
+    data.rounds[data.current].closed = true;
+    data.rounds.push(generateSwissRound(data));
+    data.current = data.rounds.length - 1;
+    data = validateTournamentData(data);
+
+    requireCondition(
+      !canEditRound(data, data.rbtRounds),
+      "Schweizersjälvtest misslyckades: låsning av inlämnad schweizerrond."
+    );
+
+    for (const game of data.rounds[data.current].games) {
+      game.result = "0.5-0.5";
+    }
+
+    data.rounds[data.current].closed = true;
+    data.swissEnded = true;
+    data.finished = true;
+    validateTournamentData(data);
+    validateTournamentData(clone(data));
+  }
+
+  const zero = makeHybridTestData(5, 2, 0);
+  const cleanZero = validateTournamentData(zero);
+
+  requireCondition(
+    !isHybrid(cleanZero) && !rbtLocked(cleanZero),
+    "Schweizersjälvtest misslyckades: kompatibilitet med noll schweizerronder."
+  );
+
+  return true;
+}
+
+function runSwissStressChecks() {
+  const results = [];
+
+  for (const count of [60, 61, 101, 256]) {
+    const start = performance.now();
+    let data = makeHybridTestData(count, 5, 3);
+
+    data = validateTournamentData(data);
+
+    for (let step = 0; step < data.swissRounds; step++) {
+      data.rounds.push(generateSwissRound(data));
+      data.current = data.rounds.length - 1;
+      data = validateTournamentData(data);
+
+      data.rounds[data.current].games.forEach((game, board) => {
+        game.result = ["1-0", "0.5-0.5", "0-1"][(step + board) % 3];
+      });
+
+      data.rounds[data.current].closed = true;
+    }
+
+    data.swissEnded = true;
+    data.finished = true;
+    validateTournamentData(data);
+    validateTournamentData(clone(data));
+
+    results.push({
+      players: count,
+      rbtRounds: 5,
+      swissRounds: 3,
+      milliseconds: Math.round(performance.now() - start),
+      passed: true
+    });
+  }
+
+  console.table(results.map(result => ({
+    Spelare: result.players,
+    "RBT-ronder": result.rbtRounds,
+    Schweizerronder: result.swissRounds,
+    Millisekunder: result.milliseconds,
+    Godkänt: result.passed ? "Ja" : "Nej"
+  })));
+  return results;
+}
+
+/* ============================================================
+   Storage notice and initialization
    ============================================================ */
 
 window.addEventListener("storage", event => {
@@ -4360,9 +5770,19 @@ window.addEventListener("storage", event => {
 });
 
 function initialize() {
+  try {
+    swissChecksPassed = runSwissSelfChecks();
+  } catch (error) {
+    swissChecksPassed = false;
+    console.error("Schweizersjälvtest misslyckades:", error);
+  }
+
   setStorageStatus(
-    "Redo. Skapade turneringar och resultat sparas automatiskt " +
-    "när lagring i webbläsaren är tillgänglig."
+    swissChecksPassed
+      ? "Redo. Skapade turneringar och resultat sparas automatiskt " +
+        "när lagring i webbläsaren är tillgänglig."
+      : "De interna schweizerkontrollerna misslyckades; " +
+        "se webbläsarens konsol. Spelscheman med enbart RBT kan fortfarande skapas."
   );
 
   renderApplication();
