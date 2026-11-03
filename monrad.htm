@@ -421,6 +421,10 @@ button.about-button:hover {
         <input type="radio" class="tb-radio" name="tb-choice-setup" value="buchholz" onchange="userSetTieBreak(this.value)">
         Buchholz Cut-1
       </label>
+      <label>
+        <input type="checkbox" id="balance-colours" onchange="autosave()" style="position: relative; top: 0.5mm;">
+        <span>Färgoptimering</span>
+      </label>
     </div>
 
     <div class="btn-group">
@@ -510,9 +514,10 @@ button.about-button:hover {
       <thead>
         <tr>
           <th style="width: 60px;">Plac.</th>
-          <th>Spelare</th>
+          <th style="width: 40%;">Spelare</th>
           <th style="width: 90px;">Poäng</th>
           <th id="th-tiebreak" style="width: 110px;">WNT</th>
+          <th style="width: 120px;">Färger</th>
         </tr>
       </thead>
       <tbody id="final-tbody"></tbody>
@@ -535,7 +540,7 @@ button.about-button:hover {
     <h3 style="margin-top: 0; color: var(--primary); font-size: 1.2rem;">Om Monrads lottningssystem</h3>
 
 <p>
-Monrad är ett förenklat schweizersystem som använder en slumpmässig startordning i stället för seedning. Detta kan leda till en viss obalans under de inledande ronderna, då vissa toppspelare kan få möta starkare motstånd än andra. Spelare kan också tilldelas samma färg i tre ronder i följd, eller i sällsynta fall ännu fler. I amatör- och blixtturneringar betraktas dessa nackdelar dock vanligtvis som acceptabla. De slumpmässiga lottningarna skapar större variation och bidrar till att undvika återkommande möten mellan samma spelare i turnering efter turnering, samtidigt som systemet är enkelt att administrera.
+Monrad är ett förenklat schweizersystem som använder en slumpmässig startordning i stället för seedning. De slumpmässiga lottningarna skapar större variation och bidrar till att undvika återkommande möten mellan samma spelare i turnering efter turnering, samtidigt som systemet är enkelt att administrera. Slumpningen kan leda till viss obalans i de inledande ronderna, där vissa toppspelare får möta starkare motstånd än andra. Monrad-algoritmen tillåter att en spelare får samma färg i tre ronder i följd, eller i enstaka fall ännu fler. I amatör- och blixtturneringar betraktas dessa nackdelar dock vanligtvis som acceptabla. Om alternativet "Färgoptimering" väljs minskar förekomsten av tre lika färger i följd, men den elimineras inte helt.
 </p>
 <p>
 Observera att den övre och den undre halvan av startfältet slumpas separat. Följaktligen kommer inga spelare från de båda halvorna att mötas i första ronden. Programmet bortser från rating, men om spelarna har angetts i ratingordning undviks en alltför obalanserad lottning samtidigt som risken att en toppspelare tilldelas frirond i första ronden elimineras.
@@ -661,6 +666,7 @@ function getSwedishTimestamp() {
       players: players,
       currentPairings: pairingsData,
       currentByePlayerId: currentByePlayer ? currentByePlayer.id : null,
+      balanceColours: document.getElementById("balance-colours").checked,
       roundHistory: roundHistory
     };
   }
@@ -756,7 +762,8 @@ document.addEventListener("keydown", function (event) {
   function loadTournamentObject(data, silent) {
     const prev = {
       tournamentName, players, currentRound, currentPairings,
-      currentByePlayer, roundHistory, tieBreakSystem, tournamentFinished
+      currentByePlayer, roundHistory, tieBreakSystem, tournamentFinished,
+      balanceColours: document.getElementById("balance-colours").checked
     };
 
     try {
@@ -777,6 +784,7 @@ document.addEventListener("keydown", function (event) {
       currentRound = data.currentRound;
       roundHistory = data.roundHistory || [];
       tournamentFinished = !!data.finished;
+      document.getElementById("balance-colours").checked = !!data.balanceColours;
 
       // Återskapa matchResults om turneringen sparats med äldre version
       if (roundHistory && roundHistory.length > 0) {
@@ -861,6 +869,7 @@ document.addEventListener("keydown", function (event) {
       currentByePlayer = prev.currentByePlayer;
       roundHistory = prev.roundHistory;
       tournamentFinished = prev.tournamentFinished;
+      document.getElementById("balance-colours").checked = prev.balanceColours;
       setTieBreak(prev.tieBreakSystem);
       updateTournamentTitles();
 
@@ -1330,35 +1339,99 @@ function generateMonradPairings(pool, allowRematch = true) {
   return solveWithRematches(pool);
 }
 
-  function determineColors(pA, pB) {
-    const pLow = pA.currentPos < pB.currentPos ? pA : pB;
-    const pHigh = pA.currentPos < pB.currentPos ? pB : pA;
+// Opponent selection is unchanged. Colour preferences never reject a pair.
+function determineColors(pA, pB) {
+  const pLow = pA.currentPos < pB.currentPos ? pA : pB;
+  const pHigh = pA.currentPos < pB.currentPos ? pB : pA;
 
-    let whitePlayer, blackPlayer;
+  // Preserve the existing allocation when disabled, in round one,
+  // and as the final tie-break when both assignments are equally good.
+  let whitePlayer = pHigh;
+  let blackPlayer = pLow;
 
-    if (currentRound === 1) {
-      whitePlayer = pHigh;
-      blackPlayer = pLow;
-    } else {
-      if (pLow.whites < pHigh.whites) {
-        whitePlayer = pLow;
-        blackPlayer = pHigh;
-      } else if (pHigh.whites < pLow.whites) {
-        whitePlayer = pHigh;
-        blackPlayer = pLow;
-      } else {
-        if (pLow.blacks > pHigh.blacks) {
-          whitePlayer = pLow;
-          blackPlayer = pHigh;
-        } else {
-          whitePlayer = pHigh;
-          blackPlayer = pLow;
+  if (currentRound !== 1) {
+    if (
+      pLow.whites < pHigh.whites ||
+      (pLow.whites === pHigh.whites && pLow.blacks > pHigh.blacks)
+    ) {
+      whitePlayer = pLow;
+      blackPlayer = pHigh;
+    }
+  }
+
+  const originalAssignment = {
+    white: whitePlayer,
+    black: blackPlayer
+  };
+
+  if (
+    currentRound === 1 ||
+    !document.getElementById("balance-colours").checked
+  ) {
+    return originalAssignment;
+  }
+
+  // Read only completed games. A bye neither supplies a colour
+  // nor breaks the sequence. Older histories without IDs use names.
+  function lastTwoColours(player) {
+    let colours = "";
+
+    for (
+      let i = roundHistory.length - 1;
+      i >= 0 && colours.length < 2;
+      i--
+    ) {
+      for (const match of (roundHistory[i].matches || [])) {
+        const isWhite = match.whiteId != null
+          ? match.whiteId === player.id
+          : match.whiteName === player.name;
+
+        const isBlack = match.blackId != null
+          ? match.blackId === player.id
+          : match.blackName === player.name;
+
+        if (isWhite || isBlack) {
+          colours += isWhite ? "W" : "B";
+          break;
         }
       }
     }
 
-    return { white: whitePlayer, black: blackPlayer };
+    return colours;
   }
+
+  const recentA = lastTwoColours(pA);
+  const recentB = lastTwoColours(pB);
+
+  function colourCost(white, black, recentWhite, recentBlack) {
+    const whiteImbalance = Math.abs(white.whites - white.blacks + 1);
+    const blackImbalance = Math.abs(black.whites - black.blacks - 1);
+
+    // Compare lexicographically, not by a weighted sum:
+    // 1. Fewest players receiving a third (or further) identical colour.
+    // 2. Fewest players exceeding the preferred imbalance of 2.
+    // 3. Smallest combined absolute imbalance.
+    return [
+      Number(recentWhite === "WW") + Number(recentBlack === "BB"),
+      Number(whiteImbalance > 2) + Number(blackImbalance > 2),
+      whiteImbalance + blackImbalance
+    ];
+  }
+
+  const costAWhite = colourCost(pA, pB, recentA, recentB);
+  const costBWhite = colourCost(pB, pA, recentB, recentA);
+
+  for (let i = 0; i < costAWhite.length; i++) {
+    if (costAWhite[i] < costBWhite[i]) {
+      return { white: pA, black: pB };
+    }
+    if (costBWhite[i] < costAWhite[i]) {
+      return { white: pB, black: pA };
+    }
+  }
+
+  return originalAssignment;
+}
 
   function renderRoundView() {
     const tbody = document.getElementById("pairings-tbody");
@@ -1633,6 +1706,41 @@ function calculateBuchholz() {
     });
   }
 
+function getColourSequence(player) {
+  let sequence = "";
+
+  for (const round of roundHistory) {
+    let played = false;
+
+    for (const match of (round.matches || [])) {
+      const isWhite = match.whiteId != null
+        ? match.whiteId === player.id
+        : match.whiteName === player.name;
+
+      const isBlack = match.blackId != null
+        ? match.blackId === player.id
+        : match.blackName === player.name;
+
+      if (isWhite || isBlack) {
+        sequence += isWhite ? "v" : "s";
+        played = true;
+        break;
+      }
+    }
+
+    if (!played) {
+      const hadBye = round.byePlayerId != null
+        ? round.byePlayerId === player.id
+        : round.byePlayerName === player.name;
+
+      if (hadBye) sequence += "-";
+    }
+  }
+
+  // Byes are omitted: only completed games contribute a colour.
+  return sequence;
+}
+
   function renderFinalStandings() {
     sortFinalStandings();
 
@@ -1664,6 +1772,7 @@ function calculateBuchholz() {
         <td><strong>${getPlayerDisplayName(p)}</strong></td>
         <td><span class="score-badge">${formatPoints(p.score)}</span></td>
         <td style="font-weight: 600;">${formatTieBreak(tbValue, tieBreakSystem)}</td>
+        <td style="font-family: monospace; overflow-wrap: anywhere;">${getColourSequence(p)}</td>
       `;
       tbody.appendChild(tr);
     });
