@@ -138,7 +138,7 @@
       <div>Turneringen sparades automatiskt. Vill du fortsätta turneringen?</div>
       <div class="btn-bar">
         <button type="button" onclick="resumeAutosave()">Fortsätt turneringen</button>
-        <button type="button" class="secondary" onclick="discardAutosave()">Makulera</button>
+        <button type="button" class="secondary" onclick="discardAutosave()">Ta bort</button>
       </div>
     </div>
 
@@ -189,6 +189,7 @@
         <li><strong>Rond 3+:</strong> Schweizerlottning börjar. Spelarna sorteras efter poäng, vald särskiljning (WNT eller Buchholz) och ursprunglig seedning. Lottning sker uppifrån och ned.</li>
         <li><strong>Färgfördelning:</strong> Spelaren med färre partier med vit får vit. Om lika får spelaren med lägst rating vit (eller lägre seedad vid samma rating). Färgbalans garanteras (färgskillnaden kan aldrig nå 3). Om färgbalansen krockar med 2-i-rad-regeln tillåts upp till tre partier i rad med samma färg.</li>
         <li><strong>Randomisering:</strong> Om "Randomisera spelare" är markerad bevaras ratinggrupperna, men spelarna inom grupperna slumpas om. Detta ger större variation i första ronden för samma grupp klubbspelare. Om antalet spelare är udda tilldelas frironden slumpmässigt till en spelare i K4.</li>
+        <li><strong>Förlust på walkover och strykning:</strong> När en spelare stryks tilldelas dennes planerade motståndare automatiskt en poäng (w.o.). Om en dubbel walkover (0-0 (F)) har registrerats och båda spelarna därefter stryks, tilldelas ingen av spelarna någon poäng.</li>
       </ul>
     </div>
 
@@ -443,7 +444,7 @@ function resumeAutosave() {
 }
 
 function discardAutosave() {
-  if (!confirm('Makulera den sparade turneringen? Det går inte att ångra.')) return;
+  if (!confirm('Ta bort den sparade turneringen? Det går inte att ångra.')) return;
   clearAutosave();
   document.getElementById('resume-banner').style.display = 'none';
 }
@@ -716,8 +717,15 @@ function startTournament() {
     alert('Antal ronder måste vara minst 1.');
     return;
   }
-  if (rounds > parsed.length - 1) {
-    alert(`Med ${parsed.length} spelare kan högst ${parsed.length - 1} ronder spelas utan att samma spelare möts igen.`);
+  const maxRoundsWithoutRematches = parsed.length % 2 === 0
+    ? parsed.length - 1
+    : parsed.length;
+
+  if (rounds > maxRoundsWithoutRematches) {
+    alert(
+      `Med ${parsed.length} spelare kan högst ` +
+      `${maxRoundsWithoutRematches} ronder teoretiskt spelas utan omspel.`
+    );
     return;
   }
   state.totalRounds = rounds;
@@ -1138,7 +1146,7 @@ function renderPairings() {
 
     if (!pair.black) {
       screenSpan.textContent = pair.result || '1-0 (Frirond)';
-    } else if (pair.forfeit) {
+    } else if (pair.forfeit && pair.result !== '0-0') {
       screenSpan.textContent = `${pair.result} (w.o.)`;
     } else {
       const select = document.createElement('select');
@@ -1147,11 +1155,15 @@ function renderPairings() {
         <option value="1-0" ${pair.result === '1-0' ? 'selected' : ''}>1-0</option>
         <option value="0.5-0.5" ${pair.result === '0.5-0.5' ? 'selected' : ''}>½-½</option>
         <option value="0-1" ${pair.result === '0-1' ? 'selected' : ''}>0-1</option>
+        <option value="0-0" ${pair.result === '0-0' ? 'selected' : ''}>0-0 (F)</option>
       `;
+
       select.onchange = e => {
         pair.result = e.target.value;
-        autosave();   // keep results entered so far if the page is refreshed
+        pair.forfeit = pair.result === '0-0';
+        autosave();
       };
+
       screenSpan.appendChild(select);
     }
 
@@ -1216,6 +1228,24 @@ function submitRound() {
       b.score += 1;
       w.history.push({ round: state.currentRound, opponent: b.id, color: cw, result: '0-1', ...extra });
       b.history.push({ round: state.currentRound, opponent: w.id, color: cb, result: '1-0', ...extra });
+    } else if (res === '0-0') {
+      pair.forfeit = true;
+
+      w.history.push({
+        round: state.currentRound,
+        opponent: b.id,
+        color: '-',
+        result: '0-0',
+        forfeit: true
+      });
+
+      b.history.push({
+        round: state.currentRound,
+        opponent: w.id,
+        color: '-',
+        result: '0-0',
+        forfeit: true
+      });
     }
   });
 
