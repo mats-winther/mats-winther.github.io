@@ -1382,6 +1382,7 @@ function determineColors(pA, pB) {
       i--
     ) {
       for (const match of (roundHistory[i].matches || [])) {
+        if (match.forfeit) continue;
         const isWhite = match.whiteId != null
           ? match.whiteId === player.id
           : match.whiteName === player.name;
@@ -1458,18 +1459,32 @@ function determineColors(pA, pB) {
     </td>
         <td>
           <div class="result-selector">
-            <label>
-              <input type="radio" name="board_${boardNum}" value="1-0" required onclick="toggleRoundResult(this)">
-              <span>1 - 0</span>
-            </label>
-            <label>
-              <input type="radio" name="board_${boardNum}" value="0.5-0.5" onclick="toggleRoundResult(this)">
-              <span>½ - ½</span>
-            </label>
-            <label>
-              <input type="radio" name="board_${boardNum}" value="0-1" onclick="toggleRoundResult(this)">
-              <span>0 - 1</span>
-            </label>
+            ${match.white.withdrawn && match.black.withdrawn
+                ? `
+                <input
+                  type="radio"
+                  class="hidden"
+                  name="board_${boardNum}"
+                  value="0-0-wo"
+                  checked
+                >
+                <span>0 - 0 (dubbel w.o.)</span>
+              `
+              : `
+                <label>
+                  <input type="radio" name="board_${boardNum}" value="1-0" required onclick="toggleRoundResult(this)">
+                  <span>1 - 0</span>
+                </label>
+                <label>
+                  <input type="radio" name="board_${boardNum}" value="0.5-0.5" onclick="toggleRoundResult(this)">
+                  <span>½ - ½</span>
+                </label>
+                <label>
+                  <input type="radio" name="board_${boardNum}" value="0-1" onclick="toggleRoundResult(this)">
+                  <span>0 - 1</span>
+                </label>
+              `
+            }
           </div>
         </td>
         <td>
@@ -1522,6 +1537,20 @@ function determineColors(pA, pB) {
       const selectedRadio = document.querySelector(`input[name="board_${boardNum}"]:checked`);
       const match = currentPairings[i];
       const val = selectedRadio.value;
+      if (val === "0-0-wo") {
+        roundMatches.push({
+          board: boardNum,
+          whiteId: match.white.id,
+          blackId: match.black.id,
+          whiteName: match.white.name,
+          blackName: match.black.name,
+          result: "0 - 0 (dubbel w.o.)",
+          forfeit: true
+        });
+
+        // Neither player receives points, an opponent entry, or a colour.
+        continue;
+      }
 
       match.white.opponents.push(match.black.id);
       match.black.opponents.push(match.white.id);
@@ -1722,7 +1751,7 @@ function getColourSequence(player) {
         : match.blackName === player.name;
 
       if (isWhite || isBlack) {
-        sequence += isWhite ? "v" : "s";
+        sequence += match.forfeit ? "-" : (isWhite ? "v" : "s");
         played = true;
         break;
       }
@@ -2013,7 +2042,11 @@ function getColourSequence(player) {
     currentPairings.forEach((match, idx) => {
       const boardNum = idx + 1;
       const checked = document.querySelector(`input[name="board_${boardNum}"]:checked`);
-      const resultText = checked ? checked.value : "–";
+      const resultText = !checked
+        ? "–"
+        : checked.value === "0-0-wo"
+          ? "0 - 0 (dubbel w.o.)"
+          : checked.value;
 
       pairingsHtml += `
         <tr>
