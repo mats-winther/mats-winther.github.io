@@ -166,6 +166,7 @@
         <li><strong>Round 3+:</strong> All players are paired together. Players are sorted by score, the selected tie-break (WNT or Buchholz), and initial seeding. Pairings are generated top-down.</li>
         <li><strong>Fewer than 16 players:</strong> The top half is randomized and paired against the randomized bottom half in Round 1. The top half always has White. Swiss pairing begins at Round 2. For an uneven bottom half, the BYE player is drawn at random.</li>
         <li><strong>Color Allocation:</strong> The player with fewer White games receives White. If equal, the lowest-rated player receives White (or lower-seeded if equal rating). Color balance is guaranteed (color difference can never reach 3). If color balance conflicts with the 2-in-a-row rule, up to three games in a row with the same color are permitted.</li>
+        <li><strong>Forfeit and Withdrawal:</strong> When a player is withdrawn, their scheduled opponent is automatically awarded a point (w.o.). If a double forfeit (0-0 (F)) has been recorded and both players are subsequently withdrawn, neither player is awarded a point.</li>
       </ul>
     </div>
 
@@ -672,10 +673,19 @@ function startTournament() {
     alert('Number of rounds must be at least 1.');
     return;
   }
-  if (rounds > parsed.length - 1) {
-    alert(`With ${parsed.length} players, at most ${parsed.length - 1} rounds can be played without rematches.`);
+
+  const maxRoundsWithoutRematches = parsed.length % 2 === 0
+    ? parsed.length - 1
+    : parsed.length;
+
+  if (rounds > maxRoundsWithoutRematches) {
+    alert(
+      `With ${parsed.length} players, at most ` +
+      `${maxRoundsWithoutRematches} rounds can be played without rematches.`
+    );
     return;
   }
+
   state.totalRounds = rounds;
   state.tieBreakSystem = document.querySelector('input[name="tiebreak"]:checked').value;
   state.useGroups = parsed.length >= 16;
@@ -1045,9 +1055,10 @@ function renderPairings() {
     const screenSpan = document.createElement('span');
     screenSpan.className = 'no-print';
 
-    if (!pair.black) {
+  if (!pair.black) {
       screenSpan.textContent = pair.result || '1-0 (Bye)';
-    } else if (pair.forfeit) {
+    } else if (pair.forfeit && pair.result !== '0-0') {
+      // Preserve the existing display for automatic walkovers.
       screenSpan.textContent = `${pair.result} (w.o.)`;
     } else {
       const select = document.createElement('select');
@@ -1056,11 +1067,15 @@ function renderPairings() {
         <option value="1-0" ${pair.result === '1-0' ? 'selected' : ''}>1-0</option>
         <option value="0.5-0.5" ${pair.result === '0.5-0.5' ? 'selected' : ''}>½-½</option>
         <option value="0-1" ${pair.result === '0-1' ? 'selected' : ''}>0-1</option>
+        <option value="0-0" ${pair.result === '0-0' ? 'selected' : ''}>0-0 (F)</option>
       `;
+
       select.onchange = e => {
         pair.result = e.target.value;
-        autosave();   // keep results entered so far if the page is refreshed
+        pair.forfeit = pair.result === '0-0';
+        autosave();
       };
+
       screenSpan.appendChild(select);
     }
 
@@ -1121,11 +1136,29 @@ function submitRound() {
       b.score += 0.5;
       w.history.push({ round: state.currentRound, opponent: b.id, color: cw, result: '0.5-0.5' });
       b.history.push({ round: state.currentRound, opponent: w.id, color: cb, result: '0.5-0.5' });
-    } else if (res === '0-1') {
-      b.score += 1;
-      w.history.push({ round: state.currentRound, opponent: b.id, color: cw, result: '0-1', ...extra });
-      b.history.push({ round: state.currentRound, opponent: w.id, color: cb, result: '1-0', ...extra });
-    }
+        } else if (res === '0-1') {
+             b.score += 1;
+             w.history.push({ round: state.currentRound, opponent: b.id, color: cw, result: '0-1', ...extra });
+             b.history.push({ round: state.currentRound, opponent: w.id, color: cb, result: '1-0', ...extra });
+        } else if (res === '0-0') {
+            pair.forfeit = true;
+
+            w.history.push({
+            round: state.currentRound,
+           opponent: b.id,
+           color: '-',
+           result: '0-0',
+          forfeit: true
+         });
+
+          b.history.push({
+          round: state.currentRound,
+          opponent: w.id,
+          color: '-',
+          result: '0-0',
+         forfeit: true
+        });
+      }
   });
 
   recalculateTiebreaks();
