@@ -28,6 +28,7 @@
     --bg: #f8fafc;
     --card: #ffffff;
     --text: #0f172a;
+    --muted: #64748b;
     --border: #cbd5e1;
     --table-stripe: #f1f5f9;
   }
@@ -116,6 +117,11 @@
       overflow: visible !important;
       position: static !important;
     }
+  }
+  .hint,
+  .muted {
+    color: var(--muted);
+    font-size: 13px;
   }
 </style>
 </head>
@@ -281,8 +287,10 @@ N = turneringens totala antal ronder
 Pᵢ / N = motståndarens poängandel (kvot uttryckt som decimaltal mellan 0 och 1)</div>
     <p style="font-size: 0.95rem; line-height: 1.5; color: #334155; margin-bottom: 18px;">
       När spelare slutar på samma poäng särskiljs de enligt kvaliteten på motståndet de mött. Den här nya metoden ger en rättvisare bild av spelarnas prestationer än traditionella särskiljningssystem, och belönar konsekvent dem som möter de bästa spelarna. Även om en spelare inte erhåller några särskiljningspoäng för en frirond, för den fria poängen spelaren upp i högre poänggrupper, där starkare motstånd naturligt kompenserar för den missade ronden. Till skillnad från Buchholz, som bygger på en linjär beräkning, använder WNT en kvadratisk viktning av motståndsstyrkan. Dessutom tilldelas poäng även vid förlust mot starka motståndare, vilket förbättrar särskiljningsvärdet och kompenserar för frironden.<br><br>När WNT används för rangordning inom poänggrupper möts spelare som har ställts mot motstånd av likvärdig styrka. Därigenom upprätthålls schweizerprincipen: de mest testade spelarna möter varandra på de högsta borden utan hänsyn till rating före turneringsstart.<br><br>
-Klubbschweizer utvecklades av Mats Winther, augusti 2026.
-<br><br>Se även: <a href="https://mats-winther.github.io/bg/schacklottning.htm" style="text-decoration:none;" target="_blank">Schacklottning: en genomgång av Monrad, Schweizer och Berger</a>.
+Se även: <a href="https://mats-winther.github.io/bg/schacklottning.htm" style="text-decoration:none;" target="_blank">Schacklottning: en genomgång av Monrad, Schweizer och Berger</a>.</p>
+<p class="hint">
+  Klubbschweizer utvecklades av Mats Winther, augusti 2026.
+</p>
     </p>
     <div class="btn-bar" style="justify-content: flex-end; margin-top: 0;">
       <button type="button" onclick="closeWntModal()">Stäng</button>
