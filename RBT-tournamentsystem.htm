@@ -696,6 +696,12 @@
               onclick="showFinalStandings()">
         Show Final / Current Standings
       </button>
+      <button id="convert-swiss-button"
+              type="button"
+              class="secondary"
+              onclick="convertToSwiss()">
+        Convert to Swiss
+      </button>
     </div>
   </section>
 
@@ -768,6 +774,12 @@
   <section id="section-budget" class="card hidden">
     <h2>Schedule and Rating-Budget Diagnostics</h2>
 
+    <p id="budget-converted-notice" class="metadata" hidden>
+      Rating-budget diagnostics are inapplicable after conversion
+      to Swiss. The original future RBT schedule was discarded.
+    </p>
+
+    <div id="budget-details">
     <div id="schedule-summary"></div>
     <div id="schedule-warnings" class="notice" hidden></div>
     <div id="group-summary"></div>
@@ -802,6 +814,7 @@
       results. Swiss rounds do not change these budgets or diagnostics.
       The search is heuristic, not a certificate of global optimality.
     </p>
+    </div>
   </section>
 
   <div id="storage-status" class="status-line"></div>
@@ -965,6 +978,49 @@ Optimization priorities:
     Moving a rest recalculates both values.
     Rest points are configurable and default to one.
     They are credited when all games in that RBT round have results.
+  </p>
+
+  <h3>Converting an RBT tournament to Swiss</h3>
+
+  <p>If players have withdrawn, resulting in too many bye rounds,
+    the administrator may choose to switch to the Swiss system.
+    Before the Swiss phase begins, select a completed RBT round and
+    choose Convert to Swiss. Every game through the selected round
+    must have a result. Later RBT rounds must have no manually
+    entered results; automatic withdrawal forfeits are permitted.
+  </p>
+
+  <p>
+    The completed RBT rounds are retained and locked. Later fixed
+    RBT pairings and their automatic forfeits are discarded. The
+    remaining planned rounds become Swiss rounds, preserving the
+    original total number of planned rounds. The first Swiss round
+    is generated immediately.
+  </p>
+
+  <p>
+    Withdrawal records and their effective rounds are retained.
+    A player whose withdrawal takes effect later remains eligible
+    until that round. Withdrawals cannot be reversed in the Swiss
+    interface. At least two players must be active in the first
+    Swiss round.
+  </p>
+
+  <p>
+    After conversion, standings use the hybrid calculation.
+    WNT is recalculated from completed rounds: direct contributions
+    from forfeits and byes are excluded, and the denominator is the
+    number of included completed rounds. Consequently, WNT and
+    standings may change from the RBT-only view. Swiss pairing uses
+    score, WNT and TPN. Future automatic forfeits and any points
+    provisionally credited because of them are discarded.
+  </p>
+
+  <p>
+    Rating-budget diagnostics are inapplicable after conversion.
+    Retained RBT rounds are not required to have balanced colour
+    totals because they form only part of the original schedule.
+    Save a JSON backup before converting.
   </p>
 
   <h3>Optional Swiss phase</h3>
@@ -1197,7 +1253,7 @@ Repeated played encounters contribute separately.</div>
 const MAX_PLAYERS = 256;
 const STORAGE_KEY = "rating-budget-tournament.v1";
 const SIGNATURE = "RBT_CHESS_SAVE";
-const VERSION = 4;
+const VERSION = 5;
 const BUDGET_MODEL = "personal-groups-games-v2";
 const PREVIOUS_BUDGET_MODEL = "personal-groups-v1";
 const EPS = 1e-7;
@@ -3194,6 +3250,160 @@ function requireCompleteRBT(data) {
   );
 }
 
+/**
+ * Conversion is offered only before Swiss has started and only
+ * when at least one fixed RBT round remains to be converted.
+ */
+function canConvertToSwiss(data = tournament) {
+  return !!data &&
+    !data.finished &&
+    !data.swissEnded &&
+    !rbtLocked(data) &&
+    Number.isInteger(data.current) &&
+    data.current >= 0 &&
+    data.current < data.rbtRounds - 1;
+}
+
+/**
+ * Build a converted tournament without changing the live state.
+ *
+ * The returned object has already been validated and contains
+ * the first published Swiss round.
+ */
+function makeSwissConversion(data) {
+  requireCondition(
+    canConvertToSwiss(data),
+    "Conversion is unavailable for the selected round."
+  );
+
+  // Validate the complete source schedule before discarding anything.
+  const source = validateTournamentData(data);
+  const retainedRounds = source.current + 1;
+  const totalRounds = source.rbtRounds + source.swissRounds;
+
+  requireCondition(
+    retainedRounds < source.rbtRounds,
+    "There are no future fixed RBT rounds to convert."
+  );
+
+  const missing = [];
+
+  source.rounds.slice(0, retainedRounds).forEach((round, index) => {
+    round.games.forEach((game, board) => {
+      if (game.result === null) {
+        missing.push(
+          "Round " + (index + 1) + ", board " + (board + 1)
+        );
+      }
+    });
+  });
+
+  requireCondition(
+    missing.length === 0,
+    "Complete every game through the selected round.\n\n" +
+    missing.slice(0, 20).join("\n") +
+    (missing.length > 20 ? "\n…and more." : "")
+  );
+
+  const laterManualResults = [];
+
+  source.rounds.slice(retainedRounds, source.rbtRounds)
+    .forEach((round, offset) => {
+      round.games.forEach((game, board) => {
+        if (game.result !== null && !game.auto) {
+          laterManualResults.push(
+            "Round " + (retainedRounds + offset + 1) +
+            ", board " + (board + 1)
+          );
+        }
+      });
+    });
+
+  requireCondition(
+    laterManualResults.length === 0,
+    "Later RBT rounds must not contain manually entered results.\n\n" +
+    laterManualResults.slice(0, 20).join("\n") +
+    (laterManualResults.length > 20 ? "\n…and more." : "")
+  );
+
+  const draft = clone(source);
+
+  draft.rounds = draft.rounds.slice(0, retainedRounds);
+  draft.rbtRounds = retainedRounds;
+  draft.swissRounds = totalRounds - retainedRounds;
+  draft.swissEnded = false;
+  draft.finished = false;
+
+  draft.engine = {
+    ...draft.engine,
+    convertedToSwiss: true
+  };
+
+  requireCondition(
+    activePlayerIds(draft, retainedRounds).length >= 2,
+    "Fewer than two players will be active in the first Swiss round."
+  );
+
+  // computeHybridStats() inside generateSwissRound() recalculates
+  // scores, WNT, played opponents, colours and previous rests from
+  // the retained complete RBT rounds.
+  draft.rounds.push(generateSwissRound(draft));
+  draft.current = draft.rounds.length - 1;
+
+  return validateTournamentData(draft);
+}
+
+function convertToSwiss() {
+  if (!tournament) return;
+
+  if (!canConvertToSwiss(tournament)) {
+    alert("Conversion is unavailable for the selected round.");
+    return;
+  }
+
+  if (!swissChecksPassed) {
+    alert("The Swiss internal checks failed. Check the browser console.");
+    return;
+  }
+
+  const retainedRounds = tournament.current + 1;
+  const totalRounds = tournament.rbtRounds + tournament.swissRounds;
+  const futureSwissRounds = totalRounds - retainedRounds;
+
+  if (!confirm(
+    "Convert the remaining rounds to Swiss?\n\n" +
+    "Completed RBT rounds retained: " + retainedRounds + "\n" +
+    "Planned Swiss rounds after conversion: " + futureSwissRounds + "\n\n" +
+    "Future fixed RBT pairings and their automatic forfeits will " +
+    "be discarded. Withdrawal dates will be retained. RBT results " +
+    "will be locked, and the first Swiss round will be paired.\n\n" +
+    "Standings and WNT may change under the hybrid rules. " +
+    "Save a JSON backup first if you need the original schedule."
+  )) return;
+
+  let converted;
+  let report;
+
+  try {
+    converted = makeSwissConversion(tournament);
+    report = calculateScheduleReport(converted);
+  } catch (error) {
+    alert(
+      "Could not convert to Swiss:\n" + error.message +
+      "\n\nThe original tournament has not been changed."
+    );
+    return;
+  }
+
+  // Commit only after conversion, pairing, validation and report
+  // calculation have all succeeded.
+  tournament = converted;
+  scheduleReport = report;
+
+  persist();
+  renderApplication();
+}
+
 function startSwissPhase() {
   if (!tournament || !isHybrid() || rbtLocked() || tournament.finished) {
     return;
@@ -3993,6 +4203,9 @@ function updateRoundNavigation() {
     tournament.current !== tournament.rounds.length - 1 ||
     tournament.rounds[tournament.current].closed;
 
+  $("convert-swiss-button").disabled =
+    !swissChecksPassed || !canConvertToSwiss(tournament);
+
   $("withdraw-button").disabled = !canOpenWithdrawal();
   $("withdraw-button").textContent = rbtLocked()
     ? "Withdraw Player" : "Withdraw / Reinstate Player";
@@ -4300,6 +4513,10 @@ function renderApplication() {
 
   if (!started) return;
 
+  const converted = tournament.engine?.convertedToSwiss === true;
+  $("budget-converted-notice").hidden = !converted;
+  $("budget-details").hidden = converted;
+
   for (const id of ["round-name", "standings-name", "final-name"]) {
     $(id).textContent = tournamentTitle();
   }
@@ -4397,7 +4614,7 @@ function newTournament() {
    RBT portion of a hybrid tournament.
    ============================================================ */
 
-function validateFixedRBTData(raw) {
+function validateFixedRBTData(raw, options = {}) {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
     throw new Error("Invalid tournament data.");
   }
@@ -4545,7 +4762,8 @@ function validateFixedRBTData(raw) {
 
   for (let id = 0; id < count; id++) {
     const games = whites[id] + blacks[id];
-    if (Math.abs(whites[id] - blacks[id]) !== games % 2) {
+    if (!options.allowUnbalanced &&
+        Math.abs(whites[id] - blacks[id]) !== games % 2) {
       throw new Error("The schedule does not have balanced colour totals.");
     }
   }
@@ -4578,7 +4796,8 @@ function validateFixedRBTData(raw) {
       createdAt: typeof raw.engine?.createdAt === "string"
         ? raw.engine.createdAt.slice(0, 100) : "",
       model: BUDGET_MODEL,
-      legacySchedule: raw.engine?.legacySchedule === true
+      legacySchedule: raw.engine?.legacySchedule === true,
+      convertedToSwiss: raw.engine?.convertedToSwiss === true
     }
   };
 }
@@ -4617,8 +4836,17 @@ function validateTournamentData(raw) {
     "Invalid selected round."
   );
 
+  requireCondition(
+    raw.engine?.convertedToSwiss === undefined ||
+    typeof raw.engine.convertedToSwiss === "boolean",
+    "Invalid conversion marker."
+  );
+
+  const converted = raw.engine?.convertedToSwiss === true;
+
   if (raw.swissRounds === 0) {
     requireCondition(
+      !converted &&
       raw.rounds.length === raw.rbtRounds && !raw.swissEnded,
       "Invalid RBT-only phase state."
     );
@@ -4634,6 +4862,11 @@ function validateTournamentData(raw) {
   const started = raw.rounds.length > raw.rbtRounds;
   const total = raw.rbtRounds + raw.swissRounds;
 
+  requireCondition(
+    !converted || started,
+    "A converted tournament must have a published Swiss round."
+  );
+
   for (const player of raw.players) {
     requireCondition(!!player, "Invalid player record.");
 
@@ -4642,7 +4875,8 @@ function validateTournamentData(raw) {
     requireCondition(
       from === null ||
       (Number.isInteger(from) && from >= 0 && from < total &&
-       from <= (started ? raw.rounds.length : raw.rbtRounds)),
+       (converted ||
+        from <= (started ? raw.rounds.length : raw.rbtRounds))),
       "Invalid hybrid withdrawal round."
     );
   }
@@ -4663,7 +4897,9 @@ function validateTournamentData(raw) {
     current: Math.min(raw.current, raw.rbtRounds - 1)
   };
 
-  const fixed = validateFixedRBTData(fixedRaw);
+  const fixed = validateFixedRBTData(fixedRaw, {
+    allowUnbalanced: converted
+  });
 
   const data = {
     ...fixed,
@@ -4815,7 +5051,7 @@ function makeEnvelope() {
 function validateEnvelope(raw) {
   requireCondition(
     raw && raw.fileSignature === SIGNATURE &&
-    [1, 2, 3, VERSION].includes(raw.version),
+    [1, 2, 3, 4, VERSION].includes(raw.version),
     "This is not a compatible RBT tournament file."
   );
 
@@ -4835,7 +5071,7 @@ function validateEnvelope(raw) {
 
   let source = raw.data;
 
-  if (raw.version < VERSION) {
+  if (raw.version < 4) {
     requireCondition(
       source && Array.isArray(source.rounds),
       "Invalid previous tournament data."
@@ -5195,7 +5431,9 @@ function reportHeader(subtitle) {
         ? " + " + tournament.swissRounds + " planned Swiss rounds (" +
           publishedSwissRounds() + " published)"
         : ""} ·
-      Scheduled-game RBT budgets ·
+      ${tournament.engine.convertedToSwiss
+        ? "Rating-budget diagnostics inapplicable after conversion"
+        : "Scheduled-game RBT budgets"} ·
       Tie-break: ${html(TIE_BREAKS[tournament.tb])} ·
       Printed ${html(new Date().toLocaleString())}
     </p>

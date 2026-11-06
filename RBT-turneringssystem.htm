@@ -700,6 +700,12 @@
               onclick="showFinalStandings()">
         Visa slutlig / aktuell ställning
       </button>
+      <button id="convert-swiss-button"
+              type="button"
+              class="secondary"
+              onclick="convertToSwiss()">
+        Konvertera till schweizer
+      </button>
     </div>
   </section>
 
@@ -772,6 +778,13 @@
   <section id="section-budget" class="card hidden">
     <h2>Spelschema och ratingbudgetanalys</h2>
 
+    <p id="budget-converted-notice" class="metadata" hidden>
+      Ratingbudgetanalysen är inte tillämplig efter konvertering
+      till schweizer. Det ursprungliga framtida RBT-spelschemat
+      har tagits bort.
+    </p>
+
+    <div id="budget-details">
     <div id="schedule-summary"></div>
     <div id="schedule-warnings" class="notice" hidden></div>
     <div id="group-summary"></div>
@@ -808,6 +821,7 @@
       Schweizerronder ändrar inte dessa budgetar eller analysvärden.
       Sökningen är heuristisk och garanterar inte ett globalt optimum.
     </p>
+    </div>
   </section>
 
   <div id="storage-status" class="status-line"></div>
@@ -996,6 +1010,52 @@ Optimeringsprioriteringar:
     Frirondspoängen kan ställas in och är som standard en poäng.
     Poängen tilldelas när rondens samtliga RBT-partier har
     registrerade resultat.
+  </p>
+
+  <h3>Konvertera en RBT-turnering till schweizer</h3>
+
+  <p>
+    Om spelare har avanmälts och detta leder till alltför många
+    frironder, kan arrangören välja att övergå till schweizerlottning.
+    Välj den RBT-rond som ska vara den sista innan schweizerfasen och
+    klicka därefter på Konvertera till schweizer. Samtliga
+    partier till och med den valda ronden måste ha ett resultat.
+    Senare RBT-ronder får inte innehålla manuellt registrerade
+    resultat, men automatiska walkoverresultat efter avanmälan
+    är tillåtna.
+  </p>
+
+  <p>
+    De färdiga RBT-ronderna behålls och låses. Senare fasta
+    RBT-lottningar och deras automatiska walkoverresultat tas bort.
+    De återstående planerade ronderna blir schweizerronder, och det
+    ursprungliga totala antalet planerade ronder behålls. Den första
+    schweizerronden lottas omedelbart.
+  </p>
+
+  <p>
+    Avanmälningar och deras giltighetsronder behålls. En spelare vars
+    avanmälan börjar gälla i en senare rond är fortfarande aktiv
+    fram till den ronden. Avanmälningar kan inte återkallas i
+    schweizergränssnittet. Minst två spelare måste vara aktiva i
+    den första schweizerronden.
+  </p>
+
+  <p>
+    Efter konverteringen används den kombinerade beräkningen av
+    ställningen. WNT räknas om utifrån färdiga ronder: direkta bidrag
+    från walkoverpartier och frironder utesluts, och nämnaren är
+    antalet medräknade färdiga ronder. WNT och ställningen kan därför
+    ändras jämfört med läget med enbart RBT. Schweizerlottningen
+    använder poäng, WNT och TPN. Framtida automatiska walkoverresultat
+    och eventuella preliminärt tilldelade poäng från dessa tas bort.
+  </p>
+
+  <p>
+    Ratingbudgetanalysen är inte tillämplig efter konverteringen.
+    De behållna RBT-ronderna behöver inte ha balanserade färger,
+    eftersom de endast utgör en del av det ursprungliga spelschemat.
+    Spara en JSON-säkerhetskopia före konverteringen.
   </p>
 
   <h3>Valfri schweizerfas</h3>
@@ -1267,7 +1327,7 @@ Upprepade spelade möten bidrar separat.</div>
 const MAX_PLAYERS = 256;
 const STORAGE_KEY = "rating-budget-tournament.v1";
 const SIGNATURE = "RBT_CHESS_SAVE";
-const VERSION = 4;
+const VERSION = 5;
 const BUDGET_MODEL = "personal-groups-games-v2";
 const PREVIOUS_BUDGET_MODEL = "personal-groups-v1";
 const EPS = 1e-7;
@@ -3285,6 +3345,162 @@ function requireCompleteRBT(data) {
   );
 }
 
+/**
+ * Conversion is offered only before Swiss has started and only
+ * when at least one fixed RBT round remains to be converted.
+ */
+function canConvertToSwiss(data = tournament) {
+  return !!data &&
+    !data.finished &&
+    !data.swissEnded &&
+    !rbtLocked(data) &&
+    Number.isInteger(data.current) &&
+    data.current >= 0 &&
+    data.current < data.rbtRounds - 1;
+}
+
+/**
+ * Build a converted tournament without changing the live state.
+ *
+ * The returned object has already been validated and contains
+ * the first published Swiss round.
+ */
+function makeSwissConversion(data) {
+  requireCondition(
+    canConvertToSwiss(data),
+    "Konvertering är inte tillgänglig för den valda ronden."
+  );
+
+  // Validate the complete source schedule before discarding anything.
+  const source = validateTournamentData(data);
+  const retainedRounds = source.current + 1;
+  const totalRounds = source.rbtRounds + source.swissRounds;
+
+  requireCondition(
+    retainedRounds < source.rbtRounds,
+    "Det finns inga framtida fasta RBT-ronder att konvertera."
+  );
+
+  const missing = [];
+
+  source.rounds.slice(0, retainedRounds).forEach((round, index) => {
+    round.games.forEach((game, board) => {
+      if (game.result === null) {
+        missing.push(
+          "Rond " + (index + 1) + ", bord " + (board + 1)
+        );
+      }
+    });
+  });
+
+  requireCondition(
+    missing.length === 0,
+    "Ange resultat för alla partier till och med den valda ronden.\n\n" +
+    missing.slice(0, 20).join("\n") +
+    (missing.length > 20 ? "\n…och fler." : "")
+  );
+
+  const laterManualResults = [];
+
+  source.rounds.slice(retainedRounds, source.rbtRounds)
+    .forEach((round, offset) => {
+      round.games.forEach((game, board) => {
+        if (game.result !== null && !game.auto) {
+          laterManualResults.push(
+            "Rond " + (retainedRounds + offset + 1) +
+            ", bord " + (board + 1)
+          );
+        }
+      });
+    });
+
+  requireCondition(
+    laterManualResults.length === 0,
+    "Senare RBT-ronder får inte innehålla manuellt registrerade resultat.\n\n" +
+    laterManualResults.slice(0, 20).join("\n") +
+    (laterManualResults.length > 20 ? "\n…och fler." : "")
+  );
+
+  const draft = clone(source);
+
+  draft.rounds = draft.rounds.slice(0, retainedRounds);
+  draft.rbtRounds = retainedRounds;
+  draft.swissRounds = totalRounds - retainedRounds;
+  draft.swissEnded = false;
+  draft.finished = false;
+
+  draft.engine = {
+    ...draft.engine,
+    convertedToSwiss: true
+  };
+
+  requireCondition(
+    activePlayerIds(draft, retainedRounds).length >= 2,
+    "Färre än två spelare kommer att vara aktiva i den första schweizerronden."
+  );
+
+  // computeHybridStats() inside generateSwissRound() recalculates
+  // scores, WNT, played opponents, colours and previous rests from
+  // the retained complete RBT rounds.
+  draft.rounds.push(generateSwissRound(draft));
+  draft.current = draft.rounds.length - 1;
+
+  return validateTournamentData(draft);
+}
+
+function convertToSwiss() {
+  if (!tournament) return;
+
+  if (!canConvertToSwiss(tournament)) {
+    alert("Konvertering är inte tillgänglig för den valda ronden.");
+    return;
+  }
+
+  if (!swissChecksPassed) {
+    alert("De interna schweizerkontrollerna misslyckades. Kontrollera webbläsarens konsol.");
+    return;
+  }
+
+  const retainedRounds = tournament.current + 1;
+  const totalRounds = tournament.rbtRounds + tournament.swissRounds;
+  const futureSwissRounds = totalRounds - retainedRounds;
+
+  if (!confirm(
+    "Vill du konvertera de återstående ronderna till schweizer?\n\n" +
+    "Antal färdiga RBT-ronder som behålls: " + retainedRounds + "\n" +
+    "Antal planerade schweizerronder efter konverteringen: " + futureSwissRounds + "\n\n" +
+    "Framtida fasta RBT-lottningar och deras automatiska " +
+    "walkoverresultat tas bort. Avanmälningarnas giltighetsronder " +
+    "behålls. RBT-resultaten låses och den första " +
+    "schweizerronden lottas.\n\n" +
+    "Ställningen och WNT kan ändras enligt reglerna för kombinerat läge. " +
+    "Spara först en JSON-säkerhetskopia om du vill behålla " +
+    "det ursprungliga spelschemat."
+  )) return;
+
+  let converted;
+  let report;
+
+  try {
+    converted = makeSwissConversion(tournament);
+    report = calculateScheduleReport(converted);
+  } catch (error) {
+    alert(
+      "Det gick inte att konvertera till schweizer:\n" + error.message +
+      "\n\nDen ursprungliga turneringen har inte ändrats."
+    );
+    return;
+  }
+
+  // Commit only after conversion, pairing, validation and report
+  // calculation have all succeeded.
+  tournament = converted;
+  scheduleReport = report;
+
+  persist();
+  renderApplication();
+}
+
 function startSwissPhase() {
   if (!tournament || !isHybrid() || rbtLocked() || tournament.finished) {
     return;
@@ -3338,7 +3554,7 @@ function submitSwissRound(stopAfterRound = false) {
     const current = tournament.rounds[tournament.current];
 
     requireCondition(
-      !current.closed, "Denna schweizerrond har redan lämnats in."
+      !current.closed, "Denna schweizerrond har redan registrerats."
     );
 
     const pending = current.games.findIndex(game => game.result === null);
@@ -3375,7 +3591,7 @@ function submitSwissRound(stopAfterRound = false) {
     }
   } catch (error) {
     alert(
-      "Schweizerronden kunde inte lämnas in:\n" + error.message +
+      "Schweizerronden kunde inte registreras:\n" + error.message +
       "\n\nRegistrerade resultat och avanmälningar har behållits. " +
       "Den aktuella ronden är fortfarande inte inlämnad."
     );
@@ -3388,7 +3604,7 @@ function finishSwissEarly() {
   if (!isSwissRound(tournament, tournament.current)) return;
 
   if (confirm(
-    "Vill du lämna in denna schweizerrond och avsluta turneringen i förtid?\n" +
+    "Vill du registrera denna schweizerrond och avsluta turneringen i förtid?\n" +
     "Samtliga partier i ronden måste ha ett resultat."
   )) {
     submitSwissRound(true);
@@ -3953,12 +4169,12 @@ function byeHTML(roundIndex) {
       ${credited
         ? "(tilldelade)"
         : swiss
-          ? "(tilldelas när ronden lämnas in)"
-          : "(tilldelas när ronden är färdig)"}.
+          ? "(tilldelas när ronden registreras)"
+          : "(tilldelas när ronden är färdigspelad)"}.
       ${swiss
         ? "Ingen spelad färg, inget spelat möte och inget direkt WNT-bidrag " +
           "tillkommer. RBT-budgetarna är oförändrade."
-        : "Ingen motståndarrating tillkommer; ratingbudgeten är minskad " +
+        : "Ingen motståndarrating tillkommer; ratingbudgeten minskas " +
           "med en personlig målrating."}
     </div>
   `;
@@ -4050,9 +4266,9 @@ function updateRoundNavigation() {
     let suffix;
     if (swiss) {
       suffix = round.closed
-        ? " ✓ inlämnad"
+        ? " ✓ registrerad"
         : isRoundComplete(round)
-          ? " · klar att lämnas in"
+          ? " · klar att registreras"
           : " · " + recorded + "/" + round.games.length;
     } else {
       suffix = isRoundComplete(round)
@@ -4094,14 +4310,17 @@ function updateRoundNavigation() {
   } else {
     action.textContent =
       tournament.rounds.length === plannedRounds()
-        ? "Lämna in den sista schweizerronden"
-        : "Lämna in resultat och lotta nästa schweizerrond";
+        ? "Registrera den sista schweizerronden"
+        : "Registrera resultat och lotta nästa schweizerrond";
   }
 
   $("finish-swiss-button").hidden =
     !isHybrid() || !currentSwiss || tournament.swissEnded ||
     tournament.current !== tournament.rounds.length - 1 ||
     tournament.rounds[tournament.current].closed;
+
+  $("convert-swiss-button").disabled =
+    !swissChecksPassed || !canConvertToSwiss(tournament);
 
   $("withdraw-button").disabled = !canOpenWithdrawal();
   $("withdraw-button").textContent = rbtLocked()
@@ -4135,7 +4354,7 @@ function updateRoundNavigation() {
       : !currentSwiss
         ? "Dessa RBT-resultat är låsta eftersom schweizerfasen har startats."
         : tournament.rounds[tournament.current].closed
-          ? "Denna inlämnade schweizerrond är låst."
+          ? "Denna registrerade schweizerrond är låst."
           : "Ange samtliga resultat och lämna sedan in schweizerronden. " +
             "Registrerade resultat sparas men påverkar inte ställningen " +
             "förrän ronden lämnas in. Avanmälningar gäller nästa ännu " +
@@ -4430,6 +4649,10 @@ function renderApplication() {
 
   if (!started) return;
 
+  const converted = tournament.engine?.convertedToSwiss === true;
+  $("budget-converted-notice").hidden = !converted;
+  $("budget-details").hidden = converted;
+
   for (const id of ["round-name", "standings-name", "final-name"]) {
     $(id).textContent = tournamentTitle();
   }
@@ -4527,7 +4750,7 @@ function newTournament() {
    RBT portion of a hybrid tournament.
    ============================================================ */
 
-function validateFixedRBTData(raw) {
+function validateFixedRBTData(raw, options = {}) {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
     throw new Error("Ogiltiga turneringsdata.");
   }
@@ -4681,7 +4904,8 @@ function validateFixedRBTData(raw) {
 
   for (let id = 0; id < count; id++) {
     const games = whites[id] + blacks[id];
-    if (Math.abs(whites[id] - blacks[id]) !== games % 2) {
+    if (!options.allowUnbalanced &&
+        Math.abs(whites[id] - blacks[id]) !== games % 2) {
       throw new Error("Spelschemats färgtotaler är inte balanserade.");
     }
   }
@@ -4714,7 +4938,8 @@ function validateFixedRBTData(raw) {
       createdAt: typeof raw.engine?.createdAt === "string"
         ? raw.engine.createdAt.slice(0, 100) : "",
       model: BUDGET_MODEL,
-      legacySchedule: raw.engine?.legacySchedule === true
+      legacySchedule: raw.engine?.legacySchedule === true,
+      convertedToSwiss: raw.engine?.convertedToSwiss === true
     }
   };
 }
@@ -4753,8 +4978,17 @@ function validateTournamentData(raw) {
     "Ogiltig vald rond."
   );
 
+  requireCondition(
+    raw.engine?.convertedToSwiss === undefined ||
+    typeof raw.engine.convertedToSwiss === "boolean",
+    "Ogiltig konverteringsmarkering."
+  );
+
+  const converted = raw.engine?.convertedToSwiss === true;
+
   if (raw.swissRounds === 0) {
     requireCondition(
+      !converted &&
       raw.rounds.length === raw.rbtRounds && !raw.swissEnded,
       "Ogiltigt fasläge för en turnering med enbart RBT."
     );
@@ -4770,6 +5004,11 @@ function validateTournamentData(raw) {
   const started = raw.rounds.length > raw.rbtRounds;
   const total = raw.rbtRounds + raw.swissRounds;
 
+  requireCondition(
+    !converted || started,
+    "En konverterad turnering måste ha en publicerad schweizerrond."
+  );
+
   for (const player of raw.players) {
     requireCondition(!!player, "Ogiltig spelarpost.");
 
@@ -4778,7 +5017,8 @@ function validateTournamentData(raw) {
     requireCondition(
       from === null ||
       (Number.isInteger(from) && from >= 0 && from < total &&
-       from <= (started ? raw.rounds.length : raw.rbtRounds)),
+       (converted ||
+        from <= (started ? raw.rounds.length : raw.rbtRounds))),
       "Ogiltig rond för avanmälan i den kombinerade turneringen."
     );
   }
@@ -4799,7 +5039,9 @@ function validateTournamentData(raw) {
     current: Math.min(raw.current, raw.rbtRounds - 1)
   };
 
-  const fixed = validateFixedRBTData(fixedRaw);
+  const fixed = validateFixedRBTData(fixedRaw, {
+    allowUnbalanced: converted
+  });
 
   const data = {
     ...fixed,
@@ -4960,7 +5202,7 @@ function makeEnvelope() {
 function validateEnvelope(raw) {
   requireCondition(
     raw && raw.fileSignature === SIGNATURE &&
-    [1, 2, 3, VERSION].includes(raw.version),
+    [1, 2, 3, 4, VERSION].includes(raw.version),
     "Detta är inte en kompatibel RBT-turneringsfil."
   );
 
@@ -4980,7 +5222,7 @@ function validateEnvelope(raw) {
 
   let source = raw.data;
 
-  if (raw.version < VERSION) {
+  if (raw.version < 4) {
     requireCondition(
       source && Array.isArray(source.rounds),
       "Ogiltiga äldre turneringsdata."
@@ -5365,7 +5607,9 @@ function reportHeader(subtitle) {
         ? " + " + tournament.swissRounds + " planerade schweizerronder (" +
           publishedSwissRounds() + " publicerade)"
         : ""} ·
-      RBT-budgetar för schemalagda partier ·
+      ${tournament.engine.convertedToSwiss
+        ? "Ratingbudgetanalysen är inte tillämplig efter konvertering"
+        : "RBT-budgetar för schemalagda partier"} ·
       Särskiljning: ${html(TIE_BREAKS[tournament.tb])} ·
       Utskrift ${html(new Date().toLocaleString("sv-SE"))}
     </p>
