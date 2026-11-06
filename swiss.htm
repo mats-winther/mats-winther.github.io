@@ -45,6 +45,16 @@
   .radio-group { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
   .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 14px; }
   .radio-group .radio-item { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+
+  .radio-group input[type="radio"] {
+    vertical-align: -0.4mm;
+  }
+
+  .checkbox-group input[type="checkbox"] {
+    position: relative;
+    top: 0.4mm;
+  }
+
   .rules-box {
     background: #eff6ff; border-left: 4px solid var(--accent); padding: 12px 16px; border-radius: 4px; margin: 16px 0; font-size: 13.5px; line-height: 1.5;
   }
@@ -187,7 +197,7 @@
         <li><strong>Rond 1:</strong> Spelarna delas in i fyra grupper (kvadranter). K1 tilldelas vit mot K2 enligt seedningsordning; likaså tilldelas K3 vit mot K4. (Detta gäller vid 16 eller fler spelare. Annars lottas övre halvan mot undre halvan, och schweizerlottning börjar vid rond 2. Vid ojämna grupper justeras storlekarna automatiskt, och vid udda antal spelare får den lägst rankade frirond.)</li>
         <li><strong>Rond 2:</strong> Vinnarna från den första halvan möter vinnarna från den andra halvan enligt seedningsordningen. Färgerna växlar från rond 1. (I undantagsfall omkastas färgerna om den högre seedade spelaren hade svart i rond 1 och den lägre seedade spelaren hade vit.)</li>
         <li><strong>Rond 3+:</strong> Schweizerlottning börjar. Spelarna sorteras efter poäng, vald särskiljning (WNT eller Buchholz) och ursprunglig seedning. Lottning sker uppifrån och ned.</li>
-        <li><strong>Färgfördelning:</strong> Spelaren med färre partier med vit får vit. Om lika får spelaren med lägst rating vit (eller lägre seedad vid samma rating). Färgbalans garanteras (färgskillnaden kan aldrig nå 3). Om färgbalansen krockar med 2-i-rad-regeln tillåts upp till tre partier i rad med samma färg.</li>
+        <li><strong>Färgfördelning:</strong> Spelaren med färre partier med vit får vit. Om lika får spelaren med lägst rating vit (eller lägre seedad vid samma rating). Färgbalansen är i det närmaste garanterad (färgskillnaden kommer sällan att uppgå till 3). Om färgbalansen krockar med 2-i-rad-regeln tillåts upp till tre partier i rad med samma färg.</li>
         <li><strong>Randomisering:</strong> Om "Randomisera spelare" är markerad bevaras ratinggrupperna, men spelarna inom grupperna slumpas om. Detta ger större variation i första ronden för samma grupp klubbspelare. Om antalet spelare är udda tilldelas frironden slumpmässigt till en spelare i K4.</li>
         <li><strong>Förlust på walkover och strykning:</strong> När en spelare stryks tilldelas dennes planerade motståndare automatiskt en poäng (w.o.). Om en dubbel walkover (0-0 (F)) har registrerats och båda spelarna därefter stryks, tilldelas ingen av spelarna någon poäng.</li>
       </ul>

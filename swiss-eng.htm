@@ -44,6 +44,15 @@
   .radio-group { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
   .checkbox-group { display: flex; align-items: center; gap: 8px; font-size: 14px; }
   .radio-group .radio-item { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+
+  .radio-group input[type="radio"] {
+    vertical-align: -0.4mm;
+  }
+  .checkbox-group input[type="checkbox"] {
+    position: relative;
+    top: 0.4mm;
+  }
+
   .rules-box {
     background: #eff6ff; border-left: 4px solid var(--accent); padding: 12px 16px; border-radius: 4px; margin: 16px 0; font-size: 13.5px; line-height: 1.5;
   }
@@ -186,7 +195,7 @@
         <li><strong>Round 1:</strong> Players are divided into four groups (quadrants). Q1 is assigned White against Q2 following seeding order; similarly, Q3 is assigned White against Q4. (This applies when there are 16 or more players. Otherwise, the top half is paired against the bottom half, and Swiss pairing begins at Round 2. For uneven groups, sizes are adjusted automatically, and with an odd number of players, the lowest-rated gets a bye.)</li>
         <li><strong>Round 2:</strong> Winners of the first half play winners of the second half in seeding order. Colors alternate from Round 1. (Exceptionally, if the higher-seeded player had Black in Round 1 and the lower-seeded player had White, the colors are reversed.)</li>
         <li><strong>Round 3+:</strong> Swiss pairings begin. Players are sorted by score, the selected tie-break (WNT or Buchholz), and initial seeding. Pairings are generated top-down.</li>
-        <li><strong>Color Allocation:</strong> The player with fewer White games receives White. If equal, the lowest-rated player receives White (or lower-seeded if equal rating). Color balance is guaranteed (color difference can never reach 3). If color balance conflicts with the 2-in-a-row rule, up to three games in a row with the same color are permitted.</li>
+        <li><strong>Color Allocation:</strong> The player with fewer White games receives White. If equal, the lowest-rated player receives White (or lower-seeded if equal rating). Color balance is nearly guaranteed (color difference will rarely reach 3). If color balance conflicts with the 2-in-a-row rule, up to three games in a row with the same color are permitted.</li>
 <li><strong>Randomization:</strong> If "Randomize players" is selected, the rating groups are preserved but shuffled, ensuring greater variety in first-round pairings for the same group of club players. If the number of players is uneven, the player receiving the BYE is selected at random from Q4.</li>
 <li><strong>Forfeit and Withdrawal:</strong> When a player is withdrawn, their scheduled opponent is automatically awarded a point (w.o.). If a double forfeit (0-0 (F)) has been recorded and both players are subsequently withdrawn, neither player is awarded a point.</li>
 
