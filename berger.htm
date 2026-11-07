@@ -731,10 +731,9 @@
   <h2>Om Berger Turneringssystem</h2>
 
   <p>
-    Det här fristående programmet hanterar fyra separata
-    turneringsplatser. Varje plats har en egen spelarlista,
-    ett eget spelschema, egna resultat, en vald rond,
-    en inställning för särskiljning och uppgifter om avhopp.
+     Programmet hanterar fyra separata turneringsplatser, var och en
+     med egen spelarlista, eget spelschema, egna resultat, eget rondnummer
+     samt egna inställningar för särskiljning och avhopp.
   </p>
 
   <ul>
@@ -776,18 +775,76 @@
     </li>
   </ul>
 
+  <h3>Övergång till Schweizer</h3>
+
   <p>
-    Hanteringen av avhopp är ett administrativt hjälpmedel:
-    befintliga resultat behålls, medan oregistrerade partier
-    från och med den angivna ronden tilldelas resultat genom walkover.
-    Programmet stryker inte tidigare resultat automatiskt.
+    Om spelare har lämnat turneringen kan tävlingsledaren välja att övergå
+    till schweizerlottning för att undvika alltför många frironder.
+    Det planerade antalet ronder bibehålls, vilket innebär att återmöten
+    kan förekomma mot slutet av turneringen.
   </p>
 
   <p>
-    Automatisk sparning använder webbläsarens lokala lagring
-    när den är tillgänglig. Ladda regelbundet ned säkerhetskopior
-    i JSON-format. Programmet synkroniserar inte mellan olika
-    enheter eller webbläsarflikar.
+    Välj en bergerrond och klicka på Konvertera till Schweizer. Varje
+    verkligt parti till och med den ronden måste ha ett resultat. Senare
+    bergerronder får inte innehålla manuellt inmatade resultat eller
+    walkovers. Senare automatiska walkovers vid avhopp och deras poäng
+    stryks tillsammans med det framtida bergerschemat.
+  </p>
+
+  <p>
+    De färdigspelade bergerronderna behålls och låses. Uppgifter om avhopp
+    behålls, inklusive avhopp som gäller från och med en framtida rond. De
+    återstående ursprungligen planerade ronderna blir schweizerronder och
+    lottas en rond i taget. Om färre än två aktiva spelare återstår inför
+    en efterföljande schweizerrond avslutas turneringen i förtid.
+  </p>
+
+  <p>
+    Schweizerlottning och ställning använder poäng, progressiv poäng,
+    Sonneborn-Berger och startnummer i den ordningen. Startnumret styr
+    visnings- och lottningsordning för spelare som fortfarande är lika.
+    Dessa spelare delar sin placering.
+  </p>
+
+  <p>
+    Progressiv poäng är summan av spelarens sammanlagda poäng efter varje
+    medräknad rond. Sonneborn-Berger inkluderar direkta bidrag från
+    walkover. En schweizerfrirond ger en poäng och ger inget motståndarbidrag
+    till Sonneborn-Berger. En schemalagd bergerfrirond behåller sitt
+    ursprungliga nollpoängsvärde och räknas inte som en tidigare
+    schweizerfrirond.
+  </p>
+
+  <p>
+    Spelade bergerfärger och möteshistorik förs vidare. Walkover och
+    frironder tillför ingen spelad färg eller möte och avbryter inte en
+    svit av spelade färger. Schweizerlottningen undviker omspel så länge en
+    fullständig lottning utan omspel är möjlig. I annat fall tillåts omspel.
+    Detta är ett anpassat schweizersystem och gör inte anspråk på att följa
+    FIDE:s nederländska system.
+  </p>
+
+  <p>
+    Resultat som matats in i en oregistrerad schweizerrond sparas men
+    påverkar inte ställningen eller nästa lottning. När ronden registreras
+    låses dess resultat. Avhopp i schweizerfasen börjar gälla från nästa
+    olottade rond. Tidigare registrerade datum för avhopp gäller
+    fortfarande.
+  </p>
+
+  <p>
+    Hanteringen av avhopp är ett administrativt hjälpmedel: befintliga
+    resultat behålls, medan oregistrerade partier från och med den
+    angivna ronden tilldelas förluster genom walkover. Programmet stryker
+    inte tidigare resultat automatiskt.
+  </p>
+
+  <p>
+    Automatisk sparning använder webbläsarens lokala lagring när den är
+    tillgänglig. Ladda regelbundet ned säkerhetskopior i JSON-format.
+    Programmet synkroniserar inte mellan olika enheter eller
+    webbläsarflikar.
   </p>
 
   <blockquote>
@@ -873,8 +930,8 @@
 
 const SLOT_COUNT = 4;
 const FORMAT = "berger-four-tournaments";
-const FORMAT_VERSION = 1;
-const STORAGE_KEY = "berger-four-tournaments.workspace.v1";
+const FORMAT_VERSION = 2;
+const STORAGE_KEY = "berger-four-tournaments.workspace.v2";
 
 const SLOT_COLORS = [
   "#2357b6",
@@ -1317,7 +1374,25 @@ function calculateStandings(slot, roundLimit) {
   }
 
   for (let round = 0; round < roundLimit; round++) {
+    if (
+      slot.swiss &&
+      round >= slot.swiss.bergerRounds &&
+      round >= slot.swiss.bergerRounds + slot.swiss.closedSwissRounds
+    ) {
+      continue;
+    }
+
     for (const game of slot.rounds[round]) {
+      if (
+        slot.swiss &&
+        round >= slot.swiss.bergerRounds &&
+        game.b === null &&
+        game.result === "BYE"
+      ) {
+        rows[game.w].points += 1;
+        continue;
+      }
+
       if (!isRealGame(game) || game.result === null) {
         continue;
       }
@@ -1364,7 +1439,16 @@ function calculateStandings(slot, roundLimit) {
   const rankedGroups = [];
 
   for (const pointGroup of pointGroups) {
-    if (slot.tb === "de") {
+    if (slot.swiss) {
+      const progressiveGroups =
+        groupDescending(pointGroup, row => row.ps);
+
+      for (const progressiveGroup of progressiveGroups) {
+        rankedGroups.push(
+          ...groupDescending(progressiveGroup, row => row.sb)
+        );
+      }
+    } else if (slot.tb === "de") {
       rankedGroups.push(
         ...resolveDirectEncounter(pointGroup, records)
       );
@@ -1446,7 +1530,8 @@ function refreshAutomaticForfeits(slot) {
    ============================================================ */
 
 function pairingsTableHTML(slot, index, round, mode) {
-  const editable = mode === "edit";
+  const editable = mode === "edit" &&
+    (!slot.swiss || isEditableSwissRound(slot, round));
   const blank = mode === "blank";
 
   const rows = slot.rounds[round].map((game, board) => {
@@ -1457,7 +1542,11 @@ function pairingsTableHTML(slot, index, round, mode) {
           <td class="player-name">
             ${participantHTML(slot, game.w)}
           </td>
-          <td class="numeric">Frirond: 0 poäng</td>
+          <td class="numeric">
+            ${game.result === "BYE"
+              ? "Schweizerfrirond: 1 poäng"
+              : "Frirond: 0 poäng"}
+          </td>
           <td class="player-name">
             ${participantHTML(slot, game.b)}
           </td>
@@ -1594,6 +1683,11 @@ function standingsTableHTML(slot, standings, roundLimit) {
       V, R och F står för vinster, remier och förluster
       och omfattar även registrerade walkoverresultat.
       Schemalagda frironder räknas varken som partier eller som poäng.
+      ${slot.swiss
+        ? "En registrerad schweizerfrirond ger en poäng. " +
+          "Oregistrerade schweizerresultat och frironder räknas ännu inte med. " +
+          "Särskiljningsordning: poäng, progressiv poäng, Sonneborn-Berger."
+        : ""}
       S-B står för Sonneborn-Berger och PP för progressiv poäng.
       Ett likhetstecken anger en delad placering.
     </p>
@@ -1784,37 +1878,80 @@ function tournamentHTML(slot, index) {
       ${buttonHTML("back", "Tillbaka till ronderna")}
       ${buttonHTML("print-final", "Skriv ut slutrapport", "success")}
     `
-    : `
-      ${buttonHTML("withdraw", "Avhopp / Återinsättning", "danger")}
-      ${buttonHTML("finish", "Avsluta och visa slutställning", "primary")}
-    `;
+    : slot.swiss
+      ? `
+        ${buttonHTML(
+          "withdraw",
+          "Spelare utgår",
+          "danger",
+          !canWithdrawInSwiss(slot)
+        )}
+        ${buttonHTML(
+          "finish",
+          swissActionLabel(slot),
+          "primary",
+          !canUseSwissAction(slot)
+        )}
+      `
+      : `
+        ${buttonHTML("withdraw", "Avhopp / Återinsättning", "danger")}
+        ${buttonHTML("finish", "Avsluta och visa slutställning", "primary")}
+        ${buttonHTML(
+          "convert-swiss",
+          "Konvertera till Schweizer",
+          "",
+          slot.current >= slot.rounds.length - 1
+        )}
+      `;
 
-  const tieBreakControl = `
-    <div class="tie-break-control">
-      <label for="live-tb-${index}">Särskiljning:</label>
-      <select id="live-tb-${index}" data-tb="true">
-        ${tieBreakOptions(slot.tb)}
-      </select>
-    </div>
-  `;
+  const tieBreakControl = slot.swiss
+    ? `
+      <div class="tie-break-control">
+        Särskiljning: Progressiv poäng → Sonneborn-Berger
+      </div>
+    `
+    : `
+      <div class="tie-break-control">
+        <label for="live-tb-${index}">Särskiljning:</label>
+        <select id="live-tb-${index}" data-tb="true">
+          ${tieBreakOptions(slot.tb)}
+        </select>
+      </div>
+    `;
 
   let content = `
     <p class="metadata">
-      ${count} spelare · ${cycles} turnering ·
-      ${slot.rounds.length} ronder
+      ${count} spelare ·
+      ${slot.swiss
+        ? slot.swiss.bergerRounds + " bergerronder + " +
+          (slot.swiss.totalRounds - slot.swiss.bergerRounds) +
+          " planerade schweizerronder"
+        : cycles + " turnering · " + slot.rounds.length + " ronder"}
     </p>
 
     <div class="actions">${actionButtons}</div>
 
     <p class="progress-line">
-      Registrerade partiresultat: ${recorded} / ${total}
+      Registrerade partier i publicerade ronder: ${recorded} / ${total}
+      ${slot.swiss
+        ? " · Publicerade ronder: " + slot.rounds.length +
+          " / " + slot.swiss.totalRounds
+        : ""}
     </p>
+    ${slot.swiss ? `
+      <p class="small-note">
+        Färdigspelade bergerronder och registrerade schweizerronder är låsta.
+        Resultat i den senaste schweizerronden räknas med först efter registrering.
+      </p>
+    ` : ""}
   `;
 
   if (final) {
     content += `
       <div class="final-summary">
-        Alla schemalagda partier har registrerade resultat.
+        ${slot.swiss && slot.rounds.length < slot.swiss.totalRounds
+          ? "Turneringen har avslutats eftersom färre än två aktiva spelare återstod."
+          : "Alla schemalagda partier har registrerade resultat."}
       </div>
 
       <div class="section-heading">
@@ -1825,7 +1962,7 @@ function tournamentHTML(slot, index) {
       ${standingsTableHTML(slot, standings, roundLimit)}
 
       <div class="section-heading">
-        <h3>Bergertabell</h3>
+        <h3>${slot.swiss ? "Kors- och resultattabell" : "Bergertabell"}</h3>
       </div>
 
       ${crosstableHTML(slot, standings)}
@@ -1873,7 +2010,11 @@ function tournamentHTML(slot, index) {
 
     <h3>
       Rond ${slot.current + 1}
-      ${slot.double ? " · Omgång " + cycle : ""}
+      ${slot.swiss
+        ? (slot.current < slot.swiss.bergerRounds
+          ? " · Berger"
+          : " · Schweizer")
+        : (slot.double ? " · Omgång " + cycle : "")}
     </h3>
 
     <div class="actions">
@@ -1891,9 +2032,13 @@ function tournamentHTML(slot, index) {
     ${standingsTableHTML(slot, standings, roundLimit)}
 
     <p class="small-note">
-      Ställningen bygger på registrerade resultat till och med
-      den valda ronden. Särskiljningsvärden som beror på
-      motståndarnas resultat är preliminära tills turneringen är klar.
+      ${slot.swiss
+        ? "Ställningen omfattar bibehållna bergerronder och registrerade " +
+          "schweizerronder till och med den valda ronden. Den senaste " +
+          "oregistrerade schweizerronden räknas inte med."
+        : "Ställningen bygger på registrerade resultat till och med den valda ronden."}
+      Särskiljningsvärden som beror på motståndarnas resultat är preliminära
+      tills turneringen är klar.
     </p>
   `;
 
@@ -2011,6 +2156,10 @@ function validateString(value, maxLength, label, allowEmpty = true) {
 }
 
 function validateSlot(raw, index) {
+  if (raw && raw.swiss !== undefined && raw.swiss !== null) {
+    return validateSwissSlot(raw, index);
+  }
+
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
     throw new Error("Ogiltig turneringsplats.");
   }
@@ -2470,6 +2619,12 @@ function moveRound(index, direction) {
 
 function finishTournament(index) {
   const slot = state.slots[index];
+
+  if (slot.swiss) {
+    submitSwissRound(index);
+    return;
+  }
+
   const missing = missingGameCount(slot);
 
   if (missing > 0) {
@@ -2493,6 +2648,17 @@ function openWithdrawal(index) {
   if (slot.stage !== "running") {
     return;
   }
+
+  if (slot.swiss) {
+    openSwissWithdrawal(index);
+    return;
+  }
+
+  document.getElementById("withdrawOperation").disabled = false;
+
+  document.querySelectorAll("#withdrawDialog p.hint").forEach(
+    element => { element.hidden = false; }
+  );
 
   withdrawalSlot = index;
 
@@ -2532,6 +2698,11 @@ function applyWithdrawal(event) {
 
   if (slot.stage !== "running") {
     alert("Avhopp kan inte längre ändras i den här turneringen.");
+    return;
+  }
+
+  if (slot.swiss) {
+    applySwissWithdrawal(withdrawalSlot);
     return;
   }
 
@@ -2639,7 +2810,7 @@ function printReportHTML(slot, index, type) {
   const standings = calculateStandings(slot, limit);
 
   const heading = final
-    ? "Slutställning och Bergertabell"
+    ? "Slutställning och tabell"
     : preRound
       ? "Rond " + (slot.current + 1) + ": Rondlista"
       : "Rond " + (slot.current + 1) + ": Resultat och ställning";
@@ -2652,8 +2823,12 @@ function printReportHTML(slot, index, type) {
       <p class="metadata">
         Turneringsplats ${index + 1} ·
         ${slot.players.length} spelare ·
-        ${slot.double ? "Dubbelrondig" : "Enkelrondig"} turnering ·
-        Särskiljning: ${escapeHTML(TIE_BREAKS[slot.tb])}
+        ${slot.swiss
+          ? "Berger–Schweizer"
+          : (slot.double ? "Dubbelrondig" : "Enkelrondig") + " turnering"} ·
+        Särskiljning: ${slot.swiss
+          ? "Progressiv poäng → Sonneborn-Berger"
+          : escapeHTML(TIE_BREAKS[slot.tb])}
       </p>
   `;
 
@@ -2677,7 +2852,7 @@ function printReportHTML(slot, index, type) {
 
   if (final) {
     html += `
-      <h3>Bergertabell</h3>
+      <h3>${slot.swiss ? "Kors- och resultattabell" : "Bergertabell"}</h3>
       ${crosstableHTML(slot, standings)}
     `;
   }
@@ -2865,6 +3040,10 @@ document.addEventListener("click", event => {
       finishTournament(index);
       break;
 
+    case "convert-swiss":
+      convertTournamentToSwiss(index);
+      break;
+
     case "back":
       state.slots[index].stage = "running";
       persist();
@@ -2958,6 +3137,10 @@ document.addEventListener("change", event => {
   const slot = state.slots[index];
 
   if (input.matches("[data-tb]")) {
+    if (slot.swiss) {
+      return;
+    }
+
     if (!Object.prototype.hasOwnProperty.call(TIE_BREAKS, input.value)) {
       return;
     }
@@ -2992,6 +3175,13 @@ document.addEventListener("change", event => {
     const round = Number(input.dataset.round);
     const board = Number(input.dataset.board);
     const game = slot.rounds[round]?.[board];
+
+    if (
+      slot.swiss &&
+      (round !== slot.current || !isEditableSwissRound(slot, round))
+    ) {
+      return;
+    }
 
     if (!game || !isRealGame(game)) {
       return;
@@ -3211,12 +3401,1348 @@ function runSelfChecks() {
 }
 
 /* ============================================================
+   Swiss conversion and continuation
+   ============================================================ */
+
+function requireCondition(condition, message) {
+  if (!condition) throw new Error(message);
+}
+
+function cloneTournament(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function activeSwissPlayerIds(slot, roundIndex) {
+  return slot.players
+    .map((player, id) => ({player, id}))
+    .filter(({player}) =>
+      player.withdrawnFrom === null ||
+      roundIndex < player.withdrawnFrom
+    )
+    .map(({id}) => id);
+}
+
+function isEditableSwissRound(slot, roundIndex) {
+  if (!slot.swiss || slot.stage !== "running") return false;
+
+  const firstOpen =
+    slot.swiss.bergerRounds + slot.swiss.closedSwissRounds;
+
+  return (
+    roundIndex === firstOpen &&
+    roundIndex === slot.rounds.length - 1 &&
+    roundIndex >= slot.swiss.bergerRounds
+  );
+}
+
+function canUseSwissAction(slot) {
+  if (!slot.swiss || slot.stage !== "running") return false;
+  if (slot.current !== slot.rounds.length - 1) return false;
+
+  const swissCount =
+    slot.rounds.length - slot.swiss.bergerRounds;
+
+  return (
+    isEditableSwissRound(slot, slot.current) ||
+    slot.swiss.closedSwissRounds === swissCount
+  );
+}
+
+function swissActionLabel(slot) {
+  const swissCount =
+    slot.rounds.length - slot.swiss.bergerRounds;
+
+  if (slot.swiss.closedSwissRounds === swissCount) {
+    return "Visa slutställning";
+  }
+
+  return slot.rounds.length >= slot.swiss.totalRounds
+    ? "Registrera sista schweizerronden"
+    : "Registrera resultat och lotta nästa schweizerrond";
+}
+
+function canWithdrawInSwiss(slot) {
+  return !!(
+    slot.swiss &&
+    slot.stage === "running" &&
+    slot.current === slot.rounds.length - 1 &&
+    isEditableSwissRound(slot, slot.current) &&
+    slot.rounds.length < slot.swiss.totalRounds &&
+    slot.players.some(player => player.withdrawnFrom === null)
+  );
+}
+
+/*
+  The pairing context uses exact integer keys:
+  score2 = twice the score,
+  ps2 = twice Progressive Score,
+  sb4 = four times Sonneborn-Berger.
+
+  Berger rests do not count as Swiss byes. Forfeits contribute points
+  and S-B but do not contribute played colours or played opponents.
+*/
+function swissPairingContext(slot, roundLimit) {
+  const standings = calculateStandings(slot, roundLimit);
+  const byId = new Map();
+
+  slot.players.forEach((player, id) => {
+    const row = standings.byId[id];
+
+    byId.set(id, {
+      id,
+      tpn: id + 1,
+      score2: Math.round(row.points * 2),
+      ps2: Math.round(row.ps * 2),
+      sb4: Math.round(row.sb * 4),
+      whites: 0,
+      blacks: 0,
+      byes: 0,
+      opponents: new Set(),
+      history: []
+    });
+  });
+
+  const closedLimit =
+    slot.swiss.bergerRounds + slot.swiss.closedSwissRounds;
+
+  const limit = Math.min(
+    roundLimit,
+    slot.rounds.length,
+    closedLimit
+  );
+
+  for (let round = 0; round < limit; round++) {
+    for (const game of slot.rounds[round]) {
+      if (!isRealGame(game)) {
+        if (
+          round >= slot.swiss.bergerRounds &&
+          game.b === null &&
+          game.result === "BYE"
+        ) {
+          const player = byId.get(game.w);
+          player.byes++;
+          player.history.push({
+            opponent: null,
+            color: "-",
+            forfeit: false
+          });
+        }
+
+        continue;
+      }
+
+      requireCondition(
+        game.result !== null &&
+        Object.prototype.hasOwnProperty.call(RESULTS, game.result),
+        "En medräknad rond innehåller ett resultat som saknas eller är ogiltigt."
+      );
+
+      const definition = RESULTS[game.result];
+      const white = byId.get(game.w);
+      const black = byId.get(game.b);
+
+      if (definition.played) {
+        white.whites++;
+        black.blacks++;
+        white.opponents.add(game.b);
+        black.opponents.add(game.w);
+      }
+
+      white.history.push({
+        opponent: game.b,
+        color: definition.played ? "W" : "F",
+        forfeit: !definition.played
+      });
+
+      black.history.push({
+        opponent: game.w,
+        color: definition.played ? "B" : "F",
+        forfeit: !definition.played
+      });
+    }
+  }
+
+  return {byId};
+}
+
+function compareStats(a, b) {
+  return (
+    b.score2 - a.score2 ||
+    b.ps2 - a.ps2 ||
+    b.sb4 - a.sb4 ||
+    a.tpn - b.tpn
+  );
+}
+
+function colourRunAfter(stats, colour) {
+  let run = 1;
+  const history = stats.history || [];
+
+  for (let index = history.length - 1; index >= 0; index--) {
+    const previousColour = history[index].color;
+
+    if (previousColour !== "W" && previousColour !== "B") continue;
+    if (previousColour !== colour) break;
+
+    run++;
+  }
+
+  return run;
+}
+
+function assessSwissColours(whiteId, blackId, context) {
+  const white = context.byId.get(whiteId);
+  const black = context.byId.get(blackId);
+
+  const whiteDifference =
+    (white.whites || 0) + 1 - (white.blacks || 0);
+
+  const blackDifference =
+    (black.whites || 0) - ((black.blacks || 0) + 1);
+
+  const whiteRun = colourRunAfter(white, "W");
+  const blackRun = colourRunAfter(black, "B");
+  const longestRun = Math.max(whiteRun, blackRun);
+
+  return {
+    white: whiteId,
+    black: blackId,
+    balanceExcess:
+      Math.max(0, Math.abs(whiteDifference) - 2) +
+      Math.max(0, Math.abs(blackDifference) - 2),
+    totalImbalance:
+      Math.abs(whiteDifference) + Math.abs(blackDifference),
+    streakViolations:
+      Number(whiteRun >= 3) + Number(blackRun >= 3),
+    repeatedColours:
+      Number(whiteRun >= 2) + Number(blackRun >= 2),
+    longestRun,
+    runExcess: Math.max(0, longestRun - 2)
+  };
+}
+
+function preferredWhiteId(firstId, secondId, context) {
+  const first = context.byId.get(firstId);
+  const second = context.byId.get(secondId);
+
+  const defaultWhite =
+    first.whites !== second.whites
+      ? (first.whites < second.whites ? firstId : secondId)
+      : (first.tpn > second.tpn ? firstId : secondId);
+
+  const firstWhite = assessSwissColours(firstId, secondId, context);
+  const secondWhite = assessSwissColours(secondId, firstId, context);
+
+  const comparison =
+    firstWhite.runExcess - secondWhite.runExcess ||
+    firstWhite.streakViolations - secondWhite.streakViolations ||
+    firstWhite.balanceExcess - secondWhite.balanceExcess ||
+    firstWhite.totalImbalance - secondWhite.totalImbalance ||
+    firstWhite.repeatedColours - secondWhite.repeatedColours;
+
+  if (comparison < 0) return firstId;
+  if (comparison > 0) return secondId;
+
+  return defaultWhite;
+}
+
+function swissColourAssessment(firstId, secondId, context) {
+  const whiteId = preferredWhiteId(firstId, secondId, context);
+  const blackId = whiteId === firstId ? secondId : firstId;
+
+  return assessSwissColours(whiteId, blackId, context);
+}
+
+/* ========================================================================
+   GENERAL-GRAPH PERFECT MATCHING: EDMONDS BLOSSOM
+   ======================================================================== */
+
+function perfectMatching(ids, allowed) {
+  const n = ids.length;
+
+  if (n === 0) return new Map();
+  if (n % 2 !== 0) return null;
+
+  const indexOf = new Map(ids.map((id, index) => [id, index]));
+
+  const graph = ids.map(id =>
+    [...(allowed.get(id) || [])]
+      .filter(other => indexOf.has(other))
+      .map(other => indexOf.get(other))
+  );
+
+  const mate = Array(n).fill(-1);
+  const parent = Array(n).fill(-1);
+  const base = Array.from({length: n}, (_, index) => index);
+  const used = Array(n).fill(false);
+  const blossom = Array(n).fill(false);
+
+  function lowestCommonAncestor(a, b) {
+    const path = Array(n).fill(false);
+
+    while (true) {
+      a = base[a];
+      path[a] = true;
+
+      if (mate[a] === -1) break;
+      a = parent[mate[a]];
+    }
+
+    while (true) {
+      b = base[b];
+
+      if (path[b]) return b;
+      b = parent[mate[b]];
+    }
+  }
+
+  function markPath(vertex, commonBase, child) {
+    while (base[vertex] !== commonBase) {
+      blossom[base[vertex]] = true;
+      blossom[base[mate[vertex]]] = true;
+
+      parent[vertex] = child;
+      child = mate[vertex];
+      vertex = parent[mate[vertex]];
+    }
+  }
+
+  function findAugmentingPath(root) {
+    used.fill(false);
+    parent.fill(-1);
+
+    for (let i = 0; i < n; i++) base[i] = i;
+
+    const queue = [root];
+    let head = 0;
+
+    used[root] = true;
+
+    while (head < queue.length) {
+      const vertex = queue[head++];
+
+      for (const neighbor of graph[vertex]) {
+        if (
+          base[vertex] === base[neighbor] ||
+          mate[vertex] === neighbor
+        ) {
+          continue;
+        }
+
+        if (
+          neighbor === root ||
+          (
+            mate[neighbor] !== -1 &&
+            parent[mate[neighbor]] !== -1
+          )
+        ) {
+          const commonBase = lowestCommonAncestor(vertex, neighbor);
+
+          blossom.fill(false);
+          markPath(vertex, commonBase, neighbor);
+          markPath(neighbor, commonBase, vertex);
+
+          for (let i = 0; i < n; i++) {
+            if (!blossom[base[i]]) continue;
+
+            base[i] = commonBase;
+
+            if (!used[i]) {
+              used[i] = true;
+              queue.push(i);
+            }
+          }
+        } else if (parent[neighbor] === -1) {
+          parent[neighbor] = vertex;
+
+          if (mate[neighbor] === -1) return neighbor;
+
+          const matchedVertex = mate[neighbor];
+          used[matchedVertex] = true;
+          queue.push(matchedVertex);
+        }
+      }
+    }
+
+    return -1;
+  }
+
+  for (let root = 0; root < n; root++) {
+    if (mate[root] !== -1) continue;
+
+    let vertex = findAugmentingPath(root);
+
+    if (vertex === -1) continue;
+
+    while (vertex !== -1) {
+      const previous = parent[vertex];
+      const next = previous === -1 ? -1 : mate[previous];
+
+      mate[vertex] = previous;
+
+      if (previous !== -1) mate[previous] = vertex;
+
+      vertex = next;
+    }
+  }
+
+  if (mate.some(value => value === -1)) return null;
+
+  return new Map(
+    ids.map((id, index) => [id, ids[mate[index]]])
+  );
+}
+
+function topDownMatching(orderedIds, allowed, compareCandidates = null) {
+  let remaining = [...orderedIds];
+  let witness = perfectMatching(remaining, allowed);
+
+  if (witness === null) return null;
+
+  const pairs = [];
+
+  while (remaining.length > 0) {
+    const first = remaining[0];
+
+    const candidates = remaining
+      .slice(1)
+      .filter(second => allowed.get(first).has(second));
+
+    if (compareCandidates) {
+      candidates.sort((a, b) => compareCandidates(first, a, b));
+    }
+
+    let selected = false;
+
+    for (const second of candidates) {
+      const next = remaining.filter(
+        id => id !== first && id !== second
+      );
+
+      let nextWitness;
+
+      if (witness.get(first) === second) {
+        nextWitness = new Map(witness);
+        nextWitness.delete(first);
+        nextWitness.delete(second);
+      } else {
+        nextWitness = perfectMatching(next, allowed);
+      }
+
+      if (nextWitness === null) continue;
+
+      pairs.push([first, second]);
+      remaining = next;
+      witness = nextWitness;
+      selected = true;
+      break;
+    }
+
+    if (!selected) {
+      throw new Error("Internt fel vid matchning.");
+    }
+  }
+
+  return pairs;
+}
+
+/* ========================================================================
+   SWISS AND BERGER ROUND GENERATION
+   ======================================================================== */
+
+function minimumByeCandidates(ids, getByeCount) {
+  if (ids.length === 0) return [];
+
+  const minimum = ids.reduce(
+    (lowest, id) => Math.min(lowest, getByeCount(id)),
+    Infinity
+  );
+
+  return ids.filter(id => getByeCount(id) === minimum);
+}
+
+function makeSwissPairings(ids, context, forceFirstBye = false) {
+  if (ids.length === 0) return [];
+
+  const ordered = [...ids].sort((a, b) =>
+    compareStats(context.byId.get(a), context.byId.get(b))
+  );
+
+  const rank = new Map(ordered.map((id, index) => [id, index]));
+  const assessments = new Map(ordered.map(id => [id, new Map()]));
+  const edges = [];
+
+  let maximumRun = 2;
+
+  for (let i = 0; i < ordered.length; i++) {
+    for (let j = i + 1; j < ordered.length; j++) {
+      const a = ordered[i];
+      const b = ordered[j];
+      const first = context.byId.get(a);
+      const second = context.byId.get(b);
+
+      const rematch =
+        first.opponents.has(b) || second.opponents.has(a);
+
+      const previousMeetings = Math.max(
+        first.history.filter(history =>
+          history.opponent === b && !history.forfeit
+        ).length,
+        second.history.filter(history =>
+          history.opponent === a && !history.forfeit
+        ).length,
+        Number(rematch)
+      );
+
+      const assessment = {
+        ...swissColourAssessment(a, b, context),
+        gap2: Math.abs(first.score2 - second.score2),
+        rematch,
+        previousMeetings
+      };
+
+      assessments.get(a).set(b, assessment);
+      assessments.get(b).set(a, assessment);
+      edges.push({a, b, assessment});
+
+      maximumRun = Math.max(maximumRun, assessment.longestRun);
+    }
+  }
+
+  let byeCandidates = [null];
+
+  if (ordered.length % 2 !== 0) {
+    const eligible = minimumByeCandidates(
+      [...ordered].reverse(),
+      id => context.byId.get(id).byes
+    );
+
+    byeCandidates = forceFirstBye
+      ? eligible.filter(id => id === ordered[ordered.length - 1])
+      : eligible;
+
+    requireCondition(
+      byeCandidates.length > 0,
+      "Ingen behörig mottagare av schweizerfrirond hittades."
+    );
+  }
+
+  function compareCandidates(first, a, b) {
+    const assessmentA = assessments.get(first).get(a);
+    const assessmentB = assessments.get(first).get(b);
+
+    return (
+      Number(assessmentA.rematch) - Number(assessmentB.rematch) ||
+      assessmentA.previousMeetings - assessmentB.previousMeetings ||
+      assessmentA.gap2 - assessmentB.gap2 ||
+      assessmentA.balanceExcess - assessmentB.balanceExcess ||
+      assessmentA.streakViolations - assessmentB.streakViolations ||
+      assessmentA.totalImbalance - assessmentB.totalImbalance ||
+      assessmentA.repeatedColours - assessmentB.repeatedColours ||
+      rank.get(a) - rank.get(b)
+    );
+  }
+
+  function buildGraph(
+    allowRematches,
+    maximumColourRun,
+    requireBalance,
+    maximumGap2
+  ) {
+    const graph = new Map(ordered.map(id => [id, new Set()]));
+
+    for (const {a, b, assessment} of edges) {
+      if (!allowRematches && assessment.rematch) continue;
+      if (assessment.longestRun > maximumColourRun) continue;
+      if (requireBalance && assessment.balanceExcess > 0) continue;
+      if (assessment.gap2 > maximumGap2) continue;
+
+      graph.get(a).add(b);
+      graph.get(b).add(a);
+    }
+
+    return graph;
+  }
+
+  for (const allowRematches of [false, true]) {
+    for (
+      let maximumColourRun = 2;
+      maximumColourRun <= maximumRun;
+      maximumColourRun++
+    ) {
+      const completeGraph = buildGraph(
+        allowRematches,
+        maximumColourRun,
+        false,
+        Infinity
+      );
+
+      for (const byeId of byeCandidates) {
+        const toPair = ordered.filter(id => id !== byeId);
+
+        if (perfectMatching(toPair, completeGraph) === null) continue;
+
+        for (const requireBalance of [true, false]) {
+          for (const maximumGap2 of [0, 1, 2, Infinity]) {
+            const graph =
+              !requireBalance && maximumGap2 === Infinity
+                ? completeGraph
+                : buildGraph(
+                    allowRematches,
+                    maximumColourRun,
+                    requireBalance,
+                    maximumGap2
+                  );
+
+            const matching = topDownMatching(
+              toPair,
+              graph,
+              compareCandidates
+            );
+
+            if (matching === null) continue;
+
+            const pairings = matching.map(([first, second]) => {
+              const assessment = assessments.get(first).get(second);
+
+              return {
+                white: assessment.white,
+                black: assessment.black,
+                result: ""
+              };
+            });
+
+            if (byeId !== null) {
+              pairings.push({
+                white: byeId,
+                black: null,
+                result: "BYE"
+              });
+            }
+
+            return pairings;
+          }
+        }
+      }
+    }
+  }
+
+  throw new Error(
+    "Det gick inte att skapa en fullständig schweizerlottning " +
+    "för någon behörig mottagare av frironden."
+  );
+}
+
+function generateSwissRound(slot) {
+  requireCondition(!!slot.swiss, "Turneringen är inte i schweizerläge.");
+
+  const roundIndex = slot.rounds.length;
+  const ids = activeSwissPlayerIds(slot, roundIndex);
+
+  requireCondition(
+    ids.length >= 2,
+    "Färre än två aktiva spelare återstår för nästa schweizerrond."
+  );
+
+  const context = swissPairingContext(slot, roundIndex);
+
+  /*
+    This Swiss phase follows at least one Berger round, so the special
+    first-round rating bye from Berger-Swiss is not forced.
+  */
+  const pairings = makeSwissPairings(ids, context, false);
+
+  return pairings.map(pair => ({
+    w: pair.white,
+    b: pair.black,
+    result: pair.black === null ? "BYE" : null,
+    auto: false
+  }));
+}
+
+function makeSwissConversion(source, index) {
+  requireCondition(
+    source && source.stage === "running" && !source.swiss,
+    "Den här turneringen kan inte konverteras till schweizer."
+  );
+
+  /*
+    Validate the complete original Berger schedule before discarding
+    its future rounds.
+  */
+  const checked = validateSlot(source, index);
+  const retainedRounds = checked.current + 1;
+  const totalRounds = checked.rounds.length;
+
+  requireCondition(
+    retainedRounds < totalRounds,
+    "Det finns inga framtida bergerronder att konvertera."
+  );
+
+  const missing = [];
+
+  for (let round = 0; round < retainedRounds; round++) {
+    checked.rounds[round].forEach((game, board) => {
+      if (isRealGame(game) && game.result === null) {
+        missing.push(
+          "Rond " + (round + 1) + ", bord " + (board + 1)
+        );
+      }
+    });
+  }
+
+  requireCondition(
+    missing.length === 0,
+    "Ange resultat för alla partier till och med den valda bergerronden.\n\n" +
+    missing.slice(0, 20).join("\n") +
+    (missing.length > 20 ? "\n…med flera." : "")
+  );
+
+  const laterManual = [];
+
+  for (let round = retainedRounds; round < totalRounds; round++) {
+    checked.rounds[round].forEach((game, board) => {
+      if (isRealGame(game) && game.result !== null && !game.auto) {
+        laterManual.push(
+          "Rond " + (round + 1) + ", bord " + (board + 1)
+        );
+      }
+    });
+  }
+
+  requireCondition(
+    laterManual.length === 0,
+    "Senare bergerronder får inte innehålla manuellt inmatade resultat " +
+    "eller walkovers.\n\n" +
+    laterManual.slice(0, 20).join("\n") +
+    (laterManual.length > 20 ? "\n…med flera." : "")
+  );
+
+  const draft = cloneTournament(checked);
+
+  draft.rounds = draft.rounds.slice(0, retainedRounds);
+  draft.swiss = {
+    bergerRounds: retainedRounds,
+    totalRounds,
+    closedSwissRounds: 0
+  };
+
+  /*
+    The selectable Berger tie-break is no longer used. Swiss ranking
+    applies Progressive Score followed by Sonneborn-Berger.
+  */
+  draft.tb = "ps";
+
+  requireCondition(
+    activeSwissPlayerIds(draft, retainedRounds).length >= 2,
+    "Färre än två spelare kommer att vara aktiva i den första schweizerronden."
+  );
+
+  draft.rounds.push(generateSwissRound(draft));
+  draft.current = draft.rounds.length - 1;
+
+  return validateSlot(draft, index);
+}
+
+function convertTournamentToSwiss(index) {
+  const source = state.slots[index];
+
+  if (!source || source.stage !== "running" || source.swiss) return;
+
+  const retained = source.current + 1;
+  const remaining = source.rounds.length - retained;
+
+  if (remaining < 1) {
+    alert("Det finns inga framtida bergerronder att konvertera.");
+    return;
+  }
+
+  if (!confirm(
+    "Vill du konvertera återstående ronder till Schweizer?\n\n" +
+    "Bergerronder som behålls: " + retained + "\n" +
+    "Planerade schweizerronder: " + remaining + "\n\n" +
+    "Framtida bergerlottningar och automatiska walkovers vid avhopp " +
+    "tas bort. Befintliga datum för avhopp behålls. " +
+    "De sparade resultaten låses och den första schweizerronden lottas.\n\n" +
+    "Schweizerställningen använder progressiv poäng följt av " +
+    "Sonneborn-Berger. Spara en JSON-säkerhetskopia först om du behöver " +
+    "behålla det ursprungliga bergerschemat."
+  )) {
+    return;
+  }
+
+  try {
+    const converted = makeSwissConversion(source, index);
+
+    /*
+      Commit only after the copied tournament has been paired and
+      validated. No other workspace slot is changed.
+    */
+    state.slots[index] = converted;
+    showNotice("");
+    persist();
+    render();
+  } catch (error) {
+    alert(
+      "Kunde inte konvertera till Schweizer:\n" + error.message +
+      "\n\nDen ursprungliga turneringen har inte ändrats."
+    );
+  }
+}
+
+function swissPairingKey(game) {
+  return String(game.w) + "/" +
+    (game.b === null ? "BYE" : String(game.b));
+}
+
+/*
+  Validate retained Berger rounds against the original Berger generator,
+  then validate each Swiss round against the deterministic Swiss engine
+  using the results available before that round.
+*/
+function validateSwissSlot(raw, index) {
+  requireCondition(
+    raw && typeof raw === "object" && !Array.isArray(raw),
+    "Ogiltig konverterad turnering."
+  );
+
+  requireCondition(
+    raw.stage === "running" || raw.stage === "final",
+    "Ogiltig status för konverterad turnering."
+  );
+
+  requireCondition(
+    Array.isArray(raw.players) &&
+    raw.players.length >= 3 &&
+    raw.players.length <= 16 &&
+    typeof raw.double === "boolean",
+    "Ogiltiga spelaruppgifter eller inställning för omgångar i konverterad turnering."
+  );
+
+  requireCondition(
+    raw.swiss &&
+    typeof raw.swiss === "object" &&
+    !Array.isArray(raw.swiss),
+    "Ogiltiga data för schweizerfasen."
+  );
+
+  const expectedBerger = makeSchedule(
+    raw.players.length,
+    raw.double
+  );
+
+  const total = expectedBerger.length;
+  const retained = raw.swiss.bergerRounds;
+  const closed = raw.swiss.closedSwissRounds;
+
+  requireCondition(
+    Number.isInteger(retained) &&
+    retained >= 1 &&
+    retained < total &&
+    raw.swiss.totalRounds === total &&
+    Array.isArray(raw.rounds) &&
+    raw.rounds.length >= retained + 1 &&
+    raw.rounds.length <= total,
+    "Ogiltig rondplan för Berger/Schweizer."
+  );
+
+  const swissCount = raw.rounds.length - retained;
+
+  requireCondition(
+    Number.isInteger(closed) &&
+    (closed === swissCount - 1 || closed === swissCount),
+    "Ogiltigt registreringsläge för Schweizer."
+  );
+
+  requireCondition(
+    Number.isInteger(raw.current) &&
+    raw.current >= 0 &&
+    raw.current < raw.rounds.length,
+    "Ogiltig vald rond."
+  );
+
+  requireCondition(
+    raw.tb === "ps",
+    "Konverterade turneringar måste använda fast schweizersärskiljning."
+  );
+
+  /*
+    Reuse the original validator for the retained Berger prefix.
+    Its generated future rounds are blank and are not retained.
+  */
+  const fixedInput = cloneTournament(raw);
+  delete fixedInput.swiss;
+
+  fixedInput.stage = "running";
+  fixedInput.current = Math.min(raw.current, retained - 1);
+  fixedInput.rounds = expectedBerger;
+
+  for (let round = 0; round < retained; round++) {
+    fixedInput.rounds[round] = cloneTournament(raw.rounds[round]);
+  }
+
+  const fixed = validateSlot(fixedInput, index);
+
+  for (let round = 0; round < retained; round++) {
+    requireCondition(
+      roundIsComplete(fixed, round),
+      "Varje bibehållen bergerrond måste vara fullständig."
+    );
+  }
+
+  const clean = {
+    ...fixed,
+    stage: raw.stage,
+    current: raw.current,
+    rounds: fixed.rounds.slice(0, retained),
+    swiss: {
+      bergerRounds: retained,
+      totalRounds: total,
+      closedSwissRounds: 0
+    }
+  };
+
+  for (let round = retained; round < raw.rounds.length; round++) {
+    const importedRound = raw.rounds[round];
+
+    requireCondition(
+      Array.isArray(importedRound),
+      "Ogiltig struktur för schweizerrond."
+    );
+
+    /*
+      At this point every earlier Swiss round is treated as submitted.
+      This reconstructs the context used when the round was paired.
+    */
+    clean.swiss.closedSwissRounds = round - retained;
+
+    const expectedRound = generateSwissRound(clean);
+
+    requireCondition(
+      importedRound.length === expectedRound.length,
+      "Fel antal schweizerparningar."
+    );
+
+    const expectedByKey = new Map(
+      expectedRound.map(game => [swissPairingKey(game), game])
+    );
+
+    const seen = new Set();
+    const cleanedRound = [];
+
+    for (const game of importedRound) {
+      requireCondition(
+        game &&
+        Number.isInteger(game.w) &&
+        (game.b === null || Number.isInteger(game.b)) &&
+        game.auto === false,
+        "Ogiltig schweizerparning eller markering för automatiskt resultat."
+      );
+
+      const key = swissPairingKey(game);
+
+      requireCondition(
+        expectedByKey.has(key) && !seen.has(key),
+        "Schweizerlottningen stämmer inte med lottningsreglerna och tidigare historik."
+      );
+
+      seen.add(key);
+
+      if (game.b === null) {
+        requireCondition(
+          game.result === "BYE",
+          "En schweizerfrirond måste ha resultatet BYE."
+        );
+      } else {
+        requireCondition(
+          game.result === null ||
+          Object.prototype.hasOwnProperty.call(RESULTS, game.result),
+          "Ogiltigt partiresultat i Schweizer."
+        );
+
+        if (round - retained < closed) {
+          requireCondition(
+            game.result !== null,
+            "En registrerad schweizerrond innehåller ett saknat resultat."
+          );
+        }
+      }
+
+      cleanedRound.push({
+        w: game.w,
+        b: game.b,
+        result: game.result,
+        auto: false
+      });
+    }
+
+    requireCondition(
+      seen.size === expectedByKey.size,
+      "Ofullständig schweizerlottning."
+    );
+
+    clean.rounds.push(cleanedRound);
+  }
+
+  clean.swiss.closedSwissRounds = closed;
+
+  const allPublishedClosed = closed === swissCount;
+
+  if (allPublishedClosed) {
+    const reachedPlan = clean.rounds.length === total;
+    const tooFew =
+      activeSwissPlayerIds(clean, clean.rounds.length).length < 2;
+
+    requireCondition(
+      reachedPlan || tooFew,
+      "Schweizerronder har stängts före planerat slut utan giltigt skäl för förtida avslut."
+    );
+  }
+
+  if (clean.stage === "final") {
+    requireCondition(
+      allPublishedClosed,
+      "En avslutad schweizerturnering innehåller en oregistrerad rond."
+    );
+  }
+
+  return clean;
+}
+
+function submitSwissRound(index) {
+  const source = state.slots[index];
+
+  if (!source || !source.swiss || source.stage !== "running") return;
+
+  if (source.current !== source.rounds.length - 1) {
+    alert("Välj den senaste publicerade schweizerronden först.");
+    return;
+  }
+
+  const swissCount =
+    source.rounds.length - source.swiss.bergerRounds;
+
+  /*
+    A completed tournament may be reopened merely to inspect its
+    locked rounds. This action returns to the final view.
+  */
+  if (source.swiss.closedSwissRounds === swissCount) {
+    try {
+      const draft = cloneTournament(source);
+      draft.stage = "final";
+
+      state.slots[index] = validateSlot(draft, index);
+      persist();
+      render();
+    } catch (error) {
+      alert(error.message);
+    }
+
+    return;
+  }
+
+  if (!isEditableSwissRound(source, source.current)) {
+    alert("Den här schweizerronden kan inte registreras.");
+    return;
+  }
+
+  const current = source.rounds[source.current];
+  const pending = current.findIndex(
+    game => isRealGame(game) && game.result === null
+  );
+
+  if (pending !== -1) {
+    alert("Ange ett resultat för bord " + (pending + 1) + ".");
+    return;
+  }
+
+  try {
+    const draft = cloneTournament(source);
+    draft.swiss.closedSwissRounds++;
+
+    const reachedPlan =
+      draft.rounds.length >= draft.swiss.totalRounds;
+
+    const tooFew =
+      activeSwissPlayerIds(draft, draft.rounds.length).length < 2;
+
+    if (reachedPlan || tooFew) {
+      draft.stage = "final";
+    } else {
+      draft.rounds.push(generateSwissRound(draft));
+      draft.current = draft.rounds.length - 1;
+    }
+
+    const validated = validateSlot(draft, index);
+
+    state.slots[index] = validated;
+    persist();
+    render();
+
+    if (tooFew && !reachedPlan) {
+      alert(
+        "Turneringen avslutades eftersom färre än två aktiva spelare " +
+        "återstår för nästa rond."
+      );
+    }
+  } catch (error) {
+    alert(
+      "Schweizerronden kunde inte registreras:\n" + error.message +
+      "\n\nInmatade resultat och avhopp har behållits. " +
+      "Den aktuella ronden är fortfarande oregistrerad."
+    );
+  }
+}
+
+function openSwissWithdrawal(index) {
+  const slot = state.slots[index];
+
+  if (!canWithdrawInSwiss(slot)) {
+    alert(
+      "Välj den senaste oregistrerade schweizerronden. Ett avhopp måste " +
+      "börja gälla från en olottad rond inom turneringsplanen."
+    );
+    return;
+  }
+
+  withdrawalSlot = index;
+
+  document.getElementById("withdrawTournamentName").textContent =
+    slotTitle(slot, index) +
+    " — avhoppet gäller från och med rond " +
+    (slot.rounds.length + 1) +
+    ". Aktuell lottning och resultat ändras inte.";
+
+  const candidates = slot.players
+    .map((player, id) => ({player, id}))
+    .filter(item => item.player.withdrawnFrom === null);
+
+  document.getElementById("withdrawPlayer").innerHTML =
+    candidates.map(({player, id}, position) =>
+      optionHTML(
+        String(id),
+        (id + 1) + ". " + player.name,
+        position === 0
+      )
+    ).join("");
+
+  const operation = document.getElementById("withdrawOperation");
+  operation.value = "withdraw";
+  operation.disabled = true;
+
+  const roundInput = document.getElementById("withdrawRound");
+  roundInput.value = String(slot.rounds.length + 1);
+  roundInput.min = roundInput.value;
+  roundInput.max = roundInput.value;
+  roundInput.disabled = true;
+  roundInput.required = false;
+
+  document.querySelectorAll("#withdrawDialog p.hint").forEach(
+    element => { element.hidden = true; }
+  );
+
+  document.getElementById("withdrawDialog").showModal();
+}
+
+function applySwissWithdrawal(index) {
+  const source = state.slots[index];
+
+  if (!canWithdrawInSwiss(source)) {
+    alert("Avhopp är inte tillgängligt i denna schweizerrond.");
+    return;
+  }
+
+  const id = Number(document.getElementById("withdrawPlayer").value);
+  const player = source.players[id];
+
+  if (!Number.isInteger(id) || !player ||
+      player.withdrawnFrom !== null) {
+    alert("Välj en aktiv spelare utan registrerat avhopp.");
+    return;
+  }
+
+  const effectiveIndex = source.rounds.length;
+
+  if (!confirm(
+    "Ska " + player.name + " hoppa av efter rond " +
+    source.rounds.length + "?\n\n" +
+    "Avhoppet gäller från och med rond " +
+    (effectiveIndex + 1) + ". Aktuell lottning och resultat ändras inte. " +
+    "Det här avhoppet kan inte ångras i gränssnittet."
+  )) {
+    return;
+  }
+
+  try {
+    const draft = cloneTournament(source);
+    draft.players[id].withdrawnFrom = effectiveIndex;
+
+    const validated = validateSlot(draft, index);
+
+    state.slots[index] = validated;
+    document.getElementById("withdrawDialog").close();
+    withdrawalSlot = null;
+
+    persist();
+    render();
+  } catch (error) {
+    alert("Kunde inte registrera avhoppet:\n" + error.message);
+  }
+}
+
+/* ============================================================
+   Swiss integration self-checks
+   ============================================================ */
+
+function runSwissIntegrationChecks() {
+  const source = newSlot(0);
+
+  source.stage = "running";
+  source.name = "Schweizer integrationstest";
+  source.players = ["A", "B", "C", "D", "E"].map(name => ({
+    name,
+    withdrawnFrom: null
+  }));
+
+  source.rounds = makeSchedule(5, false);
+  source.current = 0;
+
+  for (const game of source.rounds[0]) {
+    if (isRealGame(game)) {
+      game.result = "1/2-1/2";
+    }
+  }
+
+  /*
+    A withdrawal effective in a later round creates automatic future
+    forfeits in the original Berger schedule.
+  */
+  source.players[0].withdrawnFrom = 2;
+  refreshAutomaticForfeits(source);
+
+  const before = JSON.stringify(source);
+  const converted = makeSwissConversion(source, 0);
+
+  assert(
+    JSON.stringify(source) === before,
+    "konverteringen får inte mutera sin källa"
+  );
+
+  assert(
+    converted.swiss.bergerRounds === 1 &&
+    converted.swiss.totalRounds === source.rounds.length &&
+    converted.rounds.length === 2,
+    "konverteringen måste behålla den ursprungliga rondplanen"
+  );
+
+  assert(
+    converted.players[0].withdrawnFrom === 2,
+    "framtida datum för avhopp måste behållas"
+  );
+
+  const context = swissPairingContext(converted, 1);
+
+  assert(
+    [...context.byId.values()].every(player => player.byes === 0),
+    "schemalagda bergerfrironder med 0 poäng får inte räknas som schweizerfrironder"
+  );
+
+  const bye = converted.rounds[1].find(game => game.result === "BYE");
+
+  assert(!!bye, "udda antal spelare i schweizer måste ha en frirond");
+
+  const beforeSubmission =
+    calculateStandings(converted, converted.rounds.length)
+      .byId[bye.w].points;
+
+  const submitted = cloneTournament(converted);
+
+  for (const game of submitted.rounds[1]) {
+    if (isRealGame(game)) game.result = "1/2-1/2";
+  }
+
+  submitted.swiss.closedSwissRounds = 1;
+
+  const afterSubmission =
+    calculateStandings(submitted, submitted.rounds.length)
+      .byId[bye.w].points;
+
+  assert(
+    afterSubmission === beforeSubmission + 1,
+    "en registrerad schweizerfrirond måste ge en poäng"
+  );
+
+  submitted.rounds.push(generateSwissRound(submitted));
+  submitted.current = submitted.rounds.length - 1;
+
+  validateSlot(submitted, 0);
+  validateSlot(cloneTournament(submitted), 0);
+
+  const manualFuture = cloneTournament(source);
+  const laterGame = manualFuture.rounds[1].find(isRealGame);
+
+  laterGame.result = "F1";
+  laterGame.auto = false;
+
+  let rejected = false;
+
+  try {
+    makeSwissConversion(manualFuture, 0);
+  } catch (error) {
+    rejected = true;
+  }
+
+  assert(rejected, "en senare manuell walkover måste blockera konvertering");
+
+  const unfinished = cloneTournament(source);
+  const firstGame = unfinished.rounds[0].find(isRealGame);
+  firstGame.result = null;
+  firstGame.auto = false;
+
+  rejected = false;
+
+  try {
+    makeSwissConversion(unfinished, 0);
+  } catch (error) {
+    rejected = true;
+  }
+
+  assert(rejected, "en ofullständig bibehållen rond måste blockera konvertering");
+
+  const doubleSource = newSlot(1);
+  doubleSource.stage = "running";
+  doubleSource.name = "Dubbelrondigt test";
+  doubleSource.double = true;
+  doubleSource.players = ["A", "B", "C", "D"].map(name => ({
+    name,
+    withdrawnFrom: null
+  }));
+
+  doubleSource.rounds = makeSchedule(4, true);
+  doubleSource.current = 0;
+
+  for (const game of doubleSource.rounds[0]) {
+    if (isRealGame(game)) game.result = "0-1";
+  }
+
+  const doubleConverted = makeSwissConversion(doubleSource, 1);
+
+  assert(
+    doubleConverted.swiss.totalRounds === doubleSource.rounds.length,
+    "konvertering av dubbelrondig turnering måste behålla planerat rondantal"
+  );
+
+  return true;
+}
+
+/* ============================================================
    Initialization
    ============================================================ */
 
 function initialize() {
   try {
     runSelfChecks();
+    runSwissIntegrationChecks();
   } catch (error) {
     initializationError = error.message;
     console.error(error);
@@ -3241,14 +4767,10 @@ function initialize() {
     setStorageStatus("Automatisk återställning av sessionen är inte tillgänglig.");
 
     if (!initializationError) {
-      const details = error instanceof SyntaxError
-        ? "Den sparade informationen innehåller inte giltig JSON."
-        : error.message;
-
       showNotice(
         "Webbläsarens sparade session kunde inte läsas in. " +
         "Öppna en nedladdad säkerhetskopia av arbetsytan om du har en. " +
-        "Detaljer: " + details
+        "Detaljer: " + error.message
       );
     }
   }
