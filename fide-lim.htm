@@ -186,9 +186,9 @@ a{color:var(--blue)}
     <button class="primary" onclick="importPaste()">Importera</button></div>
 </dialog>
 <dialog id="about">
-  <h2>Om</h2>
+  <h2>Om FIDE Lim-lottningssystem</h2>
   <p>Experimentell implementering av FIDE C.04.4.3 Lim, gällande från 1 februari 2026.
-     INTE godkänd av FIDE.</p>
+     Ej godkänd av FIDE.</p>
   <p>Implementerar vanlig non-Maxi-lottning, den tvåsidiga genomgången av poänggrupper,
      kontroller av kompatibla motståndare, urval av flottörer, reparation av mediangruppen,
      färgpreferenser och undantaget för samma poäng i sista ronden.
@@ -201,12 +201,27 @@ a{color:var(--blue)}
 <p>Denna icke-Maxi-implementering minimerar eller begränsar inte ratingdifferensen mellan
      motståndare. Programmet har en inbyggd fast sökbegränsning.
      Misslyckande eller avbrott publicerar aldrig en ofullständig rond.</p>
+  <p>
+    Du kan hantera olika turneringar samtidigt i olika webbläsare
+    (till exempel Chrome och Edge). Varje webbläsare har sin egen
+    autosparning, så en turnering måste återupptas i samma webbläsare
+    som den startades i. Undvik att köra separata turneringar i flera
+    flikar eller fönster inom samma webbläsarprofil, eftersom
+    autosparningarna då kan skriva över varandra. 
+  <p>
+  <p>
+    Turneringen sparas automatiskt i webbläsaren när lagring
+    är tillgänglig. För extra säkerhet, spara regelbundet JSON-säkerhetskopior.
+    Inga uppgifter skickas till en server, och separata
+    webbläsarflikar synkroniseras inte.
+  </p>
   <ul>
     <li><a href="https://handbook.fide.com/chapter/C040403202602" target="_blank" rel="noopener">Lim-regler</a></li>
     <li><a href="https://handbook.fide.com/chapter/GeneralHandlingRulesForSwissTournaments202602" target="_blank" rel="noopener">Allmänna hanteringsregler</a></li>
     <li><a href="https://handbook.fide.com/chapter/TieBreakRegulations032026" target="_blank" rel="noopener">Särskiljningsregler</a></li>
     <li><a href="https://mats-winther.github.io/bg/chesspairing.htm" target="_blank" rel="noopener">Chess Pairings: A Review of Monrad, Swiss, and Berger</a></li>
   </ul>
+  <p><br></p>
   <button onclick="document.getElementById('about').close()">Stäng</button>
 </dialog>
 

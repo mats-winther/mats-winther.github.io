@@ -506,6 +506,20 @@ a { color:var(--blue); }
     genom att öppna en tidigare sparad säkerhetskopia. Ändringar efter säkerhetskopians tidpunkt måste då göras om.
     Använd funktionen ”Spara turnering” för att skapa säkerhetskopior.
   </p>
+<p>
+    Du kan hantera olika turneringar samtidigt i olika webbläsare
+    (till exempel Chrome och Edge). Varje webbläsare har sin egen
+    autosparning, så en turnering måste återupptas i samma webbläsare
+    som den startades i. Undvik att köra separata turneringar i flera
+    flikar eller fönster inom samma webbläsarprofil, eftersom
+    autosparningarna då kan skriva över varandra. 
+  <p>
+  <p>
+    Turneringen sparas automatiskt i webbläsaren när lagring
+    är tillgänglig. För extra säkerhet, spara regelbundet JSON-säkerhetskopior.
+    Inga uppgifter skickas till en server, och separata
+    webbläsarflikar synkroniseras inte.
+  </p>
   <p>
     Inte implementerat: acceleration, godtyckliga extra lottningsbegränsningar,
     avbrutna partier eller ett administrativt arbetsflöde för att ändra publicerade
@@ -534,6 +548,7 @@ a { color:var(--blue); }
          target="_blank" rel="noopener">Schacklottning: en genomgång av Monrad, Schweizer och Berger</a>
     </li>
   </ul>
+  <p><br></p>
   <button onclick="document.getElementById('aboutDialog').close()">Stäng</button>
 </dialog>
 
