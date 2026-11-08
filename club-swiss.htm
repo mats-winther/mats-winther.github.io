@@ -177,6 +177,7 @@
         <li><strong>Fewer than 16 players:</strong> The top half is randomized and paired against the randomized bottom half in Round 1. The top half always has White. Swiss pairing begins at Round 2. For an uneven bottom half, the BYE player is drawn at random.</li>
         <li><strong>Color Allocation:</strong> The player with fewer White games receives White. If equal, the lowest-rated player receives White (or lower-seeded if equal rating). Color balance is nearly guaranteed (color difference will rarely reach 3). If color balance conflicts with the 2-in-a-row rule, up to three games in a row with the same color are permitted.</li>
         <li><strong>Forfeit and Withdrawal:</strong> When a player is withdrawn, their scheduled opponent is automatically awarded a point (w.o.). If a double forfeit (0-0 (F)) has been recorded and both players are subsequently withdrawn, neither player is awarded a point.</li>
+<li><strong>Running tournaments in parallel:</strong> You can run separate tournaments simultaneously in different browsers (for example, Chrome and Edge). Each browser maintains its own autosave, so a tournament should be resumed in the browser where it was started. Avoid running separate tournaments in multiple tabs or windows within the same browser profile, as their autosaves may overwrite one another. For added safety, save JSON backups regularly.</li>
       </ul>
     </div>
 
@@ -281,7 +282,7 @@
   <div class="modal-box" style="max-width: 585px;">
     <button class="close-btn" onclick="closeWntModal()">&times;</button>
     <h2 style="margin-top: 0; color: var(--primary); font-size: 1.2rem;">Winther Score (WNT)</h2>
-    <div style="font-family: monospace, monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.92rem; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; color: #0f172a;">Winther Score (WNT) = 100 × ∑ᵢ [ (Pᵢ / N) × (rᵢ + Pᵢ / (2N)) ]
+    <div style="font-family: monospace, monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.92rem; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; color: #0f172a;">WNT = 100 × ∑ᵢ [ (Pᵢ / N) × (rᵢ + Pᵢ / (2N)) ]
 
 ∑ᵢ = sum over all opponents faced
 rᵢ = your result against opponent i (1, ½, 0)
@@ -291,10 +292,10 @@ Pᵢ / N = opponent's score share (ratio expressed as a decimal between 0 and 1)
     <p style="font-size: 0.95rem; line-height: 1.5; color: #334155; margin-bottom: 18px;">
       When players finish tied on points, they are separated based on the quality of the opposition they have faced. This method provides a clear reflection of player performance, consistently rewarding those who compete on the top boards. Although a player receives no tie-break points for a BYE, the free game point elevates the player into higher score groups, where stronger opposition naturally helps offset the missed round. Unlike Buchholz, which employs a linear calculation, WNT uses a quadratic weighting of opposition strength. Furthermore, WNT awards points even for losses against strong opponents, helping to compensate for a BYE while contributing positively to the tie-break score.<br><br>When employed as a sorting criterion within score groups, WNT pairs competitors with comparable opposition quality against each other. This adheres to the Swiss principle, ensuring that the most battle-tested players meet on higher boards without relying on pre-tournament ratings.</p>
 
-<p>See also: <a href="https://mats-winther.github.io/bg/chesspairing.htm" style="text-decoration:none;" target="_blank" title="Chess Pairings: A Review of Monrad, Swiss, and Berger">Chess pairings: a review of Monrad, Swiss, and Berger</a>.
+<p class="hint">See also: <a href="https://mats-winther.github.io/bg/chesspairing.htm" style="text-decoration:none;" target="_blank" title="Chess Pairings: A Review of Monrad, Swiss, and Berger">Chess pairings: a review of Monrad, Swiss, and Berger</a>.
     </p>
 <p class="hint">
-The Club Swiss system was developed by Mats Winther in August 2026.
+The Club Swiss system was developed by Mats Winther in August 2026.<br>&nbsp;
 </p>
     <div class="btn-bar" style="justify-content: flex-end; margin-top: 0;">
       <button type="button" onclick="closeWntModal()">Close</button>
