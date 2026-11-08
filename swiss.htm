@@ -184,7 +184,14 @@
     <div style="margin-top: 16px;">
       <label>Särskiljningssystem (ställning och lottning)</label>
       <div class="radio-group">
-        <div class="radio-item"><input type="radio" name="tiebreak" value="wnt" aria-label="WNT" checked> WNT<sup class="wnt-asterisk" onclick="openWntModal(event)" title="Information about Winther score">*</sup></div>
+	<div class="radio-item">
+  	<input type="radio" name="tiebreak" value="wnt" aria-label="WNT" checked> WNT
+  	  <button type="button" onclick="openWntModal(event)"
+    	    style="background: #f1f5f9; color:#475569; border:1px solid #cbd5e1;
+             padding:1px 5px; font-size:12px; margin-left:6px;">
+    	    Om WNT
+  	  </button>
+	</div>
         <div class="radio-item"><input type="radio" name="tiebreak" value="buchholz" aria-label="Buchholz"> Buchholz</div>
       </div>
     </div>
