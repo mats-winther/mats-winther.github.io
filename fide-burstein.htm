@@ -257,6 +257,11 @@ a { color:var(--blue); }
   }
   #scoreTournamentName { color:black; }
 }
+
+.small-note {
+    color: var(--muted);
+    font-size: 0.78rem;
+}
 </style>
 </head>
 
@@ -574,7 +579,20 @@ a { color:var(--blue); }
   <p>
     <b>Obs:</b> Det maximala antalet deltagare är 80.
   </p>
-
+  <p>
+    Du kan hantera olika turneringar samtidigt i olika webbläsare
+    (till exempel Chrome och Edge). Varje webbläsare har sin egen
+    autosparning, så en turnering måste återupptas i samma webbläsare
+    som den startades i. Undvik att köra separata turneringar i flera
+    flikar eller fönster inom samma webbläsarprofil, eftersom
+    autosparningarna då kan skriva över varandra. 
+  <p>
+  <p>
+    Turneringen sparas automatiskt i webbläsaren när lagring
+    är tillgänglig. För extra säkerhet, spara regelbundet JSON-säkerhetskopior.
+    Inga uppgifter skickas till en server, och separata
+    webbläsarflikar synkroniseras inte.
+  </p>
   <p>
     Följande är inte implementerat: acceleration, godtyckliga ytterligare
     lottningsrestriktioner, avbrutna partier eller ett administrativt
@@ -614,6 +632,9 @@ a { color:var(--blue); }
       </a>
     </li>
   </ul>
+<p class="small-note">
+FIDE Burstein-lottningssystem utvecklades av Mats Winther i september 2026.<br>&nbsp;
+</p>
   <button onclick="document.getElementById('aboutDialog').close()">Stäng</button>
 </dialog>
 
