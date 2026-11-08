@@ -14,6 +14,7 @@
       --bg: #f8fafc;
       --card-bg: #ffffff;
       --text: #0f172a;
+      --muted: #59677c;
       --border: #cbd5e1;
       --accent: #2563eb;
     }
@@ -362,6 +363,11 @@ button.about-button:hover {
   max-height: 85vh;
   overflow-y: auto;
 }
+
+  .small-note {
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
   </style>
 </head>
 <body>
@@ -549,7 +555,10 @@ Observera att den övre och den undre halvan av startfältet slumpas separat. F�
   Programmet sparar automatiskt den aktuella turneringen. När programmet startas om visas en dialogruta där turneringen kan återupptas. Om du vill spara turneringsronderna permanent använder du funktionen Spara turnering. Sparade turneringar kan sedan läsas in från startsidan.
 </p>
 <p>
-  Om båda spelarna vid ett bord utgår behöver resultatet för det bordet inte registreras. Båda spelarna tilldelas automatiskt noll poäng.
+  Du kan hantera olika turneringar samtidigt i olika webbläsare (till exempel Chrome och Edge). Varje webbläsare har sin egen autosparning, så en turnering måste återupptas i samma webbläsare som den startades i. Undvik att köra separata turneringar i flera flikar eller fönster inom samma webbläsarprofil, eftersom autosparningarna då kan skriva över varandra. Spara regelbundet JSON-säkerhetskopior.
+</p>
+<p>
+  Om en spelare utgår ska resultatet för det aktuella bordet registreras. Om båda spelarna vid bordet utgår behöver resultatet inte registreras. Båda spelarna tilldelas automatiskt 0 poäng.
 </p>
 <p>
 Administratören kan välja mellan tre särskiljningssystem: WNT, Progressiv eller Buchholz (Cut-1). Särskiljningspoängen används för att bedöma styrkan i spelarnas prestationer och för att rangordna spelare som slutar på samma poäng. Den valda särskiljningsmetoden används endast för slutställningen, inte för att skapa nästa rondparning.
@@ -560,9 +569,9 @@ Progressiv poäng (kumulativpoäng) beräknas som summan av spelarens ackumulera
 <p>
 Buchholz (Cut-1) beräknas som summan av slutpoängen för alla motståndare som spelaren har mött, med undantag för motståndaren med lägst slutpoäng. Detta minskar inverkan av att ha lottats mot en särskilt svag motståndare och ger ett mer tillförlitligt mått på styrkan hos spelarens motstånd. I denna implementation behandlas en frirond som en motståndare med noll poäng. En frirond innebär att en spelare står över en rond på grund av ett udda antal deltagare.
 </p>
-<h3 style="margin-top: 0; color: var(--primary); font-size: 1.0rem;">Winther-poäng (WNT)<br><br></h3>
+<h3 style="margin-top: 0; margin-bottom: 0px; bcolor: var(--primary); font-size: 1.0rem;">Winther-poäng (WNT)<br><br></h3>
 
-    <div style="font-family: monospace, monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.92rem; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; color: #0f172a;">Winther-poäng (WNT) = 100 × ∑ᵢ [&nbsp;(Pᵢ&nbsp;/&nbsp;N)&nbsp;× (rᵢ&nbsp;+&nbsp;Pᵢ&nbsp;/&nbsp;(2N))&nbsp;]
+    <div style="font-family: monospace, monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.92rem; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; color: #0f172a;">WNT = 100 × ∑ᵢ [&nbsp;(Pᵢ&nbsp;/&nbsp;N)&nbsp;× (rᵢ&nbsp;+&nbsp;Pᵢ&nbsp;/&nbsp;(2N))&nbsp;]
 
 ∑ᵢ = summan över alla motståndare du mött
 rᵢ = ditt resultat mot motståndare i&nbsp; (1, ½, 0)
@@ -572,9 +581,12 @@ Pᵢ / N = motståndarens poängandel (poängkvoten uttryckt som decimaltal mell
     <p style="font-size: 0.95rem; line-height: 1.5; color: #334155; margin-bottom: 18px;">
       När spelare slutar på samma poäng särskiljs de med avseende på kvaliteten hos motståndet de mött. Denna nya metod är mer rättvisande än andra särskiljningsmetoder. Det premierar konsekvent de som faktiskt spelar på toppborden. Även om en spelare inte tilldelas poäng för frirond visar WNT-systemet en tydlig tendens att kompensera för detta i de efterföljande ronderna.
     </p>
-<p>
-Se även: <a href="https://mats-winther.github.io/bg/schacklottning.htm" style="text-decoration:none;" target="_blank" title="Schacklottning: en genomgång av Monrad, Schweizer och Berger">Schacklottning: en genomgång av Monrad, Schweizer och Berger</a>.
-<br>&nbsp;</p>
+
+<p class="small-note">Se även: <a href="https://mats-winther.github.io/bg/schacklottning.htm" style="text-decoration:none;" target="_blank" title="Schacklottning: en genomgång av Monrad, Schweizer och Berger">Schacklottning: en genomgång av Monrad, Schweizer och Berger</a>.
+</p>
+  <p class="small-note">Monrads lottningssystem
+    utvecklades av Mats Winther i augusti 2026.<br>&nbsp;
+  </p>
     <div class="btn-group" style="justify-content: flex-start; margin-top: 0;">
       <button type="button" onclick="closeWntModal()">Stäng</button>
     </div>

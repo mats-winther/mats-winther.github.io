@@ -14,6 +14,7 @@
       --bg: #f8fafc;
       --card-bg: #ffffff;
       --text: #0f172a;
+      --muted: #59677c;
       --border: #cbd5e1;
       --accent: #2563eb;
     }
@@ -368,6 +369,11 @@ button.about-button:hover {
   overflow-y: auto;
   width: calc(100% - 32px);
 }
+
+  .small-note {
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
   </style>
 </head>
 <body>
@@ -553,7 +559,10 @@ Note that the upper and lower halves of the field are randomized separately. As 
   This program automatically saves the current tournament. When the program is restarted, a dialog box allows the tournament to be resumed. To save the tournament rounds permanently, use the Save Tournament function. Saved tournaments can be loaded from the start page.
 </p>
 <p>
-  If both players at a board withdraw, the result for that board does not need to be recorded. Both players are automatically awarded zero points.
+  You can run separate tournaments simultaneously in different browsers (for example, Chrome and Edge). Each browser maintains its own autosave, so a tournament should be resumed in the browser where it was started. Avoid running separate tournaments in multiple tabs or windows within the same browser profile, as their autosaves may overwrite one another. Save JSON backups regularly.
+</p>
+<p>
+  If a player withdraws, the result for that board must be entered. If both players on a board withdraw, no result needs to be entered. Both players are automatically awarded 0 points.
 </p>
 <p>
 The administrator may select one of three tie-break systems: WNT, Progressive, or Buchholz (Cut-1). These tie-breaks are used to assess the strength of a player's performance and to distinguish between players who finish on the same score. The selected tie-break method is used only for the final standings, not to produce the next pairing.
@@ -564,9 +573,9 @@ The Progressive (Cumulative) Score is calculated as the sum of a player's cumula
 <p>
 Buchholz (Cut-1) is calculated as the sum of the final scores of all opponents faced, excluding the opponent with the lowest final score. This reduces the impact of having been paired against a particularly weak opponent and provides a more robust measure of the strength of a player's opposition. In this implementation, a BYE round is treated as an opponent with a score of zero. A BYE denotes a vacant round resulting from an uneven number of players.
 </p>
-<h3 style="margin-top: 0; color: var(--primary); font-size: 1.0rem;">Winther Score (WNT)<br><br></h3>
+<h3 style="margin-top: 0; margin-bottom: 0; color: var(--primary); font-size: 1.0rem;">Winther Score (WNT)<br><br></h3>
 
-    <div style="font-family: monospace, monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.92rem; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; color: #0f172a;">Winther Score (WNT) = 100 × ∑ᵢ [ (Pᵢ / N) × (rᵢ + Pᵢ / (2N)) ]
+    <div style="font-family: monospace, monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.92rem; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; color: #0f172a;">WNT = 100 × ∑ᵢ [ (Pᵢ / N) × (rᵢ + Pᵢ / (2N)) ]
 
 ∑ᵢ = sum over all opponents faced
 rᵢ = your result against opponent i (1, ½, 0)
@@ -576,9 +585,10 @@ Pᵢ / N = opponent's score share (ratio expressed as a decimal between 0 and 1)
     <p style="font-size: 0.95rem; line-height: 1.5; color: #334155; margin-bottom: 18px;">
       When players finish tied on points, they are separated based on the quality of the opposition they have faced. This new method provides a fairer reflection of player performance than traditional tie-break systems, consistently rewarding those who compete on the top boards. Although a player receives no points for a BYE, the WNT system exhibits a pronounced tendency to compensate for this in subsequent rounds.
 </p> 
-<p>
-See also: <a href="https://mats-winther.github.io/bg/chesspairing.htm" style="text-decoration:none;" target="_blank" title="Chess Pairings: A Review of Monrad, Swiss, and Berger">Chess pairings: a review of Monrad, Swiss, and Berger</a>.<br>&nbsp;</p>
-    </p>
+<p class="small-note">
+See also: <a href="https://mats-winther.github.io/bg/chesspairing.htm" style="text-decoration:none;" target="_blank" title="Chess Pairings: A Review of Monrad, Swiss, and Berger">Chess pairings: a review of Monrad, Swiss, and Berger</a>.</p>
+<p class="small-note">Monrad Pairing System was developed by Mats Winther in August 2026.<br>&nbsp;</p>
+    
     <div class="btn-group" style="justify-content: flex-start; margin-top: 0;">
       <button type="button" onclick="closeWntModal()">Close</button>
     </div>
