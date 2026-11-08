@@ -28,6 +28,7 @@
     --bg: #f8fafc;
     --card: #ffffff;
     --text: #0f172a;
+    --muted: #59677c;
     --border: #cbd5e1;
     --table-stripe: #f1f5f9;
   }
@@ -132,6 +133,10 @@
       position: static !important;
     }
   }
+  .small-note {
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
 </style>
 </head>
 <body>
@@ -200,6 +205,8 @@
         <li><strong>Färgfördelning:</strong> Spelaren med färre partier med vit får vit. Om lika får spelaren med lägst rating vit (eller lägre seedad vid samma rating). Färgbalansen är i det närmaste garanterad (färgskillnaden kommer sällan att uppgå till 3). Om färgbalansen krockar med 2-i-rad-regeln tillåts upp till tre partier i rad med samma färg.</li>
         <li><strong>Randomisering:</strong> Om "Randomisera spelare" är markerad bevaras ratinggrupperna, men spelarna inom grupperna slumpas om. Detta ger större variation i första ronden för samma grupp klubbspelare. Om antalet spelare är udda tilldelas frironden slumpmässigt till en spelare i K4.</li>
         <li><strong>Förlust på walkover och strykning:</strong> När en spelare stryks tilldelas dennes planerade motståndare automatiskt en poäng (w.o.). Om en dubbel walkover (0-0 (F)) har registrerats och båda spelarna därefter stryks, tilldelas ingen av spelarna någon poäng.</li>
+
+<li><strong>Köra flera turneringar parallellt:</strong> Du kan hantera olika turneringar samtidigt i olika webbläsare (till exempel Chrome och Edge). Varje webbläsare har sin egen autosparning, så en turnering måste återupptas i samma webbläsare som den startades i. Undvik att köra separata turneringar i flera flikar eller fönster inom samma webbläsarprofil, eftersom autosparningarna då kan skriva över varandra. För extra säkerhet, spara regelbundet JSON-säkerhetskopior.</li>
       </ul>
     </div>
 
@@ -318,7 +325,7 @@
   <div class="modal-box" style="max-width: 585px;">
     <button class="close-btn" onclick="closeWntModal()">&times;</button>
     <h2 style="margin-top: 0; color: var(--primary); font-size: 1.2rem;">Winther-poäng (WNT)</h2>
-    <div style="font-family: monospace, monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.92rem; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; color: #0f172a;">Winther-poäng (WNT) = 100 × ∑ᵢ [ (Pᵢ / N) × (rᵢ + Pᵢ / (2N)) ]
+    <div style="font-family: monospace, monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.92rem; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; color: #0f172a;">WNT = 100 × ∑ᵢ [ (Pᵢ / N) × (rᵢ + Pᵢ / (2N)) ]
 
 ∑ᵢ = summa över alla mötta motståndare
 rᵢ = ditt resultat mot motståndare i (1, 0.5, 0)
@@ -326,8 +333,14 @@ Pᵢ = motståndare i:s slutliga turneringspoäng
 N = totalt antal ronder i turneringen
 Pᵢ / N = motståndarens poängkvot (decimaltal mellan 0 och 1)</div>
     <p style="font-size: 0.95rem; line-height: 1.5; color: #334155; margin-bottom: 18px;">
-      När spelare slutar på samma poäng särskiljs de baserat på motståndets kvalitet. Denna metod ger en rättvisare bild av spelarprestationen än traditionella särskiljningssystem genom att konsekvent belöna dem som tävlat på toppborden. Även om en spelare inte tilldelas poäng för frirond visar WNT-systemet en tydlig tendens att kompensera för detta i de efterföljande ronderna.<br><br>Se även: <a href="https://mats-winther.github.io/bg/chesspairing.htm" style="text-decoration:none;" target="_blank" title="Chess Pairings: A Review of Monrad, Swiss, and Berger">Chess pairings: a review of Monrad, Swiss, and Berger</a>.
+      När spelare slutar på samma poäng särskiljs de baserat på motståndets kvalitet. Denna metod ger en rättvisare bild av spelarprestationen än traditionella särskiljningssystem genom att konsekvent belöna dem som tävlat på toppborden. Även om en spelare inte tilldelas poäng för frirond visar WNT-systemet en tydlig tendens att kompensera för detta i de efterföljande ronderna.
     </p>
+<p class="small-note">Se även: <a href="https://mats-winther.github.io/bg/schacklottning.htm" style="text-decoration:none;" target="_blank" title="Schacklottning: en genomgång av Monrad, Schweizer och Berger">Schacklottning: en genomgång av Monrad, Schweizer och Berger</a>.
+</p>
+  <p class="small-note">Schweiziskt turneringssystem
+    utvecklades av Mats Winther i augusti 2026.<br>&nbsp;
+  </p>
+
     <div class="btn-bar" style="justify-content: flex-end; margin-top: 0;">
       <button type="button" onclick="closeWntModal()">Stäng</button>
     </div>
