@@ -35,7 +35,7 @@
 
     .container {
       width: 100%;
-      max-width: 880px;
+      max-width: 910px;
     }
 
     header {
@@ -391,8 +391,8 @@ button.about-button:hover {
       <strong id="resume-text"></strong>
       <div>Turneringen sparades automatiskt. Vill du fortsätta turneringen?</div>
       <div class="btn-group">
-        <button type="button" onclick="resumeAutosave()">Fortsätt turneringen</button>
-        <button type="button" class="secondary" onclick="discardAutosave()">Ta bort</button>
+        <button type="button" onclick="resumeAutosave()">🟢 Fortsätt turneringen</button>
+        <button type="button" class="secondary" onclick="discardAutosave()">🗑️ Kassera</button>
       </div>
     </div>
 
@@ -435,8 +435,8 @@ button.about-button:hover {
 
     <div class="btn-group">
       <button onclick="startTournament()">🎲 Slumpa & starta rond 1</button>
-      <button class="secondary" onclick="loadPlayersFile()">📁 Ladda spelarfil (.txt)</button>
-      <button class="secondary" onclick="loadSamplePlayers()">Exempel (32 spelare)</button>
+      <button class="secondary" onclick="loadPlayersFile()">📄 Ladda spelarfil (.txt)</button>
+      <button class="secondary" onclick="loadSamplePlayers()">🧑‍🧒‍🧒 Exempel (32 spelare)</button>
       <button class="secondary" onclick="triggerLoadTournament()">📂 Öppna sparad turnering</button>
     </div>
   </section>
@@ -465,10 +465,10 @@ button.about-button:hover {
 
       <div class="btn-group" style="margin-top: 18px;">
         <button type="submit">✅ Bekräfta resultat & lotta nästa rond</button>
-        <button type="button" class="danger" onclick="openWithdrawModal()">🚪 Stryk spelare (utgått)</button>
+        <button type="button" class="danger" onclick="openWithdrawModal()">🏳️ Stryk spelare (utgår)</button>
         <button type="button" class="secondary" onclick="saveTournament()">💾 Spara turnering</button>
         <button type="button" class="secondary" onclick="printRound()">🖨️ Skriv ut rond</button>
-        <button type="button" class="secondary" onclick="finishTournamentEarly()">Avsluta & visa slutställning</button>
+        <button type="button" class="secondary" onclick="finishTournamentEarly()">❎ Avsluta & visa slutställning</button>
       </div>
     </form>
   </section>
@@ -589,7 +589,7 @@ Pᵢ / N = motståndarens poängandel (poängkvoten uttryckt som decimaltal mell
     utvecklades av Mats Winther i augusti 2026.<br>&nbsp;
   </p>
     <div class="btn-group" style="justify-content: flex-start; margin-top: 0;">
-      <button type="button" onclick="closeWntModal()">Stäng</button>
+      <button type="button" onclick="closeWntModal()">🔴 Stäng</button>
     </div>
   </div>
 </div>
@@ -1744,7 +1744,7 @@ function calculateBuchholz() {
         <td style="font-weight: 600; color: #64748b;">${idx + 1}</td>
         <td><strong>${getPlayerDisplayName(p)}</strong></td>
         <td><span class="score-badge">${formatPoints(p.score)}</span></td>
-        <td style="white-space: nowrap;">⚪ ${p.whites} / ⚫ ${p.blacks}</td>
+        <td style="white-space: nowrap;">◽ ${p.whites} / ◾ ${p.blacks}</td>
         <td>${p.hasHadBye ? "Ja" : "—"}</td>
       `;
       tbody.appendChild(tr);
@@ -1871,7 +1871,7 @@ function getColourSequence(player) {
     return html;
   }
 
-  function finishTournamentEarly() {
+  function finishTournamentEarly(force = false) {
     if (currentPairings && currentPairings.length > 0) {
       let filledCount = 0;
       for (let i = 0; i < currentPairings.length; i++) {
@@ -1885,12 +1885,23 @@ function getColourSequence(player) {
         return;
       }
 
-      if (filledCount === currentPairings.length) {
-        recordCurrentRoundResults();
-      } else if (filledCount === 0) {
-        if (!confirm(`Rond ${currentRound} har inga ifyllda resultat. Vill du ändå avsluta och visa slutställningen?`)) {
-          return;
+      if (!force) {
+        if (filledCount === currentPairings.length) {
+          if (!confirm(`Är du säker på att du vill avsluta turneringen i förtid?\n\nResultaten för rond ${currentRound} är ifyllda och kommer att räknas med i slutställningen.`)) {
+            return;
+          }
+          recordCurrentRoundResults();
+        } else if (filledCount === 0) {
+          if (!confirm(`Är du säker på att du vill avsluta turneringen i förtid?\n\nRond ${currentRound} har inga ifyllda resultat och kommer inte att räknas med.`)) {
+            return;
+          }
         }
+      } else if (filledCount === currentPairings.length) {
+        recordCurrentRoundResults();
+      }
+    } else if (!force) {
+      if (!confirm("Är du säker på att du vill avsluta turneringen i förtid och visa slutställningen?")) {
+        return;
       }
     }
 
@@ -2026,7 +2037,7 @@ function getColourSequence(player) {
 <body>
   <div class="toolbar">
     <button class="btn btn-primary" onclick="window.print()">🖨️ Skriv ut</button>
-    <button class="btn" onclick="window.close()">Stäng</button>
+    <button class="btn" onclick="window.close()">🔴 Stäng</button>
   </div>
   ${contentHtml}
 </body>
