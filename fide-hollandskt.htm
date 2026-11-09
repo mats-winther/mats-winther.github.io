@@ -218,6 +218,10 @@ a { color:var(--blue); }
   body[data-tab="standings"] #printHeading { display:none !important; }
   #scoreTournamentName { color:black; }
 }
+  .small-note {
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
 </style>
 </head>
 
@@ -548,7 +552,9 @@ a { color:var(--blue); }
          target="_blank" rel="noopener">Schacklottning: en genomgång av Monrad, Schweizer och Berger</a>
     </li>
   </ul>
-  <p><br></p>
+  <p class="small-note">FIDE Holländskt-lottningsprogram utvecklades av Mats Winther i september 2026.<br>&nbsp;
+  </p>
+
   <button onclick="document.getElementById('aboutDialog').close()">Stäng</button>
 </dialog>
 
