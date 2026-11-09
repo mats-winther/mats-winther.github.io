@@ -12,7 +12,7 @@
 >
 <title>Experimentellt FIDE Lim-lottningssystem</title>
 <style>
-:root{--ink:#263445;--navy:#813A9E;--blue:#2364a3;--line:#dce4ed;--bg:#f6f8fb}
+:root{--ink:#263445;--navy:#813A9E;--blue:#2364a3;--line:#dce4ed;--muted:#64748b;--bg:#f6f8fb}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,sans-serif}
 header{background:var(--navy);color:white;padding:1rem;display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
@@ -61,6 +61,10 @@ a{color:var(--blue)}
   .tab:not(.active){display:none!important}
   th,td{border:1px solid #555}
 }
+  .small-note {
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
 </style>
 </head>
 <body>
@@ -189,16 +193,29 @@ a{color:var(--blue)}
   <h2>Om FIDE Lim-lottningssystem</h2>
   <p>Experimentell implementering av FIDE C.04.4.3 Lim, gällande från 1 februari 2026.
      Ej godkänd av FIDE.</p>
-  <p>Implementerar vanlig non-Maxi-lottning, den tvåsidiga genomgången av poänggrupper,
-     kontroller av kompatibla motståndare, urval av flottörer, reparation av mediangruppen,
+  <p>
+     Grundidén bakom Lim är att arbeta in mot mitten av poängtabellen från båda ändar,
+     i stället för att gå igenom varje poänggrupp uppifrån och ned, som i FIDE Dutch.
+     Det ger Lim ett annat sätt att hantera spelare som inte kan paras ihop inom sin
+     egen poänggrupp.
+  </p>
+  <p>
+     I Lim behandlas poänggrupperna ovanför mitten uppifrån och ned, medan grupperna
+     nedanför mitten behandlas nedifrån och upp. Därför tenderar oparade spelare från
+     båda håll att föras in mot mitten. Det här tillvägagångssättet kan vara tilltalande 
+     eftersom det tar hänsyn till både toppen och botten av ställningen när rondens
+     parningar skapas.
+  </p>
+  <p>Programmet implementerar vanlig non-Maxi-lottning, den tvåsidiga genomgången av poänggrupper,
+     kontroller av kompatibla motståndare, urval av flyttare, reparation av mediangruppen,
      färgpreferenser och undantaget för samma poäng i sista ronden.
-     Komplexa fall kan ha mer än en tolkning; detta är inte en officiell kontroll.</p>
-  <p>Implementerar inte sena anmälningar, acceleration eller uppskjutna partier.
+     Komplexa fall kan ha mer än en tolkning. Detta är inte ett officiellt godkänt kontrollprogram.</p>
+  <p>Programmet implementerar inte sena anmälningar, acceleration eller uppskjutna partier.
    De faktiska färgerna i ett parti i den senast arkiverade ronden kan korrigeras innan
    nästa rond genereras. Andra arkiverade resultat kan inte redigeras direkt. För att
    ändra ett tidigare rapporterat resultat måste en säkerhetskopia av ronden laddas och
    rondresultaten matas in på nytt.</p> 
-<p>Denna icke-Maxi-implementering minimerar eller begränsar inte ratingdifferensen mellan
+<p>Denna icke-Maxi-lösning minimerar eller begränsar inte ratingdifferensen mellan
      motståndare. Programmet har en inbyggd fast sökbegränsning.
      Misslyckande eller avbrott publicerar aldrig en ofullständig rond.</p>
   <p>
@@ -219,9 +236,11 @@ a{color:var(--blue)}
     <li><a href="https://handbook.fide.com/chapter/C040403202602" target="_blank" rel="noopener">Lim-regler</a></li>
     <li><a href="https://handbook.fide.com/chapter/GeneralHandlingRulesForSwissTournaments202602" target="_blank" rel="noopener">Allmänna hanteringsregler</a></li>
     <li><a href="https://handbook.fide.com/chapter/TieBreakRegulations032026" target="_blank" rel="noopener">Särskiljningsregler</a></li>
-    <li><a href="https://mats-winther.github.io/bg/chesspairing.htm" target="_blank" rel="noopener">Chess Pairings: A Review of Monrad, Swiss, and Berger</a></li>
+    <li><a href="https://mats-winther.github.io/bg/schacklottning.htm"
+     target="_blank" rel="noopener">Schacklottning: en genomgång av Monrad, Schweizer och Berger</a></li>
   </ul>
-  <p><br></p>
+  <p class="small-note">FIDE Lim-lottningssystem utvecklades av Mats Winther i september 2026.<br>&nbsp;
+  </p>
   <button onclick="document.getElementById('about').close()">Stäng</button>
 </dialog>
 

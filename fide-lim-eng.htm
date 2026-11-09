@@ -12,7 +12,7 @@
 >
 <title>Experimental FIDE Lim Pairing System</title>
 <style>
-:root{--ink:#263445;--navy:#813A9E;--blue:#2364a3;--line:#dce4ed;--bg:#f6f8fb}
+:root{--ink:#263445;--navy:#813A9E;--blue:#2364a3;--line:#dce4ed;--muted:#64748b;--bg:#f6f8fb}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,sans-serif}
 header{background:var(--navy);color:white;padding:1rem;display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
@@ -61,6 +61,10 @@ a{color:var(--blue)}
   .tab:not(.active){display:none!important}
   th,td{border:1px solid #555}
 }
+  .small-note {
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
 </style>
 </head>
 <body>
@@ -189,14 +193,28 @@ a{color:var(--blue)}
   <h2>About the FIDE Lim Pairing System</h2>
   <p>Experimental implementation of FIDE C.04.4.3 Lim, effective 1 February 2026.
      Not FIDE-endorsed.</p>
-  <p>Implements ordinary, non-Maxi pairing, the two-sided scoregroup traversal,
+  <p>
+    The main idea behind Lim is to work towards the middle of the score table
+    from both ends, rather than processing every scoregroup from top to bottom,
+    as in FIDE Dutch. This gives Lim a different way of handling players who
+    cannot be paired within their own scoregroup.
+  </p>
+  <p>
+    In Lim, scoregroups above the middle are processed downward, while those
+    below the middle are processed upward. As a result, unpaired players tend
+    to move towards the middle from either side. This approach can be appealing
+    because it gives both the top and the bottom of the standings attention as
+    the round is constructed.
+  </p>
+  <p>This program implements ordinary, non-Maxi pairing, the two-sided scoregroup traversal,
      compatible-opponent checks, floater selection, median-group repair,
      colour preferences and the last-round same-score exception.
      Complex cases can have more than one interpretation; this is not an official checker.</p>
-  <p>Does not implement late entries,
-   acceleration, or adjournments. The actual colours of a game in the latest
-   archived round can be corrected before generating the next round; other
-   archived results cannot be edited directly. To change a previously reported result, a backup of the round must be loaded and the round results re-entered.</p> 
+  <p>The program does not currently support late entries, acceleration, or adjournments.
+     The actual colours of a game in the latest archived round can be corrected before
+     generating the next round; other archived results cannot be edited directly.
+     To change a previously reported result, a backup of the round must be loaded
+     and the round results re-entered.</p> 
 <p>This non-Maxi implementation does not minimise or cap the rating difference between opponents.
      The program has a built-in fixed search limit.
      Failure or interruption never publishes a partial round.</p>
@@ -220,7 +238,8 @@ a{color:var(--blue)}
     <li><a href="https://handbook.fide.com/chapter/TieBreakRegulations032026" target="_blank" rel="noopener">Tie-break regulations</a></li>
     <li><a href="https://mats-winther.github.io/bg/chesspairing.htm" target="_blank" rel="noopener">Chess Pairings: A Review of Monrad, Swiss, and Berger</a></li>
   </ul>
-  <p><br></p>
+  <p class="small-note">The FIDE Lim Pairing System was developed by Mats Winther in September 2026.<br>&nbsp;</p>
+
   <button onclick="document.getElementById('about').close()">Close</button>
 </dialog>
 
