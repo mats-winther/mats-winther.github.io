@@ -37,7 +37,7 @@
   button, input, textarea, select { font: inherit; }
 
   .container {
-    max-width: 1180px;
+    max-width: 1210px;
     margin: 0 auto;
   }
 
@@ -138,7 +138,7 @@
   body.tournament-started #storage-status { width: 100%; }
 
   #section-setup {
-    width: 810px;
+    width: 835px;
     max-width: 100%;
     margin-left: auto;
     margin-right: auto;
@@ -497,12 +497,12 @@
       <strong id="resume-text"></strong>
       <div class="btn-group">
         <button type="button" onclick="resumeAutosave()">
-          Resume Tournament
+          ▶️ Resume Tournament
         </button>
         <button type="button"
                 class="secondary"
                 onclick="discardAutosave()">
-          Discard
+          🗑️ Discard
         </button>
       </div>
     </div>
@@ -601,22 +601,22 @@
 
       <div class="btn-group">
         <button type="button" onclick="startGeneration()">
-          Generate Schedule
+          ▶️ Generate Schedule
         </button>
         <button type="button"
                 class="secondary"
                 onclick="choosePlayerFile()">
-          Load Player File (.txt)
+          📄 Load Player File (.txt)
         </button>
         <button type="button"
                 class="secondary"
                 onclick="loadSamplePlayers()">
-          Sample (50 Players)
+          🧑‍🧒‍🧒 Sample (50 Players)
         </button>
         <button type="button"
                 class="secondary"
                 onclick="chooseTournamentFile()">
-          Open Saved Tournament
+          📂 Open Saved Tournament
         </button>
       </div>
     </fieldset>
@@ -627,7 +627,7 @@
       <button type="button"
               class="danger"
               onclick="cancelGeneration()">
-        Cancel Generation
+        ❌ Cancel Generation
       </button>
     </div>
   </section>
@@ -666,41 +666,41 @@
       <button id="round-action-button"
               type="button"
               onclick="roundAction()">
-        Next Round →
+        ➡️ Next Round
       </button>
       <button id="finish-swiss-button"
               type="button"
               class="danger"
               onclick="finishSwissEarly()"
               hidden>
-        Finish Swiss After This Round
+        ❎ Finish Swiss After This Round
       </button>
       <button id="withdraw-button"
               type="button"
               class="danger"
               onclick="openWithdrawal()">
-        Withdraw / Reinstate Player
+        🏳️ Withdraw / Reinstate Player
       </button>
       <button type="button"
               class="secondary"
               onclick="saveTournament()">
-        Save Tournament
+        💾 Save Tournament
       </button>
       <button type="button"
               class="secondary"
               onclick="printAllRounds()">
-        Show All Rounds
+        📜 Show All Rounds
       </button>
       <button type="button"
               class="secondary"
               onclick="showFinalStandings()">
-        Show Final / Current Standings
+        📋 Show Final / Current Standings
       </button>
       <button id="convert-swiss-button"
               type="button"
               class="secondary"
               onclick="convertToSwiss()">
-        Convert to Swiss
+        🔀 Convert to Swiss
       </button>
     </div>
   </section>
@@ -751,22 +751,27 @@
 
     <div class="btn-group">
       <button type="button" onclick="backToRounds()">
-        Back to Rounds
+        ↩️ Back to Rounds
       </button>
       <button type="button"
               class="secondary"
               onclick="saveTournament()">
-        Save Tournament
+        💾 Save Tournament
+      </button>
+      <button type="button" 
+	      class="secondary"
+	      onclick="saveTRF()">
+	💾 Save TRF-file
       </button>
       <button type="button"
               class="secondary"
               onclick="printFinalReport()">
-        Print Standings and Games
+        🖨️ Print Standings and Games
       </button>
       <button type="button"
               class="danger"
               onclick="newTournament()">
-        New Tournament
+        🔄 New Tournament
       </button>
     </div>
   </section>
@@ -798,12 +803,12 @@
       <button type="button"
               class="secondary"
               onclick="printCompleteSchedule()">
-        Print RBT Schedule
+        🖨️ Print RBT Schedule
       </button>
       <button type="button"
               class="light"
               onclick="chooseTournamentFile()">
-        Open Saved Tournament
+        📂 Open Saved Tournament
       </button>
     </div>
 
@@ -4195,7 +4200,7 @@ function updateRoundNavigation() {
   action.disabled = false;
 
   if (!isHybrid() || tournament.current < tournament.rounds.length - 1) {
-    action.textContent = "Next Round →";
+    action.textContent = "➡️ Next Round";
   } else if (!rbtLocked()) {
     action.textContent = "Start Swiss Phase";
   } else if (tournament.swissEnded) {
@@ -4204,8 +4209,8 @@ function updateRoundNavigation() {
   } else {
     action.textContent =
       tournament.rounds.length === plannedRounds()
-        ? "Submit Final Swiss Round"
-        : "Submit Results & Pair Next Swiss Round";
+        ? "✅ Submit Final Swiss Round"
+        : "✅ Submit Results & Pair Next Swiss Round";
   }
 
   $("finish-swiss-button").hidden =
@@ -4218,7 +4223,7 @@ function updateRoundNavigation() {
 
   $("withdraw-button").disabled = !canOpenWithdrawal();
   $("withdraw-button").textContent = rbtLocked()
-    ? "Withdraw Player" : "Withdraw / Reinstate Player";
+    ? "🏳️ Withdraw Player" : "🏳️ Withdraw / Reinstate Player";
 
   $("phase-status").hidden = !isHybrid();
 
@@ -5420,7 +5425,7 @@ function openPrintPage(title, content) {
 </head>
 <body>
 <div class="toolbar">
-  <button onclick="window.print()">Print</button>
+  <button onclick="window.print()">🖨️ Print</button>
   <button onclick="window.close()">Close</button>
 </div>
 ${content}
@@ -5819,6 +5824,148 @@ function runSwissStressChecks() {
 
   console.table(results);
   return results;
+}
+
+/* ============================================================
+   TRF-handling
+   ============================================================ */
+
+function formatPlayerName(name) {
+  const trimmed = (name || '').trim();
+  if (!trimmed) return '(Name)';
+  if (trimmed.includes(',')) return trimmed;
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 1) return parts[0];
+  const last = parts.pop();
+  return `${last}, ${parts.join(' ')}`;
+}
+
+function generateTRF() {
+  if (!tournament || !tournament.players || tournament.players.length === 0) return '';
+
+  const lines = [];
+
+  // Tournament Section (012, 022, 032, 102)
+  const tName = (tournament.name || '').trim();
+  lines.push(`012 ${tName || 'Rating-Budget Tournament'}`);
+  lines.push('022 (City)');
+  lines.push('032 (Federation)');
+  lines.push('102 (Chief Arbiter)');
+
+  // Standings & Ranks (calculated using the tournament's active tie-break)
+  const standings = calculateStandings(true);
+  const rankMap = new Map(standings.rows.map(r => [r.id, r.position]));
+  const pointsMap = new Map(standings.rows.map(r => [r.id, r.points]));
+
+  // Player Section (001): sorted by Tournament Player Number (TPN / Starting rank)
+  const playersByTpn = [...tournament.players].sort((a, b) => a.tpn - b.tpn);
+  const totalRounds = tournament.rounds.length;
+
+  playersByTpn.forEach(p => {
+    const seedStr = String(p.tpn).padStart(4, ' ');
+    const sexStr = '(Sex)';
+    const titleStr = '(Title)';
+    const nameStr = formatPlayerName(p.name).padEnd(33, ' ').substring(0, 33);
+    const ratingStr = p.rating ? String(p.rating).padStart(4, ' ') : ' (Elo)';
+    const fedStr = '(FIDE Federation)';
+    const fideNumStr = '(FIDE Number)';
+    const birthDateStr = '(Birth Date)';
+    const pts = pointsMap.get(p.id) ?? 0;
+    const pointsStr = pts.toFixed(1).padStart(4, ' ');
+    const rankStr = String(rankMap.get(p.id) || p.tpn).padStart(4, ' ');
+
+    let line = `001  ${seedStr} ${sexStr} ${titleStr} ${nameStr} ${ratingStr} ${fedStr} ${fideNumStr} ${birthDateStr} ${pointsStr} ${rankStr}`;
+
+    // Round-by-round results
+    for (let r = 0; r < totalRounds; r++) {
+      const curRound = tournament.rounds[r];
+      let oppId = '0000';
+      let color = '-';
+      let resChar = 'Z';
+
+      if (curRound) {
+        if (curRound.bye === p.id) {
+          // Scheduled rest or Swiss bye
+          oppId = '0000';
+          color = '-';
+          if (p.withdrawnFrom !== null && r >= p.withdrawnFrom) {
+            resChar = 'Z';
+          } else if (tournament.byePoints === 1) {
+            resChar = 'U';
+          } else if (tournament.byePoints === 0.5) {
+            resChar = 'H';
+          } else {
+            resChar = 'Z';
+          }
+        } else {
+          const game = (curRound.games || []).find(g => g.w === p.id || g.b === p.id);
+          if (game) {
+            const isWhite = game.w === p.id;
+            const oppIndex = isWhite ? game.b : game.w;
+            const opp = tournament.players[oppIndex];
+            const oppTpn = opp ? opp.tpn : 0;
+
+            oppId = String(oppTpn).padStart(4, ' ');
+            color = isWhite ? 'w' : 'b';
+
+            if (game.result === '1-0') {
+              resChar = isWhite ? '1' : '0';
+            } else if (game.result === '0-1') {
+              resChar = isWhite ? '0' : '1';
+            } else if (game.result === '0.5-0.5') {
+              resChar = '=';
+            } else if (game.result === 'F1') {
+              resChar = isWhite ? '+' : '-';
+            } else if (game.result === 'F0') {
+              resChar = isWhite ? '-' : '+';
+            } else if (game.result === 'F00') {
+              resChar = '-';
+            } else {
+              // Pending / unentered result
+              resChar = 'Z';
+            }
+          } else {
+            // Player was not paired in this round (e.g. withdrawn)
+            oppId = '0000';
+            color = '-';
+            resChar = 'Z';
+          }
+        }
+      }
+
+      line += `  ${oppId} ${color} ${resChar}`;
+    }
+
+    lines.push(line);
+  });
+
+  return lines.join('\r\n') + '\r\n';
+}
+
+function saveTRF() {
+  if (!tournament || !tournament.players || tournament.players.length === 0) {
+    alert("There is no tournament to export.");
+    return;
+  }
+
+  const content = generateTRF();
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+
+  const cleanName = (tournament.name || 'rbt-tournament').trim().replace(/[^\w\-]+/g, '_');
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const dateStr = `${yyyy}-${mm}-${dd}`;
+
+  a.download = cleanName ? `TRF_${cleanName}_${dateStr}.txt` : `TRF_${dateStr}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /* ============================================================
