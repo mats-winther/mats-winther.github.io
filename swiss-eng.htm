@@ -139,8 +139,8 @@
       <strong id="resume-text"></strong>
       <div>The tournament was saved automatically in this browser. Would you like to continue it?</div>
       <div class="btn-bar">
-        <button type="button" onclick="resumeAutosave()">Resume Tournament</button>
-        <button type="button" class="secondary" onclick="discardAutosave()">Discard</button>
+        <button type="button" onclick="resumeAutosave()">▶️ Resume Tournament</button>
+        <button type="button" class="secondary" onclick="discardAutosave()">🗑️ Discard</button>
       </div>
     </div>
 
@@ -210,11 +210,11 @@ You can run separate tournaments simultaneously in different browsers (for examp
     <div class="btn-bar">
       <input type="file" id="txt-file-input" accept=".txt" style="display:none">
       <input type="file" id="json-file-input" accept=".json" style="display:none">
-      <button type="button" onclick="document.getElementById('txt-file-input').click()">Load .txt File</button>
-      <button type="button" onclick="document.getElementById('json-file-input').click()">Load Tournament (JSON)</button>
-      <button type="button" class="secondary" onclick="load32ClubPlayers()">32 Club Players</button>
-      <button type="button" class="secondary" onclick="clearPlayerList()">Clear</button>
-      <button type="button" onclick="startTournament()">Start Tournament</button>
+      <button type="button" onclick="document.getElementById('txt-file-input').click()">📄 Load .txt File</button>
+      <button type="button" onclick="document.getElementById('json-file-input').click()">📂 Load Tournament (JSON)</button>
+      <button type="button" class="secondary" onclick="load32ClubPlayers()">🧑‍🧒‍🧒 32 Club Players</button>
+      <button type="button" class="secondary" onclick="clearPlayerList()">🗑️ Clear</button>
+      <button type="button" onclick="startTournament()">▶️ Start Tournament</button>
     </div>
   </div>
 
@@ -224,10 +224,10 @@ You can run separate tournaments simultaneously in different browsers (for examp
     <p class="no-print">Enter results and proceed to the next round.</p>
 
     <div class="btn-bar no-print">
-      <button type="button" class="secondary" onclick="printPairings()">Print Pairings</button>
-      <button type="button" class="secondary" onclick="saveTournament()">Save Tournament</button>
-      <button type="button" class="secondary" onclick="openStandingsModal()">Current Standings</button>
-      <button type="button" class="danger" onclick="openWithdrawModal()">Withdraw Player</button>
+      <button type="button" class="secondary" onclick="printPairings()">🖨️ Print Pairings</button>
+      <button type="button" class="secondary" onclick="saveTournament()">💾 Save Tournament</button>
+      <button type="button" class="secondary" onclick="openStandingsModal()">📋 Current Standings</button>
+      <button type="button" class="danger" onclick="openWithdrawModal()">🏳️ Withdraw Player</button>
     </div>
 
     <table>
@@ -243,7 +243,7 @@ You can run separate tournaments simultaneously in different browsers (for examp
     </table>
 
     <div class="btn-bar no-print" style="margin-top:16px;">
-      <button type="button" id="next-round-btn" onclick="submitRound()">Next Round</button>
+      <button type="button" id="next-round-btn" onclick="submitRound()">✅ Next Round</button>
     </div>
   </div>
 
@@ -267,10 +267,10 @@ You can run separate tournaments simultaneously in different browsers (for examp
     </table>
 
     <div class="btn-bar no-print" style="margin-top:16px;">
-      <button type="button" onclick="printFinalStandings()">Print Final Standings</button>
-      <button type="button" class="secondary" onclick="saveTournament()">Save Tournament</button>
-      <button type="button" class="secondary" onclick="saveTRF()">Save TRF-file</button>
-      <button type="button" class="secondary" onclick="restartTournament()">Start New Tournament</button>
+      <button type="button" onclick="printFinalStandings()">🖨️ Print Final Standings</button>
+      <button type="button" class="secondary" onclick="saveTournament()">💾 Save Tournament</button>
+      <button type="button" class="secondary" onclick="saveTRF()">💾 Save TRF-file</button>
+      <button type="button" class="secondary" onclick="restartTournament()">🔄 New Tournament</button>
     </div>
   </div>
 </div>
@@ -293,7 +293,7 @@ You can run separate tournaments simultaneously in different browsers (for examp
       <tbody id="modal-standings-body"></tbody>
     </table>
     <div class="btn-bar" style="margin-top:14px;">
-      <button type="button" class="secondary" onclick="printStandings()">Print Standings</button>
+      <button type="button" class="secondary" onclick="printStandings()">🖨️ Print Standings</button>
       <button type="button" onclick="closeStandingsModal()">Close</button>
     </div>
   </div>
@@ -1134,7 +1134,7 @@ function renderPairings() {
 
   const nextBtn = document.getElementById('next-round-btn');
   if (nextBtn) {
-    nextBtn.textContent = (state.currentRound >= state.totalRounds) ? 'Finish Tournament' : 'Next Round';
+    nextBtn.textContent = (state.currentRound >= state.totalRounds) ? '🏁 Finish Tournament' : '✅ Next Round';
   }
 
   const curRound = state.rounds[state.currentRound - 1];

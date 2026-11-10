@@ -140,8 +140,8 @@
       <strong id="resume-text"></strong>
       <div>Turneringen sparades automatiskt. Vill du fortsätta turneringen?</div>
       <div class="btn-bar">
-        <button type="button" onclick="resumeAutosave()">Fortsätt turneringen</button>
-        <button type="button" class="secondary" onclick="discardAutosave()">Ta bort</button>
+        <button type="button" onclick="resumeAutosave()">▶️ Fortsätt turneringen</button>
+        <button type="button" class="secondary" onclick="discardAutosave()">🗑️ Ta bort</button>
       </div>
     </div>
 
@@ -211,11 +211,11 @@
     <div class="btn-bar">
       <input type="file" id="txt-file-input" accept=".txt" style="display:none">
       <input type="file" id="json-file-input" accept=".json" style="display:none">
-      <button type="button" onclick="document.getElementById('txt-file-input').click()">Läs in .txt-fil</button>
-      <button type="button" onclick="document.getElementById('json-file-input').click()">Ladda turnering (JSON)</button>
-      <button type="button" class="secondary" onclick="load32ClubPlayers()">32 klubbspelare</button>
-      <button type="button" class="secondary" onclick="clearPlayerList()">Rensa</button>
-      <button type="button" onclick="startTournament()">Starta turnering</button>
+      <button type="button" onclick="document.getElementById('txt-file-input').click()">📄 Läs in .txt-fil</button>
+      <button type="button" onclick="document.getElementById('json-file-input').click()">📂 Ladda turnering (JSON)</button>
+      <button type="button" class="secondary" onclick="load32ClubPlayers()">🧑‍🧒‍🧒 32 klubbspelare</button>
+      <button type="button" class="secondary" onclick="clearPlayerList()">🗑️ Rensa</button>
+      <button type="button" onclick="startTournament()">▶️ Starta turnering</button>
     </div>
   </div>
 
@@ -225,10 +225,10 @@
     <p class="no-print">Mata in resultat och gå vidare till nästa rond.</p>
 
     <div class="btn-bar no-print">
-      <button type="button" class="secondary" onclick="printPairings()">Skriv ut lottning</button>
-      <button type="button" class="secondary" onclick="saveTournament()">Spara turnering</button>
-      <button type="button" class="secondary" onclick="openStandingsModal()">Aktuell ställning</button>
-      <button type="button" class="danger" onclick="openWithdrawModal()">Avanmäl spelare</button>
+      <button type="button" class="secondary" onclick="printPairings()">🖨️ Skriv ut lottning</button>
+      <button type="button" class="secondary" onclick="saveTournament()">💾 Spara turnering</button>
+      <button type="button" class="secondary" onclick="openStandingsModal()">📋 Aktuell ställning</button>
+      <button type="button" class="danger" onclick="openWithdrawModal()">🏳️ Avanmäl spelare</button>
     </div>
 
     <table>
@@ -244,7 +244,7 @@
     </table>
 
     <div class="btn-bar no-print" style="margin-top:16px;">
-      <button type="button" id="next-round-btn" onclick="submitRound()">Nästa rond</button>
+      <button type="button" id="next-round-btn" onclick="submitRound()">✅ Nästa rond</button>
     </div>
   </div>
 
@@ -268,10 +268,10 @@
     </table>
 
     <div class="btn-bar no-print" style="margin-top:16px;">
-      <button type="button" onclick="printFinalStandings()">Skriv ut slutresultat</button>
-      <button type="button" class="secondary" onclick="saveTournament()">Spara turnering</button>
-      <button type="button" class="secondary" onclick="saveTRF()">Spara TRF-fil</button>
-      <button type="button" class="secondary" onclick="restartTournament()">Starta ny turnering</button>
+      <button type="button" onclick="printFinalStandings()">🖨️ Skriv ut slutresultat</button>
+      <button type="button" class="secondary" onclick="saveTournament()">💾 Spara turnering</button>
+      <button type="button" class="secondary" onclick="saveTRF()">💾 Spara TRF-fil</button>
+      <button type="button" class="secondary" onclick="restartTournament()">🔄 Ny turnering</button>
     </div>
   </div>
 </div>
@@ -294,7 +294,7 @@
       <tbody id="modal-standings-body"></tbody>
     </table>
     <div class="btn-bar" style="margin-top:14px;">
-      <button type="button" class="secondary" onclick="printStandings()">Skriv ut ställning</button>
+      <button type="button" class="secondary" onclick="printStandings()">🖨️ Skriv ut ställning</button>
       <button type="button" onclick="closeStandingsModal()">Stäng</button>
     </div>
   </div>
@@ -1137,7 +1137,7 @@ function renderPairings() {
 
   const nextBtn = document.getElementById('next-round-btn');
   if (nextBtn) {
-    nextBtn.textContent = (state.currentRound >= state.totalRounds) ? 'Avsluta turnering' : 'Nästa rond';
+    nextBtn.textContent = (state.currentRound >= state.totalRounds) ? '🏁 Avsluta turnering' : '✅ Nästa rond';
   }
 
   const curRound = state.rounds[state.currentRound - 1];
