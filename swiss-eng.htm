@@ -9,17 +9,6 @@
 <title>Swiss Tournament System</title>
 <style>
 
-#round-count::-webkit-outer-spin-button,
-#round-count::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-#round-count {
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-
   :root {
     --primary: #1e3a8a;
     --primary-hover: #1e40af;
@@ -280,6 +269,7 @@ You can run separate tournaments simultaneously in different browsers (for examp
     <div class="btn-bar no-print" style="margin-top:16px;">
       <button type="button" onclick="printFinalStandings()">Print Final Standings</button>
       <button type="button" class="secondary" onclick="saveTournament()">Save Tournament</button>
+      <button type="button" class="secondary" onclick="saveTRF()">Save TRF-file</button>
       <button type="button" class="secondary" onclick="restartTournament()">Start New Tournament</button>
     </div>
   </div>
@@ -1523,6 +1513,139 @@ function restartTournament() {
   if (!confirm('Start a new tournament? The automatically saved copy in this browser will be removed. Use "Save Tournament" first if you want to keep a file.')) return;
   clearAutosave();
   location.reload();
+}
+
+function formatPlayerName(name) {
+  const trimmed = (name || '').trim();
+  if (!trimmed) return '(Name)';
+  if (trimmed.includes(',')) return trimmed;
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 1) return parts[0];
+  const last = parts.pop();
+  return `${last}, ${parts.join(' ')}`;
+}
+
+function generateTRF() {
+  const lines = [];
+
+  // Tournament Section (only ■ Mandatory or □ Warning lines: 012, 022, 032, 102)
+  const tName = (state.name || '').trim();
+  lines.push(`012 ${tName || '(Tournament Name)'}`);
+  lines.push('022 (City)');
+  lines.push('032 (Federation)');
+  lines.push('102 (Chief Arbiter)');
+
+  // Standings & Ranks
+  const standings = getSortedStandings();
+  const rankMap = new Map(standings.map((p, idx) => [p.id, idx + 1]));
+
+  // Player Section (001): sorted by Startingrank-Number (Seed)
+  const playersBySeed = [...state.players].sort((a, b) => a.seed - b.seed);
+  const totalRounds = state.rounds.length;
+
+  playersBySeed.forEach(p => {
+    const seedStr = String(p.seed).padStart(4, ' ');
+    const sexStr = '(Sex)';
+    const titleStr = '(Title)';
+    const nameStr = formatPlayerName(p.name).padEnd(33, ' ');
+    const ratingStr = String(p.rating || 0).padStart(4, ' ');
+    const fedStr = '(FIDE Federation)';
+    const fideNumStr = '(FIDE Number)';
+    const birthDateStr = '(Birth Date)';
+    const pointsStr = p.score.toFixed(1).padStart(4, ' ');
+    const rankStr = String(rankMap.get(p.id) || p.seed).padStart(4, ' ');
+
+    let line = `001  ${seedStr} ${sexStr} ${titleStr} ${nameStr} ${ratingStr} ${fedStr} ${fideNumStr} ${birthDateStr} ${pointsStr} ${rankStr}`;
+
+    // Round by round results
+    for (let r = 1; r <= totalRounds; r++) {
+      const curRound = state.rounds[r - 1];
+      const pairing = curRound ? (curRound.pairings || []).find(pair =>
+        (pair.white && pair.white.id === p.id) || (pair.black && pair.black.id === p.id)
+      ) : null;
+
+      let oppId = '0000';
+      let color = '-';
+      let resChar = 'Z';
+
+      if (pairing) {
+        if (!pairing.black) {
+          // Unpaired / Bye
+          oppId = '0000';
+          color = '-';
+          resChar = (p.withdrawn || pairing.result === '0-0') ? 'Z' : 'U';
+        } else {
+          const isWhite = pairing.white.id === p.id;
+          const opp = isWhite ? pairing.black : pairing.white;
+          oppId = String(opp.seed).padStart(4, ' ');
+          color = isWhite ? 'w' : 'b';
+
+          if (pairing.forfeit) {
+            if (pairing.result === '1-0') {
+              resChar = isWhite ? '+' : '-';
+            } else if (pairing.result === '0-1') {
+              resChar = isWhite ? '-' : '+';
+            } else {
+              resChar = '-';
+            }
+          } else {
+            if (pairing.result === '1-0') {
+              resChar = isWhite ? '1' : '0';
+            } else if (pairing.result === '0-1') {
+              resChar = isWhite ? '0' : '1';
+            } else if (pairing.result === '0.5-0.5') {
+              resChar = '=';
+            } else if (pairing.result === '0-0') {
+              resChar = '-';
+            }
+          }
+        }
+      }
+
+      line += `  ${oppId} ${color} ${resChar}`;
+    }
+
+    lines.push(line);
+  });
+
+  return lines.join('\r\n') + '\r\n';
+}
+
+function saveTRF() {
+  const content = generateTRF();
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; // <-- Added missing link target
+
+  const cleanName = (state.name || '').trim().replace(/[^\w\-]+/g, '_');
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const dateStr = `${yyyy}-${mm}-${dd}`;
+
+  a.download = cleanName ? `TRF_${cleanName}_${dateStr}.txt` : `${dateStr}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// Disable keyboard arrows and two-finger/wheel scrolling for round-count
+const roundInput = document.getElementById('round-count');
+if (roundInput) {
+  // Prevent keyboard Up, Down, PageUp, and PageDown keys
+  roundInput.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'PageUp' || e.key === 'PageDown') {
+      e.preventDefault();
+    }
+  });
+
+  // Prevent mouse wheel and touchpad two-finger scrolling
+  roundInput.addEventListener('wheel', e => {
+    e.preventDefault();
+  }, { passive: false });
 }
 
 // On page load: offer to resume an autosaved tournament, if any

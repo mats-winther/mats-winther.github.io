@@ -10,17 +10,6 @@
 <title>Klubbschweizer</title>
 <style>
 
-#round-count::-webkit-outer-spin-button,
-#round-count::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-#round-count {
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-
   :root {
     --primary: #1e3a8a;
     --primary-hover: #1e40af;
@@ -1590,6 +1579,22 @@ function saveTRF() {
   a.click();
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// Disable keyboard arrows and two-finger/wheel scrolling for round-count
+const roundInput = document.getElementById('round-count');
+if (roundInput) {
+  // Prevent keyboard Up, Down, PageUp, and PageDown keys
+  roundInput.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'PageUp' || e.key === 'PageDown') {
+      e.preventDefault();
+    }
+  });
+
+  // Prevent mouse wheel and touchpad two-finger scrolling
+  roundInput.addEventListener('wheel', e => {
+    e.preventDefault();
+  }, { passive: false });
 }
 
 // On page load: offer to resume an autosaved tournament, if any
