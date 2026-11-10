@@ -1071,7 +1071,7 @@ function renderPairings() {
 
      const nextBtn = document.getElementById('next-round-btn');
        if (nextBtn) {
-       nextBtn.textContent = (state.currentRound >= state.totalRounds) ? '❎ Avsluta turneringen' : '✅ Nästa rond';
+       nextBtn.textContent = (state.currentRound >= state.totalRounds) ? '🏁 Avsluta turneringen' : '✅ Nästa rond';
      }
 
   const curRound = state.rounds[state.currentRound - 1];

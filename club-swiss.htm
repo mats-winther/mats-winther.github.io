@@ -54,11 +54,11 @@
   .rules-box h3 { margin: 0 0 6px 0; font-size: 14px; color: var(--primary); }
   .rules-box ul { margin: 0; padding-left: 18px; }
   .resume-box {
-    display: none; background: #fef9c3; border-left: 4px solid #ca8a04; padding: 12px 16px; border-radius: 4px; margin: 16px 0; font-size: 14px; line-height: 1.5;
+    display: none; background: #fef9c3; border-left: 4px solid var(--ca8a04); padding: 12px 16px; border-radius: 4px; margin: 16px 0; font-size: 14px; line-height: 1.5;
   }
   .resume-box .btn-bar { margin-top: 8px; }
   .group-tag { color: #64748b; font-size: 12px; margin-left: 4px; }
-.wnt-asterisk {
+  .wnt-asterisk {
   color: var(--accent);
   font-weight: bold;
   font-size: 1.15rem;
@@ -121,7 +121,6 @@
       position: static !important;
     }
   }
-
   .hint,
   .muted {
     color: var(--muted);
@@ -142,8 +141,8 @@
       <strong id="resume-text"></strong>
       <div>The tournament was saved automatically in this browser. Would you like to continue it?</div>
       <div class="btn-bar">
-        <button type="button" onclick="resumeAutosave()">Resume Tournament</button>
-        <button type="button" class="secondary" onclick="discardAutosave()">Discard</button>
+        <button type="button" onclick="resumeAutosave()">▶️ Resume Tournament</button>
+        <button type="button" class="secondary" onclick="discardAutosave()">🗑️ Discard</button>
       </div>
     </div>
 
@@ -183,7 +182,7 @@
         <li><strong>Round 3+:</strong> All players are paired together. Players are sorted by score, the selected tie-break (WNT or Buchholz), and initial seeding. Pairings are generated top-down.</li>
         <li><strong>Fewer than 16 players:</strong> The top half is randomized and paired against the randomized bottom half in Round 1. The top half always has White. Swiss pairing begins at Round 2. For an uneven bottom half, the BYE player is drawn at random.</li>
         <li><strong>Color Allocation:</strong> The player with fewer White games receives White. If equal, the lowest-rated player receives White (or lower-seeded if equal rating). Color balance is nearly guaranteed (color difference will rarely reach 3). If color balance conflicts with the 2-in-a-row rule, up to three games in a row with the same color are permitted.</li>
-        <li><strong>Forfeit and Withdrawal:</strong> When a player is withdrawn, their scheduled opponent is automatically awarded a point (w.o.). If a double forfeit (0-0 (F)) has been recorded and both players are subsequently withdrawn, neither player is awarded a point.</li>
+<li><strong>Forfeit and Withdrawal:</strong> When a player is withdrawn, their scheduled opponent is automatically awarded a point (w.o.). If a double forfeit (0-0 (F)) has been recorded and both players are subsequently withdrawn, neither player is awarded a point.</li>
 <li><strong>Running tournaments in parallel:</strong> You can run separate tournaments simultaneously in different browsers (for example, Chrome and Edge). Each browser maintains its own autosave, so a tournament should be resumed in the browser where it was started. Avoid running separate tournaments in multiple tabs or windows within the same browser profile, as their autosaves may overwrite one another. For added safety, save JSON backups regularly.</li>
       </ul>
     </div>
@@ -194,11 +193,11 @@
     <div class="btn-bar">
       <input type="file" id="txt-file-input" accept=".txt" style="display:none">
       <input type="file" id="json-file-input" accept=".json" style="display:none">
-      <button type="button" onclick="document.getElementById('txt-file-input').click()">Load .txt File</button>
-      <button type="button" onclick="document.getElementById('json-file-input').click()">Load Tournament (JSON)</button>
-      <button type="button" class="secondary" onclick="load32ClubPlayers()">32 Club Players</button>
-      <button type="button" class="secondary" onclick="clearPlayerList()">Clear</button>
-      <button type="button" onclick="startTournament()">Start Tournament</button>
+      <button type="button" onclick="document.getElementById('txt-file-input').click()">📄 Load .txt File</button>
+      <button type="button" onclick="document.getElementById('json-file-input').click()">📂 Load Tournament (JSON)</button>
+      <button type="button" class="secondary" onclick="load32ClubPlayers()">🧑‍🧒‍🧒 32 Club Players</button>
+      <button type="button" class="secondary" onclick="clearPlayerList()">🗑️ Clear</button>
+      <button type="button" onclick="startTournament()">▶️ Start Tournament</button>
     </div>
   </div>
 
@@ -208,10 +207,10 @@
     <p class="no-print">Enter results and proceed to the next round.</p>
 
     <div class="btn-bar no-print">
-      <button type="button" class="secondary" onclick="printPairings()">Print Pairings</button>
-      <button type="button" class="secondary" onclick="saveTournament()">Save Tournament</button>
-      <button type="button" class="secondary" onclick="openStandingsModal()">Current Standings</button>
-      <button type="button" class="danger" onclick="openWithdrawModal()">Withdraw Player</button>
+      <button type="button" class="secondary" onclick="printPairings()">🖨️ Print Pairings</button>
+      <button type="button" class="secondary" onclick="saveTournament()">💾 Save Tournament</button>
+      <button type="button" class="secondary" onclick="openStandingsModal()">📋 Current Standings</button>
+      <button type="button" class="danger" onclick="openWithdrawModal()">🏳️ Withdraw Player</button>
     </div>
 
     <table>
@@ -227,7 +226,7 @@
     </table>
 
     <div class="btn-bar no-print" style="margin-top:16px;">
-      <button type="button" id="next-round-btn" onclick="submitRound()">Next Round</button>
+      <button type="button" id="next-round-btn" onclick="submitRound()">✅ Next Round</button>
     </div>
   </div>
 
@@ -237,15 +236,16 @@
 
     <table>
       <thead>
-        <tr id="final-thead-row"><th scope="col">Plac.</th></tr>
+	<tr id="final-thead-row"><th scope="col">Plac.</th></tr>
       </thead>
       <tbody id="final-table-body"></tbody>
     </table>
 
     <div class="btn-bar no-print" style="margin-top:16px;">
-      <button type="button" onclick="printFinalStandings()">Print Final Standings</button>
-      <button type="button" class="secondary" onclick="saveTournament()">Save Tournament</button>
-      <button type="button" class="secondary" onclick="restartTournament()">Start New Tournament</button>
+      <button type="button" onclick="printFinalStandings()">🖨️ Print Final Standings</button>
+      <button type="button" class="secondary" onclick="saveTournament()">💾 Save Tournament</button>
+      <button type="button" class="secondary" onclick="saveTRF()">💾 Save TRF-file</button>
+      <button type="button" class="secondary" onclick="restartTournament()">🔄 New Tournament</button>
     </div>
   </div>
 </div>
@@ -257,12 +257,12 @@
     <h2>Current Standings</h2>
     <table>
       <thead>
-        <tr id="modal-thead-row"><th scope="col">Plac.</th></tr>
+  	<tr id="modal-thead-row"><th scope="col">Plac.</th></tr>
       </thead>
       <tbody id="modal-standings-body"></tbody>
     </table>
     <div class="btn-bar" style="margin-top:14px;">
-      <button type="button" class="secondary" onclick="printStandings()">Print Standings</button>
+      <button type="button" class="secondary" onclick="printStandings()">🖨️ Print Standings</button>
       <button type="button" onclick="closeStandingsModal()">Close</button>
     </div>
   </div>
@@ -297,12 +297,12 @@ Pᵢ = opponent i's final tournament score
 N = total number of rounds in the tournament
 Pᵢ / N = opponent's score share (ratio expressed as a decimal between 0 and 1)</div>
     <p style="font-size: 0.95rem; line-height: 1.5; color: #334155; margin-bottom: 18px;">
-      When players finish tied on points, they are separated based on the quality of the opposition they have faced. This method provides a clear reflection of player performance, consistently rewarding those who compete on the top boards. Although a player receives no tie-break points for a BYE, the free game point elevates the player into higher score groups, where stronger opposition naturally helps offset the missed round. Unlike Buchholz, which employs a linear calculation, WNT uses a quadratic weighting of opposition strength. Furthermore, WNT awards points even for losses against strong opponents, helping to compensate for a BYE while contributing positively to the tie-break score.<br><br>When employed as a sorting criterion within score groups, WNT pairs competitors with comparable opposition quality against each other. This adheres to the Swiss principle, ensuring that the most battle-tested players meet on higher boards without relying on pre-tournament ratings.</p>
-
-<p class="hint">See also: <a href="https://mats-winther.github.io/bg/chesspairing.htm" style="text-decoration:none;" target="_blank" title="Chess Pairings: A Review of Monrad, Swiss, and Berger">Chess pairings: a review of Monrad, Swiss, and Berger</a>.
-    </p>
+      When players finish tied on points, they are separated based on the quality of the opposition they have faced. This method provides a clear reflection of player performance, consistently rewarding those who compete on the top boards. Although a player receives no tie-break points for a BYE, the free game point elevates the player into higher score groups, where stronger opposition naturally helps offset the missed round. Unlike Buchholz, which employs a linear calculation, WNT uses a quadratic weighting of opposition strength. Furthermore, WNT awards points even for losses against strong opponents, helping to compensate for a BYE while contributing positively to the tie-break score.<br><br>When employed as a sorting criterion within score groups, WNT pairs competitors with comparable opposition quality against each other. This adheres to the Swiss principle, ensuring that the most battle-tested players meet on higher boards without relying on pre-tournament ratings.
+</p>
+<p class="hint">See also: <a href="https://mats-winther.github.io/bg/chesspairing.htm" style="text-decoration:none;" target="_blank">Chess pairings: a review of Monrad, Swiss, and Berger</a>.
+</p>
 <p class="hint">
-The Club Swiss system was developed by Mats Winther in August 2026.<br>&nbsp;
+  The Club Swiss system was developed by Mats Winther in August 2026.<br>&nbsp;
 </p>
     <div class="btn-bar" style="justify-content: flex-end; margin-top: 0;">
       <button type="button" onclick="closeWntModal()">Close</button>
@@ -325,14 +325,34 @@ function escapeHtml(v) {
   ));
 }
 
+/** Swedish number format: decimal comma. Display only; stored values are unchanged. */
+function fmtNum(v) {
+  return String(v);
+}
+
+/**
+ * Translates stored result strings for display. The stored values stay in
+ * English so that saved files remain compatible.
+ */
+function resultLabel(r) {
+  return String(r ?? '');
+}
+
+/** Colour letters for display: stored as W/B, shown as V (vit) / S (svart). */
+function colorLabel(c) {
+  if (c === 'W') return 'W';
+  if (c === 'B') return 'B';
+  return '-';
+}
+
 function tiebreakHeaders() {
   return state.tieBreakSystem === 'wnt' ? ['WNT'] : ['Buchholz', 'S-B'];
 }
 
 function tiebreakCells(p) {
   return state.tieBreakSystem === 'wnt'
-    ? `<td>${p.wnt.toFixed(1)}</td>`
-    : `<td>${escapeHtml(p.buchholz)}</td><td>${escapeHtml(p.sonneborn)}</td>`;
+    ? `<td>${fmtNum(p.wnt.toFixed(1))}</td>`
+    : `<td>${escapeHtml(fmtNum(p.buchholz))}</td><td>${escapeHtml(fmtNum(p.sonneborn))}</td>`;
 }
 
 function fillHeaderRow(row, headers) {
@@ -513,20 +533,21 @@ window.addEventListener('beforeprint', () => {
   }
 });
 
-// Print state handling that tolerates asynchronous printing
+// Hantering av utskriftsläge som tål asynkron utskrift
 let printCleanupTimer = null;
 
 function applyPrintState(title, modalMode) {
   clearTimeout(printCleanupTimer);
   customPrintTitle = title;
-  document.title = title;                                   // don't rely on beforeprint alone
-  document.body.classList.toggle('printing-modal', modalMode); // always set explicitly
+  document.title = title;                                      // lita inte enbart på beforeprint
+  document.body.classList.toggle('printing-modal', modalMode); // sätt alltid uttryckligen
 }
 
 function cleanupPrintState() {
   clearTimeout(printCleanupTimer);
-  // Delayed, so an early afterprint can't strip the state before the snapshot is rendered.
-  // Harmless if late: every print call resets the state first.
+  // Fördröjd, så att ett för tidigt afterprint inte tar bort läget innan
+  // utskriftsbilden är renderad. Ofarligt om den kommer sent: varje
+  // utskrift återställer läget först.
   printCleanupTimer = setTimeout(() => {
     customPrintTitle = '';
     document.title = defaultDocTitle;
@@ -536,7 +557,7 @@ function cleanupPrintState() {
 
 window.addEventListener('afterprint', cleanupPrintState);
 
-// Fallback for browsers where afterprint is missing or unreliable
+// Reserv för webbläsare där afterprint saknas eller är opålitlig
 const printMql = window.matchMedia ? window.matchMedia('print') : null;
 if (printMql) {
   const onPrintChange = e => { if (!e.matches) cleanupPrintState(); };
@@ -692,7 +713,6 @@ function startTournament() {
     alert('Number of rounds must be at least 1.');
     return;
   }
-
   const maxRoundsWithoutRematches = parsed.length % 2 === 0
     ? parsed.length - 1
     : parsed.length;
@@ -704,7 +724,6 @@ function startTournament() {
     );
     return;
   }
-
   state.totalRounds = rounds;
   state.tieBreakSystem = document.querySelector('input[name="tiebreak"]:checked').value;
   state.useGroups = parsed.length >= 16;
@@ -1048,10 +1067,10 @@ function renderPairings() {
   document.getElementById('pairings-section').style.display = 'block';
   document.getElementById('round-title').textContent = `${state.name} – Round ${state.currentRound} Pairings`;
 
-  const nextBtn = document.getElementById('next-round-btn');
-  if (nextBtn) {
-    nextBtn.textContent = (state.currentRound >= state.totalRounds) ? 'Finish Tournament' : 'Next Round';
-  }
+     const nextBtn = document.getElementById('next-round-btn');
+       if (nextBtn) {
+       nextBtn.textContent = (state.currentRound >= state.totalRounds) ? '🏁 Finish Tournament' : '✅ Next Round';
+     }
 
   const curRound = state.rounds[state.currentRound - 1];
   const tbody = document.getElementById('pairings-table-body');
@@ -1074,7 +1093,7 @@ function renderPairings() {
     const screenSpan = document.createElement('span');
     screenSpan.className = 'no-print';
 
-  if (!pair.black) {
+   if (!pair.black) {
       screenSpan.textContent = pair.result || '1-0 (Bye)';
     } else if (pair.forfeit && pair.result !== '0-0') {
       // Preserve the existing display for automatic walkovers.
@@ -1155,11 +1174,11 @@ function submitRound() {
       b.score += 0.5;
       w.history.push({ round: state.currentRound, opponent: b.id, color: cw, result: '0.5-0.5' });
       b.history.push({ round: state.currentRound, opponent: w.id, color: cb, result: '0.5-0.5' });
-        } else if (res === '0-1') {
+         } else if (res === '0-1') {
              b.score += 1;
              w.history.push({ round: state.currentRound, opponent: b.id, color: cw, result: '0-1', ...extra });
              b.history.push({ round: state.currentRound, opponent: w.id, color: cb, result: '1-0', ...extra });
-        } else if (res === '0-0') {
+         } else if (res === '0-0') {
             pair.forfeit = true;
 
             w.history.push({
@@ -1169,7 +1188,6 @@ function submitRound() {
            result: '0-0',
           forfeit: true
          });
-
           b.history.push({
           round: state.currentRound,
           opponent: w.id,
@@ -1178,8 +1196,7 @@ function submitRound() {
          forfeit: true
         });
       }
-  });
-
+   });
   recalculateTiebreaks();
 
   if (state.currentRound >= state.totalRounds) {
@@ -1298,7 +1315,7 @@ function standingsRowHtml(p, idx, withColors) {
   let colorCell = '';
   if (withColors) {
     const colorHistory = (p.history || [])
-      .map(h => (h.color && h.color !== '-') ? h.color : '-')
+      .map(h => colorLabel(h.color))
       .join('');
     colorCell = `<td style="font-family: monospace; letter-spacing: 1px;">${escapeHtml(colorHistory)}</td>`;
   }
@@ -1308,7 +1325,7 @@ function standingsRowHtml(p, idx, withColors) {
       ${groupCell}
       <td>${escapeHtml(p.name)} ${p.withdrawn ? '(Withdrawn)' : ''}</td>
       <td>${escapeHtml(p.rating)}</td>
-      <td><strong>${escapeHtml(p.score)}</strong></td>
+      <td><strong>${escapeHtml(fmtNum(p.score))}</strong></td>
       ${tiebreakCells(p)}
       ${colorCell}
     `;
@@ -1319,7 +1336,7 @@ function showFinalStandings() {
   document.getElementById('final-section').style.display = 'block';
 
   const tName = (state.name || 'Club Swiss Tournament').trim();
-  document.getElementById('final-standings-title').textContent = `${tName} — Final Standings`;
+  document.getElementById('final-standings-title').textContent = `🏆 ${tName} – Final Standings`;
 
   fillHeaderRow(document.getElementById('final-thead-row'), standingsHeaders(true));
 
@@ -1432,6 +1449,145 @@ function restartTournament() {
   if (!confirm('Start a new tournament? The automatically saved copy in this browser will be removed. Use "Save Tournament" first if you want to keep a file.')) return;
   clearAutosave();
   location.reload();
+}
+
+function formatPlayerName(name) {
+  const trimmed = (name || '').trim();
+  if (!trimmed) return '(Name)';
+  if (trimmed.includes(',')) return trimmed;
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 1) return parts[0];
+  const last = parts.pop();
+  return `${last}, ${parts.join(' ')}`;
+}
+
+function generateTRF() {
+  if (!state.players || state.players.length === 0) return '';
+
+  const lines = [];
+
+  // Tournament Section (012, 022, 032, 102)
+  const tName = (state.name || '').trim();
+  lines.push(`012 ${tName || 'Club Championship'}`);
+  lines.push('022 (City)');
+  lines.push('032 (Federation)');
+  lines.push('102 (Chief Arbiter)');
+
+  // Standings & Ranks using Klubbschweizer's built-in ranking
+  recalculateTiebreaks();
+  const sortedStandings = getSortedStandings();
+  const rankMap = new Map(sortedStandings.map((p, idx) => [p.id, idx + 1]));
+
+  // Player Section (001): sorted by Starting Rank / Seed
+  const playersBySeed = [...state.players].sort((a, b) => (a.seed || a.id) - (b.seed || b.id));
+  
+  // Count only completed rounds
+  const totalRounds = state.finished
+    ? state.rounds.length
+    : Math.max(0, state.currentRound - 1);
+
+  playersBySeed.forEach(p => {
+    const seedStr = String(p.seed || p.id).padStart(4, ' ');
+    const sexStr = '(Sex)';
+    const titleStr = '(Title)';
+    const nameStr = formatPlayerName(p.name).padEnd(33, ' ').substring(0, 33);
+    const ratingStr = p.rating ? String(p.rating).padStart(4, ' ') : ' (Elo)';
+    const fedStr = '(FIDE Federation)';
+    const fideNumStr = '(FIDE Number)';
+    const birthDateStr = '(Birth Date)';
+    const pointsStr = p.score.toFixed(1).padStart(4, ' ');
+    const rankStr = String(rankMap.get(p.id) || p.seed || p.id).padStart(4, ' ');
+
+    let line = `001  ${seedStr} ${sexStr} ${titleStr} ${nameStr} ${ratingStr} ${fedStr} ${fideNumStr} ${birthDateStr} ${pointsStr} ${rankStr}`;
+
+    // Round-by-round results
+    for (let r = 1; r <= totalRounds; r++) {
+      const curRound = state.rounds[r - 1];
+      const match = curRound
+        ? (curRound.pairings || []).find(m =>
+            (m.white && m.white.id === p.id) || (m.black && m.black.id === p.id)
+          )
+        : null;
+
+      let oppId = '0000';
+      let color = '-';
+      let resChar = 'Z';
+
+      if (match) {
+        if (!match.black) {
+          // Bye
+          oppId = '0000';
+          color = '-';
+          resChar = (match.result && match.result.includes('Withdrawn')) ? 'Z' : 'U';
+        } else {
+          // Regular pairing
+          const isWhite = match.white && match.white.id === p.id;
+          const opp = isWhite ? match.black : match.white;
+          const oppSeed = opp ? (opp.seed || opp.id) : 0;
+
+          oppId = String(oppSeed).padStart(4, ' ');
+          color = isWhite ? 'w' : 'b';
+
+          if (match.forfeit) {
+            if (match.result === '0-0') {
+              resChar = '-';
+            } else if (match.result === '1-0') {
+              resChar = isWhite ? '+' : '-';
+            } else if (match.result === '0-1') {
+              resChar = isWhite ? '-' : '+';
+            } else {
+              resChar = '-';
+            }
+          } else if (match.result === '1-0') {
+            resChar = isWhite ? '1' : '0';
+          } else if (match.result === '0-1') {
+            resChar = isWhite ? '0' : '1';
+          } else if (match.result === '0.5-0.5' || match.result === '½-½') {
+            resChar = '=';
+          } else if (match.result === '0-0') {
+            resChar = '-';
+          }
+        }
+      } else {
+        // Player withdrew or was not paired in this round
+        oppId = '0000';
+        color = '-';
+        resChar = 'Z';
+      }
+
+      line += `  ${oppId} ${color} ${resChar}`;
+    }
+
+    lines.push(line);
+  });
+
+  return lines.join('\r\n') + '\r\n';
+}
+
+function saveTRF() {
+  if (!state.players || state.players.length === 0) {
+    alert("There is no tournament to export.");
+    return;
+  }
+
+  const content = generateTRF();
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+
+  const cleanName = (state.name || '').trim().replace(/[^\w\-]+/g, '_');
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const dateStr = `${yyyy}-${mm}-${dd}`;
+
+  a.download = cleanName ? `TRF_${cleanName}_${dateStr}.txt` : `TRF_${dateStr}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 // On page load: offer to resume an autosaved tournament, if any
