@@ -391,7 +391,7 @@ button.about-button:hover {
       <strong id="resume-text"></strong>
       <div>Turneringen sparades automatiskt. Vill du fortsätta turneringen?</div>
       <div class="btn-group">
-        <button type="button" onclick="resumeAutosave()">🟢 Fortsätt turneringen</button>
+        <button type="button" onclick="resumeAutosave()">▶️ Fortsätt turneringen</button>
         <button type="button" class="secondary" onclick="discardAutosave()">🗑️ Kassera</button>
       </div>
     </div>
@@ -468,7 +468,7 @@ button.about-button:hover {
         <button type="button" class="danger" onclick="openWithdrawModal()">🏳️ Stryk spelare (utgår)</button>
         <button type="button" class="secondary" onclick="saveTournament()">💾 Spara turnering</button>
         <button type="button" class="secondary" onclick="printRound()">🖨️ Skriv ut rond</button>
-        <button type="button" class="secondary" onclick="finishTournamentEarly()">❎ Avsluta & visa slutställning</button>
+        <button type="button" class="secondary" onclick="finishTournamentEarly()">🏁 Avsluta & visa slutställning</button>
       </div>
     </form>
   </section>
@@ -589,7 +589,7 @@ Pᵢ / N = motståndarens poängandel (poängkvoten uttryckt som decimaltal mell
     utvecklades av Mats Winther i augusti 2026.<br>&nbsp;
   </p>
     <div class="btn-group" style="justify-content: flex-start; margin-top: 0;">
-      <button type="button" onclick="closeWntModal()">🔴 Stäng</button>
+      <button type="button" onclick="closeWntModal()">Stäng</button>
     </div>
   </div>
 </div>
@@ -2037,7 +2037,7 @@ function getColourSequence(player) {
 <body>
   <div class="toolbar">
     <button class="btn btn-primary" onclick="window.print()">🖨️ Skriv ut</button>
-    <button class="btn" onclick="window.close()">🔴 Stäng</button>
+    <button class="btn" onclick="window.close()">Stäng</button>
   </div>
   ${contentHtml}
 </body>

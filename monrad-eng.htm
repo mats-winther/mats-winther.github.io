@@ -391,7 +391,7 @@ button.about-button:hover {
       <strong id="resume-text"></strong>
       <div>The tournament was saved automatically in this browser. Would you like to continue it?</div>
       <div class="btn-group">
-        <button type="button" onclick="resumeAutosave()">🟢 Resume tournament</button>
+        <button type="button" onclick="resumeAutosave()">▶️ Resume tournament</button>
         <button type="button" class="secondary" onclick="discardAutosave()">🗑️ Discard</button>
       </div>
     </div>
@@ -468,7 +468,7 @@ button.about-button:hover {
         <button type="button" class="danger" onclick="openWithdrawModal()">🏳️ Withdraw player</button>
         <button type="button" class="secondary" onclick="saveTournament()">💾 Save tournament</button>
         <button type="button" class="secondary" onclick="printRound()">🖨️ Print round</button>
-        <button type="button" class="secondary" onclick="finishTournamentEarly()">❎ End & show final standings</button>
+        <button type="button" class="secondary" onclick="finishTournamentEarly()">🏁 End & show final standings</button>
       </div>
     </form>
   </section>
@@ -588,7 +588,7 @@ Pᵢ / N = opponent's score share (ratio expressed as a decimal between 0 and 1)
   <p class="small-note">The Monrad Pairing System was developed by Mats Winther in August 2026.<br>&nbsp;
   </p>
     <div class="btn-group" style="justify-content: flex-start; margin-top: 0;">
-      <button type="button" onclick="closeWntModal()">🔴 Close</button>
+      <button type="button" onclick="closeWntModal()">Close</button>
     </div>
   </div>
 </div>
@@ -2036,7 +2036,7 @@ function getColourSequence(player) {
 <body>
   <div class="toolbar">
     <button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
-    <button class="btn" onclick="window.close()">🔴 Close</button>
+    <button class="btn" onclick="window.close()">Close</button>
   </div>
   ${contentHtml}
 </body>
