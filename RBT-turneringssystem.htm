@@ -6191,6 +6191,27 @@ function initialize() {
   checkAutosave();
 }
 
+/* ============================================================
+   Disable keyboard arrows and two-finger/wheel scrolling
+   ============================================================ */
+
+['input-rounds', 'input-swiss-rounds', 'withdraw-round'].forEach(id => {
+  const input = document.getElementById(id);
+  if (!input) return;
+
+  // Prevent keyboard Up, Down, PageUp, and PageDown keys from altering the value
+  input.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'PageUp' || e.key === 'PageDown') {
+      e.preventDefault();
+    }
+  });
+
+  // Prevent mouse wheel and touchpad two-finger scrolling
+  input.addEventListener('wheel', e => {
+    e.preventDefault();
+  }, { passive: false });
+});
+
 initialize();
 </script>
 </body>

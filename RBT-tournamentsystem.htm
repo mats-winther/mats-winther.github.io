@@ -5968,6 +5968,9 @@ function saveTRF() {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+// On page load: offer to resume an autosaved tournament, if any
+checkAutosave();
+
 /* ============================================================
    Storage notice and initialization
    ============================================================ */
@@ -5980,6 +5983,27 @@ window.addEventListener("storage", event => {
       "overwrite the browser's saved copy; download a backup first."
     );
   }
+});
+
+/* ============================================================
+   Disable keyboard arrows and two-finger/wheel scrolling
+   ============================================================ */
+
+['input-rounds', 'input-swiss-rounds', 'withdraw-round'].forEach(id => {
+  const input = document.getElementById(id);
+  if (!input) return;
+
+  // Prevent keyboard Up, Down, PageUp, and PageDown keys from altering the value
+  input.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'PageUp' || e.key === 'PageDown') {
+      e.preventDefault();
+    }
+  });
+
+  // Prevent mouse wheel and touchpad two-finger scrolling
+  input.addEventListener('wheel', e => {
+    e.preventDefault();
+  }, { passive: false });
 });
 
 function initialize() {
