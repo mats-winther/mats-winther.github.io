@@ -126,6 +126,7 @@
 
   button.secondary[onclick*="about-dialog"],
   button.secondary[onclick="saveTournament()"],
+  button.secondary[onclick="saveTRF()"],
   button.secondary[onclick="printPairings()"],
   button.secondary[onclick="printStandings()"],
   button.secondary[onclick="newTournament()"] {
@@ -136,6 +137,7 @@
 
   button.secondary[onclick*="about-dialog"]:hover,
   button.secondary[onclick="saveTournament()"]:hover,
+  button.secondary[onclick="saveTRF()"]:hover,
   button.secondary[onclick="printPairings()"]:hover,
   button.secondary[onclick="printStandings()"]:hover,
   button.secondary[onclick="newTournament()"]:hover {
@@ -490,11 +492,11 @@
 
       <div class="btn-bar">
         <button type="button" onclick="resumeTournament()">
-          Resume Tournament
+          ▶️ Resume Tournament
         </button>
 
         <button type="button" class="secondary" onclick="discardAutosave()">
-          Discard Saved Copy
+          🗑️ Discard Saved Copy
         </button>
       </div>
     </div>
@@ -510,14 +512,14 @@
 
         <div class="withdrawal-setting">
           <label class="checkbox-label" for="convert-on-withdrawal">
-            <input id="convert-on-withdrawal" type="checkbox">
+            <input id="convert-on-withdrawal" type="checkbox" checked>
             <span>
-              Convert affected Berger groups to Swiss after a withdrawal
+              Convert affected Berger groups to Swiss after two withdrawals in a group
             </span>
           </label>
 
           <div class="hint">
-            Leave unchecked to retain all Berger schedules after withdrawals.
+            Uncheck to retain all Berger schedules after withdrawals.
             This setting is fixed when the tournament starts.
           </div>
         </div>
@@ -624,29 +626,29 @@
 
     <div class="btn-bar">
       <button type="button" class="secondary" onclick="loadSamplePlayers()">
-        33 Sample Players
+        🧑‍🧒‍🧒 33 Sample Players
       </button>
 
       <button type="button" class="secondary"
               onclick="document.getElementById('txt-input').click()">
-        Load Players (.txt)
+        📄 Load Players (.txt)
       </button>
 
       <button type="button" class="secondary"
               onclick="document.getElementById('json-input').click()">
-        Load Tournament (.json)
+        📂 Load Tournament (.json)
       </button>
 
       <button type="button" class="secondary" onclick="clearPlayers()">
-        Clear
+        🗑️ Clear
       </button>
 
       <button type="button" class="secondary" onclick="showBergerPairings()">
-        Berger Pairings
+        📜 Berger Pairings
       </button>
 
       <button type="button" onclick="startTournament()">
-        Start Tournament
+        ▶️ Start Tournament
       </button>
     </div>
   </section>
@@ -657,19 +659,23 @@
 
     <div class="btn-bar">
       <button type="button" class="secondary" onclick="saveTournament()">
-        Save Tournament (.json)
+        💾 Save Tournament (.json)
+      </button>
+
+      <button type="button" id="save-trf-button" class="secondary" onclick="saveTRF()" hidden>
+        💾 Save TRF-file
       </button>
 
       <button type="button" class="secondary" onclick="printPairings()">
-        Print Viewed Pairings
+        🖨️ Print Viewed Pairings
       </button>
 
       <button type="button" class="secondary" onclick="printStandings()">
-        Print Standings
+        🖨️ Print Standings
       </button>
 
       <button type="button" class="secondary" onclick="newTournament()">
-        New Tournament
+        🔄 New Tournament
       </button>
     </div>
 
@@ -677,12 +683,12 @@
       <div class="btn-bar" style="margin:0">
         <button type="button" id="previous-button" class="secondary"
                 onclick="changeViewedRound(-1)">
-          Previous
+          ⬅️ Previous
         </button>
 
         <button type="button" id="following-button" class="secondary"
                 onclick="changeViewedRound(1)">
-          Next
+          ➡️ Next
         </button>
       </div>
 
@@ -709,16 +715,16 @@
 
     <div id="submission-controls" class="btn-bar">
       <button type="button" id="submit-button" onclick="submitRound(false)">
-        Next Round
+        ✅ Next Round
       </button>
 
       <button type="button" class="danger" onclick="finishEarly()">
-        Finish After This Round
+        🏁 Finish After This Round
       </button>
 
       <button type="button" id="withdraw-button" class="danger"
               onclick="openWithdrawDialog()">
-        Withdraw Player
+        🏳️ Withdraw Player
       </button>
     </div>
 
@@ -796,8 +802,8 @@
 
   <p>
     The settings-page checkbox
-    “Convert affected Berger groups to Swiss after a withdrawal”
-    is unchecked by default. Its value is saved with the tournament and
+    “Convert affected Berger groups to Swiss after two withdrawals in a group”
+    is checked by default. Its value is saved with the tournament and
     cannot be changed after the tournament starts.
   </p>
 
@@ -808,13 +814,14 @@
   </p>
 
   <p>
-    When checked, a withdrawal from a Berger group normally causes that
-    group and all subsequent Berger groups to join the existing Swiss
-    field. Earlier Berger groups retain their schedules. The exception is
-    an isolated last Berger group: if there is no bottom Swiss field and
-    only the last Berger group is affected, that group retains its
-    schedule. A later withdrawal from an earlier Berger group can still
-    cause conversion.
+    When checked, two or more withdrawals from the same Berger group normally
+    cause that group and all subsequent Berger groups to join the existing
+    Swiss field. A single withdrawal in a Berger group does not trigger conversion;
+    the group retains its schedule with scheduled byes. Earlier Berger groups
+    retain their schedules. The exception is an isolated last Berger group: if
+    there is no bottom Swiss field and only the last Berger group is affected,
+    that group retains its schedule. A later second withdrawal from an earlier
+    Berger group can still cause conversion.
   </p>
 
   <p>
@@ -1017,7 +1024,7 @@ postponed games are excluded.</div>
 
   <div class="btn-bar">
     <button type="button" onclick="printBergerPairings()">
-      Print Berger Pairings
+      🖨️ Print Berger Pairings
     </button>
 
     <button type="button" class="secondary"
@@ -1422,10 +1429,11 @@ function updateFormatText() {
   $("setup-tail-exchange-rule").textContent = tailExchangeText;
 
   $("setup-withdrawal-rule").textContent = convert
-    ? "Withdrawal conversion is enabled. The affected Berger group " +
-      "and subsequent groups normally join the Swiss field. If there " +
-      "is no bottom Swiss field and only the last Berger group is " +
-      "affected, that group retains its schedule."
+    ? "Withdrawal conversion is enabled. A Berger group with at least " +
+      "two withdrawals and all subsequent groups normally join the " +
+      "Swiss field. A single withdrawal in a group is played with byes. " +
+      "If there is no bottom Swiss field and only the last Berger group " +
+      "is affected, that group retains its schedule."
     : "Withdrawal conversion is disabled. All Berger groups retain " +
       "their schedules throughout the initial phase; any bottom Swiss " +
       "field continues independently.";
@@ -1500,13 +1508,23 @@ function swissStartIndex(s, roundNumber) {
 
   let boundary = bergerCount;
   const groupOf = groupIndexMap(s);
+  const withdrawalsPerGroup = new Array(bergerCount).fill(0);
 
   for (const player of s.players) {
     if (
       player.withdrawnFrom !== null &&
       player.withdrawnFrom <= roundNumber
     ) {
-      boundary = Math.min(boundary, groupOf.get(player.id));
+      const g = groupOf.get(player.id);
+      if (g !== undefined && g < bergerCount) {
+        withdrawalsPerGroup[g]++;
+      }
+    }
+  }
+
+  for (let g = 0; g < bergerCount; g++) {
+    if (withdrawalsPerGroup[g] >= 2) {
+      boundary = Math.min(boundary, g);
     }
   }
 
@@ -3504,8 +3522,8 @@ function renderPairings() {
 
   $("submit-button").textContent =
     state.rounds.length === state.totalRounds
-      ? "Finish Tournament"
-      : "Submit Results and Generate Next Round";
+      ? "🏁 Finish Tournament"
+      : "✅ Submit Results and Generate Next Round";
 
   $("withdraw-button").disabled =
     state.rounds.length >= state.totalRounds ||
@@ -3622,6 +3640,7 @@ function renderTournament() {
   );
 
   $("tournament-heading").textContent = state.name;
+  $("save-trf-button").hidden = !state.finished;
 
   $("tournament-summary").textContent =
     `${state.players.length} registered players. ` +
@@ -3816,9 +3835,9 @@ function newTournament() {
   preparedBergerDraw = null;
 
   /*
-    A new tournament starts with conversion unchecked by default.
+    A new tournament starts with conversion checked by default.
   */
-  $("convert-on-withdrawal").checked = false;
+  $("convert-on-withdrawal").checked = true;
 
   $("tournament-section").hidden = true;
   $("setup-section").hidden = false;
@@ -4426,7 +4445,7 @@ function runWithdrawalPolicyChecks(bergerRounds) {
   );
 
   /*
-    Checked, with a bottom Swiss group: affected groups convert.
+    Checked, with a bottom Swiss group: affected groups convert at >= 2 withdrawals.
   */
   const converted = makeTestTournament(
     size * 3 + 1,
@@ -4440,16 +4459,26 @@ function runWithdrawalPolicyChecks(bergerRounds) {
   convertedFirst.closed = true;
   converted.rounds.push(convertedFirst);
 
-  const convertedId = converted.groups[0].members[0];
+  const convertedId1 = converted.groups[0].members[0];
+  const convertedId2 = converted.groups[0].members[1];
 
-  converted.players.find(player => player.id === convertedId)
+  converted.players.find(player => player.id === convertedId1)
+    .withdrawnFrom = 2;
+
+  requireCondition(
+    getRoundPlan(converted, 2).berger.length === 2,
+    "Self-check failed: 1 withdrawal must not convert."
+  );
+
+  converted.players.find(player => player.id === convertedId2)
     .withdrawnFrom = 2;
 
   const convertedPlan = getRoundPlan(converted, 2);
 
   requireCondition(
     convertedPlan.berger.length === 0 &&
-    !convertedPlan.swissIds.includes(convertedId),
+    !convertedPlan.swissIds.includes(convertedId1) &&
+    !convertedPlan.swissIds.includes(convertedId2),
     "Self-check failed: enabled conversion policy."
   );
 
@@ -4459,7 +4488,7 @@ function runWithdrawalPolicyChecks(bergerRounds) {
 
   /*
     Checked, without a bottom Swiss group: an isolated last Berger
-    group retains its schedule.
+    group retains its schedule even at >= 2 withdrawals.
   */
   const isolated = makeTestTournament(
     size * 3,
@@ -4473,9 +4502,12 @@ function runWithdrawalPolicyChecks(bergerRounds) {
   isolatedFirst.closed = true;
   isolated.rounds.push(isolatedFirst);
 
-  const isolatedId = isolated.groups[2].members[0];
+  const isolatedId1 = isolated.groups[2].members[0];
+  const isolatedId2 = isolated.groups[2].members[1];
 
-  isolated.players.find(player => player.id === isolatedId)
+  isolated.players.find(player => player.id === isolatedId1)
+    .withdrawnFrom = 2;
+  isolated.players.find(player => player.id === isolatedId2)
     .withdrawnFrom = 2;
 
   requireCondition(
@@ -4576,6 +4608,155 @@ function runSelfChecks() {
   runFullTournamentChecks();
 
   return true;
+}
+
+/* ============================================================
+   TRF-handling for Berger-Swiss
+   ============================================================ */
+
+function formatPlayerName(name) {
+  const trimmed = (name || '').trim();
+  if (!trimmed) return '(Name)';
+  if (trimmed.includes(',')) return trimmed;
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 1) return parts[0];
+  const last = parts.pop();
+  return `${last}, ${parts.join(' ')}`;
+}
+
+function generateTRF() {
+  if (!state || !state.players || state.players.length === 0) return '';
+
+  const lines = [];
+
+  // Tournament Section (012, 022, 032, 102)
+  const tName = (state.name || '').trim();
+  lines.push(`012 ${tName || 'Berger-Swiss Tournament'}`);
+  lines.push('022 (City)');
+  lines.push('032 (Federation)');
+  lines.push('102 (Chief Arbiter)');
+
+  // Standings & Ranks
+  const context = computeStats(state);
+  const sorted = sortedStats(context);
+  const rankMap = new Map(sorted.map((item, idx) => [item.id, idx + 1]));
+  const pointsMap = new Map(sorted.map(item => [item.id, item.score2 / 2]));
+  const playerById = playerMap(state);
+
+  // Player Section (001): sorted by TPN (Starting rank / Seed)
+  const playersByTpn = [...state.players].sort((a, b) => a.tpn - b.tpn);
+  const totalRounds = state.rounds.length;
+
+  playersByTpn.forEach(p => {
+    const seedStr = String(p.tpn).padStart(4, ' ');
+    const sexStr = '(Sex)';
+    const titleStr = '(Title)';
+    const nameStr = formatPlayerName(p.name).padEnd(33, ' ').substring(0, 33);
+    const ratingStr = p.rating ? String(p.rating).padStart(4, ' ') : '   0';
+    const fedStr = '(FIDE Federation)';
+    const fideNumStr = '(FIDE Number)';
+    const birthDateStr = '(Birth Date)';
+    const pts = pointsMap.get(p.id) ?? 0;
+    const pointsStr = pts.toFixed(1).padStart(4, ' ');
+    const rankStr = String(rankMap.get(p.id) || p.tpn).padStart(4, ' ');
+
+    let line = `001  ${seedStr} ${sexStr} ${titleStr} ${nameStr} ${ratingStr} ${fedStr} ${fideNumStr} ${birthDateStr} ${pointsStr} ${rankStr}`;
+
+    // Round-by-round results
+    for (let r = 0; r < totalRounds; r++) {
+      const curRound = state.rounds[r];
+      const pair = curRound
+        ? curRound.pairings.find(g => g.white === p.id || g.black === p.id)
+        : null;
+
+      let oppId = '0000';
+      let color = '-';
+      let resChar = 'Z';
+
+      if (pair) {
+        if (pair.black === null) {
+          // Swiss pairing bye
+          oppId = '0000';
+          color = '-';
+          resChar = (p.withdrawnFrom !== null && (r + 1) >= p.withdrawnFrom) ? 'Z' : 'U';
+        } else if (isBergerWithdrawalResult(pair.result)) {
+          // Retained Berger bye due to opponent withdrawal
+          oppId = '0000';
+          color = '-';
+          if (pair.result === 'BW1-0') {
+            resChar = (pair.white === p.id) ? 'U' : 'Z';
+          } else if (pair.result === 'BW0-1') {
+            resChar = (pair.black === p.id) ? 'U' : 'Z';
+          } else {
+            resChar = 'Z';
+          }
+        } else {
+          // Played, forfeited, or postponed game
+          const isWhite = pair.white === p.id;
+          const oppIdNum = isWhite ? pair.black : pair.white;
+          const opp = playerById.get(oppIdNum);
+          const oppTpn = opp ? opp.tpn : oppIdNum;
+
+          oppId = String(oppTpn).padStart(4, ' ');
+          color = isWhite ? 'w' : 'b';
+
+          if (pair.result === '1-0') {
+            resChar = isWhite ? '1' : '0';
+          } else if (pair.result === '0-1') {
+            resChar = isWhite ? '0' : '1';
+          } else if (pair.result === '0.5-0.5') {
+            resChar = '=';
+          } else if (pair.result === 'F1-0') {
+            resChar = isWhite ? '+' : '-';
+          } else if (pair.result === 'F0-1') {
+            resChar = isWhite ? '-' : '+';
+          } else if (pair.result === 'F0-0') {
+            resChar = '-';
+          } else {
+            // Unentered ("") or postponed ("p")
+            resChar = 'Z';
+          }
+        }
+      }
+
+      line += `  ${oppId} ${color} ${resChar}`;
+    }
+
+    lines.push(line);
+  });
+
+  return lines.join('\r\n') + '\r\n';
+}
+
+function saveTRF() {
+  if (!state || !state.players || state.players.length === 0) {
+    alert("There is no tournament to export.");
+    return;
+  }
+
+  const content = generateTRF();
+  if (!content) {
+    alert("Could not generate TRF file for this tournament.");
+    return;
+  }
+
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+
+  const cleanName = (state.name || 'berger_swiss_tournament').trim().replace(/[^\w\-]+/g, '_');
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const dateStr = `${yyyy}-${mm}-${dd}`;
+
+  a.download = cleanName ? `TRF_${cleanName}_${dateStr}.txt` : `TRF_${dateStr}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /* ========================================================================
