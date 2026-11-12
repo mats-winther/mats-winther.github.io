@@ -4760,6 +4760,24 @@ function saveTRF() {
 }
 
 /* ========================================================================
+   Disable keyboard arrows and two-finger/wheel scrolling for round-count
+   ======================================================================== */
+const roundInput = document.getElementById('extra-rounds');
+if (roundInput) {
+  // Prevent keyboard Up, Down, PageUp, and PageDown keys
+  roundInput.addEventListener('keydown', e => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'PageUp' || e.key === 'PageDown') {
+      e.preventDefault();
+    }
+  });
+
+  // Prevent mouse wheel and touchpad two-finger scrolling
+  roundInput.addEventListener('wheel', e => {
+    e.preventDefault();
+  }, { passive: false });
+}
+
+/* ========================================================================
    INITIALIZATION
    ======================================================================== */
 
