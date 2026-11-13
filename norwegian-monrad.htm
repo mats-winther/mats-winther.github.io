@@ -45,6 +45,11 @@
       padding: 18px 24px;
       background: var(--primary);
       color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
     header h1 {
@@ -266,7 +271,7 @@
       width: auto;
       padding: 5px 8px;
       border: 1px solid #687785;
-      background: #ffffff;
+      background: #f5f5f5;
       color: var(--text);
       font-size: 0.86rem;
     }
@@ -457,13 +462,17 @@ display: none;
 
 <body>
 <header>
-  <h1>Monrad Tournament Manager</h1>
+  <div>
+    <h1>Monrad Tournament Manager</h1>
+    <p>
+      Pairing and administration according to the Norwegian
+      Chess Federation’s Monrad system
+    </p>
+  </div>
 
-  <p>
-    Pairing and administration according to the Norwegian
-    Chess Federation’s Monrad system<span><sup class="monrad-asterisk" onclick="openNorwegianModal(event)" title="Information about Norwegian Monrad">*</sup></span>
-
-  </p>
+  <button type="button" class="secondary" onclick="openNorwegianModal(event)">
+    About
+  </button>
 </header>
 
 <div class="toolbar">
@@ -476,6 +485,13 @@ display: none;
     class="secondary"
   >
     Load Tournament
+  </button>
+
+  <button
+    id="saveTrfButton"
+    class="secondary hidden"
+  >
+    Save TRF-file
   </button>
 
   <button
@@ -685,6 +701,10 @@ display: none;
         <button id="printFinalResultsButton">
           Print Final Standings
         </button>
+
+        <button id="saveFinalTrfButton" class="secondary">
+          Save TRF-file
+        </button>
       </div>
     </div>
   </section>
@@ -782,6 +802,98 @@ function emptyState() {
 }
 
 let state = emptyState();
+
+/* ============================================================
+   Browser autosave
+============================================================ */
+
+const AUTOSAVE_KEY = "norwegianMonradAutosave";
+let autosaveEnabled = true;
+
+function autosave() {
+  // Do not overwrite a saved tournament with an empty setup.
+  if (!autosaveEnabled || state.status === "setup") return;
+
+  try {
+    localStorage.setItem(
+      AUTOSAVE_KEY,
+      JSON.stringify(state)
+    );
+  } catch (error) {
+    console.warn("Tournament autosave failed:", error);
+  }
+}
+
+function clearAutosave() {
+  try {
+    localStorage.removeItem(AUTOSAVE_KEY);
+    return true;
+  } catch (error) {
+    console.warn("Could not remove tournament autosave:", error);
+    return false;
+  }
+}
+
+function offerAutosave() {
+  let raw;
+
+  try {
+    raw = localStorage.getItem(AUTOSAVE_KEY);
+  } catch (error) {
+    autosaveEnabled = false;
+    console.warn("Could not access tournament autosave:", error);
+    alert(
+      "Browser storage is unavailable. Use Save Tournament " +
+      "to keep JSON backups."
+    );
+    return;
+  }
+
+  if (!raw) return;
+
+  let saved;
+
+  try {
+    saved = normalizeLoadedState(JSON.parse(raw));
+
+    if (saved.status === "setup") {
+      throw new Error("The saved data is not a started tournament.");
+    }
+  } catch (error) {
+    // Preserve the unreadable data rather than overwriting it.
+    autosaveEnabled = false;
+    console.error("Could not restore autosave:", error);
+    alert(
+      "The saved tournament could not be restored: " +
+      error.message +
+      "\n\nIt has not been overwritten. Autosave is disabled " +
+      "until you select New Tournament."
+    );
+    return;
+  }
+
+  const completed = saved.rounds.filter(
+    round => round.completed
+  ).length;
+
+  const description = saved.status === "finished"
+    ? "finished"
+    : `${completed} of ${saved.totalRounds} rounds completed`;
+
+  if (confirm(
+    `A saved tournament was found:\n\n` +
+    `"${saved.name}" (${description}).\n\n` +
+    "Select OK to resume it, or Cancel to discard the autosave."
+  )) {
+    state = saved;
+  } else if (!clearAutosave()) {
+    autosaveEnabled = false;
+    alert(
+      "The saved tournament could not be removed. " +
+      "Autosave has been disabled to avoid overwriting it."
+    );
+  }
+}
 
 /* ============================================================
    General utilities
@@ -3786,6 +3898,7 @@ function setPairingResult(
   }
 
   pairing.result = result;
+  autosave();
 }
 
 /* ============================================================
@@ -4694,6 +4807,7 @@ function renderTournament() {
 }
 
 function render() {
+  autosave();
   const setupPanel =
     document.getElementById(
       "setupPanel"
@@ -4736,6 +4850,11 @@ function render() {
     setupPanel.classList.add(
       "hidden"
     );
+
+  const trfButton = document.getElementById("saveTrfButton");
+  if (trfButton) {
+    trfButton.classList.toggle("hidden", state.status !== "finished");
+  }
 
     tournamentPanel.classList.remove(
       "hidden"
@@ -5918,6 +6037,16 @@ function resetTournament() {
     return;
   }
 
+  if (!clearAutosave()) {
+    alert(
+      "The saved tournament could not be removed. " +
+      "The current tournament has not been reset."
+    );
+    return;
+  }
+
+  autosaveEnabled = true;
+
   state = emptyState();
 
   document.getElementById(
@@ -5938,6 +6067,237 @@ function resetTournament() {
   ).value = "";
 
   render();
+}
+
+/* ============================================================
+   TRF Export for Norwegian Monrad
+============================================================ */
+
+function formatPlayerName(name) {
+  return String(name || '').trim() || '(Name)';
+}
+
+function generateTRF() {
+  if (
+    !state ||
+    !Array.isArray(state.players) ||
+    state.players.length === 0
+  ) {
+    return '';
+  }
+
+  const lines = [];
+  lines.push('### Replace the following placeholders within their fixed-width fields:');
+  lines.push('### ?: sex code (m or w), immediately followed by the three-character title field, with no separator.');
+  lines.push('### (E): FIDE Elo rating (4 characters)');
+  lines.push('### (F): FIDE federation code (3 characters)');
+  lines.push('### (FIDE ID): numeric FIDE ID (up to 11 characters)');
+  lines.push('### (Birth Dt): birth date in YYYY/MM/DD format (10 characters)');
+  lines.push('### Remove these comment lines before submitting the TRF file.');
+
+  // Tournament Section
+  const tName = String(state.name || '')
+    .replace(/[\r\n]+/g, ' ')
+    .trim();
+
+  lines.push(`012 ${tName || 'Monrad Tournament'}`);
+  lines.push('022 (City)');
+  lines.push('032 (Federation)');
+  lines.push('102 (Chief Arbiter)');
+
+  // Standings and final rank mapping
+  const standings = buildFinalStandings();
+  const rankMap = new Map(standings.map(s => [s.startNo, s.rank]));
+  const stats = buildStats(Infinity);
+
+  const playerMap = new Map(
+    state.players.map(p => [p.id, p])
+  );
+
+  function field(value, width, right = false) {
+    const text = String(value ?? '')
+      .replace(/[\r\n]+/g, ' ')
+      .slice(0, width);
+
+    return right
+      ? text.padStart(width, ' ')
+      : text.padEnd(width, ' ');
+  }
+
+  function numericField(value, width, label) {
+    const text = String(value);
+
+    if (text.length > width) {
+      throw new Error(`${label} does not fit in its TRF field.`);
+    }
+
+    return text.padStart(width, ' ');
+  }
+
+  // Player Section: ordered by startNo
+  const playersByStartNo = [...state.players]
+    .sort((a, b) => a.startNo - b.startNo);
+
+  const completedRounds = state.rounds.filter(r => r.completed);
+  const totalRounds = completedRounds.length;
+
+  playersByStartNo.forEach(p => {
+    if (
+      !Number.isInteger(p.startNo) ||
+      p.startNo < 1 ||
+      p.startNo > 9999
+    ) {
+      throw new Error(`Invalid starting-rank number for ${p.name}.`);
+    }
+
+    const sexStr = '?';
+    const nameStr = formatPlayerName(p.name);
+    const fedStr = '(F)';
+    const fideNumStr = '(FIDE ID)';
+    const birthDateStr = '(Birth Dt)';
+
+    const rating = Number(p.rating);
+    const fideRatingStr =
+      Number.isInteger(rating) && rating > 0
+        ? String(rating)
+        : '(E)';
+
+    const pts = stats.get(p.id)?.points ?? 0;
+    const pointsStr = pts.toFixed(1);
+    const rank = rankMap.get(p.startNo) || p.startNo;
+
+    // Fixed-width columns conforming to FIDE TRF16
+    let line =
+      '001 ' +
+      numericField(p.startNo, 4, 'Starting-rank number') + ' ' +
+      field(sexStr, 1) +
+      field('', 3) + ' ' +
+      field(nameStr, 33) + ' ' +
+      field(fideRatingStr, 4, true) + ' ' +
+      field(fedStr, 3) + ' ' +
+      field(fideNumStr, 11) + ' ' +
+      field(birthDateStr, 10) + ' ' +
+      numericField(pointsStr, 4, 'Score') + ' ' +
+      numericField(rank, 4, 'Rank');
+
+    // Round-by-round results
+    for (let r = 0; r < totalRounds; r++) {
+      const curRound = completedRounds[r];
+
+      const pair = curRound
+        ? (curRound.pairings || []).find(rec =>
+            rec.whiteId === p.id || rec.blackId === p.id
+          )
+        : null;
+
+      let oppId = '0000';
+      let color = '-';
+      let resChar = 'Z';
+
+      if (pair) {
+        if (pair.type === 'bye') {
+          // Pairing-allocated bye
+          resChar = 'U';
+        } else if (pair.type === 'game') {
+          const isWhite = pair.whiteId === p.id;
+          const opponentId = isWhite ? pair.blackId : pair.whiteId;
+          const opponent = playerMap.get(opponentId);
+
+          if (
+            !opponent ||
+            !Number.isInteger(opponent.startNo) ||
+            opponent.startNo < 1 ||
+            opponent.startNo > 9999
+          ) {
+            throw new Error(
+              `Invalid opponent for ${p.name} in round ${r + 1}.`
+            );
+          }
+
+          oppId = numericField(
+            opponent.startNo,
+            4,
+            'Opponent starting-rank number'
+          );
+
+          color = isWhite ? 'w' : 'b';
+
+          if (pair.result === '1-0') {
+            resChar = isWhite ? '1' : '0';
+          } else if (pair.result === '0-1') {
+            resChar = isWhite ? '0' : '1';
+          } else if (pair.result === '0.5-0.5') {
+            resChar = '=';
+          } else if (pair.result === 'W-F') {
+            resChar = isWhite ? '+' : '-';
+          } else if (pair.result === 'F-W') {
+            resChar = isWhite ? '-' : '+';
+          } else if (pair.result === '0-0') {
+            resChar = '-';
+          } else if (pair.result === 'ADJ') {
+            resChar = '=';
+          } else {
+            throw new Error(
+              `Invalid game result for ${p.name} in round ${r + 1}.`
+            );
+          }
+        }
+      }
+
+      line += `  ${oppId} ${color} ${resChar}`;
+    }
+
+    lines.push(line);
+  });
+
+  return lines.join('\r\n') + '\r\n';
+}
+
+function saveTRF() {
+  if (
+    !state ||
+    !Array.isArray(state.players) ||
+    state.players.length === 0
+  ) {
+    alert('There is no tournament to export.');
+    return;
+  }
+
+  try {
+    const content = generateTRF();
+
+    if (!content) {
+      throw new Error('No TRF content was generated.');
+    }
+
+    const blob = new Blob([content], {
+      type: 'text/plain;charset=utf-8'
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+
+    const cleanName = safeFilename(state.name);
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+
+    a.download = cleanName
+      ? `TRF26_${cleanName}_${dateStr}.txt`
+      : `TRF26_${dateStr}.txt`;
+
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (error) {
+    console.error(error);
+    alert(`Could not generate TRF file: ${error.message}`);
+  }
 }
 
 /* ============================================================
@@ -6117,6 +6477,14 @@ document
   });
 
 document
+  .getElementById("saveTrfButton")
+  ?.addEventListener("click", saveTRF);
+
+document
+  .getElementById("saveFinalTrfButton")
+  ?.addEventListener("click", saveTRF);
+
+document
   .getElementById(
     "printFinalResultsButton"
   )
@@ -6125,7 +6493,8 @@ document
     printFinalResults
   );
 
-/* Initial display */
+/* Offer to restore a saved tournament before the initial display. */
+offerAutosave();
 render();
 </script>
 </body>
