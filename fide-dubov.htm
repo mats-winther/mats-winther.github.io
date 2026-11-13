@@ -353,6 +353,9 @@ a { color:var(--accent); }
             onclick="showTab('history')">
       Rondhistorik
     </button>
+    <button id="save-trf-button" onclick="saveTRF()" style="display:none">
+        Save TRF-file
+    </button>
   </nav>
 
   <section id="setup" class="tab active">
@@ -5092,38 +5095,38 @@ function addPlayer() {
 function loadSamplePlayers() {
   guarded(() => {
     const list = [
-      ["Carl Magnusen", 2448, "IM"],
-      ["Elena Rostova", 2435, "IM"],
-      ["David Lindqvist", 2412, "IM"],
-      ["Sophie van Dijk", 2395, "WIM"],
-      ["Lars-Göran Månsson", 2380, "FM"],
-      ["Adrian Popescu", 2364, "FM"],
-      ["Anna Lindgren", 2345, "WIM"],
-      ["Viktor Horvath", 2330, "FM"],
-      ["Julian Mercier", 2315, "FM"],
-      ["Oskar Bergman", 2298, "FM"],
-      ["Katarina Novak", 2280, "WIM"],
-      ["Lucas Silva", 2265, "FM"],
-      ["Stefan Blomqvist", 2248, "FM"],
-      ["Maria Santos", 2230, "WFM"],
-      ["Alexander Berg", 2215, ""],
-      ["Tariq Al-Mansoor", 2198, ""],
-      ["Jan Jansen", 2182, ""],
-      ["Karin Wallin", 2165, "WFM"],
-      ["Oliver Schmidt", 2148, ""],
-      ["Dmitry Sokolov", 2130, ""],
-      ["Frederik Hansen", 2112, ""],
-      ["Yuki Tanaka", 2095, ""],
-      ["Nathalie Dubois", 2078, ""],
-      ["Mikael Petersson", 2060, ""],
-      ["Gabriel Rossi", 2042, ""],
-      ["Sarah Jenkins", 2025, ""],
-      ["Arno De Smet", 2005, ""],
-      ["Lukas Weber", 1982, ""],
-      ["Hanna Lind", 1955, ""],
-      ["Marco Bellini", 1920, ""],
-      ["Per-Olof Sjöberg", 1885, ""],
-      ["Tobias Holm", 1852, ""]
+  ["Magnusen, Carl", 2448, "IM"],
+  ["Rostova, Elena", 2435, "IM"],
+  ["Lindqvist, David", 2412, "IM"],
+  ["van Dijk, Sophie", 2395, "WIM"],
+  ["Fernandez, Mateo", 2380, "FM"],
+  ["Popescu, Adrian", 2364, "FM"],
+  ["Kowalska, Anna", 2345, "WIM"],
+  ["Horvath, Viktor", 2330, "FM"],
+  ["Mercier, Julian", 2315, "FM"],
+  ["O'Connor, Liam", 2298, "FM"],
+  ["Novak, Katarina", 2280, "WIM"],
+  ["Silva, Lucas", 2265, "FM"],
+  ["Meyer, Stefan", 2248, "FM"],
+  ["Santos, Maria", 2230, "WFM"],
+  ["Berg, Alexander", 2215, ""],
+  ["Al-Mansoor, Tariq", 2198, ""],
+  ["Jansen, Jan", 2182, ""],
+  ["Rossi, Camilla", 2165, "WFM"],
+  ["Schmidt, Oliver", 2148, ""],
+  ["Sokolov, Dmitry", 2130, ""],
+  ["Hansen, Frederik", 2112, ""],
+  ["Tanaka, Yuki", 2095, ""],
+  ["Dubois, Nathalie", 2078, ""],
+  ["Petrov, Mikhail", 2060, ""],
+  ["Rossi, Gabriel", 2042, ""],
+  ["Jenkins, Sarah", 2025, ""],
+  ["De Smet, Arno", 2005, ""],
+  ["Weber, Lukas", 1982, ""],
+  ["Lind, Hanna", 1955, ""],
+  ["Bellini, Marco", 1920, ""],
+  ["Fischer, Paul", 1885, ""],
+  ["Holm, Tobias", 1852, ""]
     ].map(
       ([name, rating, title]) =>
         makePlayer(
@@ -6476,6 +6479,12 @@ function updateControls() {
   const busy =
     Boolean(job);
 
+  // Toggle TRF button visibility when all rounds are completed
+  const trfBtn = $("save-trf-button");
+  if (trfBtn) {
+    trfBtn.style.display = finished ? "" : "none";
+  }
+
   $("pairButton").disabled =
     busy ||
     pending ||
@@ -6640,6 +6649,329 @@ function renderAll() {
   updatePrintTitle();
 }
 
+/* ============================================================
+   TRF Export for FIDE Dubov Swiss System
+   ============================================================ */
+
+function formatPlayerName(name) {
+  // Preserve the entered name. Enter names as "Surname, First name"
+  // when the correct surname order is known.
+  return String(name || '').trim() || '(Name)';
+}
+
+function generateTRF() {
+  if (
+    !tournament ||
+    !Array.isArray(tournament.players) ||
+    tournament.players.length === 0
+  ) {
+    return '';
+  }
+
+  // Ensure player scores and histories are up to date.
+  rebuildState(tournament);
+
+  const lines = [];
+  lines.push('### Replace the following placeholders within their fixed-width fields:');
+  lines.push('### ?: sex code (m or w), immediately followed by the three-character title field, with no separator.');
+  lines.push('### (E): FIDE Elo rating (4 characters)');
+  lines.push('### (F): FIDE federation code (3 characters)');
+  lines.push('### (FIDE ID): numeric FIDE ID (up to 11 characters)');
+  lines.push('### (Birth Dt): birth date in YYYY/MM/DD format (10 characters)');
+  lines.push('### Remove these comment lines before submitting the TRF file.');
+
+  // Tournament Section: mandatory or warning-if-wrong records.
+  const tName = String(tournament.name || '')
+    .replace(/[\r\n]+/g, ' ')
+    .trim();
+
+  lines.push(`012 ${tName || 'FIDE Dubov Tournament'}`);
+  lines.push('022 (City)');
+  lines.push('032 (Federation)');
+  lines.push('102 (Chief Arbiter)');
+
+  // Match the standings and shared ranks shown by the application.
+  const final = tournamentComplete(tournament);
+  const tiebreaks = calculateTiebreaks(tournament);
+
+  const sorted = [...tournament.players].sort((a, b) =>
+    compareFinalStandings(a, b, tiebreaks)
+  );
+
+  const rankMap = new Map();
+  let displayedRank = 0;
+
+  sorted.forEach((p, index) => {
+    if (
+      !final ||
+      index === 0 ||
+      compareFinalStandings(sorted[index - 1], p, tiebreaks) !== 0
+    ) {
+      displayedRank = index + 1;
+    }
+
+    rankMap.set(p.id, displayedRank);
+  });
+
+  const playerMap = new Map(
+    tournament.players.map(p => [p.id, p])
+  );
+
+  /*
+   * Fixed-width TRF fields. Temporary placeholders are truncated
+   * to fit; replace them with valid values or blanks before submission.
+   */
+  function field(value, width, right = false) {
+    const text = String(value ?? '')
+      .replace(/[\r\n]+/g, ' ')
+      .slice(0, width);
+
+    return right
+      ? text.padStart(width, ' ')
+      : text.padEnd(width, ' ');
+  }
+
+  function numericField(value, width, label) {
+    const text = String(value);
+
+    if (text.length > width) {
+      throw new Error(`${label} does not fit in its TRF field.`);
+    }
+
+    return text.padStart(width, ' ');
+  }
+
+  // Player Section: starting-rank order (TPN order).
+  const playersByTpn = [...tournament.players]
+    .sort((a, b) => a.tpn - b.tpn);
+
+  const totalRounds = tournament.rounds.length;
+
+  playersByTpn.forEach(p => {
+    if (
+      !Number.isInteger(p.tpn) ||
+      p.tpn < 1 ||
+      p.tpn > 9999
+    ) {
+      throw new Error(`Invalid starting-rank number for ${p.name}.`);
+    }
+
+    const sexStr = '?';
+    const nameStr = formatPlayerName(p.name);
+    const fedStr = '(F)';
+    const fideNumStr = '(FIDE ID)';
+    const birthDateStr = '(Birth Dt)';
+
+    // Export the rating stored in the player record.
+    const rating = Number(p.rating);
+
+    if (
+      !Number.isInteger(rating) ||
+      rating < 0 ||
+      rating > 9999
+    ) {
+      throw new Error(`Invalid rating for ${p.name}.`);
+    }
+
+    // A zero rating means no rating is available.
+    const fideRatingStr = rating > 0 ? String(rating) : '(E)';
+
+    const pts = tiebreaks.get(p.id)?.score ?? p.score ?? 0;
+
+    if (!Number.isFinite(pts) || pts < 0) {
+      throw new Error(`Invalid score for ${p.name}.`);
+    }
+
+    const pointsStr = pts.toFixed(1);
+    const rank = rankMap.get(p.id) || p.tpn;
+
+    let line =
+      '001 ' +
+      numericField(p.tpn, 4, 'Starting-rank number') + ' ' +
+      field(sexStr, 1) +
+      field(p.title || '', 3) + ' ' +
+      field(nameStr, 33) + ' ' +
+      field(fideRatingStr, 4, true) + ' ' +
+      field(fedStr, 3) + ' ' +
+      field(fideNumStr, 11) + ' ' +
+      field(birthDateStr, 10) + ' ' +
+      numericField(pointsStr, 4, 'Score') + ' ' +
+      numericField(rank, 4, 'Rank');
+
+    // Round-by-round results.
+    for (let r = 0; r < totalRounds; r++) {
+      const curRound = tournament.rounds[r];
+
+      const pair = curRound
+        ? (curRound.pairings || []).find(rec =>
+            (
+              rec.kind === 'game' &&
+              (rec.whiteId === p.id || rec.blackId === p.id)
+            ) ||
+            (rec.kind === 'pab' && rec.pabId === p.id) ||
+            (rec.kind === 'unplayed' && rec.unplayedId === p.id)
+          )
+        : null;
+
+      // A missing record represents an unplayed zero-point round.
+      let oppId = '0000';
+      let color = '-';
+      let resChar = 'Z';
+
+      if (pair) {
+        if (pair.kind === 'pab') {
+          // Pairing-allocated bye.
+          resChar = 'U';
+        } else if (pair.kind === 'unplayed') {
+          // Administrative or requested unplayed round.
+          if (pair.awardedPoints === tournament.winPoints) {
+            resChar = 'F';
+          } else if (pair.awardedPoints === tournament.drawPoints) {
+            resChar = 'H';
+          } else if (pair.awardedPoints === tournament.lossPoints) {
+            resChar = 'Z';
+          } else {
+            throw new Error(
+              `Unsupported unplayed award for ${p.name} in round ${r + 1}.`
+            );
+          }
+        } else if (pair.kind === 'game') {
+          const isWhite = pair.whiteId === p.id;
+          const opponentId = isWhite ? pair.blackId : pair.whiteId;
+          const opponent = playerMap.get(opponentId);
+
+          if (
+            !opponent ||
+            !Number.isInteger(opponent.tpn) ||
+            opponent.tpn < 1 ||
+            opponent.tpn > 9999
+          ) {
+            throw new Error(
+              `Invalid opponent for ${p.name} in round ${r + 1}.`
+            );
+          }
+
+          oppId = numericField(
+            opponent.tpn,
+            4,
+            'Opponent starting-rank number'
+          );
+
+          color = isWhite ? 'w' : 'b';
+
+          if (pair.result === '1-0') {
+            resChar = isWhite ? '1' : '0';
+          } else if (pair.result === '0-1') {
+            resChar = isWhite ? '0' : '1';
+          } else if (pair.result === '½-½' || pair.result === '0.5-0.5') {
+            resChar = '=';
+          } else if (pair.result === '1-0F') {
+            resChar = isWhite ? '+' : '-';
+          } else if (pair.result === '0-1F') {
+            resChar = isWhite ? '-' : '+';
+          } else if (pair.result === '0-0F') {
+            resChar = '-';
+          } else {
+            throw new Error(
+              `Invalid game result for ${p.name} in round ${r + 1}.`
+            );
+          }
+        }
+      }
+
+      line += `  ${oppId} ${color} ${resChar}`;
+    }
+
+    lines.push(line);
+  });
+
+  return lines.join('\r\n') + '\r\n';
+}
+
+function saveTRF() {
+  if (
+    !tournament ||
+    !Array.isArray(tournament.players) ||
+    tournament.players.length === 0
+  ) {
+    if (typeof message === 'function') {
+      message('There is no tournament to export.', 'warning');
+    } else {
+      alert('There is no tournament to export.');
+    }
+    return;
+  }
+
+  /*
+   * TRF result codes do not themselves describe these scoring
+   * settings. Warn before exporting a nonstandard tournament.
+   */
+  const standardScoring =
+    tournament.winPoints === 1 &&
+    tournament.drawPoints === 0.5 &&
+    tournament.lossPoints === 0 &&
+    tournament.pabPoints === 1;
+
+  if (!standardScoring) {
+    const proceed = confirm(
+      'This tournament uses nonstandard scoring or a nonstandard ' +
+      'pairing-allocated bye award.\n\n' +
+      `Win / draw / loss: ${tournament.winPoints} / ` +
+      `${tournament.drawPoints} / ${tournament.lossPoints}\n` +
+      `Pairing-allocated bye: ${tournament.pabPoints}\n\n` +
+      'The TRF result codes do not describe these settings. ' +
+      'Inform the recipient separately. Continue exporting?'
+    );
+
+    if (!proceed) return;
+  }
+
+  try {
+    const content = generateTRF();
+
+    if (!content) {
+      throw new Error('No TRF content was generated.');
+    }
+
+    const blob = new Blob([content], {
+      type: 'text/plain;charset=utf-8'
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+
+    const cleanName = String(
+      tournament.name || 'fide_dubov_tournament'
+    )
+      .trim()
+      .replace(/[^\w\-]+/g, '_');
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+
+    a.download = cleanName
+      ? `TRF26_${cleanName}_${dateStr}.txt`
+      : `TRF26_${dateStr}.txt`;
+
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (error) {
+    console.error(error);
+    if (typeof message === 'function') {
+      message(`Could not generate TRF file: ${error.message}`, 'error');
+    } else {
+      alert(`Could not generate TRF file: ${error.message}`);
+    }
+  }
+}
+
 /* ========================================================================== */
 /* INITIALIZATION                                                             */
 /* ========================================================================== */
@@ -6777,6 +7109,27 @@ function renderAll() {
     );
   }
 })();
+
+/* ========================================================================
+   Disable keyboard arrows and two-finger/wheel scrolling for round-count
+   and pairing-allocated bye points
+   ======================================================================== */
+['tRounds', 'tPab'].forEach(id => {
+  const input = $(id) || document.getElementById(id);
+  if (input) {
+    // Prevent keyboard Up, Down, PageUp, and PageDown keys
+    input.addEventListener('keydown', e => {
+      if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown'].includes(e.key)) {
+        e.preventDefault();
+      }
+    });
+
+    // Prevent mouse wheel and touchpad two-finger scrolling
+    input.addEventListener('wheel', e => {
+      e.preventDefault();
+    }, { passive: false });
+  }
+});
 </script>
 
 </body>

@@ -4611,56 +4611,122 @@ function runSelfChecks() {
 }
 
 /* ============================================================
-   TRF-handling for Berger-Swiss
+   TRF Export adapted for Berger-Swiss Tournament System
    ============================================================ */
 
 function formatPlayerName(name) {
-  const trimmed = (name || '').trim();
-  if (!trimmed) return '(Name)';
-  if (trimmed.includes(',')) return trimmed;
-  const parts = trimmed.split(/\s+/);
-  if (parts.length === 1) return parts[0];
-  const last = parts.pop();
-  return `${last}, ${parts.join(' ')}`;
+  // Preserve the entered name. Enter names as "Surname, First name"
+  // when the correct surname order is known.
+  return String(name || '').trim() || '(Name)';
 }
 
 function generateTRF() {
-  if (!state || !state.players || state.players.length === 0) return '';
+  if (
+    !state ||
+    !Array.isArray(state.players) ||
+    state.players.length === 0
+  ) {
+    return '';
+  }
 
   const lines = [];
+  lines.push('### Replace the following placeholders within their fixed-width fields:');
+  lines.push('### ?: sex code (m or w), immediately followed by the three-character title field, with no separator.');
+  lines.push('### (E): FIDE Elo rating (4 characters)');
+  lines.push('### (F): FIDE federation code (3 characters)');
+  lines.push('### (FIDE ID): numeric FIDE ID (up to 11 characters)');
+  lines.push('### (Birth Dt): birth date in YYYY/MM/DD format (10 characters)');
+  lines.push('### Remove these comment lines before submitting the TRF file.');
 
-  // Tournament Section (012, 022, 032, 102)
-  const tName = (state.name || '').trim();
+  // Tournament Section: mandatory or warning-if-wrong records.
+  const tName = String(state.name || '')
+    .replace(/[\r\n]+/g, ' ')
+    .trim();
+
   lines.push(`012 ${tName || 'Berger-Swiss Tournament'}`);
   lines.push('022 (City)');
   lines.push('032 (Federation)');
   lines.push('102 (Chief Arbiter)');
 
-  // Standings & Ranks
+  // Standings & Ranks (calculated using the tournament's active scoring & WNT)
   const context = computeStats(state);
   const sorted = sortedStats(context);
   const rankMap = new Map(sorted.map((item, idx) => [item.id, idx + 1]));
   const pointsMap = new Map(sorted.map(item => [item.id, item.score2 / 2]));
   const playerById = playerMap(state);
 
-  // Player Section (001): sorted by TPN (Starting rank / Seed)
+  /*
+   * Fixed-width TRF fields. Temporary placeholders are truncated
+   * to fit; replace them with valid values or blanks before submission.
+   */
+  function field(value, width, right = false) {
+    const text = String(value ?? '')
+      .replace(/[\r\n]+/g, ' ')
+      .slice(0, width);
+
+    return right
+      ? text.padStart(width, ' ')
+      : text.padEnd(width, ' ');
+  }
+
+  function numericField(value, width, label) {
+    const text = String(value);
+
+    if (text.length > width) {
+      throw new Error(`${label} does not fit in its TRF field.`);
+    }
+
+    return text.padStart(width, ' ');
+  }
+
+  // Player Section: starting-rank order (TPN / initial rating order)
   const playersByTpn = [...state.players].sort((a, b) => a.tpn - b.tpn);
   const totalRounds = state.rounds.length;
 
   playersByTpn.forEach(p => {
-    const seedStr = String(p.tpn).padStart(4, ' ');
-    const sexStr = '(Sex)';
-    const titleStr = '(Title)';
-    const nameStr = formatPlayerName(p.name).padEnd(33, ' ').substring(0, 33);
-    const ratingStr = p.rating ? String(p.rating).padStart(4, ' ') : '   0';
-    const fedStr = '(FIDE Federation)';
-    const fideNumStr = '(FIDE Number)';
-    const birthDateStr = '(Birth Date)';
-    const pts = pointsMap.get(p.id) ?? 0;
-    const pointsStr = pts.toFixed(1).padStart(4, ' ');
-    const rankStr = String(rankMap.get(p.id) || p.tpn).padStart(4, ' ');
+    if (
+      !Number.isInteger(p.tpn) ||
+      p.tpn < 1 ||
+      p.tpn > 9999
+    ) {
+      throw new Error(`Invalid starting-rank number for ${p.name}.`);
+    }
 
-    let line = `001  ${seedStr} ${sexStr} ${titleStr} ${nameStr} ${ratingStr} ${fedStr} ${fideNumStr} ${birthDateStr} ${pointsStr} ${rankStr}`;
+    const sexStr = '?';
+    const nameStr = formatPlayerName(p.name);
+    const fedStr = '(F)';
+    const fideNumStr = '(FIDE ID)';
+    const birthDateStr = '(Birth Dt)';
+
+    // Export rating if present, otherwise placeholder
+    const rating = Number(p.rating);
+    if (!Number.isInteger(rating) || rating < 0 || rating > 9999) {
+      throw new Error(`Invalid rating for ${p.name}.`);
+    }
+
+    // A zero rating means no rating is available.
+    const fideRatingStr = rating > 0 ? String(rating) : '(E)';
+
+    const pts = pointsMap.get(p.id) ?? 0;
+    if (!Number.isFinite(pts) || pts < 0) {
+      throw new Error(`Invalid score for ${p.name}.`);
+    }
+
+    const pointsStr = pts.toFixed(1);
+    const rank = rankMap.get(p.id) || p.tpn;
+
+    let line =
+      '001 ' +
+      numericField(p.tpn, 4, 'Starting-rank number') + ' ' +
+      field(sexStr, 1) +
+      field(p.title || '', 3) + ' ' +
+      field(nameStr, 33) + ' ' +
+      field(fideRatingStr, 4, true) + ' ' +
+      field(fedStr, 3) + ' ' +
+      field(fideNumStr, 11) + ' ' +
+      field(birthDateStr, 10) + ' ' +
+      numericField(pointsStr, 4, 'Score') + ' ' +
+      numericField(rank, 4, 'Rank');
 
     // Round-by-round results
     for (let r = 0; r < totalRounds; r++) {
@@ -4694,10 +4760,25 @@ function generateTRF() {
           // Played, forfeited, or postponed game
           const isWhite = pair.white === p.id;
           const oppIdNum = isWhite ? pair.black : pair.white;
-          const opp = playerById.get(oppIdNum);
-          const oppTpn = opp ? opp.tpn : oppIdNum;
+          const opponent = playerById.get(oppIdNum);
 
-          oppId = String(oppTpn).padStart(4, ' ');
+          if (
+            !opponent ||
+            !Number.isInteger(opponent.tpn) ||
+            opponent.tpn < 1 ||
+            opponent.tpn > 9999
+          ) {
+            throw new Error(
+              `Invalid opponent for ${p.name} in round ${r + 1}.`
+            );
+          }
+
+          oppId = numericField(
+            opponent.tpn,
+            4,
+            'Opponent starting-rank number'
+          );
+
           color = isWhite ? 'w' : 'b';
 
           if (pair.result === '1-0') {
@@ -4717,6 +4798,11 @@ function generateTRF() {
             resChar = 'Z';
           }
         }
+      } else {
+        // Player was not paired in this round (e.g. withdrawn before round generation)
+        oppId = '0000';
+        color = '-';
+        resChar = 'Z';
       }
 
       line += `  ${oppId} ${color} ${resChar}`;
@@ -4729,34 +4815,55 @@ function generateTRF() {
 }
 
 function saveTRF() {
-  if (!state || !state.players || state.players.length === 0) {
-    alert("There is no tournament to export.");
+  if (
+    !state ||
+    !Array.isArray(state.players) ||
+    state.players.length === 0
+  ) {
+    alert('There is no tournament to export.');
     return;
   }
 
-  const content = generateTRF();
-  if (!content) {
-    alert("Could not generate TRF file for this tournament.");
-    return;
+  try {
+    const content = generateTRF();
+
+    if (!content) {
+      throw new Error('No TRF content was generated.');
+    }
+
+    const blob = new Blob([content], {
+      type: 'text/plain;charset=utf-8'
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+
+    const cleanName = String(
+      state.name || 'berger_swiss_tournament'
+    )
+      .trim()
+      .replace(/[^\w\-]+/g, '_');
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+
+    a.download = cleanName
+      ? `TRF26_${cleanName}_${dateStr}.txt`
+      : `TRF26_${dateStr}.txt`;
+
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (error) {
+    console.error(error);
+    alert(`Could not generate TRF file: ${error.message}`);
   }
-
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-
-  const cleanName = (state.name || 'berger_swiss_tournament').trim().replace(/[^\w\-]+/g, '_');
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, '0');
-  const dd = String(today.getDate()).padStart(2, '0');
-  const dateStr = `${yyyy}-${mm}-${dd}`;
-
-  a.download = cleanName ? `TRF_${cleanName}_${dateStr}.txt` : `TRF_${dateStr}.txt`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /* ========================================================================

@@ -578,14 +578,14 @@ function printFinalStandings() {
 
 function load32ClubPlayers() {
   const sample = [
-    "Oliver Smith 2280", "Jack Taylor 2245", "Harry Brown 2210", "Jacob Wilson 2190",
-    "Charlie Evans 2165", "Thomas Walker 2140", "George Robinson 2115", "Yusuf Al-Mansoor 2095",
-    "William Thompson 2070", "Daniel White 2050", "Matthew Hall 2030", "Samuel Green 2010",
-    "Emily Parker 1990", "Joseph Martin 1970", "David Clark 1950", "Benjamin Lewis 1930",
-    "Edward Clarke 1910", "Henry Jackson 1890", "Lucas Wood 1870", "Arthur Turner 1850",
-    "Leo Scott 1830", "Kofi Mensah 1810", "Charles Morris 1790", "Robert Ward 1770",
-    "Louis Watson 1750", "Frederick Davis 1730", "Archie Miller 1710", "Albert Baker 1690",
-    "Nathan Brooks 1670", "Peter Young 1650", "Alexander Harris 1620", "Sophie Bennett 1590"
+    "Smith, Oliver 2280", "Taylor, Jack 2245", "Brown, Harry 2210", "Wilson, Jacob 2190",
+    "Evans, Charlie 2165", "Walker, Thomas 2140", "Robinson, George 2115", "Al-Mansoor, Yusuf 2095",
+    "Thompson, William 2070", "White, Daniel 2050", "Hall, Matthew 2030", "Green, Samuel 2010",
+    "Parker, Emily 1990", "Martin, Joseph 1970", "Clark, David 1950", "Lewis, Benjamin 1930",
+    "Clarke, Edward 1910", "Jackson, Henry 1890", "Wood, Lucas 1870", "Turner, Arthur 1850",
+    "Scott, Leo 1830", "Mensah, Kofi 1810", "Morris, Charles 1790", "Ward, Robert 1770",
+    "Watson, Louis 1750", "Davis, Frederick 1730", "Miller, Archie 1710", "Baker, Albert 1690",
+    "Brooks, Nathan 1670", "Young, Peter 1650", "Harris, Alexander 1620", "Bennett, Sophie 1590"
   ];
   document.getElementById('player-input').value = sample.join('\n');
 }
@@ -1440,61 +1440,137 @@ function restartTournament() {
   location.reload();
 }
 
+/* ============================================================
+   TRF Export adapted for Club Swiss System
+   ============================================================ */
+
 function formatPlayerName(name) {
-  const trimmed = (name || '').trim();
-  if (!trimmed) return '(Name)';
-  if (trimmed.includes(',')) return trimmed;
-  const parts = trimmed.split(/\s+/);
-  if (parts.length === 1) return parts[0];
-  const last = parts.pop();
-  return `${last}, ${parts.join(' ')}`;
+  // Preserve the entered name. Enter names as "Surname, First name"
+  // when the correct surname order is known.
+  return String(name || '').trim() || '(Name)';
 }
 
 function generateTRF() {
-  if (!state.players || state.players.length === 0) return '';
+  if (
+    !state.players ||
+    !Array.isArray(state.players) ||
+    state.players.length === 0
+  ) {
+    return '';
+  }
+
+  // Ensure player scores and tie-breaks are fully recalculated
+  recalculateTiebreaks();
 
   const lines = [];
+  lines.push('### Replace the following placeholders within their fixed-width fields:');
+  lines.push('### ?: sex code (m or w), immediately followed by the three-character title field, with no separator.');
+  lines.push('### (E): FIDE Elo rating (4 characters)');
+  lines.push('### (F): FIDE federation code (3 characters)');
+  lines.push('### (FIDE ID): numeric FIDE ID (up to 11 characters)');
+  lines.push('### (Birth Dt): birth date in YYYY/MM/DD format (10 characters)');
+  lines.push('### Remove these comment lines before submitting the TRF file.');
 
-  // Tournament Section (012, 022, 032, 102)
-  const tName = (state.name || '').trim();
-  lines.push(`012 ${tName || 'Club Championship'}`);
+  // Tournament Section
+  const tName = String(state.name || '')
+    .replace(/[\r\n]+/g, ' ')
+    .trim();
+
+  lines.push(`012 ${tName || 'Club Swiss Tournament'}`);
   lines.push('022 (City)');
   lines.push('032 (Federation)');
   lines.push('102 (Chief Arbiter)');
 
-  // Standings & Ranks using Klubbschweizer's built-in ranking
-  recalculateTiebreaks();
+  // Match standings and ranks using Club Swiss's internal rank rules
   const sortedStandings = getSortedStandings();
-  const rankMap = new Map(sortedStandings.map((p, idx) => [p.id, idx + 1]));
+  const rankMap = new Map();
+  sortedStandings.forEach((p, idx) => {
+    rankMap.set(p.id, idx + 1);
+  });
 
-  // Player Section (001): sorted by Starting Rank / Seed
-  const playersBySeed = [...state.players].sort((a, b) => (a.seed || a.id) - (b.seed || b.id));
-  
-  // Count only completed rounds
+  const playerMap = new Map(state.players.map(p => [p.id, p]));
+
+  /*
+   * Fixed-width TRF fields. Temporary placeholders are truncated
+   * to fit; replace them with valid values or blanks before submission.
+   */
+  function field(value, width, right = false) {
+    const text = String(value ?? '')
+      .replace(/[\r\n]+/g, ' ')
+      .slice(0, width);
+
+    return right
+      ? text.padStart(width, ' ')
+      : text.padEnd(width, ' ');
+  }
+
+  function numericField(value, width, label) {
+    const text = String(value);
+
+    if (text.length > width) {
+      throw new Error(`${label} does not fit in its TRF field.`);
+    }
+
+    return text.padStart(width, ' ');
+  }
+
+  // Player Section: sorted by starting rank (seed)
+  const playersBySeed = [...state.players].sort(
+    (a, b) => (a.seed || a.id) - (b.seed || b.id)
+  );
+
+  // Count only completed rounds (or all rounds if the tournament is marked finished)
   const totalRounds = state.finished
     ? state.rounds.length
     : Math.max(0, state.currentRound - 1);
 
   playersBySeed.forEach(p => {
-    const seedStr = String(p.seed || p.id).padStart(4, ' ');
-    const sexStr = '(Sex)';
-    const titleStr = '(Title)';
-    const nameStr = formatPlayerName(p.name).padEnd(33, ' ').substring(0, 33);
-    const ratingStr = p.rating ? String(p.rating).padStart(4, ' ') : ' (Elo)';
-    const fedStr = '(FIDE Federation)';
-    const fideNumStr = '(FIDE Number)';
-    const birthDateStr = '(Birth Date)';
-    const pointsStr = p.score.toFixed(1).padStart(4, ' ');
-    const rankStr = String(rankMap.get(p.id) || p.seed || p.id).padStart(4, ' ');
+    const seed = p.seed || p.id;
+    if (!Number.isInteger(seed) || seed < 1 || seed > 9999) {
+      throw new Error(`Invalid starting-rank number for ${p.name}.`);
+    }
 
-    let line = `001  ${seedStr} ${sexStr} ${titleStr} ${nameStr} ${ratingStr} ${fedStr} ${fideNumStr} ${birthDateStr} ${pointsStr} ${rankStr}`;
+    const sexStr = '?';
+    const nameStr = formatPlayerName(p.name);
+    const fedStr = '(F)';
+    const fideNumStr = '(FIDE ID)';
+    const birthDateStr = '(Birth Dt)';
+
+    // Export rating if present and within valid range, otherwise placeholder
+    const rating = Number(p.rating);
+    const hasValidRating =
+      Number.isInteger(rating) && rating > 0 && rating <= 9999;
+    const fideRatingStr = hasValidRating ? String(rating) : '(E)';
+
+    const pts = p.score;
+    if (!Number.isFinite(pts) || pts < 0) {
+      throw new Error(`Invalid score for ${p.name}.`);
+    }
+
+    const pointsStr = pts.toFixed(1);
+    const rank = rankMap.get(p.id) || seed;
+
+    let line =
+      '001 ' +
+      numericField(seed, 4, 'Starting-rank number') + ' ' +
+      field(sexStr, 1) +
+      field(p.title || '', 3) + ' ' +
+      field(nameStr, 33) + ' ' +
+      field(fideRatingStr, 4, true) + ' ' +
+      field(fedStr, 3) + ' ' +
+      field(fideNumStr, 11) + ' ' +
+      field(birthDateStr, 10) + ' ' +
+      numericField(pointsStr, 4, 'Score') + ' ' +
+      numericField(rank, 4, 'Rank');
 
     // Round-by-round results
     for (let r = 1; r <= totalRounds; r++) {
       const curRound = state.rounds[r - 1];
       const match = curRound
-        ? (curRound.pairings || []).find(m =>
-            (m.white && m.white.id === p.id) || (m.black && m.black.id === p.id)
+        ? (curRound.pairings || []).find(
+            m =>
+              (m.white && m.white.id === p.id) ||
+              (m.black && m.black.id === p.id)
           )
         : null;
 
@@ -1504,17 +1580,32 @@ function generateTRF() {
 
       if (match) {
         if (!match.black) {
-          // Bye
+          // Pairing-allocated or pairing-drawn Bye
           oppId = '0000';
           color = '-';
-          resChar = (match.result && match.result.includes('Withdrawn')) ? 'Z' : 'U';
+          resChar =
+            match.result && match.result.includes('Withdrawn') ? 'Z' : 'U';
         } else {
-          // Regular pairing
           const isWhite = match.white && match.white.id === p.id;
-          const opp = isWhite ? match.black : match.white;
-          const oppSeed = opp ? (opp.seed || opp.id) : 0;
+          const oppObj = isWhite ? match.black : match.white;
+          const opponent = oppObj ? playerMap.get(oppObj.id) : null;
 
-          oppId = String(oppSeed).padStart(4, ' ');
+          if (
+            !opponent ||
+            !Number.isInteger(opponent.seed || opponent.id) ||
+            (opponent.seed || opponent.id) < 1 ||
+            (opponent.seed || opponent.id) > 9999
+          ) {
+            throw new Error(`Invalid opponent for ${p.name} in round ${r}.`);
+          }
+
+          const oppSeed = opponent.seed || opponent.id;
+          oppId = numericField(
+            oppSeed,
+            4,
+            'Opponent starting-rank number'
+          );
+
           color = isWhite ? 'w' : 'b';
 
           if (match.forfeit) {
@@ -1531,14 +1622,21 @@ function generateTRF() {
             resChar = isWhite ? '1' : '0';
           } else if (match.result === '0-1') {
             resChar = isWhite ? '0' : '1';
-          } else if (match.result === '0.5-0.5' || match.result === '½-½') {
+          } else if (
+            match.result === '0.5-0.5' ||
+            match.result === '½-½'
+          ) {
             resChar = '=';
           } else if (match.result === '0-0') {
             resChar = '-';
+          } else {
+            throw new Error(
+              `Invalid game result for ${p.name} in round ${r}.`
+            );
           }
         }
       } else {
-        // Player withdrew or was not paired in this round
+        // Player unplayed or withdrawn for this round
         oppId = '0000';
         color = '-';
         resChar = 'Z';
@@ -1554,29 +1652,53 @@ function generateTRF() {
 }
 
 function saveTRF() {
-  if (!state.players || state.players.length === 0) {
-    alert("There is no tournament to export.");
+  if (
+    !state.players ||
+    !Array.isArray(state.players) ||
+    state.players.length === 0
+  ) {
+    alert('There is no tournament to export.');
     return;
   }
 
-  const content = generateTRF();
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
+  try {
+    const content = generateTRF();
 
-  const cleanName = (state.name || '').trim().replace(/[^\w\-]+/g, '_');
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, '0');
-  const dd = String(today.getDate()).padStart(2, '0');
-  const dateStr = `${yyyy}-${mm}-${dd}`;
+    if (!content) {
+      throw new Error('No TRF content was generated.');
+    }
 
-  a.download = cleanName ? `TRF_${cleanName}_${dateStr}.txt` : `TRF_${dateStr}.txt`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+    const blob = new Blob([content], {
+      type: 'text/plain;charset=utf-8'
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+
+    const cleanName = String(state.name || 'club_swiss_tournament')
+      .trim()
+      .replace(/[^\w\-]+/g, '_');
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+
+    a.download = cleanName
+      ? `TRF26_${cleanName}_${dateStr}.txt`
+      : `TRF26_${dateStr}.txt`;
+
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (error) {
+    console.error(error);
+    alert(`Could not generate TRF file: ${error.message}`);
+  }
 }
 
 // Disable keyboard arrows and two-finger/wheel scrolling for round-count

@@ -267,6 +267,9 @@ a { color:var(--blue); }
     <button id="tabButton-pairings" onclick="showTab('pairings')">Rondlottning</button>
     <button id="tabButton-standings" onclick="showTab('standings')">Poänglista</button>
     <button id="tabButton-history" onclick="showTab('history')">Rondhistorik</button>
+    <button id="save-trf-button" onclick="saveTRF()" style="display:none">
+        Spara TRF-fil
+    </button>
   </nav>
 
   <section id="setup" class="tab active">
@@ -3282,38 +3285,38 @@ function addPlayer() {
 function loadSamplePlayers() {
   guarded(() => {
     const list = [
-      {name:"Magnus Carlsen", rating:2832, title:"GM"},
-      {name:"Fabiano Caruana", rating:2805, title:"GM"},
-      {name:"Hikaru Nakamura", rating:2802, title:"GM"},
-      {name:"Arjun Erigaisi", rating:2797, title:"GM"},
-      {name:"Gukesh D", rating:2794, title:"GM"},
-      {name:"Nodirbek Abdusattorov", rating:2783, title:"GM"},
-      {name:"Alireza Firouzja", rating:2767, title:"GM"},
-      {name:"Wei Yi", rating:2762, title:"GM"},
-      {name:"Ian Nepomniachtchi", rating:2755, title:"GM"},
-      {name:"Wesley So", rating:2751, title:"GM"},
-      {name:"Viswanathan Anand", rating:2750, title:"GM"},
-      {name:"Leinier Dominguez Perez", rating:2748, title:"GM"},
-      {name:"Anish Giri", rating:2746, title:"GM"},
-      {name:"Praggnanandhaa R", rating:2737, title:"GM"},
-      {name:"Jan-Krzysztof Duda", rating:2733, title:"GM"},
-      {name:"Shakhriyar Mamedyarov", rating:2732, title:"GM"},
-      {name:"Maxime Vachier-Lagrave", rating:2731, title:"GM"},
-      {name:"Vincent Keymer", rating:2730, title:"GM"},
-      {name:"Levon Aronian", rating:2729, title:"GM"},
-      {name:"Ding Liren", rating:2728, title:"GM"},
-      {name:"Parham Maghsoodloo", rating:2719, title:"GM"},
-      {name:"Yu Yangyi", rating:2717, title:"GM"},
-      {name:"Richard Rapport", rating:2715, title:"GM"},
-      {name:"Hans Niemann", rating:2711, title:"GM"},
-      {name:"Ray Robson", rating:2700, title:"GM"},
-      {name:"Aravindh Chithambaram", rating:2698, title:"GM"},
-      {name:"Jorden van Foreest", rating:2696, title:"GM"},
-      {name:"Bogdan-Daniel Deac", rating:2690, title:"GM"},
-      {name:"Pentala Harikrishna", rating:2686, title:"GM"},
-      {name:"Alexey Sarana", rating:2679, title:"GM"},
-      {name:"Nihal Sarin", rating:2668, title:"GM"},
-      {name:"Daniil Dubov", rating:2666, title:"GM"}
+	{ name:"Carlsen, Magnus", rating:2832, title:"GM" },
+	{ name:"Caruana, Fabiano", rating:2805, title:"GM" },
+	{ name:"Nakamura, Hikaru", rating:2802, title:"GM" },
+	{ name:"Erigaisi, Arjun", rating:2797, title:"GM" },
+	{ name:"Gukesh D", rating:2794, title:"GM" },
+	{ name:"Abdusattorov, Nodirbek", rating:2783, title:"GM" },
+	{ name:"Firouzja, Alireza", rating:2767, title:"GM" },
+	{ name:"Wei Yi", rating:2762, title:"GM" },
+	{ name:"Nepomniachtchi, Ian", rating:2755, title:"GM" },
+	{ name:"So, Wesley", rating:2751, title:"GM" },
+	{ name:"Anand, Viswanathan", rating:2750, title:"GM" },
+	{ name:"Dominguez Perez, Leinier", rating:2748, title:"GM" },
+	{ name:"Giri, Anish", rating:2746, title:"GM" },
+	{ name:"Praggnanandhaa R", rating:2737, title:"GM" },
+	{ name:"Duda, Jan-Krzysztof", rating:2733, title:"GM" },
+	{ name:"Mamedyarov, Shakhriyar", rating:2732, title:"GM" },
+	{ name:"Vachier-Lagrave, Maxime", rating:2731, title:"GM" },
+	{ name:"Keymer, Vincent", rating:2730, title:"GM" },
+	{ name:"Aronian, Levon", rating:2729, title:"GM" },
+	{ name:"Ding Liren", rating:2728, title:"GM" },
+	{ name:"Maghsoodloo, Parham", rating:2719, title:"GM" },
+	{ name:"Yu Yangyi", rating:2717, title:"GM" },
+	{ name:"Rapport, Richard", rating:2715, title:"GM" },
+	{ name:"Niemann, Hans", rating:2711, title:"GM" },
+	{ name:"Robson, Ray", rating:2700, title:"GM" },
+	{ name:"Chithambaram, Aravindh", rating:2698, title:"GM" },
+	{ name:"van Foreest, Jorden", rating:2696, title:"GM" },
+	{ name:"Deac, Bogdan-Daniel", rating:2690, title:"GM" },
+	{ name:"Harikrishna, Pentala", rating:2686, title:"GM" },
+	{ name:"Sarana, Alexey", rating:2679, title:"GM" },
+	{ name:"Sarin, Nihal", rating:2668, title:"GM" },
+	{ name:"Dubov, Daniil", rating:2666, title:"GM" }
     ].map(p => makePlayer(p.name, p.rating, p.title));
 
     admitPlayers(list);
@@ -4128,6 +4131,13 @@ function updateControls() {
   const busy = Boolean(job);
   const pending = tournament.activePairings.length > 0;
   const finished = tournamentComplete();
+
+  // Toggle TRF button visibility when all rounds are completed
+  const trfBtn = $("save-trf-button");
+  if (trfBtn) {
+    trfBtn.style.display = finished ? "" : "none";
+  }
+
   const registrationBlocked =
     busy || pending || tournament.listClosed || tournamentStarted() || finished;
   const atPlayerLimit = tournament.players.length >= MAX_PLAYERS;
@@ -4234,6 +4244,331 @@ window.addEventListener("beforeprint", () => {
   updatePrintTitle();
 });
 
+/* ============================================================
+   TRF Export for FIDE Dutch System
+   ============================================================ */
+
+function formatPlayerName(name) {
+  // Preserve the entered name. Enter names as "Surname, First name"
+  // when the correct surname order is known.
+  return String(name || '').trim() || '(Name)';
+}
+
+function generateTRF() {
+  if (
+    !tournament ||
+    !Array.isArray(tournament.players) ||
+    tournament.players.length === 0
+  ) {
+    return '';
+  }
+
+  // Ensure player scores and histories are up to date.
+  rebuildState(tournament);
+
+  const lines = [];
+  lines.push('### Replace the following placeholders within their fixed-width fields:');
+  lines.push('### ?: sex code (m or w), immediately followed by the three-character title field, with no separator.');
+  lines.push('### (E): FIDE Elo rating (4 characters)');
+  lines.push('### (F): FIDE federation code (3 characters)');
+  lines.push('### (FIDE ID): numeric FIDE ID (up to 11 characters)');
+  lines.push('### (Birth Dt): birth date in YYYY/MM/DD format (10 characters)');
+  lines.push('### Remove these comment lines before submitting the TRF file.');
+
+  // Tournament Section: mandatory or warning-if-wrong records.
+  const tName = String(tournament.name || '')
+    .replace(/[\r\n]+/g, ' ')
+    .trim();
+
+  lines.push(`012 ${tName || 'FIDE Dutch Tournament'}`);
+  lines.push('022 (City)');
+  lines.push('032 (Federation)');
+  lines.push('102 (Chief Arbiter)');
+
+  // Match the standings and shared ranks shown by the application.
+  const final = tournamentComplete(tournament);
+  const tiebreaks = calculateTiebreaks(tournament);
+
+  const sorted = [...tournament.players].sort((a, b) => {
+    if (!final) return Core.rank(a, b);
+
+    return compareFinalValues(
+      tiebreaks.get(a.id),
+      tiebreaks.get(b.id)
+    ) || a.tpn - b.tpn;
+  });
+
+  const rankMap = new Map();
+  let displayedRank = 0;
+
+  sorted.forEach((p, index) => {
+    const tb = tiebreaks.get(p.id);
+
+    if (
+      !final ||
+      index === 0 ||
+      compareFinalValues(
+        tiebreaks.get(sorted[index - 1].id),
+        tb
+      ) !== 0
+    ) {
+      displayedRank = index + 1;
+    }
+
+    rankMap.set(p.id, displayedRank);
+  });
+
+  const playerMap = new Map(
+    tournament.players.map(p => [p.id, p])
+  );
+
+  /*
+   * Fixed-width TRF fields. Temporary placeholders are truncated
+   * to fit; replace them with valid values or blanks before submission.
+   */
+  function field(value, width, right = false) {
+    const text = String(value ?? '')
+      .replace(/[\r\n]+/g, ' ')
+      .slice(0, width);
+
+    return right
+      ? text.padStart(width, ' ')
+      : text.padEnd(width, ' ');
+  }
+
+  function numericField(value, width, label) {
+    const text = String(value);
+
+    if (text.length > width) {
+      throw new Error(`${label} does not fit in its TRF field.`);
+    }
+
+    return text.padStart(width, ' ');
+  }
+
+  // Player Section: starting-rank order (TPN order).
+  const playersByTpn = [...tournament.players]
+    .sort((a, b) => a.tpn - b.tpn);
+
+  const totalRounds = tournament.rounds.length;
+
+  playersByTpn.forEach(p => {
+    if (
+      !Number.isInteger(p.tpn) ||
+      p.tpn < 1 ||
+      p.tpn > 9999
+    ) {
+      throw new Error(`Invalid starting-rank number for ${p.name}.`);
+    }
+
+    const sexStr = '?';
+    const nameStr = formatPlayerName(p.name);
+    const fedStr = '(F)';
+    const fideNumStr = '(FIDE ID)';
+    const birthDateStr = '(Birth Dt)';
+
+    // Export the rating stored in the player record.
+    const rating = Number(p.rating);
+
+    if (
+      !Number.isInteger(rating) ||
+      rating < 0 ||
+      rating > 9999
+    ) {
+      throw new Error(`Invalid rating for ${p.name}.`);
+    }
+
+    // A zero rating means no rating is available.
+    const fideRatingStr = rating > 0 ? String(rating) : '(E)';
+
+    const pts = tiebreaks.get(p.id)?.score ?? p.score ?? 0;
+
+    if (!Number.isFinite(pts) || pts < 0) {
+      throw new Error(`Invalid score for ${p.name}.`);
+    }
+
+    const pointsStr = pts.toFixed(1);
+    const rank = rankMap.get(p.id) || p.tpn;
+
+    let line =
+      '001 ' +
+      numericField(p.tpn, 4, 'Starting-rank number') + ' ' +
+      field(sexStr, 1) +
+      field(p.title || '', 3) + ' ' +
+      field(nameStr, 33) + ' ' +
+      field(fideRatingStr, 4, true) + ' ' +
+      field(fedStr, 3) + ' ' +
+      field(fideNumStr, 11) + ' ' +
+      field(birthDateStr, 10) + ' ' +
+      numericField(pointsStr, 4, 'Score') + ' ' +
+      numericField(rank, 4, 'Rank');
+
+    // Round-by-round results.
+    for (let r = 0; r < totalRounds; r++) {
+      const curRound = tournament.rounds[r];
+
+      const pair = curRound
+        ? (curRound.pairings || []).find(rec =>
+            (
+              rec.kind === 'game' &&
+              (rec.whiteId === p.id || rec.blackId === p.id)
+            ) ||
+            (rec.kind === 'pab' && rec.pabId === p.id) ||
+            (rec.kind === 'unplayed' && rec.unplayedId === p.id)
+          )
+        : null;
+
+      // A missing record represents an unplayed zero-point round.
+      let oppId = '0000';
+      let color = '-';
+      let resChar = 'Z';
+
+      if (pair) {
+        if (pair.kind === 'pab') {
+          // Pairing-allocated bye.
+          resChar = 'U';
+        } else if (pair.kind === 'unplayed') {
+          // Administrative or requested unplayed round.
+          if (pair.awardedPoints === tournament.winPoints) {
+            resChar = 'F';
+          } else if (pair.awardedPoints === tournament.drawPoints) {
+            resChar = 'H';
+          } else if (pair.awardedPoints === tournament.lossPoints) {
+            resChar = 'Z';
+          } else {
+            throw new Error(
+              `Unsupported unplayed award for ${p.name} in round ${r + 1}.`
+            );
+          }
+        } else if (pair.kind === 'game') {
+          const isWhite = pair.whiteId === p.id;
+          const opponentId = isWhite ? pair.blackId : pair.whiteId;
+          const opponent = playerMap.get(opponentId);
+
+          if (
+            !opponent ||
+            !Number.isInteger(opponent.tpn) ||
+            opponent.tpn < 1 ||
+            opponent.tpn > 9999
+          ) {
+            throw new Error(
+              `Invalid opponent for ${p.name} in round ${r + 1}.`
+            );
+          }
+
+          oppId = numericField(
+            opponent.tpn,
+            4,
+            'Opponent starting-rank number'
+          );
+
+          color = isWhite ? 'w' : 'b';
+
+          if (pair.result === '1-0') {
+            resChar = isWhite ? '1' : '0';
+          } else if (pair.result === '0-1') {
+            resChar = isWhite ? '0' : '1';
+          } else if (pair.result === '0.5-0.5') {
+            resChar = '=';
+          } else if (pair.result === '1-0F') {
+            resChar = isWhite ? '+' : '-';
+          } else if (pair.result === '0-1F') {
+            resChar = isWhite ? '-' : '+';
+          } else if (pair.result === '0-0F') {
+            resChar = '-';
+          } else {
+            throw new Error(
+              `Invalid game result for ${p.name} in round ${r + 1}.`
+            );
+          }
+        }
+      }
+
+      line += `  ${oppId} ${color} ${resChar}`;
+    }
+
+    lines.push(line);
+  });
+
+  return lines.join('\r\n') + '\r\n';
+}
+
+function saveTRF() {
+  if (
+    !tournament ||
+    !Array.isArray(tournament.players) ||
+    tournament.players.length === 0
+  ) {
+    alert('There is no tournament to export.');
+    return;
+  }
+
+  /*
+   * TRF result codes do not themselves describe these scoring
+   * settings. Warn before exporting a nonstandard tournament.
+   */
+  const standardScoring =
+    tournament.winPoints === 1 &&
+    tournament.drawPoints === 0.5 &&
+    tournament.lossPoints === 0 &&
+    tournament.pabPoints === 1;
+
+  if (!standardScoring) {
+    const proceed = confirm(
+      'This tournament uses nonstandard scoring or a nonstandard ' +
+      'pairing-allocated bye award.\n\n' +
+      `Win / draw / loss: ${tournament.winPoints} / ` +
+      `${tournament.drawPoints} / ${tournament.lossPoints}\n` +
+      `Pairing-allocated bye: ${tournament.pabPoints}\n\n` +
+      'The TRF result codes do not describe these settings. ' +
+      'Inform the recipient separately. Continue exporting?'
+    );
+
+    if (!proceed) return;
+  }
+
+  try {
+    const content = generateTRF();
+
+    if (!content) {
+      throw new Error('No TRF content was generated.');
+    }
+
+    const blob = new Blob([content], {
+      type: 'text/plain;charset=utf-8'
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+
+    const cleanName = String(
+      tournament.name || 'fide_dutch_tournament'
+    )
+      .trim()
+      .replace(/[^\w\-]+/g, '_');
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+
+    a.download = cleanName
+      ? `TRF26_${cleanName}_${dateStr}.txt`
+      : `TRF26_${dateStr}.txt`;
+
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (error) {
+    console.error(error);
+    alert(`Could not generate TRF file: ${error.message}`);
+  }
+}
+
 /* ========================================================================== */
 /* INITIALIZATION                                                             */
 /* ========================================================================== */
@@ -4279,6 +4614,27 @@ window.addEventListener("beforeprint", () => {
     );
   }
 })();
+
+/* ========================================================================
+   Disable keyboard arrows and two-finger/wheel scrolling for round-count
+   and pairing-allocated bye points
+   ======================================================================== */
+['tRounds', 'tPab'].forEach(id => {
+  const input = $(id) || document.getElementById(id);
+  if (input) {
+    // Prevent keyboard Up, Down, PageUp, and PageDown keys
+    input.addEventListener('keydown', e => {
+      if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown'].includes(e.key)) {
+        e.preventDefault();
+      }
+    });
+
+    // Prevent mouse wheel and touchpad two-finger scrolling
+    input.addEventListener('wheel', e => {
+      e.preventDefault();
+    }, { passive: false });
+  }
+});
 </script>
 </body>
 </html>

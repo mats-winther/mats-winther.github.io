@@ -1037,38 +1037,38 @@ document.addEventListener("keydown", function (event) {
 
   function loadSamplePlayers() {
     document.getElementById("input-players").value = 
-`James Smith
-Emily Taylor
-Oliver Brown
-Charlotte Davies
-Harry Wilson
-Sophie Evans
-George Thomas
-Olivia Roberts
-Yusuf Al-Mansoor
-Amelia Walker
-Jack Johnson
-Chloe Green
-Thomas Wright
-Fatima Hassan
-William Hall
-Grace Lewis
-Charlie Clarke
-Jessica Robinson
-Benjamin Harris
-Lily Turner
-Kofi Mensah
-Daniel Clark
-Lucas Wood
-Ella Cooper
-Samuel King
-Hannah Baker
-Alexander Scott
-Amara Diallo
-Mia Phillips
-Liam Campbell
-Zoe Mitchell
-Ethan Adams`;
+`Smith, James
+Taylor, Emily
+Brown, Oliver
+Davies, Charlotte
+Wilson, Harry
+Evans, Sophie
+Thomas, George
+Roberts, Olivia
+Al-Mansoor, Yusuf
+Walker, Amelia
+Johnson, Jack
+Green, Chloe
+Wright, Thomas
+Hassan, Fatima
+Hall, William
+Lewis, Grace
+Clarke, Charlie
+Robinson, Jessica
+Harris, Benjamin
+Turner, Lily
+Mensah, Kofi
+Clark, Daniel
+Wood, Lucas
+Cooper, Ella
+King, Samuel
+Baker, Hannah
+Scott, Alexander
+Diallo, Amara
+Phillips, Mia
+Campbell, Liam
+Mitchell, Zoe
+Adams, Ethan`;
   }
 
   function startTournament() {
@@ -2180,63 +2180,139 @@ function getColourSequence(player) {
     openPrintPage(`${tournamentTitle} - Final Standings`, finalHtml);
   }
 
+/* ============================================================
+   TRF Export adapted for Monrad Pairing System
+   ============================================================ */
+
 function formatPlayerName(name) {
-  const trimmed = (name || '').trim();
-  if (!trimmed) return '(Name)';
-  if (trimmed.includes(',')) return trimmed;
-  const parts = trimmed.split(/\s+/);
-  if (parts.length === 1) return parts[0];
-  const last = parts.pop();
-  return `${last}, ${parts.join(' ')}`;
+  // Preserve the entered name. Enter names as "Surname, First name"
+  // when the correct surname order is known.
+  return String(name || '').trim() || '(Name)';
 }
 
 function generateTRF() {
-  if (!players || players.length === 0) return '';
+  if (!players || !Array.isArray(players) || players.length === 0) {
+    return '';
+  }
 
   const lines = [];
+  lines.push('### Replace the following placeholders within their fixed-width fields:');
+  lines.push('### ?: sex code (m or w), immediately followed by the three-character title field, with no separator.');
+  lines.push('### (E): FIDE Elo rating (4 characters)');
+  lines.push('### (F): FIDE federation code (3 characters)');
+  lines.push('### (FIDE ID): numeric FIDE ID (up to 11 characters)');
+  lines.push('### (Birth Dt): birth date in YYYY/MM/DD format (10 characters)');
+  lines.push('### Remove these comment lines before submitting the TRF file.');
 
-  // Tournament Section (012, 022, 032, 102)
-  const tName = (tournamentName || '').trim();
-  lines.push(`012 ${tName || 'Club Championship'}`);
+  // Tournament Section
+  const tName = String(tournamentName || '')
+    .replace(/[\r\n]+/g, ' ')
+    .trim();
+
+  lines.push(`012 ${tName || 'Monrad Chess Tournament'}`);
   lines.push('022 (City)');
   lines.push('032 (Federation)');
   lines.push('102 (Chief Arbiter)');
 
-  // Standings & Ranks
+  // Standings & Tie-breaks calculation matching Monrad standings
   calculateBuchholz();
   calculateWNT();
+
   const sortedStandings = [...players].sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
     if (a.withdrawn !== b.withdrawn) return a.withdrawn ? 1 : -1;
-    let tbA = a.wnt, tbB = b.wnt;
-    if (tieBreakSystem === "buchholz") { tbA = a.buchholz; tbB = b.buchholz; }
-    else if (tieBreakSystem === "cumulative") { tbA = a.cumulativeScore; tbB = b.cumulativeScore; }
+
+    let tbA = a.wnt;
+    let tbB = b.wnt;
+    if (tieBreakSystem === "buchholz") {
+      tbA = a.buchholz;
+      tbB = b.buchholz;
+    } else if (tieBreakSystem === "cumulative") {
+      tbA = a.cumulativeScore;
+      tbB = b.cumulativeScore;
+    }
+
     if (Math.abs(tbB - tbA) > 0.0001) return tbB - tbA;
     return a.originalPos - b.originalPos;
   });
-  const rankMap = new Map(sortedStandings.map((p, idx) => [p.id, idx + 1]));
 
-  // Player Section (001): sorted by Startingrank-Number (Seed)
+  const rankMap = new Map();
+  sortedStandings.forEach((p, idx) => {
+    rankMap.set(p.id, idx + 1);
+  });
+
+  const playerMap = new Map(players.map(p => [p.id, p]));
+
+  /*
+   * Fixed-width TRF fields. Temporary placeholders are truncated
+   * to fit; replace them with valid values or blanks before submission.
+   */
+  function field(value, width, right = false) {
+    const text = String(value ?? '')
+      .replace(/[\r\n]+/g, ' ')
+      .slice(0, width);
+
+    return right
+      ? text.padStart(width, ' ')
+      : text.padEnd(width, ' ');
+  }
+
+  function numericField(value, width, label) {
+    const text = String(value);
+
+    if (text.length > width) {
+      throw new Error(`${label} does not fit in its TRF field.`);
+    }
+
+    return text.padStart(width, ' ');
+  }
+
+  // Player Section: sorted by starting rank (originalPos)
   const playersBySeed = [...players].sort((a, b) => (a.originalPos || a.id) - (b.originalPos || b.id));
   const totalRounds = roundHistory.length;
 
   playersBySeed.forEach(p => {
-    const seedStr = String(p.originalPos || p.id).padStart(4, ' ');
-    const sexStr = '(Sex)';
-    const titleStr = '(Title)';
-    const nameStr = formatPlayerName(p.name).padEnd(33, ' ').substring(0, 33);
-    const ratingStr = p.rating ? String(p.rating).padStart(4, ' ') : ' (Elo)';
-    const fedStr = '(FIDE Federation)';
-    const fideNumStr = '(FIDE Number)';
-    const birthDateStr = '(Birth Date)';
-    const pointsStr = p.score.toFixed(1).padStart(4, ' ');
-    const rankStr = String(rankMap.get(p.id) || p.originalPos || p.id).padStart(4, ' ');
+    const seed = p.originalPos || p.id;
+    if (!Number.isInteger(seed) || seed < 1 || seed > 9999) {
+      throw new Error(`Invalid starting-rank number for ${p.name}.`);
+    }
 
-    let line = `001  ${seedStr} ${sexStr} ${titleStr} ${nameStr} ${ratingStr} ${fedStr} ${fideNumStr} ${birthDateStr} ${pointsStr} ${rankStr}`;
+    const sexStr = '?';
+    const nameStr = formatPlayerName(p.name);
+    const fedStr = '(F)';
+    const fideNumStr = '(FIDE ID)';
+    const birthDateStr = '(Birth Dt)';
 
-    // Round by round results
-    for (let r = 1; r <= totalRounds; r++) {
-      const curRound = roundHistory[r - 1];
+    // Export rating if present, otherwise placeholder
+    const rating = Number(p.rating);
+    const hasValidRating = Number.isInteger(rating) && rating > 0 && rating <= 9999;
+    const fideRatingStr = hasValidRating ? String(rating) : '(E)';
+
+    const pts = p.score;
+    if (!Number.isFinite(pts) || pts < 0) {
+      throw new Error(`Invalid score for ${p.name}.`);
+    }
+
+    const pointsStr = pts.toFixed(1);
+    const rank = rankMap.get(p.id) || seed;
+
+    let line =
+      '001 ' +
+      numericField(seed, 4, 'Starting-rank number') + ' ' +
+      field(sexStr, 1) +
+      field(p.title || '', 3) + ' ' +
+      field(nameStr, 33) + ' ' +
+      field(fideRatingStr, 4, true) + ' ' +
+      field(fedStr, 3) + ' ' +
+      field(fideNumStr, 11) + ' ' +
+      field(birthDateStr, 10) + ' ' +
+      numericField(pointsStr, 4, 'Score') + ' ' +
+      numericField(rank, 4, 'Rank');
+
+    // Round-by-round results
+    for (let r = 0; r < totalRounds; r++) {
+      const curRound = roundHistory[r];
+
       const match = (curRound.matches || []).find(m =>
         (m.whiteId != null ? m.whiteId === p.id : m.whiteName === p.name) ||
         (m.blackId != null ? m.blackId === p.id : m.blackName === p.name)
@@ -2250,10 +2326,13 @@ function generateTRF() {
         const isWhite = (match.whiteId != null ? match.whiteId === p.id : match.whiteName === p.name);
         const oppIdNum = isWhite ? match.blackId : match.whiteId;
         const oppName = isWhite ? match.blackName : match.whiteName;
-        const opp = players.find(x => x.id === oppIdNum) || players.find(x => x.name === oppName);
-        const oppSeed = opp ? (opp.originalPos || opp.id) : (oppIdNum || 0);
+        const opponent = playerMap.get(oppIdNum) || players.find(x => x.name === oppName);
 
-        oppId = String(oppSeed).padStart(4, ' ');
+        if (opponent) {
+          const oppSeed = opponent.originalPos || opponent.id;
+          oppId = numericField(oppSeed, 4, 'Opponent starting-rank number');
+        }
+
         color = isWhite ? 'w' : 'b';
 
         if (match.forfeit || (match.result && match.result.includes('0 - 0'))) {
@@ -2273,11 +2352,11 @@ function generateTRF() {
         if (hadBye) {
           oppId = '0000';
           color = '-';
-          resChar = 'U';
+          resChar = 'U'; // Pairing-allocated bye
         } else {
           oppId = '0000';
           color = '-';
-          resChar = 'Z';
+          resChar = 'Z'; // Unplayed zero-point round
         }
       }
 
@@ -2291,29 +2370,49 @@ function generateTRF() {
 }
 
 function saveTRF() {
-  if (!players || players.length === 0) {
-    alert("There is no tournament to export.");
+  if (!players || !Array.isArray(players) || players.length === 0) {
+    alert('There is no tournament to export.');
     return;
   }
 
-  const content = generateTRF();
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
+  try {
+    const content = generateTRF();
 
-  const cleanName = (tournamentName || '').trim().replace(/[^a-z0-9_-]/gi, '_');
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, '0');
-  const dd = String(today.getDate()).padStart(2, '0');
-  const dateStr = `${yyyy}-${mm}-${dd}`;
+    if (!content) {
+      throw new Error('No TRF content was generated.');
+    }
 
-  a.download = cleanName ? `TRF_${cleanName}_${dateStr}.txt` : `TRF_${dateStr}.txt`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+    const blob = new Blob([content], {
+      type: 'text/plain;charset=utf-8'
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+
+    const cleanName = String(tournamentName || 'monrad_tournament')
+      .trim()
+      .replace(/[^\w\-]+/g, '_');
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+
+    a.download = cleanName
+      ? `TRF26_${cleanName}_${dateStr}.txt`
+      : `TRF26_${dateStr}.txt`;
+
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (error) {
+    console.error(error);
+    alert(`Could not generate TRF file: ${error.message}`);
+  }
 }
 
   // Vid sidladdning: erbjud att fortsätta en autosparad turnering, om det finns någon
