@@ -1,632 +1,2851 @@
 <!DOCTYPE html>
 <html lang="sv">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Ett Monrad-lottningssystem för schack enligt den norska definitionen som körs direkt i webbläsaren.">
-<meta name="author" content="Mats Winther">
-<link rel="canonical" href="https://mats-winther.github.io/norsk-monrad.htm">
-<title>Turneringshanterare för Monrad</title>
-<style>
-:root{--primary:#24486b;--dark:#17334e;--secondary:#e7edf3;--success:#246b3d;--danger:#a52a2a;--warning:#8a5a00;--border:#c6ced6;--background:#f4f6f8;--card:#fff;--text:#1b252e;--muted:#5e6b75}
-*{box-sizing:border-box}body{margin:0;background:var(--background);color:var(--text);font:1rem Arial,Helvetica,sans-serif;line-height:1.4}
-header{padding:18px 24px;background:var(--primary);color:#fff;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
-header h1{margin:0 0 4px;font-size:1.65rem}header p{margin:0;opacity:.9}
-.toolbar{display:flex;flex-wrap:wrap;gap:8px;padding:12px 24px;background:var(--dark)}
-main{width:min(1200px,calc(100% - 30px));margin:20px auto 50px}
-.card{margin-bottom:18px;padding:20px;background:var(--card);border:1px solid var(--border);border-radius:7px;box-shadow:0 2px 5px #0000000f}
-.card h2,.card h3{margin-top:0}.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:15px;margin-bottom:16px}
-label{display:block;margin-bottom:5px;font-weight:bold}input,select,textarea,button{font:inherit}
-input[type=text],input[type=number],select,textarea{width:100%;padding:9px;border:1px solid var(--border);border-radius:4px;background:#fff;color:var(--text)}
-textarea{min-height:290px;resize:vertical;font-family:Consolas,Monaco,monospace;line-height:1.45}
-button{padding:9px 14px;border:0;border-radius:4px;background:var(--primary);color:#fff;cursor:pointer}
-button:hover:not(:disabled){background:var(--dark)}button:disabled{cursor:not-allowed;opacity:.55}
-button.secondary{background:#687785}button.success{background:var(--success)}button.danger{background:var(--danger)}button.warning{background:var(--warning)}
-.button-row{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin-top:14px}
-.muted{color:var(--muted)}.small{font-size:.88rem}.hidden{display:none!important}
-.notice{margin:12px 0;padding:11px 13px;border-left:5px solid var(--primary);background:#eef5fb}
-.notice.warning{border-color:var(--warning);background:#fff6df}.notice.success{border-color:var(--success);background:#eaf7ef}.notice.danger{border-color:var(--danger);background:#fdecec}
-.summary{display:flex;flex-wrap:wrap;gap:10px 24px}.summary strong{display:block;font-size:.85rem;color:var(--muted)}.summary span{font-size:1.08rem}
-.table-wrap{overflow-x:auto}table{width:100%;margin-top:10px;border-collapse:collapse}th,td{padding:8px 9px;border:1px solid var(--border);text-align:left;vertical-align:middle}
-th{background:var(--secondary);white-space:nowrap}td.number,th.number{text-align:right}td.center,th.center{text-align:center}tr.withdrawn{background:#f5f5f5;color:var(--muted)}
-.result-buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;min-width:250px}
-button.result-choice{width:auto;padding:5px 8px;border:1px solid #687785;background:#f5f5f5;color:var(--text);font-size:.86rem}
-button.result-choice:hover:not(:disabled){background:var(--secondary);color:var(--text)}button.result-choice.selected{border-color:var(--success);background:var(--success);color:#fff;font-weight:bold}
-.selected-result{width:100%;margin-top:3px;color:var(--muted);font-size:.8rem;text-align:center}.player-number{color:var(--muted);font-size:.9em}.score{font-weight:bold}
-.modal-overlay{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;background:#0009}
-.modal-overlay.hidden{display:none}.modal-box{background:#fff;border-radius:12px;padding:22px;max-width:480px;width:100%;box-shadow:0 20px 25px -5px #0003;border:1px solid var(--border)}
-.modal-box.modal-wide{max-width:820px;max-height:90vh;display:flex;flex-direction:column}.modal-layout{display:flex;gap:20px;align-items:stretch;min-height:0}
-.modal-sidebar{flex:0 0 190px;background:var(--secondary);border-radius:6px;padding:14px 12px;font-size:.88rem;display:flex;flex-direction:column;gap:12px}
-.modal-sidebar h4{margin:0 0 6px;font-size:.82rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
-.modal-sidebar ul{list-style:none;padding:0;margin:0}.modal-sidebar li{margin-bottom:8px}.modal-sidebar a{color:var(--primary);text-decoration:none;font-weight:500;display:block}.modal-sidebar a:hover{text-decoration:underline}
-.modal-main{flex:1;min-width:0;overflow-y:auto;max-height:65vh;padding-right:6px}
-@media(max-width:650px){main{width:min(100% - 16px,1200px);margin-top:10px}header,.toolbar{padding-right:12px;padding-left:12px}.card{padding:14px}button{width:100%}.button-row select{width:100%}.result-buttons button{width:auto}.modal-layout{flex-direction:column}.modal-sidebar{flex:none;width:100%}.modal-main{max-height:50vh}}
-</style>
-</head>
-<body>
-<header>
-  <div>
-    <h1>Turneringshanterare för Monrad</h1>
-    <p>Lottning och administration enligt Norges Schackförbunds Monradsystem</p>
-  </div>
-  <button type="button" class="secondary" onclick="openNorwegianModal(event)">Om programmet</button>
-</header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Ett Monrad-lottningssystem för schack enligt den norska definitionen som körs direkt i webbläsaren."
+    />
+    <meta name="author" content="Mats Winther" />
+    <link
+      rel="canonical"
+      href="https://mats-winther.github.io/norsk-monrad.htm"
+    />
+    <title>Turneringshanterare för Monrad</title>
+    <style>
+      :root {
+        --primary: #24486b;
+        --dark: #17334e;
+        --secondary: #e7edf3;
+        --success: #246b3d;
+        --danger: #a52a2a;
+        --warning: #8a5a00;
+        --border: #c6ced6;
+        --background: #f4f6f8;
+        --card: #fff;
+        --text: #1b252e;
+        --muted: #5e6b75;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--background);
+        color: var(--text);
+        font:
+          1rem Arial,
+          Helvetica,
+          sans-serif;
+        line-height: 1.4;
+      }
+      header {
+        padding: 18px 24px;
+        background: var(--primary);
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      header h1 {
+        margin: 0 0 4px;
+        font-size: 1.65rem;
+      }
+      header p {
+        margin: 0;
+        opacity: 0.9;
+      }
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 12px 24px;
+        background: var(--dark);
+      }
+      main {
+        width: min(1200px, calc(100% - 30px));
+        margin: 20px auto 50px;
+      }
+      .card {
+        margin-bottom: 18px;
+        padding: 20px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        box-shadow: 0 2px 5px #0000000f;
+      }
+      .card h2,
+      .card h3 {
+        margin-top: 0;
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 15px;
+        margin-bottom: 16px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      input,
+      select,
+      textarea,
+      button {
+        font: inherit;
+      }
+      input[type="text"],
+      input[type="number"],
+      select,
+      textarea {
+        width: 100%;
+        padding: 9px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: #fff;
+        color: var(--text);
+      }
+      textarea {
+        min-height: 290px;
+        resize: vertical;
+        font-family: Consolas, Monaco, monospace;
+        line-height: 1.45;
+      }
+      button {
+        padding: 9px 14px;
+        border: 0;
+        border-radius: 4px;
+        background: var(--primary);
+        color: #fff;
+        cursor: pointer;
+      }
+      button:hover:not(:disabled) {
+        background: var(--dark);
+      }
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
+      button.secondary {
+        background: #687785;
+      }
+      button.success {
+        background: var(--success);
+      }
+      button.danger {
+        background: var(--danger);
+      }
+      button.warning {
+        background: var(--warning);
+      }
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 9px;
+        margin-top: 14px;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .small {
+        font-size: 0.88rem;
+      }
+      .hidden {
+        display: none !important;
+      }
+      .notice {
+        margin: 12px 0;
+        padding: 11px 13px;
+        border-left: 5px solid var(--primary);
+        background: #eef5fb;
+      }
+      .notice.warning {
+        border-color: var(--warning);
+        background: #fff6df;
+      }
+      .notice.success {
+        border-color: var(--success);
+        background: #eaf7ef;
+      }
+      .notice.danger {
+        border-color: var(--danger);
+        background: #fdecec;
+      }
+      .summary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 24px;
+      }
+      .summary strong {
+        display: block;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+      .summary span {
+        font-size: 1.08rem;
+      }
+      .table-wrap {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        margin-top: 10px;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 8px 9px;
+        border: 1px solid var(--border);
+        text-align: left;
+        vertical-align: middle;
+      }
+      th {
+        background: var(--secondary);
+        white-space: nowrap;
+      }
+      td.number,
+      th.number {
+        text-align: right;
+      }
+      td.center,
+      th.center {
+        text-align: center;
+      }
+      tr.withdrawn {
+        background: #f5f5f5;
+        color: var(--muted);
+      }
+      .result-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
+        min-width: 250px;
+      }
+      button.result-choice {
+        width: auto;
+        padding: 5px 8px;
+        border: 1px solid #687785;
+        background: #f5f5f5;
+        color: var(--text);
+        font-size: 0.86rem;
+      }
+      button.result-choice:hover:not(:disabled) {
+        background: var(--secondary);
+        color: var(--text);
+      }
+      button.result-choice.selected {
+        border-color: var(--success);
+        background: var(--success);
+        color: #fff;
+        font-weight: bold;
+      }
+      .selected-result {
+        width: 100%;
+        margin-top: 3px;
+        color: var(--muted);
+        font-size: 0.8rem;
+        text-align: center;
+      }
+      .player-number {
+        color: var(--muted);
+        font-size: 0.9em;
+      }
+      .score {
+        font-weight: bold;
+      }
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: #0009;
+      }
+      .modal-overlay.hidden {
+        display: none;
+      }
+      .modal-box {
+        background: #fff;
+        border-radius: 12px;
+        padding: 22px;
+        max-width: 480px;
+        width: 100%;
+        box-shadow: 0 20px 25px -5px #0003;
+        border: 1px solid var(--border);
+      }
+      .modal-box.modal-wide {
+        max-width: 820px;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .modal-layout {
+        display: flex;
+        gap: 20px;
+        align-items: stretch;
+        min-height: 0;
+      }
+      .modal-sidebar {
+        flex: 0 0 190px;
+        background: var(--secondary);
+        border-radius: 6px;
+        padding: 14px 12px;
+        font-size: 0.88rem;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .modal-sidebar h4 {
+        margin: 0 0 6px;
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--muted);
+      }
+      .modal-sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .modal-sidebar li {
+        margin-bottom: 8px;
+      }
+      .modal-sidebar a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+        display: block;
+      }
+      .modal-sidebar a:hover {
+        text-decoration: underline;
+      }
+      .modal-main {
+        flex: 1;
+        min-width: 0;
+        overflow-y: auto;
+        max-height: 65vh;
+        padding-right: 6px;
+      }
+      @media (max-width: 650px) {
+        main {
+          width: min(100% - 16px, 1200px);
+          margin-top: 10px;
+        }
+        header,
+        .toolbar {
+          padding-right: 12px;
+          padding-left: 12px;
+        }
+        .card {
+          padding: 14px;
+        }
+        button {
+          width: 100%;
+        }
+        .button-row select {
+          width: 100%;
+        }
+        .result-buttons button {
+          width: auto;
+        }
+        .modal-layout {
+          flex-direction: column;
+        }
+        .modal-sidebar {
+          flex: none;
+          width: 100%;
+        }
+        .modal-main {
+          max-height: 50vh;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>Turneringshanterare för Monrad</h1>
+        <p>
+          Lottning och administration enligt Norges Schackförbunds Monradsystem
+        </p>
+      </div>
+      <button
+        type="button"
+        class="secondary"
+        onclick="openNorwegianModal(event)"
+      >
+        Om programmet
+      </button>
+    </header>
 
-<div class="toolbar">
-  <button id="saveTournamentButton">Spara turnering</button>
-  <button id="loadTournamentButton" class="secondary">Läs in turnering</button>
-  <button id="saveTrfButton" class="secondary hidden">Spara TRF-fil</button>
-  <button id="withdrawPlayerButton" class="warning hidden">Avanmäl spelare</button>
-  <button id="newTournamentButton" class="danger">Ny turnering</button>
-</div>
-<input id="tournamentFileInput" class="hidden" type="file" accept=".json,application/json">
-<input id="playerFileInput" class="hidden" type="file" accept=".txt,.csv,text/plain,text/csv">
+    <div class="toolbar">
+      <button id="saveTournamentButton">Spara turnering</button>
+      <button id="loadTournamentButton" class="secondary">
+        Läs in turnering
+      </button>
+      <button id="saveTrfButton" class="secondary hidden">Spara TRF-fil</button>
+      <button id="withdrawPlayerButton" class="warning hidden">
+        Avanmäl spelare
+      </button>
+      <button id="newTournamentButton" class="danger">Ny turnering</button>
+    </div>
+    <input
+      id="tournamentFileInput"
+      class="hidden"
+      type="file"
+      accept=".json,application/json"
+    />
+    <input
+      id="playerFileInput"
+      class="hidden"
+      type="file"
+      accept=".txt,.csv,text/plain,text/csv"
+    />
 
-<main>
-  <section id="setupPanel">
-    <div class="card">
-      <h2>Turneringsinställningar</h2>
-      <div class="form-grid">
-        <div><label for="tournamentName">Turneringsnamn</label><input id="tournamentName" type="text" value="Norsk Monradturnering"></div>
-        <div><label for="totalRounds">Antal ronder</label><input id="totalRounds" type="number" min="1" max="30" value="7"></div>
-        <div><label for="startNumberMethod">Tilldelning av startnummer</label>
-          <select id="startNumberMethod"><option value="seeded">Seedad lottning efter rating</option><option value="random">Helt slumpmässig lottning</option></select>
+    <main>
+      <section id="setupPanel">
+        <div class="card">
+          <h2>Turneringsinställningar</h2>
+          <div class="form-grid">
+            <div>
+              <label for="tournamentName">Turneringsnamn</label
+              ><input
+                id="tournamentName"
+                type="text"
+                value="Norsk Monradturnering"
+              />
+            </div>
+            <div>
+              <label for="totalRounds">Antal ronder</label
+              ><input
+                id="totalRounds"
+                type="number"
+                min="1"
+                max="30"
+                value="7"
+              />
+            </div>
+            <div>
+              <label for="startNumberMethod">Tilldelning av startnummer</label>
+              <select id="startNumberMethod">
+                <option value="seeded">Seedad lottning efter rating</option>
+                <option value="random">Helt slumpmässig lottning</option>
+              </select>
+            </div>
+          </div>
+          <h3>Spelare</h3>
+          <p class="muted small">
+            Ange en spelare per rad enligt formatet
+            <strong>Namn;Klubb;Rating</strong>. Tabbar och kommatecken fungerar
+            också. Citerade CSV-fält stöds. Klubb och rating kan utelämnas.
+            Rader som börjar med <strong>#</strong> ignoreras.
+          </p>
+          <textarea
+            id="playersText"
+            spellcheck="false"
+            placeholder="Anna Andersson;Stockholms Schacksällskap;1820&#10;Erik Berg;Lunds ASK;1740"
+          ></textarea>
+          <div class="button-row">
+            <button id="loadPlayerFileButton" class="secondary">
+              Läs in TXT- eller CSV-fil
+            </button>
+            <button id="loadSampleButton" class="secondary">
+              Läs in exempelspelare
+            </button>
+            <button id="clearPlayersButton" class="danger">
+              Rensa spelare
+            </button>
+            <button id="startTournamentButton" class="success">
+              Starta turneringen
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Seedad lottning</h3>
+          <p>
+            Spelarna rangordnas efter rating och delas in i fyra lika stora
+            grupper: A, B, C och D. Spelarna lottas med följande återkommande
+            gruppordning:
+          </p>
+          <p><strong>A, C, D, B, C, A, B, D</strong></p>
+          <p class="muted small">
+            Om antalet spelare inte är delbart med fyra lottas de lägst rankade
+            återstående spelarna till de sista startnumren.
+          </p>
+        </div>
+      </section>
+
+      <section id="tournamentPanel" class="hidden">
+        <div class="card">
+          <h2 id="tournamentHeading"></h2>
+          <div id="tournamentSummary" class="summary"></div>
+          <div id="globalWarnings"></div>
+        </div>
+        <div id="currentRoundCard" class="card">
+          <div id="currentRoundContent"></div>
+        </div>
+        <div id="adjournedGamesCard" class="card hidden">
+          <h2>Avbrutna partier</h2>
+          <div id="adjournedGamesContent"></div>
+        </div>
+        <div class="card">
+          <h2>Utskrivbara rondlistor</h2>
+          <p class="muted">
+            En fryst kopia av rondlistan sparas innan varje rond lottas. Listan
+            kan skrivas ut även efter att turneringen har gått vidare till en
+            senare rond.
+          </p>
+          <div class="button-row">
+            <select id="historyRoundSelect"></select
+            ><button id="printHistoricalRoundListButton">
+              Skriv ut vald lista före ronden
+            </button>
+          </div>
+        </div>
+        <div id="finalResultsCard" class="card hidden">
+          <h2>Slutställning</h2>
+          <div id="finalResultsContent"></div>
+          <div class="button-row">
+            <button id="printFinalResultsButton">
+              Skriv ut slutställningen</button
+            ><button id="saveFinalTrfButton" class="secondary">
+              Spara TRF-fil
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div
+      id="norwegian-modal"
+      class="modal-overlay hidden"
+      onclick="if (event.target === this) closeNorwegianModal();"
+    >
+      <div class="modal-box modal-wide">
+        <h3 style="margin: 0 0 14px; color: var(--primary); font-size: 1.25rem">
+          Norsk Monrad
+        </h3>
+        <div class="modal-layout">
+          <aside class="modal-sidebar">
+            <div>
+              <h4>Referenser</h4>
+              <ul>
+                <li>
+                  <a
+                    href="https://2000.sjakk.no/kunnskap/systemer/norges-sjakkforbunds-monradsystem/"
+                    target="_blank"
+                    rel="noopener"
+                    >NSF:s monradregler ↗</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="https://mats-winther.github.io/bg/schacklottning.htm"
+                    target="_blank"
+                    rel="noopener"
+                    >Om schacklottning ↗</a
+                  >
+                </li>
+              </ul>
+            </div>
+          </aside>
+          <div class="modal-main">
+            <div style="font-size: 0.93rem; line-height: 1.55; color: #334155">
+              <section style="margin-bottom: 14px">
+                <h4 style="margin: 0 0 4px; color: var(--dark)">
+                  Startnummer och poänggrupper
+                </h4>
+                Startnummer kan lottas slumpmässigt eller genom seedad lottning.
+                Efter varje rond sorteras spelarna i poänggrupper och ordnas
+                efter startnummer inom varje grupp. Motståndare bör i möjligaste
+                mån hämtas från samma poänggrupp.
+              </section>
+              <section style="margin-bottom: 14px">
+                <h4 style="margin: 0 0 4px; color: var(--dark)">Färgregler</h4>
+                Färgfördelningen strävar efter både balans och växling. Ingen
+                spelare bör få samma färg mer än tre gånger i rad eller få den
+                ena färgen i mer än hälften av partierna plus ett. Dessa
+                absoluta färgregler åsidosätter poänggruppsmatchningen i alla
+                ronder utom sista ronden.
+              </section>
+              <section style="margin-bottom: 14px">
+                <h4 style="margin: 0 0 4px; color: var(--dark)">
+                  Resultat och särskiljning
+                </h4>
+                Slutställningen avgörs i första hand av partipoäng och i andra
+                hand av summan av motståndarnas slutpoäng (Buchholz Cut-1 eller
+                Cut-2). Ytterligare särskiljning görs med kvalitetspoäng enligt
+                Sonneborn-Berger och lottning.
+              </section>
+              <section>
+                <h4 style="margin: 0 0 4px; color: var(--dark)">
+                  Korrigeringar
+                </h4>
+                När rondresultaten har fastställts kan ett felaktigt registrerat
+                resultat korrigeras via användargränssnittet, förutsatt att en
+                säkerhetskopia av turneringen tidigare har skapats med
+                funktionen ”Spara turnering”.
+              </section>
+            </div>
+          </div>
+        </div>
+        <div
+          style="
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 16px;
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+          "
+        >
+          <button type="button" onclick="closeNorwegianModal()">Stäng</button>
         </div>
       </div>
-      <h3>Spelare</h3>
-      <p class="muted small">Ange en spelare per rad enligt formatet <strong>Namn;Klubb;Rating</strong>. Tabbar och kommatecken fungerar också. Citerade CSV-fält stöds. Klubb och rating kan utelämnas. Rader som börjar med <strong>#</strong> ignoreras.</p>
-      <textarea id="playersText" spellcheck="false" placeholder="Anna Andersson;Stockholms Schacksällskap;1820&#10;Erik Berg;Lunds ASK;1740"></textarea>
-      <div class="button-row">
-        <button id="loadPlayerFileButton" class="secondary">Läs in TXT- eller CSV-fil</button>
-        <button id="loadSampleButton" class="secondary">Läs in exempelspelare</button>
-        <button id="clearPlayersButton" class="danger">Rensa spelare</button>
-        <button id="startTournamentButton" class="success">Starta turneringen</button>
-      </div>
     </div>
-    <div class="card">
-      <h3>Seedad lottning</h3>
-      <p>Spelarna rangordnas efter rating och delas in i fyra lika stora grupper: A, B, C och D. Spelarna lottas med följande återkommande gruppordning:</p>
-      <p><strong>A, C, D, B, C, A, B, D</strong></p>
-      <p class="muted small">Om antalet spelare inte är delbart med fyra lottas de lägst rankade återstående spelarna till de sista startnumren.</p>
-    </div>
-  </section>
 
-  <section id="tournamentPanel" class="hidden">
-    <div class="card"><h2 id="tournamentHeading"></h2><div id="tournamentSummary" class="summary"></div><div id="globalWarnings"></div></div>
-    <div id="currentRoundCard" class="card"><div id="currentRoundContent"></div></div>
-    <div id="adjournedGamesCard" class="card hidden"><h2>Avbrutna partier</h2><div id="adjournedGamesContent"></div></div>
-    <div class="card">
-      <h2>Utskrivbara rondlistor</h2>
-      <p class="muted">En fryst kopia av rondlistan sparas innan varje rond lottas. Listan kan skrivas ut även efter att turneringen har gått vidare till en senare rond.</p>
-      <div class="button-row"><select id="historyRoundSelect"></select><button id="printHistoricalRoundListButton">Skriv ut vald lista före ronden</button></div>
-    </div>
-    <div id="finalResultsCard" class="card hidden">
-      <h2>Slutställning</h2><div id="finalResultsContent"></div>
-      <div class="button-row"><button id="printFinalResultsButton">Skriv ut slutställningen</button><button id="saveFinalTrfButton" class="secondary">Spara TRF-fil</button></div>
-    </div>
-  </section>
-</main>
+    <script>
+      "use strict";
 
-<div id="norwegian-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeNorwegianModal()">
-  <div class="modal-box modal-wide">
-    <h3 style="margin:0 0 14px;color:var(--primary);font-size:1.25rem">Norsk Monrad</h3>
-    <div class="modal-layout">
-      <aside class="modal-sidebar">
-        <div><h4>Referenser</h4><ul>
-          <li><a href="https://2000.sjakk.no/kunnskap/systemer/norges-sjakkforbunds-monradsystem/" target="_blank" rel="noopener">NSF:s monradregler ↗</a></li>
-          <li><a href="https://mats-winther.github.io/bg/schacklottning.htm" target="_blank" rel="noopener">Om schacklottning ↗</a></li>
-        </ul></div>
-      </aside>
-      <div class="modal-main">
-        <div style="font-size:.93rem;line-height:1.55;color:#334155">
-          <section style="margin-bottom:14px"><h4 style="margin:0 0 4px;color:var(--dark)">Startnummer och poänggrupper</h4>Startnummer kan lottas slumpmässigt eller genom seedad lottning. Efter varje rond sorteras spelarna i poänggrupper och ordnas efter startnummer inom varje grupp. Motståndare bör i möjligaste mån hämtas från samma poänggrupp.</section>
-          <section style="margin-bottom:14px"><h4 style="margin:0 0 4px;color:var(--dark)">Färgregler</h4>Färgfördelningen strävar efter både balans och växling. Ingen spelare bör få samma färg mer än tre gånger i rad eller få den ena färgen i mer än hälften av partierna plus ett. Dessa absoluta färgregler åsidosätter poänggruppsmatchningen i alla ronder utom sista ronden.</section>
-          <section style="margin-bottom:14px"><h4 style="margin:0 0 4px;color:var(--dark)">Resultat och särskiljning</h4>Slutställningen avgörs i första hand av partipoäng och i andra hand av summan av motståndarnas slutpoäng (Buchholz Cut-1 eller Cut-2). Ytterligare särskiljning görs med kvalitetspoäng enligt Sonneborn-Berger och lottning.</section>
-          <section><h4 style="margin:0 0 4px;color:var(--dark)">Korrigeringar</h4>När rondresultaten har fastställts kan ett felaktigt registrerat resultat korrigeras via användargränssnittet, förutsatt att en säkerhetskopia av turneringen tidigare har skapats med funktionen ”Spara turnering”.</section>
-        </div>
-      </div>
-    </div>
-    <div style="display:flex;justify-content:flex-end;margin-top:16px;border-top:1px solid var(--border);padding-top:12px"><button type="button" onclick="closeNorwegianModal()">Stäng</button></div>
-  </div>
-</div>
-
-<script>
-"use strict";
-
-/* ============================================================
+      /* ============================================================
    Application state
 ============================================================ */
 
-function emptyState(){return{app:"NorwegianMonradWeb",version:2,status:"setup",name:"",totalRounds:7,startNumberMethod:"seeded",players:[],rounds:[],warnings:[]}}
-let state=emptyState();
+      function emptyState() {
+        return {
+          app: "NorwegianMonradWeb",
+          version: 2,
+          status: "setup",
+          name: "",
+          totalRounds: 7,
+          startNumberMethod: "seeded",
+          players: [],
+          rounds: [],
+          warnings: [],
+        };
+      }
+      let state = emptyState();
 
-/* ============================================================
+      /* ============================================================
    Browser autosave
 ============================================================ */
 
-const AUTOSAVE_KEY="norwegianMonradAutosave";
-let autosaveEnabled=true;
-function autosave(){if(!autosaveEnabled||state.status==="setup")return;try{localStorage.setItem(AUTOSAVE_KEY,JSON.stringify(state))}catch(error){console.warn("Tournament autosave failed:",error)}}
-function clearAutosave(){try{localStorage.removeItem(AUTOSAVE_KEY);return true}catch(error){console.warn("Could not remove tournament autosave:",error);return false}}
-function offerAutosave(){
-  let raw;
-  try{raw=localStorage.getItem(AUTOSAVE_KEY)}catch(error){autosaveEnabled=false;console.warn("Could not access tournament autosave:",error);alert("Webbläsarens lagring är inte tillgänglig. Använd Spara turnering för att skapa säkerhetskopior.");return}
-  if(!raw)return;
-  let saved;
-  try{saved=normalizeLoadedState(JSON.parse(raw));if(saved.status==="setup")throw new Error("De sparade uppgifterna är inte en startad turnering.")}
-  catch(error){autosaveEnabled=false;console.error("Could not restore autosave:",error);alert("Den sparade turneringen kunde inte återställas: "+error.message+"\n\nDen har inte skrivits över. Autosparning är avstängd tills du väljer Ny turnering.");return}
-  const completed=saved.rounds.filter(round=>round.completed).length;
-  const description=saved.status==="finished"?"avslutad":`${completed} av ${saved.totalRounds} ronder avslutade`;
-  if(confirm(`En sparad turnering hittades:\n\n”${saved.name}” (${description}).\n\nVälj OK för att fortsätta turneringen eller Avbryt för att ta bort autosparningen.`)){state=saved}
-  else if(!clearAutosave()){autosaveEnabled=false;alert("Den sparade turneringen kunde inte tas bort. Autosparning har stängts av för att undvika att skriva över den.")}
-}
+      const AUTOSAVE_KEY = "norwegianMonradAutosave";
+      let autosaveEnabled = true;
+      function autosave() {
+        if (!autosaveEnabled || state.status === "setup") return;
+        try {
+          localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
+        } catch (error) {
+          console.warn("Tournament autosave failed:", error);
+        }
+      }
+      function clearAutosave() {
+        try {
+          localStorage.removeItem(AUTOSAVE_KEY);
+          return true;
+        } catch (error) {
+          console.warn("Could not remove tournament autosave:", error);
+          return false;
+        }
+      }
+      function offerAutosave() {
+        let raw;
+        try {
+          raw = localStorage.getItem(AUTOSAVE_KEY);
+        } catch (error) {
+          autosaveEnabled = false;
+          console.warn("Could not access tournament autosave:", error);
+          alert(
+            "Webbläsarens lagring är inte tillgänglig. Använd Spara turnering för att skapa säkerhetskopior.",
+          );
+          return;
+        }
+        if (!raw) return;
+        let saved;
+        try {
+          saved = normalizeLoadedState(JSON.parse(raw));
+          if (saved.status === "setup")
+            throw new Error(
+              "De sparade uppgifterna är inte en startad turnering.",
+            );
+        } catch (error) {
+          autosaveEnabled = false;
+          console.error("Could not restore autosave:", error);
+          alert(
+            "Den sparade turneringen kunde inte återställas: " +
+              error.message +
+              "\n\nDen har inte skrivits över. Autosparning är avstängd tills du väljer Ny turnering.",
+          );
+          return;
+        }
+        const completed = saved.rounds.filter(
+          (round) => round.completed,
+        ).length;
+        const description =
+          saved.status === "finished"
+            ? "avslutad"
+            : `${completed} av ${saved.totalRounds} ronder avslutade`;
+        if (
+          confirm(
+            `En sparad turnering hittades:\n\n”${saved.name}” (${description}).\n\nVälj OK för att fortsätta turneringen eller Avbryt för att ta bort autosparningen.`,
+          )
+        ) {
+          state = saved;
+        } else if (!clearAutosave()) {
+          autosaveEnabled = false;
+          alert(
+            "Den sparade turneringen kunde inte tas bort. Autosparning har stängts av för att undvika att skriva över den.",
+          );
+        }
+      }
 
-/* ============================================================
+      /* ============================================================
    General utilities
 ============================================================ */
 
-function makeId(){if(window.crypto&&typeof window.crypto.randomUUID==="function")return window.crypto.randomUUID();return Date.now().toString(36)+"-"+Math.random().toString(36).slice(2)+"-"+Math.random().toString(36).slice(2)}
-function openNorwegianModal(e){if(e){e.preventDefault();e.stopPropagation()}document.getElementById("norwegian-modal").classList.remove("hidden")}
-function closeNorwegianModal(){document.getElementById("norwegian-modal").classList.add("hidden")}
-function escapeHTML(value){return String(value??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
-function shuffle(array){const result=[...array];for(let i=result.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[result[i],result[j]]=[result[j],result[i]]}return result}
-function approximatelyEqual(a,b){return Math.abs(a-b)<.000001}
-function formatNumber(value){if(value===null||value===undefined||Number.isNaN(value))return"";if(Number.isInteger(value))return String(value);return Number(value.toFixed(2)).toString().replace(".",",")}
-function formatScore(value){return formatNumber(value)}
-function formatDropped(values){return!Array.isArray(values)||!values.length?"":values.map(formatNumber).join(" + ")}
-function safeFilename(name){const result=String(name||"monradturnering").trim().replace(/[^a-z0-9åäö_-]+/gi,"-").replace(/^-+|-+$/g,"");return result||"monradturnering"}
-function getPlayer(id){return state.players.find(player=>player.id===String(id))||null}
-function playerDisplay(player){if(!player)return"Okänd spelare";const club=player.club?` — ${player.club}`:"";return`<span class="player-number">#${player.startNo}</span> ${escapeHTML(player.name)}${escapeHTML(club)}`}
-function resultLabel(result){return({"1-0":"1–0","0.5-0.5":"½–½","0-1":"0–1","W-F":"Vit vinner på walkover","F-W":"Svart vinner på walkover","0-0":"0–0","ADJ":"Avbrutet parti — preliminärt ½–½"})[result]||""}
-function compareAscendingVectors(a,b){for(let i=0,n=Math.max(a.length,b.length);i<n;i++){const x=a[i]??0,y=b[i]??0;if(!approximatelyEqual(x,y))return x-y}return 0}
-function createSearchLimitError(){const e=new Error("Den automatiska lottningssökningen blev för komplex. Tävlingsledaren kan lägga in ronden manuellt.");e.code="SEARCH_LIMIT";return e}
+      function makeId() {
+        if (window.crypto && typeof window.crypto.randomUUID === "function")
+          return window.crypto.randomUUID();
+        return (
+          Date.now().toString(36) +
+          "-" +
+          Math.random().toString(36).slice(2) +
+          "-" +
+          Math.random().toString(36).slice(2)
+        );
+      }
+      function openNorwegianModal(e) {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        document.getElementById("norwegian-modal").classList.remove("hidden");
+      }
+      function closeNorwegianModal() {
+        document.getElementById("norwegian-modal").classList.add("hidden");
+      }
+      function escapeHTML(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+      function shuffle(array) {
+        const result = [...array];
+        for (let i = result.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [result[i], result[j]] = [result[j], result[i]];
+        }
+        return result;
+      }
+      function approximatelyEqual(a, b) {
+        return Math.abs(a - b) < 0.000001;
+      }
+      function formatNumber(value) {
+        if (value === null || value === undefined || Number.isNaN(value))
+          return "";
+        if (Number.isInteger(value)) return String(value);
+        return Number(value.toFixed(2)).toString().replace(".", ",");
+      }
+      function formatScore(value) {
+        return formatNumber(value);
+      }
+      function formatDropped(values) {
+        return !Array.isArray(values) || !values.length
+          ? ""
+          : values.map(formatNumber).join(" + ");
+      }
+      function safeFilename(name) {
+        const result = String(name || "monradturnering")
+          .trim()
+          .replace(/[^a-z0-9åäö_-]+/gi, "-")
+          .replace(/^-+|-+$/g, "");
+        return result || "monradturnering";
+      }
+      function getPlayer(id) {
+        return state.players.find((player) => player.id === String(id)) || null;
+      }
+      function playerDisplay(player) {
+        if (!player) return "Okänd spelare";
+        const club = player.club ? ` — ${player.club}` : "";
+        return `<span class="player-number">#${player.startNo}</span> ${escapeHTML(player.name)}${escapeHTML(club)}`;
+      }
+      function resultLabel(result) {
+        return (
+          {
+            "1-0": "1–0",
+            "0.5-0.5": "½–½",
+            "0-1": "0–1",
+            "W-F": "Vit vinner på walkover",
+            "F-W": "Svart vinner på walkover",
+            "0-0": "0–0",
+            ADJ: "Avbrutet parti — preliminärt ½–½",
+          }[result] || ""
+        );
+      }
+      function compareAscendingVectors(a, b) {
+        for (let i = 0, n = Math.max(a.length, b.length); i < n; i++) {
+          const x = a[i] ?? 0,
+            y = b[i] ?? 0;
+          if (!approximatelyEqual(x, y)) return x - y;
+        }
+        return 0;
+      }
+      function createSearchLimitError() {
+        const e = new Error(
+          "Den automatiska lottningssökningen blev för komplex. Tävlingsledaren kan lägga in ronden manuellt.",
+        );
+        e.code = "SEARCH_LIMIT";
+        return e;
+      }
 
-/* ============================================================
+      /* ============================================================
    Player-file handling
 ============================================================ */
 
-function countDelimiterOutsideQuotes(line,delimiter){let count=0,quoted=false;for(let i=0;i<line.length;i++){if(line[i]==='"'){if(quoted&&line[i+1]==='"')i++;else quoted=!quoted;continue}if(!quoted&&line[i]===delimiter)count++}return count}
-function detectDelimiter(line){const candidates=["\t",";",","].map(delimiter=>({delimiter,count:countDelimiterOutsideQuotes(line,delimiter)})).sort((a,b)=>b.count-a.count);return candidates[0].count?candidates[0].delimiter:null}
-function parseDelimitedLine(line,delimiter){if(!delimiter){const value=line.trim();return[value.startsWith('"')&&value.endsWith('"')?value.slice(1,-1).replaceAll('""','"'):value]}const fields=[];let field="",quoted=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(quoted&&line[i+1]==='"'){field+='"';i++}else quoted=!quoted;continue}if(!quoted&&c===delimiter){fields.push(field.trim());field="";continue}field+=c}fields.push(field.trim());return fields}
-function splitPlayerLine(line){return parseDelimitedLine(line,detectDelimiter(line))}
-function looksLikePlayerHeader(parts){const first=String(parts[0]||"").trim().toLowerCase(),rest=parts.slice(1).join(" ").toLowerCase();return /^(name|player|player name|navn|spiller|namn|spelare|spelarnamn)$/.test(first)&&/(club|klubb|förening|rating|elo|rating number|ratingtal)/.test(rest)}
-function parsePlayers(text){const players=[];let first=true;for(const original of String(text||"").split(/\r?\n/)){const raw=original.trim();if(!raw||raw.startsWith("#"))continue;const parts=splitPlayerLine(raw).map(x=>x.trim());if(first&&looksLikePlayerHeader(parts)){first=false;continue}first=false;const name=parts[0]||"",club=parts[1]||"",ratingText=parts[2]||"",rating=ratingText===""?null:Number(ratingText.replace(",","."));if(name)players.push({name,club,rating:Number.isFinite(rating)?rating:null})}return players}
-function assignStartNumbers(players,method){
-  let ordered=[];
-  if(method==="random")ordered=shuffle(players);
-  else{
-    const ranked=players.map((p,i)=>({...p,originalIndex:i})).sort((a,b)=>{const ra=Number.isFinite(a.rating)?a.rating:-Infinity,rb=Number.isFinite(b.rating)?b.rating:-Infinity;return ra!==rb?rb-ra:a.originalIndex-b.originalIndex});
-    const remainderCount=ranked.length%4,coreLength=ranked.length-remainderCount,core=ranked.slice(0,coreLength),remainder=ranked.slice(coreLength);
-    if(!coreLength)ordered=shuffle(remainder);
-    else{
-      const size=coreLength/4,groups={A:shuffle(core.slice(0,size)),B:shuffle(core.slice(size,size*2)),C:shuffle(core.slice(size*2,size*3)),D:shuffle(core.slice(size*3,size*4))},pattern=["A","C","D","B","C","A","B","D"];
-      while(ordered.length<coreLength)for(const key of pattern){if(groups[key].length)ordered.push(groups[key].shift());if(ordered.length>=coreLength)break}
-      ordered.push(...shuffle(remainder))
-    }
-  }
-  const assigned=ordered.map((p,i)=>({id:makeId(),startNo:i+1,name:p.name,club:p.club||"",rating:Number.isFinite(p.rating)?p.rating:null,withdrawn:false,lot:null}));
-  const lotOrder=shuffle(assigned.map(p=>p.id)),lotMap=new Map(lotOrder.map((id,i)=>[id,i+1]));
-  for(const p of assigned)p.lot=lotMap.get(p.id);
-  return assigned
-}
+      function countDelimiterOutsideQuotes(line, delimiter) {
+        let count = 0,
+          quoted = false;
+        for (let i = 0; i < line.length; i++) {
+          if (line[i] === '"') {
+            if (quoted && line[i + 1] === '"') i++;
+            else quoted = !quoted;
+            continue;
+          }
+          if (!quoted && line[i] === delimiter) count++;
+        }
+        return count;
+      }
+      function detectDelimiter(line) {
+        const candidates = ["\t", ";", ","]
+          .map((delimiter) => ({
+            delimiter,
+            count: countDelimiterOutsideQuotes(line, delimiter),
+          }))
+          .sort((a, b) => b.count - a.count);
+        return candidates[0].count ? candidates[0].delimiter : null;
+      }
+      function parseDelimitedLine(line, delimiter) {
+        if (!delimiter) {
+          const value = line.trim();
+          return [
+            value.startsWith('"') && value.endsWith('"')
+              ? value.slice(1, -1).replaceAll('""', '"')
+              : value,
+          ];
+        }
+        const fields = [];
+        let field = "",
+          quoted = false;
+        for (let i = 0; i < line.length; i++) {
+          const c = line[i];
+          if (c === '"') {
+            if (quoted && line[i + 1] === '"') {
+              field += '"';
+              i++;
+            } else quoted = !quoted;
+            continue;
+          }
+          if (!quoted && c === delimiter) {
+            fields.push(field.trim());
+            field = "";
+            continue;
+          }
+          field += c;
+        }
+        fields.push(field.trim());
+        return fields;
+      }
+      function splitPlayerLine(line) {
+        return parseDelimitedLine(line, detectDelimiter(line));
+      }
+      function looksLikePlayerHeader(parts) {
+        const first = String(parts[0] || "")
+            .trim()
+            .toLowerCase(),
+          rest = parts.slice(1).join(" ").toLowerCase();
+        return (
+          /^(name|player|player name|navn|spiller|namn|spelare|spelarnamn)$/.test(
+            first,
+          ) &&
+          /(club|klubb|förening|rating|elo|rating number|ratingtal)/.test(rest)
+        );
+      }
+      function parsePlayers(text) {
+        const players = [];
+        let first = true;
+        for (const original of String(text || "").split(/\r?\n/)) {
+          const raw = original.trim();
+          if (!raw || raw.startsWith("#")) continue;
+          const parts = splitPlayerLine(raw).map((x) => x.trim());
+          if (first && looksLikePlayerHeader(parts)) {
+            first = false;
+            continue;
+          }
+          first = false;
+          const name = parts[0] || "",
+            club = parts[1] || "",
+            ratingText = parts[2] || "",
+            rating =
+              ratingText === "" ? null : Number(ratingText.replace(",", "."));
+          if (name)
+            players.push({
+              name,
+              club,
+              rating: Number.isFinite(rating) ? rating : null,
+            });
+        }
+        return players;
+      }
+      function assignStartNumbers(players, method) {
+        let ordered = [];
+        if (method === "random") ordered = shuffle(players);
+        else {
+          const ranked = players
+            .map((p, i) => ({ ...p, originalIndex: i }))
+            .sort((a, b) => {
+              const ra = Number.isFinite(a.rating) ? a.rating : -Infinity,
+                rb = Number.isFinite(b.rating) ? b.rating : -Infinity;
+              return ra !== rb ? rb - ra : a.originalIndex - b.originalIndex;
+            });
+          const remainderCount = ranked.length % 4,
+            coreLength = ranked.length - remainderCount,
+            core = ranked.slice(0, coreLength),
+            remainder = ranked.slice(coreLength);
+          if (!coreLength) ordered = shuffle(remainder);
+          else {
+            const size = coreLength / 4,
+              groups = {
+                A: shuffle(core.slice(0, size)),
+                B: shuffle(core.slice(size, size * 2)),
+                C: shuffle(core.slice(size * 2, size * 3)),
+                D: shuffle(core.slice(size * 3, size * 4)),
+              },
+              pattern = ["A", "C", "D", "B", "C", "A", "B", "D"];
+            while (ordered.length < coreLength)
+              for (const key of pattern) {
+                if (groups[key].length) ordered.push(groups[key].shift());
+                if (ordered.length >= coreLength) break;
+              }
+            ordered.push(...shuffle(remainder));
+          }
+        }
+        const assigned = ordered.map((p, i) => ({
+          id: makeId(),
+          startNo: i + 1,
+          name: p.name,
+          club: p.club || "",
+          rating: Number.isFinite(p.rating) ? p.rating : null,
+          withdrawn: false,
+          lot: null,
+        }));
+        const lotOrder = shuffle(assigned.map((p) => p.id)),
+          lotMap = new Map(lotOrder.map((id, i) => [id, i + 1]));
+        for (const p of assigned) p.lot = lotMap.get(p.id);
+        return assigned;
+      }
 
-/* ============================================================
+      /* ============================================================
    Results and statistics
 ============================================================ */
 
-function pointsFromResult(result){switch(result){case"1-0":case"W-F":return[1,0];case"0.5-0.5":case"ADJ":return[.5,.5];case"0-1":case"F-W":return[0,1];case"0-0":return[0,0];default:return[0,0]}}
-function createEmptyPlayerStats(player){return{playerId:player.id,points:0,whites:0,blacks:0,games:0,colorHistory:[],opponents:new Set(),encounters:[],hadWOPoint:false,woCount:0}}
-function buildStats(beforeRound=Infinity){
-  const stats=new Map(state.players.map(p=>[p.id,createEmptyPlayerStats(p)]));
-  for(const round of state.rounds.filter(r=>r.completed&&r.number<beforeRound))for(const pairing of round.pairings){
-    const ws=stats.get(pairing.whiteId);if(!ws)continue;
-    if(pairing.type==="bye"){ws.points++;ws.games++;ws.whites++;ws.colorHistory.push("W");ws.hadWOPoint=true;ws.woCount++;ws.encounters.push({opponentId:null,scoreFor:1,qualityZero:true,type:"bye"});continue}
-    const bs=stats.get(pairing.blackId);if(!bs)continue;
-    const[wp,bp]=pointsFromResult(pairing.result);ws.points+=wp;bs.points+=bp;ws.whites++;bs.blacks++;ws.games++;bs.games++;ws.colorHistory.push("W");bs.colorHistory.push("B");ws.opponents.add(pairing.blackId);bs.opponents.add(pairing.whiteId);
-    ws.encounters.push({opponentId:pairing.blackId,scoreFor:wp,qualityZero:false,type:"game"});bs.encounters.push({opponentId:pairing.whiteId,scoreFor:bp,qualityZero:false,type:"game"});
-    if(pairing.result==="W-F"){ws.hadWOPoint=true;ws.woCount++}if(pairing.result==="F-W"){bs.hadWOPoint=true;bs.woCount++}
-  }
-  return stats
-}
-function calculateQuality(playerId,stats){
-  const ps=stats.get(playerId);if(!ps)return{primary:0,dropped:[],sonnebornBerger:0,vector:[0,0]};
-  const values=[];let sb=0;
-  for(const e of ps.encounters){if(e.qualityZero||!e.opponentId){values.push(0);continue}const opp=stats.get(e.opponentId),points=opp?opp.points:0;values.push(points);sb+=points*e.scoreFor}
-  values.sort((a,b)=>a-b);const drops=Math.min(state.totalRounds<=6?1:2,values.length),dropped=values.splice(0,drops).sort((a,b)=>b-a),primary=values.reduce((s,v)=>s+v,0);
-  return{primary,dropped,sonnebornBerger:sb,vector:[primary,...dropped,sb]}
-}
-function compareQualityData(a,b){for(let i=0,n=Math.max(a.vector.length,b.vector.length);i<n;i++){const x=a.vector[i]||0,y=b.vector[i]||0;if(!approximatelyEqual(x,y))return y-x}return 0}
-function buildRoundList(beforeRound=Infinity){const stats=buildStats(beforeRound);return state.players.filter(p=>!p.withdrawn).map(player=>({player,stats:stats.get(player.id),quality:calculateQuality(player.id,stats)})).sort((a,b)=>!approximatelyEqual(a.stats.points,b.stats.points)?b.stats.points-a.stats.points:a.player.startNo-b.player.startNo).map((r,i)=>({rank:i+1,startNo:r.player.startNo,playerId:r.player.id,name:r.player.name,club:r.player.club,rating:r.player.rating,withdrawn:false,points:r.stats.points,quality:r.quality.primary,sonnebornBerger:r.quality.sonnebornBerger}))}
-function buildFinalStandings(){const stats=buildStats(Infinity);return state.players.map(player=>({player,stats:stats.get(player.id),quality:calculateQuality(player.id,stats)})).sort((a,b)=>!approximatelyEqual(a.stats.points,b.stats.points)?b.stats.points-a.stats.points:compareQualityData(a.quality,b.quality)||a.player.lot-b.player.lot).map((r,i)=>({rank:i+1,startNo:r.player.startNo,name:r.player.name,club:r.player.club,rating:r.player.rating,withdrawn:r.player.withdrawn,points:r.stats.points,quality:r.quality.primary,dropped:r.quality.dropped,sonnebornBerger:r.quality.sonnebornBerger}))}
+      function pointsFromResult(result) {
+        switch (result) {
+          case "1-0":
+          case "W-F":
+            return [1, 0];
+          case "0.5-0.5":
+          case "ADJ":
+            return [0.5, 0.5];
+          case "0-1":
+          case "F-W":
+            return [0, 1];
+          case "0-0":
+            return [0, 0];
+          default:
+            return [0, 0];
+        }
+      }
+      function createEmptyPlayerStats(player) {
+        return {
+          playerId: player.id,
+          points: 0,
+          whites: 0,
+          blacks: 0,
+          games: 0,
+          colorHistory: [],
+          opponents: new Set(),
+          encounters: [],
+          hadWOPoint: false,
+          woCount: 0,
+        };
+      }
+      function buildStats(beforeRound = Infinity) {
+        const stats = new Map(
+          state.players.map((p) => [p.id, createEmptyPlayerStats(p)]),
+        );
+        for (const round of state.rounds.filter(
+          (r) => r.completed && r.number < beforeRound,
+        ))
+          for (const pairing of round.pairings) {
+            const ws = stats.get(pairing.whiteId);
+            if (!ws) continue;
+            if (pairing.type === "bye") {
+              ws.points++;
+              ws.games++;
+              ws.whites++;
+              ws.colorHistory.push("W");
+              ws.hadWOPoint = true;
+              ws.woCount++;
+              ws.encounters.push({
+                opponentId: null,
+                scoreFor: 1,
+                qualityZero: true,
+                type: "bye",
+              });
+              continue;
+            }
+            const bs = stats.get(pairing.blackId);
+            if (!bs) continue;
+            const [wp, bp] = pointsFromResult(pairing.result);
+            ws.points += wp;
+            bs.points += bp;
+            ws.whites++;
+            bs.blacks++;
+            ws.games++;
+            bs.games++;
+            ws.colorHistory.push("W");
+            bs.colorHistory.push("B");
+            ws.opponents.add(pairing.blackId);
+            bs.opponents.add(pairing.whiteId);
+            ws.encounters.push({
+              opponentId: pairing.blackId,
+              scoreFor: wp,
+              qualityZero: false,
+              type: "game",
+            });
+            bs.encounters.push({
+              opponentId: pairing.whiteId,
+              scoreFor: bp,
+              qualityZero: false,
+              type: "game",
+            });
+            if (pairing.result === "W-F") {
+              ws.hadWOPoint = true;
+              ws.woCount++;
+            }
+            if (pairing.result === "F-W") {
+              bs.hadWOPoint = true;
+              bs.woCount++;
+            }
+          }
+        return stats;
+      }
+      function calculateQuality(playerId, stats) {
+        const ps = stats.get(playerId);
+        if (!ps)
+          return {
+            primary: 0,
+            dropped: [],
+            sonnebornBerger: 0,
+            vector: [0, 0],
+          };
+        const values = [];
+        let sb = 0;
+        for (const e of ps.encounters) {
+          if (e.qualityZero || !e.opponentId) {
+            values.push(0);
+            continue;
+          }
+          const opp = stats.get(e.opponentId),
+            points = opp ? opp.points : 0;
+          values.push(points);
+          sb += points * e.scoreFor;
+        }
+        values.sort((a, b) => a - b);
+        const drops = Math.min(state.totalRounds <= 6 ? 1 : 2, values.length),
+          dropped = values.splice(0, drops).sort((a, b) => b - a),
+          primary = values.reduce((s, v) => s + v, 0);
+        return {
+          primary,
+          dropped,
+          sonnebornBerger: sb,
+          vector: [primary, ...dropped, sb],
+        };
+      }
+      function compareQualityData(a, b) {
+        for (
+          let i = 0, n = Math.max(a.vector.length, b.vector.length);
+          i < n;
+          i++
+        ) {
+          const x = a.vector[i] || 0,
+            y = b.vector[i] || 0;
+          if (!approximatelyEqual(x, y)) return y - x;
+        }
+        return 0;
+      }
+      function buildRoundList(beforeRound = Infinity) {
+        const stats = buildStats(beforeRound);
+        return state.players
+          .filter((p) => !p.withdrawn)
+          .map((player) => ({
+            player,
+            stats: stats.get(player.id),
+            quality: calculateQuality(player.id, stats),
+          }))
+          .sort((a, b) =>
+            !approximatelyEqual(a.stats.points, b.stats.points)
+              ? b.stats.points - a.stats.points
+              : a.player.startNo - b.player.startNo,
+          )
+          .map((r, i) => ({
+            rank: i + 1,
+            startNo: r.player.startNo,
+            playerId: r.player.id,
+            name: r.player.name,
+            club: r.player.club,
+            rating: r.player.rating,
+            withdrawn: false,
+            points: r.stats.points,
+            quality: r.quality.primary,
+            sonnebornBerger: r.quality.sonnebornBerger,
+          }));
+      }
+      function buildFinalStandings() {
+        const stats = buildStats(Infinity);
+        return state.players
+          .map((player) => ({
+            player,
+            stats: stats.get(player.id),
+            quality: calculateQuality(player.id, stats),
+          }))
+          .sort((a, b) =>
+            !approximatelyEqual(a.stats.points, b.stats.points)
+              ? b.stats.points - a.stats.points
+              : compareQualityData(a.quality, b.quality) ||
+                a.player.lot - b.player.lot,
+          )
+          .map((r, i) => ({
+            rank: i + 1,
+            startNo: r.player.startNo,
+            name: r.player.name,
+            club: r.player.club,
+            rating: r.player.rating,
+            withdrawn: r.player.withdrawn,
+            points: r.stats.points,
+            quality: r.quality.primary,
+            dropped: r.quality.dropped,
+            sonnebornBerger: r.quality.sonnebornBerger,
+          }));
+      }
 
-/* ============================================================
+      /* ============================================================
    Adjourned games
 ============================================================ */
 
-function getUnresolvedAdjournedGames(tournamentState=state){const games=[];for(const round of tournamentState.rounds)if(round.completed)for(const pairing of round.pairings)if(pairing.type==="game"&&pairing.result==="ADJ")games.push({round,pairing});return games}
-function refreshTournamentStatus(tournamentState=state){if(tournamentState.status==="setup")return;const complete=tournamentState.rounds.length>=tournamentState.totalRounds&&tournamentState.rounds.slice(0,tournamentState.totalRounds).every(r=>r.completed);tournamentState.status=complete&&getUnresolvedAdjournedGames(tournamentState).length===0?"finished":"running"}
-function resolveAdjournedGame(roundNumber,board,result){
-  if(!["1-0","0.5-0.5","0-1","W-F","F-W","0-0"].includes(result))return;
-  const round=state.rounds.find(r=>r.number===Number(roundNumber)),pairing=round&&round.pairings.find(p=>p.board===Number(board));
-  if(!round||!round.completed||!pairing||pairing.type!=="game"||pairing.result!=="ADJ")return;
-  let message=`Registrera rond ${round.number}, bord ${pairing.board} som ${resultLabel(result)}?`;
-  if(state.rounds.some(r=>r.number>round.number))message+="\n\nSenare ronder har redan lottats. Deras sparade lottningar och frysta rondlistor ändras inte.";
-  if(!confirm(message))return;pairing.result=result;pairing.resolvedAt=new Date().toISOString();refreshTournamentStatus();render()
-}
+      function getUnresolvedAdjournedGames(tournamentState = state) {
+        const games = [];
+        for (const round of tournamentState.rounds)
+          if (round.completed)
+            for (const pairing of round.pairings)
+              if (pairing.type === "game" && pairing.result === "ADJ")
+                games.push({ round, pairing });
+        return games;
+      }
+      function refreshTournamentStatus(tournamentState = state) {
+        if (tournamentState.status === "setup") return;
+        const complete =
+          tournamentState.rounds.length >= tournamentState.totalRounds &&
+          tournamentState.rounds
+            .slice(0, tournamentState.totalRounds)
+            .every((r) => r.completed);
+        tournamentState.status =
+          complete && getUnresolvedAdjournedGames(tournamentState).length === 0
+            ? "finished"
+            : "running";
+      }
+      function resolveAdjournedGame(roundNumber, board, result) {
+        if (!["1-0", "0.5-0.5", "0-1", "W-F", "F-W", "0-0"].includes(result))
+          return;
+        const round = state.rounds.find(
+            (r) => r.number === Number(roundNumber),
+          ),
+          pairing =
+            round && round.pairings.find((p) => p.board === Number(board));
+        if (
+          !round ||
+          !round.completed ||
+          !pairing ||
+          pairing.type !== "game" ||
+          pairing.result !== "ADJ"
+        )
+          return;
+        let message = `Registrera rond ${round.number}, bord ${pairing.board} som ${resultLabel(result)}?`;
+        if (state.rounds.some((r) => r.number > round.number))
+          message +=
+            "\n\nSenare ronder har redan lottats. Deras sparade lottningar och frysta rondlistor ändras inte.";
+        if (!confirm(message)) return;
+        pairing.result = result;
+        pairing.resolvedAt = new Date().toISOString();
+        refreshTournamentStatus();
+        render();
+      }
 
-/* ============================================================
+      /* ============================================================
    Colour rules
 ============================================================ */
 
-function preferredColor(ps){if(ps.whites<ps.blacks)return"W";if(ps.blacks<ps.whites)return"B";const last=ps.colorHistory.at(-1);return last==="W"?"B":last==="B"?"W":null}
-function hardColorViolationCount(ps,color){let n=0;const h=ps.colorHistory;if(h.length>=3&&h.slice(-3).every(c=>c===color))n++;const w=ps.whites+(color==="W"?1:0),b=ps.blacks+(color==="B"?1:0),max=(w+b)/2+1;if(w>max+.000001||b>max+.000001)n++;return n}
-function hardColorAllowed(ps,color){return hardColorViolationCount(ps,color)===0}
-function createsThirdConsecutiveColor(ps,color){const h=ps.colorHistory;return h.length>=2&&h.at(-1)===color&&h.at(-2)===color}
-function colorBalanceAfter(ps,color){return Math.abs(ps.whites+(color==="W"?1:0)-ps.blacks-(color==="B"?1:0))}
-function desiredWhiteForRule8D(a,b,roundNumber,stats,rankMap){const pa=preferredColor(stats.get(a.id)),pb=preferredColor(stats.get(b.id));if(!pa||!pb||pa!==pb)return null;const higher=rankMap.get(a.id)<rankMap.get(b.id)?a:b,lower=higher.id===a.id?b:a;return roundNumber%2===0?higher:lower}
-function orientationOptions(a,b,roundNumber,stats,rankMap,strictColors){
-  const sa=stats.get(a.id),sb=stats.get(b.id),pa=preferredColor(sa),pb=preferredColor(sb),desired=desiredWhiteForRule8D(a,b,roundNumber,stats,rankMap);
-  return[{whiteId:a.id,blackId:b.id},{whiteId:b.id,blackId:a.id}].map(o=>{
-    const ws=stats.get(o.whiteId),bs=stats.get(o.blackId),hard=hardColorViolationCount(ws,"W")+hardColorViolationCount(bs,"B");if(strictColors&&hard)return null;
-    const third=(createsThirdConsecutiveColor(ws,"W")?1:0)+(createsThirdConsecutiveColor(bs,"B")?1:0),balance=colorBalanceAfter(ws,"W")+colorBalanceAfter(bs,"B"),ac=o.whiteId===a.id?"W":"B",bc=o.whiteId===b.id?"W":"B",preference=(pa&&pa!==ac?1:0)+(pb&&pb!==bc?1:0),lastA=sa.colorHistory.at(-1),lastB=sb.colorHistory.at(-1),alternation=(lastA===ac?1:0)+(lastB===bc?1:0),parity=desired&&o.whiteId!==desired.id?1:0,rank=rankMap.get(o.whiteId)??Number.MAX_SAFE_INTEGER,soft=[parity,third,balance,preference,alternation,rank];
-    return{...o,hardViolations:hard,softVector:soft,sortVector:[hard,...soft]}
-  }).filter(Boolean).sort((x,y)=>compareAscendingVectors(x.sortVector,y.sortVector))
-}
-function pairingCompatibilityPenalty(a,b,stats){const pa=preferredColor(stats.get(a.id)),pb=preferredColor(stats.get(b.id));return pa&&pb&&pa===pb?1:0}
+      function preferredColor(ps) {
+        if (ps.whites < ps.blacks) return "W";
+        if (ps.blacks < ps.whites) return "B";
+        const last = ps.colorHistory.at(-1);
+        return last === "W" ? "B" : last === "B" ? "W" : null;
+      }
+      function hardColorViolationCount(ps, color) {
+        let n = 0;
+        const h = ps.colorHistory;
+        if (h.length >= 3 && h.slice(-3).every((c) => c === color)) n++;
+        const w = ps.whites + (color === "W" ? 1 : 0),
+          b = ps.blacks + (color === "B" ? 1 : 0),
+          max = (w + b) / 2 + 1;
+        if (w > max + 0.000001 || b > max + 0.000001) n++;
+        return n;
+      }
+      function hardColorAllowed(ps, color) {
+        return hardColorViolationCount(ps, color) === 0;
+      }
+      function createsThirdConsecutiveColor(ps, color) {
+        const h = ps.colorHistory;
+        return h.length >= 2 && h.at(-1) === color && h.at(-2) === color;
+      }
+      function colorBalanceAfter(ps, color) {
+        return Math.abs(
+          ps.whites +
+            (color === "W" ? 1 : 0) -
+            ps.blacks -
+            (color === "B" ? 1 : 0),
+        );
+      }
+      function desiredWhiteForRule8D(a, b, roundNumber, stats, rankMap) {
+        const pa = preferredColor(stats.get(a.id)),
+          pb = preferredColor(stats.get(b.id));
+        if (!pa || !pb || pa !== pb) return null;
+        const higher = rankMap.get(a.id) < rankMap.get(b.id) ? a : b,
+          lower = higher.id === a.id ? b : a;
+        return roundNumber % 2 === 0 ? higher : lower;
+      }
+      function orientationOptions(
+        a,
+        b,
+        roundNumber,
+        stats,
+        rankMap,
+        strictColors,
+      ) {
+        const sa = stats.get(a.id),
+          sb = stats.get(b.id),
+          pa = preferredColor(sa),
+          pb = preferredColor(sb),
+          desired = desiredWhiteForRule8D(a, b, roundNumber, stats, rankMap);
+        return [
+          { whiteId: a.id, blackId: b.id },
+          { whiteId: b.id, blackId: a.id },
+        ]
+          .map((o) => {
+            const ws = stats.get(o.whiteId),
+              bs = stats.get(o.blackId),
+              hard =
+                hardColorViolationCount(ws, "W") +
+                hardColorViolationCount(bs, "B");
+            if (strictColors && hard) return null;
+            const third =
+                (createsThirdConsecutiveColor(ws, "W") ? 1 : 0) +
+                (createsThirdConsecutiveColor(bs, "B") ? 1 : 0),
+              balance = colorBalanceAfter(ws, "W") + colorBalanceAfter(bs, "B"),
+              ac = o.whiteId === a.id ? "W" : "B",
+              bc = o.whiteId === b.id ? "W" : "B",
+              preference =
+                (pa && pa !== ac ? 1 : 0) + (pb && pb !== bc ? 1 : 0),
+              lastA = sa.colorHistory.at(-1),
+              lastB = sb.colorHistory.at(-1),
+              alternation = (lastA === ac ? 1 : 0) + (lastB === bc ? 1 : 0),
+              parity = desired && o.whiteId !== desired.id ? 1 : 0,
+              rank = rankMap.get(o.whiteId) ?? Number.MAX_SAFE_INTEGER,
+              soft = [parity, third, balance, preference, alternation, rank];
+            return {
+              ...o,
+              hardViolations: hard,
+              softVector: soft,
+              sortVector: [hard, ...soft],
+            };
+          })
+          .filter(Boolean)
+          .sort((x, y) => compareAscendingVectors(x.sortVector, y.sortVector));
+      }
+      function pairingCompatibilityPenalty(a, b, stats) {
+        const pa = preferredColor(stats.get(a.id)),
+          pb = preferredColor(stats.get(b.id));
+        return pa && pb && pa === pb ? 1 : 0;
+      }
 
-/* ============================================================
+      /* ============================================================
    Pairing searches
 ============================================================ */
 
-function solvePairings(orderedPlayers,roundNumber,stats,strictColors){
-  const rankMap=new Map(orderedPlayers.map((p,i)=>[p.id,i])),failed=new Set();let nodes=0;const maxNodes=500000;
-  function search(remaining){
-    if(!remaining.length)return[];const key=remaining.map(p=>p.id).join("|");if(failed.has(key))return null;if(++nodes>maxNodes)throw createSearchLimitError();
-    const first=remaining[0],fs=stats.get(first.id),candidates=[];
-    for(let i=1;i<remaining.length;i++){const opponent=remaining[i];if(fs.opponents.has(opponent.id))continue;const orientations=orientationOptions(first,opponent,roundNumber,stats,rankMap,strictColors);if(!orientations.length)continue;candidates.push({opponent,remainingIndex:i,scoreGap:Math.abs(fs.points-stats.get(opponent.id).points),compatibilityPenalty:pairingCompatibilityPenalty(first,opponent,stats),orientations})}
-    candidates.sort((a,b)=>{if(!approximatelyEqual(a.scoreGap,b.scoreGap))return a.scoreGap-b.scoreGap;if(!strictColors){const d=a.orientations[0].hardViolations-b.orientations[0].hardViolations;if(d)return d}if(a.compatibilityPenalty!==b.compatibilityPenalty)return a.compatibilityPenalty-b.compatibilityPenalty;const d=compareAscendingVectors(a.orientations[0].sortVector,b.orientations[0].sortVector);return d||a.remainingIndex-b.remainingIndex});
-    for(const c of candidates){const tail=search(remaining.filter(p=>p.id!==first.id&&p.id!==c.opponent.id));if(tail){const o=c.orientations[0];return[{type:"game",whiteId:o.whiteId,blackId:o.blackId,result:null},...tail]}}
-    failed.add(key);return null
-  }
-  return search(orderedPlayers)
-}
-function compareFinalSolutions(a,b){const s=compareAscendingVectors(a.structureVector,b.structureVector);if(s)return s;if(a.hardViolations!==b.hardViolations)return a.hardViolations-b.hardViolations;return compareAscendingVectors(a.decisionVector,b.decisionVector)}
-function solveFinalPairings(orderedPlayers,roundNumber,stats){
-  const rankMap=new Map(orderedPlayers.map((p,i)=>[p.id,i])),memo=new Map();let nodes=0;const maxNodes=500000;
-  function search(remaining){
-    if(!remaining.length)return{pairings:[],structureVector:[],hardViolations:0,decisionVector:[]};
-    const key=remaining.map(p=>p.id).join("|");if(memo.has(key))return memo.get(key);if(++nodes>maxNodes)throw createSearchLimitError();
-    const first=remaining[0],fs=stats.get(first.id),candidates=[];
-    for(let i=1;i<remaining.length;i++){const opponent=remaining[i];if(fs.opponents.has(opponent.id))continue;const orientations=orientationOptions(first,opponent,roundNumber,stats,rankMap,false);if(!orientations.length)continue;candidates.push({opponent,remainingIndex:i,scoreGap:Math.abs(fs.points-stats.get(opponent.id).points),compatibilityPenalty:pairingCompatibilityPenalty(first,opponent,stats),orientations})}
-    candidates.sort((a,b)=>!approximatelyEqual(a.scoreGap,b.scoreGap)?a.scoreGap-b.scoreGap:a.remainingIndex-b.remainingIndex);
-    let best=null,accepted=null;
-    for(const c of candidates){if(accepted!==null&&c.scoreGap>accepted+.000001)break;const tail=search(remaining.filter(p=>p.id!==first.id&&p.id!==c.opponent.id));if(!tail)continue;if(accepted===null)accepted=c.scoreGap;const o=c.orientations[0],solution={pairings:[{type:"game",whiteId:o.whiteId,blackId:o.blackId,result:null},...tail.pairings],structureVector:[c.scoreGap,...tail.structureVector],hardViolations:o.hardViolations+tail.hardViolations,decisionVector:[c.compatibilityPenalty,...o.softVector,c.remainingIndex,...tail.decisionVector]};if(!best||compareFinalSolutions(solution,best)<0)best=solution}
-    memo.set(key,best);return best
-  }
-  return search(orderedPlayers)
-}
+      function solvePairings(orderedPlayers, roundNumber, stats, strictColors) {
+        const rankMap = new Map(orderedPlayers.map((p, i) => [p.id, i])),
+          failed = new Set();
+        let nodes = 0;
+        const maxNodes = 500000;
+        function search(remaining) {
+          if (!remaining.length) return [];
+          const key = remaining.map((p) => p.id).join("|");
+          if (failed.has(key)) return null;
+          if (++nodes > maxNodes) throw createSearchLimitError();
+          const first = remaining[0],
+            fs = stats.get(first.id),
+            candidates = [];
+          for (let i = 1; i < remaining.length; i++) {
+            const opponent = remaining[i];
+            if (fs.opponents.has(opponent.id)) continue;
+            const orientations = orientationOptions(
+              first,
+              opponent,
+              roundNumber,
+              stats,
+              rankMap,
+              strictColors,
+            );
+            if (!orientations.length) continue;
+            candidates.push({
+              opponent,
+              remainingIndex: i,
+              scoreGap: Math.abs(fs.points - stats.get(opponent.id).points),
+              compatibilityPenalty: pairingCompatibilityPenalty(
+                first,
+                opponent,
+                stats,
+              ),
+              orientations,
+            });
+          }
+          candidates.sort((a, b) => {
+            if (!approximatelyEqual(a.scoreGap, b.scoreGap))
+              return a.scoreGap - b.scoreGap;
+            if (!strictColors) {
+              const d =
+                a.orientations[0].hardViolations -
+                b.orientations[0].hardViolations;
+              if (d) return d;
+            }
+            if (a.compatibilityPenalty !== b.compatibilityPenalty)
+              return a.compatibilityPenalty - b.compatibilityPenalty;
+            const d = compareAscendingVectors(
+              a.orientations[0].sortVector,
+              b.orientations[0].sortVector,
+            );
+            return d || a.remainingIndex - b.remainingIndex;
+          });
+          for (const c of candidates) {
+            const tail = search(
+              remaining.filter(
+                (p) => p.id !== first.id && p.id !== c.opponent.id,
+              ),
+            );
+            if (tail) {
+              const o = c.orientations[0];
+              return [
+                {
+                  type: "game",
+                  whiteId: o.whiteId,
+                  blackId: o.blackId,
+                  result: null,
+                },
+                ...tail,
+              ];
+            }
+          }
+          failed.add(key);
+          return null;
+        }
+        return search(orderedPlayers);
+      }
+      function compareFinalSolutions(a, b) {
+        const s = compareAscendingVectors(a.structureVector, b.structureVector);
+        if (s) return s;
+        if (a.hardViolations !== b.hardViolations)
+          return a.hardViolations - b.hardViolations;
+        return compareAscendingVectors(a.decisionVector, b.decisionVector);
+      }
+      function solveFinalPairings(orderedPlayers, roundNumber, stats) {
+        const rankMap = new Map(orderedPlayers.map((p, i) => [p.id, i])),
+          memo = new Map();
+        let nodes = 0;
+        const maxNodes = 500000;
+        function search(remaining) {
+          if (!remaining.length)
+            return {
+              pairings: [],
+              structureVector: [],
+              hardViolations: 0,
+              decisionVector: [],
+            };
+          const key = remaining.map((p) => p.id).join("|");
+          if (memo.has(key)) return memo.get(key);
+          if (++nodes > maxNodes) throw createSearchLimitError();
+          const first = remaining[0],
+            fs = stats.get(first.id),
+            candidates = [];
+          for (let i = 1; i < remaining.length; i++) {
+            const opponent = remaining[i];
+            if (fs.opponents.has(opponent.id)) continue;
+            const orientations = orientationOptions(
+              first,
+              opponent,
+              roundNumber,
+              stats,
+              rankMap,
+              false,
+            );
+            if (!orientations.length) continue;
+            candidates.push({
+              opponent,
+              remainingIndex: i,
+              scoreGap: Math.abs(fs.points - stats.get(opponent.id).points),
+              compatibilityPenalty: pairingCompatibilityPenalty(
+                first,
+                opponent,
+                stats,
+              ),
+              orientations,
+            });
+          }
+          candidates.sort((a, b) =>
+            !approximatelyEqual(a.scoreGap, b.scoreGap)
+              ? a.scoreGap - b.scoreGap
+              : a.remainingIndex - b.remainingIndex,
+          );
+          let best = null,
+            accepted = null;
+          for (const c of candidates) {
+            if (accepted !== null && c.scoreGap > accepted + 0.000001) break;
+            const tail = search(
+              remaining.filter(
+                (p) => p.id !== first.id && p.id !== c.opponent.id,
+              ),
+            );
+            if (!tail) continue;
+            if (accepted === null) accepted = c.scoreGap;
+            const o = c.orientations[0],
+              solution = {
+                pairings: [
+                  {
+                    type: "game",
+                    whiteId: o.whiteId,
+                    blackId: o.blackId,
+                    result: null,
+                  },
+                  ...tail.pairings,
+                ],
+                structureVector: [c.scoreGap, ...tail.structureVector],
+                hardViolations: o.hardViolations + tail.hardViolations,
+                decisionVector: [
+                  c.compatibilityPenalty,
+                  ...o.softVector,
+                  c.remainingIndex,
+                  ...tail.decisionVector,
+                ],
+              };
+            if (!best || compareFinalSolutions(solution, best) < 0)
+              best = solution;
+          }
+          memo.set(key, best);
+          return best;
+        }
+        return search(orderedPlayers);
+      }
 
-/* ============================================================
+      /* ============================================================
    Bye selection
 ============================================================ */
 
-function selectByeCandidates(orderedPlayers,stats){
-  const eligible=orderedPlayers.filter(p=>!stats.get(p.id).hadWOPoint);if(!eligible.length)throw new Error("Alla aktiva spelare har redan fått eller tagit en poäng genom frirond eller walkover. Tävlingsledaren måste fatta beslutet.");
-  const lowest=Math.min(...eligible.map(p=>stats.get(p.id).points));return eligible.filter(p=>approximatelyEqual(stats.get(p.id).points,lowest)).sort((a,b)=>b.startNo-a.startNo)
-}
-function compareFinalByeSolutions(a,b){const s=compareAscendingVectors(a.structureVector,b.structureVector);if(s)return s;if(a.hardViolations!==b.hardViolations)return a.hardViolations-b.hardViolations;if(a.byeOrder!==b.byeOrder)return a.byeOrder-b.byeOrder;return compareAscendingVectors(a.decisionVector,b.decisionVector)}
-function countRoundColorViolations(pairings,stats){let n=0;for(const p of pairings){const ws=stats.get(p.whiteId);if(ws)n+=hardColorViolationCount(ws,"W");if(p.type==="game"&&p.blackId){const bs=stats.get(p.blackId);if(bs)n+=hardColorViolationCount(bs,"B")}}return n}
+      function selectByeCandidates(orderedPlayers, stats) {
+        const eligible = orderedPlayers.filter(
+          (p) => !stats.get(p.id).hadWOPoint,
+        );
+        if (!eligible.length)
+          throw new Error(
+            "Alla aktiva spelare har redan fått eller tagit en poäng genom frirond eller walkover. Tävlingsledaren måste fatta beslutet.",
+          );
+        const lowest = Math.min(...eligible.map((p) => stats.get(p.id).points));
+        return eligible
+          .filter((p) => approximatelyEqual(stats.get(p.id).points, lowest))
+          .sort((a, b) => b.startNo - a.startNo);
+      }
+      function compareFinalByeSolutions(a, b) {
+        const s = compareAscendingVectors(a.structureVector, b.structureVector);
+        if (s) return s;
+        if (a.hardViolations !== b.hardViolations)
+          return a.hardViolations - b.hardViolations;
+        if (a.byeOrder !== b.byeOrder) return a.byeOrder - b.byeOrder;
+        return compareAscendingVectors(a.decisionVector, b.decisionVector);
+      }
+      function countRoundColorViolations(pairings, stats) {
+        let n = 0;
+        for (const p of pairings) {
+          const ws = stats.get(p.whiteId);
+          if (ws) n += hardColorViolationCount(ws, "W");
+          if (p.type === "game" && p.blackId) {
+            const bs = stats.get(p.blackId);
+            if (bs) n += hardColorViolationCount(bs, "B");
+          }
+        }
+        return n;
+      }
 
-/* ============================================================
+      /* ============================================================
    Later-round pairing
 ============================================================ */
 
-function pairLaterRound(roundNumber,activePlayers,stats){
-  const ordered=[...activePlayers].sort((a,b)=>{const x=stats.get(a.id).points,y=stats.get(b.id).points;return!approximatelyEqual(x,y)?y-x:a.startNo-b.startNo});
-  const final=roundNumber===state.totalRounds;let solution=null,fallback=false;
-  if(ordered.length%2===0){
-    if(final){try{const r=solveFinalPairings(ordered,roundNumber,stats);if(r)solution={pairings:r.pairings,byePlayer:null}}catch(e){if(e.code!=="SEARCH_LIMIT")throw e;fallback=true;const r=solvePairings(ordered,roundNumber,stats,false);if(r)solution={pairings:r,byePlayer:null}}}
-    else{const r=solvePairings(ordered,roundNumber,stats,true);if(r)solution={pairings:r,byePlayer:null}}
-  }else{
-    const candidates=selectByeCandidates(ordered,stats);
-    if(final){
-      const options=[];
-      try{for(let i=0;i<candidates.length;i++){const bye=candidates[i],remaining=ordered.filter(p=>p.id!==bye.id),r=solveFinalPairings(remaining,roundNumber,stats);if(!r)continue;options.push({pairings:r.pairings,byePlayer:bye,structureVector:r.structureVector,hardViolations:r.hardViolations+hardColorViolationCount(stats.get(bye.id),"W"),decisionVector:r.decisionVector,byeOrder:i})}}
-      catch(e){if(e.code!=="SEARCH_LIMIT")throw e;fallback=true}
-      if(!fallback){options.sort(compareFinalByeSolutions);solution=options[0]||null}
-      else for(const bye of candidates){const r=solvePairings(ordered.filter(p=>p.id!==bye.id),roundNumber,stats,false);if(r){solution={pairings:r,byePlayer:bye};break}}
-    }else for(const bye of candidates){if(!hardColorAllowed(stats.get(bye.id),"W"))continue;const r=solvePairings(ordered.filter(p=>p.id!==bye.id),roundNumber,stats,true);if(r){solution={pairings:r,byePlayer:bye};break}}
-  }
-  if(!solution)throw new Error(final?"Ingen lottning för sista ronden kunde skapas utan att upprepa motståndare. Tävlingsledaren måste granska eller lägga in lottningen manuellt.":"Ingen lottning uppfyller både regeln om unika motståndare och de obligatoriska färgreglerna 7A och 7B. Tävlingsledaren kan lägga in en tillåten rond manuellt.");
-  const pairings=[...solution.pairings];if(solution.byePlayer)pairings.push({type:"bye",whiteId:solution.byePlayer.id,blackId:null,result:"1-0"});
-  const violations=countRoundColorViolations(pairings,stats),warnings=[];
-  if(fallback)warnings.push("Den fullständiga optimeringen av sista ronden nådde sökgränsen. Tävlingsledaren bör kontrollera reglerna 11A och 11B.");
-  if(final&&violations)warnings.push(`Lottningen av sista ronden innehåller ${violations} separat(a) brott mot reglerna 7A eller 7B. Tävlingsledaren bör kontrollera lottningen.`);
-  return{pairings:pairings.map((p,i)=>({...p,board:i+1})),warning:warnings.join(" ")}
-}
+      function pairLaterRound(roundNumber, activePlayers, stats) {
+        const ordered = [...activePlayers].sort((a, b) => {
+          const x = stats.get(a.id).points,
+            y = stats.get(b.id).points;
+          return !approximatelyEqual(x, y) ? y - x : a.startNo - b.startNo;
+        });
+        const final = roundNumber === state.totalRounds;
+        let solution = null,
+          fallback = false;
+        if (ordered.length % 2 === 0) {
+          if (final) {
+            try {
+              const r = solveFinalPairings(ordered, roundNumber, stats);
+              if (r) solution = { pairings: r.pairings, byePlayer: null };
+            } catch (e) {
+              if (e.code !== "SEARCH_LIMIT") throw e;
+              fallback = true;
+              const r = solvePairings(ordered, roundNumber, stats, false);
+              if (r) solution = { pairings: r, byePlayer: null };
+            }
+          } else {
+            const r = solvePairings(ordered, roundNumber, stats, true);
+            if (r) solution = { pairings: r, byePlayer: null };
+          }
+        } else {
+          const candidates = selectByeCandidates(ordered, stats);
+          if (final) {
+            const options = [];
+            try {
+              for (let i = 0; i < candidates.length; i++) {
+                const bye = candidates[i],
+                  remaining = ordered.filter((p) => p.id !== bye.id),
+                  r = solveFinalPairings(remaining, roundNumber, stats);
+                if (!r) continue;
+                options.push({
+                  pairings: r.pairings,
+                  byePlayer: bye,
+                  structureVector: r.structureVector,
+                  hardViolations:
+                    r.hardViolations +
+                    hardColorViolationCount(stats.get(bye.id), "W"),
+                  decisionVector: r.decisionVector,
+                  byeOrder: i,
+                });
+              }
+            } catch (e) {
+              if (e.code !== "SEARCH_LIMIT") throw e;
+              fallback = true;
+            }
+            if (!fallback) {
+              options.sort(compareFinalByeSolutions);
+              solution = options[0] || null;
+            } else
+              for (const bye of candidates) {
+                const r = solvePairings(
+                  ordered.filter((p) => p.id !== bye.id),
+                  roundNumber,
+                  stats,
+                  false,
+                );
+                if (r) {
+                  solution = { pairings: r, byePlayer: bye };
+                  break;
+                }
+              }
+          } else
+            for (const bye of candidates) {
+              if (!hardColorAllowed(stats.get(bye.id), "W")) continue;
+              const r = solvePairings(
+                ordered.filter((p) => p.id !== bye.id),
+                roundNumber,
+                stats,
+                true,
+              );
+              if (r) {
+                solution = { pairings: r, byePlayer: bye };
+                break;
+              }
+            }
+        }
+        if (!solution)
+          throw new Error(
+            final
+              ? "Ingen lottning för sista ronden kunde skapas utan att upprepa motståndare. Tävlingsledaren måste granska eller lägga in lottningen manuellt."
+              : "Ingen lottning uppfyller både regeln om unika motståndare och de obligatoriska färgreglerna 7A och 7B. Tävlingsledaren kan lägga in en tillåten rond manuellt.",
+          );
+        const pairings = [...solution.pairings];
+        if (solution.byePlayer)
+          pairings.push({
+            type: "bye",
+            whiteId: solution.byePlayer.id,
+            blackId: null,
+            result: "1-0",
+          });
+        const violations = countRoundColorViolations(pairings, stats),
+          warnings = [];
+        if (fallback)
+          warnings.push(
+            "Den fullständiga optimeringen av sista ronden nådde sökgränsen. Tävlingsledaren bör kontrollera reglerna 11A och 11B.",
+          );
+        if (final && violations)
+          warnings.push(
+            `Lottningen av sista ronden innehåller ${violations} separat(a) brott mot reglerna 7A eller 7B. Tävlingsledaren bör kontrollera lottningen.`,
+          );
+        return {
+          pairings: pairings.map((p, i) => ({ ...p, board: i + 1 })),
+          warning: warnings.join(" "),
+        };
+      }
 
-/* ============================================================
+      /* ============================================================
    Round creation
 ============================================================ */
 
-function createFirstRound(activePlayers){
-  const ordered=[...activePlayers].sort((a,b)=>a.startNo-b.startNo),pairings=[];let bye=null;
-  if(ordered.length%2)bye=ordered.pop();
-  for(let i=0;i<ordered.length;i+=2)pairings.push({board:pairings.length+1,type:"game",whiteId:ordered[i+1].id,blackId:ordered[i].id,result:null});
-  if(bye)pairings.push({board:pairings.length+1,type:"bye",whiteId:bye.id,blackId:null,result:"1-0"});
-  return{pairings,warning:""}
-}
-function createNextRound(){
-  const number=state.rounds.length+1;if(number>state.totalRounds)return;if(state.rounds.some(r=>!r.completed))throw new Error("Den pågående ronden måste avslutas först.");
-  if(number===state.totalRounds&&getUnresolvedAdjournedGames().length)throw new Error("Sista ronden kan inte skapas medan ett tidigare parti fortfarande är avbrutet. Registrera alla slutliga resultat först.");
-  const active=state.players.filter(p=>!p.withdrawn);if(!active.length)throw new Error("Det finns inga aktiva spelare.");
-  const standingsBefore=buildRoundList(number),generated=number===1?createFirstRound(active):pairLaterRound(number,active,buildStats(number));
-  state.rounds.push({number,createdAt:new Date().toISOString(),completedAt:null,completed:false,createdBy:"automatic",standingsBefore,pairings:generated.pairings,warning:generated.warning||""});
-  if(generated.warning)state.warnings.push(`Rond ${number}: ${generated.warning}`);
-  state.status="running";render()
-}
+      function createFirstRound(activePlayers) {
+        const ordered = [...activePlayers].sort(
+            (a, b) => a.startNo - b.startNo,
+          ),
+          pairings = [];
+        let bye = null;
+        if (ordered.length % 2) bye = ordered.pop();
+        for (let i = 0; i < ordered.length; i += 2)
+          pairings.push({
+            board: pairings.length + 1,
+            type: "game",
+            whiteId: ordered[i + 1].id,
+            blackId: ordered[i].id,
+            result: null,
+          });
+        if (bye)
+          pairings.push({
+            board: pairings.length + 1,
+            type: "bye",
+            whiteId: bye.id,
+            blackId: null,
+            result: "1-0",
+          });
+        return { pairings, warning: "" };
+      }
+      function createNextRound() {
+        const number = state.rounds.length + 1;
+        if (number > state.totalRounds) return;
+        if (state.rounds.some((r) => !r.completed))
+          throw new Error("Den pågående ronden måste avslutas först.");
+        if (
+          number === state.totalRounds &&
+          getUnresolvedAdjournedGames().length
+        )
+          throw new Error(
+            "Sista ronden kan inte skapas medan ett tidigare parti fortfarande är avbrutet. Registrera alla slutliga resultat först.",
+          );
+        const active = state.players.filter((p) => !p.withdrawn);
+        if (!active.length) throw new Error("Det finns inga aktiva spelare.");
+        const standingsBefore = buildRoundList(number),
+          generated =
+            number === 1
+              ? createFirstRound(active)
+              : pairLaterRound(number, active, buildStats(number));
+        state.rounds.push({
+          number,
+          createdAt: new Date().toISOString(),
+          completedAt: null,
+          completed: false,
+          createdBy: "automatic",
+          standingsBefore,
+          pairings: generated.pairings,
+          warning: generated.warning || "",
+        });
+        if (generated.warning)
+          state.warnings.push(`Rond ${number}: ${generated.warning}`);
+        state.status = "running";
+        render();
+      }
 
-/* ============================================================
+      /* ============================================================
    Manual arbiter pairing
 ============================================================ */
 
-function parseManualPairingText(text){
-  const entries=[];String(text||"").split(/\r?\n/).forEach((raw,i)=>{const line=raw.trim();if(!line||line.startsWith("//"))return;let m=line.match(/^(?:bye|wo|frirond)\s*[:=-]?\s*#?(\d+)$/i);if(m){entries.push({type:"bye",playerNo:Number(m[1])});return}m=line.match(/^#?(\d+)(?:\s*[-–—,;\/]\s*|\s+)#?(\d+)$/);if(m){entries.push({type:"game",whiteNo:Number(m[1]),blackNo:Number(m[2])});return}throw new Error(`Kunde inte tolka rad ${i+1} i den manuella lottningen: ”${line}”.`)});return entries
-}
-function createManualRound(){
-  if(getCurrentRound()){alert("Avsluta den pågående ronden först.");return}const number=state.rounds.length+1;if(number>state.totalRounds){alert("Alla planerade ronder har redan skapats.");return}
-  if(number===state.totalRounds&&getUnresolvedAdjournedGames().length){alert("Registrera resultaten för alla avbrutna partier innan sista ronden skapas.");return}
-  const active=state.players.filter(p=>!p.withdrawn).sort((a,b)=>a.startNo-b.startNo);if(!active.length){alert("Det finns inga aktiva spelare.");return}
-  const text=prompt(`Manuell lottning för rond ${number}\n\nAnge ett par per rad. Skriv vit först:\n12-7\n3-18\nFRIROND 21\n\nVarje aktiv spelare måste förekomma exakt en gång. Upprepade motståndare och otillåtna färgfördelningar före sista ronden avvisas.`);if(text===null)return;
-  try{
-    const entries=parseManualPairingText(text);if(!entries.length)throw new Error("Ingen lottning angavs.");
-    const byNo=new Map(active.map(p=>[p.startNo,p])),seen=new Set(),stats=buildStats(number);
-    const ordered=[...active].sort((a,b)=>{const x=stats.get(a.id).points,y=stats.get(b.id).points;return!approximatelyEqual(x,y)?y-x:a.startNo-b.startNo}),rankMap=new Map(ordered.map((p,i)=>[p.id,i]));
-    const pairings=[];let bye=null,cross=0,mismatch=0;
-    for(const entry of entries){
-      if(entry.type==="bye"){if(bye)throw new Error("Mer än en frirond angavs.");const p=byNo.get(entry.playerNo);if(!p)throw new Error(`Startnummer ${entry.playerNo} tillhör inte en aktiv spelare.`);if(seen.has(p.id))throw new Error(`#${p.startNo} ${p.name} förekommer mer än en gång.`);seen.add(p.id);bye=p;pairings.push({type:"bye",whiteId:p.id,blackId:null,result:"1-0"});continue}
-      const w=byNo.get(entry.whiteNo),b=byNo.get(entry.blackNo);if(!w||!b)throw new Error("En manuell lottning hänvisar till ett startnummer som inte tillhör en aktiv spelare.");if(w.id===b.id)throw new Error("En spelare kan inte möta sig själv.");if(seen.has(w.id)||seen.has(b.id))throw new Error("En spelare förekommer mer än en gång i ronden.");if(stats.get(w.id).opponents.has(b.id))throw new Error(`#${w.startNo} ${w.name} och #${b.startNo} ${b.name} har redan mötts.`);
-      seen.add(w.id);seen.add(b.id);if(!approximatelyEqual(stats.get(w.id).points,stats.get(b.id).points))cross++;
-      const desired=desiredWhiteForRule8D(w,b,number,stats,rankMap);
-      if(desired&&desired.id!==w.id){const current=hardColorViolationCount(stats.get(w.id),"W")+hardColorViolationCount(stats.get(b.id),"B"),required=hardColorViolationCount(stats.get(b.id),"W")+hardColorViolationCount(stats.get(w.id),"B");if(required<=current)mismatch++}
-      pairings.push({type:"game",whiteId:w.id,blackId:b.id,result:null})
-    }
-    if(active.length%2!==(bye?1:0))throw new Error(active.length%2?"Ett udda antal aktiva spelare kräver exakt en frirond.":"Ett jämnt antal aktiva spelare får inte ha någon frirond.");
-    const missing=active.filter(p=>!seen.has(p.id));if(missing.length)throw new Error("Följande aktiva spelare saknas:\n"+missing.map(p=>`#${p.startNo} ${p.name}`).join("\n"));
-    if(bye&&!selectByeCandidates(ordered,stats).some(p=>p.id===bye.id))throw new Error(`#${bye.startNo} ${bye.name} tillhör inte den lägsta poänggrupp som är berättigad till frirond.`);
-    const violations=countRoundColorViolations(pairings,stats),final=number===state.totalRounds;if(!final&&violations)throw new Error("Den manuella lottningen bryter mot den obligatoriska färgregeln 7A eller 7B.");
-    const notices=["Ronden har lagts in manuellt av tävlingsledaren."];if(cross)notices.push(`${cross} par går över en poänggrupp.`);if(mismatch)notices.push(`${mismatch} par verkar avvika från färgfördelningen i regel 8D.`);if(violations)notices.push(`${violations} brott mot reglerna 7A eller 7B förekommer i sista ronden.`);
-    if(!confirm(`Skapa rond ${number} manuellt?\n\n${notices.join("\n")}`))return;
-    state.rounds.push({number,createdAt:new Date().toISOString(),completedAt:null,completed:false,createdBy:"manual",standingsBefore:buildRoundList(number),pairings:pairings.map((p,i)=>({...p,board:i+1})),warning:notices.join(" ")});
-    state.warnings.push(`Rond ${number}: ${notices.join(" ")}`);state.status="running";render()
-  }catch(error){alert(error.message)}
-}
+      function parseManualPairingText(text) {
+        const entries = [];
+        String(text || "")
+          .split(/\r?\n/)
+          .forEach((raw, i) => {
+            const line = raw.trim();
+            if (!line || line.startsWith("//")) return;
+            let m = line.match(/^(?:bye|wo|frirond)\s*[:=-]?\s*#?(\d+)$/i);
+            if (m) {
+              entries.push({ type: "bye", playerNo: Number(m[1]) });
+              return;
+            }
+            m = line.match(/^#?(\d+)(?:\s*[-–—,;\/]\s*|\s+)#?(\d+)$/);
+            if (m) {
+              entries.push({
+                type: "game",
+                whiteNo: Number(m[1]),
+                blackNo: Number(m[2]),
+              });
+              return;
+            }
+            throw new Error(
+              `Kunde inte tolka rad ${i + 1} i den manuella lottningen: ”${line}”.`,
+            );
+          });
+        return entries;
+      }
+      function createManualRound() {
+        if (getCurrentRound()) {
+          alert("Avsluta den pågående ronden först.");
+          return;
+        }
+        const number = state.rounds.length + 1;
+        if (number > state.totalRounds) {
+          alert("Alla planerade ronder har redan skapats.");
+          return;
+        }
+        if (
+          number === state.totalRounds &&
+          getUnresolvedAdjournedGames().length
+        ) {
+          alert(
+            "Registrera resultaten för alla avbrutna partier innan sista ronden skapas.",
+          );
+          return;
+        }
+        const active = state.players
+          .filter((p) => !p.withdrawn)
+          .sort((a, b) => a.startNo - b.startNo);
+        if (!active.length) {
+          alert("Det finns inga aktiva spelare.");
+          return;
+        }
+        const text = prompt(
+          `Manuell lottning för rond ${number}\n\nAnge ett par per rad. Skriv vit först:\n12-7\n3-18\nFRIROND 21\n\nVarje aktiv spelare måste förekomma exakt en gång. Upprepade motståndare och otillåtna färgfördelningar före sista ronden avvisas.`,
+        );
+        if (text === null) return;
+        try {
+          const entries = parseManualPairingText(text);
+          if (!entries.length) throw new Error("Ingen lottning angavs.");
+          const byNo = new Map(active.map((p) => [p.startNo, p])),
+            seen = new Set(),
+            stats = buildStats(number);
+          const ordered = [...active].sort((a, b) => {
+              const x = stats.get(a.id).points,
+                y = stats.get(b.id).points;
+              return !approximatelyEqual(x, y) ? y - x : a.startNo - b.startNo;
+            }),
+            rankMap = new Map(ordered.map((p, i) => [p.id, i]));
+          const pairings = [];
+          let bye = null,
+            cross = 0,
+            mismatch = 0;
+          for (const entry of entries) {
+            if (entry.type === "bye") {
+              if (bye) throw new Error("Mer än en frirond angavs.");
+              const p = byNo.get(entry.playerNo);
+              if (!p)
+                throw new Error(
+                  `Startnummer ${entry.playerNo} tillhör inte en aktiv spelare.`,
+                );
+              if (seen.has(p.id))
+                throw new Error(
+                  `#${p.startNo} ${p.name} förekommer mer än en gång.`,
+                );
+              seen.add(p.id);
+              bye = p;
+              pairings.push({
+                type: "bye",
+                whiteId: p.id,
+                blackId: null,
+                result: "1-0",
+              });
+              continue;
+            }
+            const w = byNo.get(entry.whiteNo),
+              b = byNo.get(entry.blackNo);
+            if (!w || !b)
+              throw new Error(
+                "En manuell lottning hänvisar till ett startnummer som inte tillhör en aktiv spelare.",
+              );
+            if (w.id === b.id)
+              throw new Error("En spelare kan inte möta sig själv.");
+            if (seen.has(w.id) || seen.has(b.id))
+              throw new Error("En spelare förekommer mer än en gång i ronden.");
+            if (stats.get(w.id).opponents.has(b.id))
+              throw new Error(
+                `#${w.startNo} ${w.name} och #${b.startNo} ${b.name} har redan mötts.`,
+              );
+            seen.add(w.id);
+            seen.add(b.id);
+            if (
+              !approximatelyEqual(
+                stats.get(w.id).points,
+                stats.get(b.id).points,
+              )
+            )
+              cross++;
+            const desired = desiredWhiteForRule8D(w, b, number, stats, rankMap);
+            if (desired && desired.id !== w.id) {
+              const current =
+                  hardColorViolationCount(stats.get(w.id), "W") +
+                  hardColorViolationCount(stats.get(b.id), "B"),
+                required =
+                  hardColorViolationCount(stats.get(b.id), "W") +
+                  hardColorViolationCount(stats.get(w.id), "B");
+              if (required <= current) mismatch++;
+            }
+            pairings.push({
+              type: "game",
+              whiteId: w.id,
+              blackId: b.id,
+              result: null,
+            });
+          }
+          if (active.length % 2 !== (bye ? 1 : 0))
+            throw new Error(
+              active.length % 2
+                ? "Ett udda antal aktiva spelare kräver exakt en frirond."
+                : "Ett jämnt antal aktiva spelare får inte ha någon frirond.",
+            );
+          const missing = active.filter((p) => !seen.has(p.id));
+          if (missing.length)
+            throw new Error(
+              "Följande aktiva spelare saknas:\n" +
+                missing.map((p) => `#${p.startNo} ${p.name}`).join("\n"),
+            );
+          if (
+            bye &&
+            !selectByeCandidates(ordered, stats).some((p) => p.id === bye.id)
+          )
+            throw new Error(
+              `#${bye.startNo} ${bye.name} tillhör inte den lägsta poänggrupp som är berättigad till frirond.`,
+            );
+          const violations = countRoundColorViolations(pairings, stats),
+            final = number === state.totalRounds;
+          if (!final && violations)
+            throw new Error(
+              "Den manuella lottningen bryter mot den obligatoriska färgregeln 7A eller 7B.",
+            );
+          const notices = ["Ronden har lagts in manuellt av tävlingsledaren."];
+          if (cross) notices.push(`${cross} par går över en poänggrupp.`);
+          if (mismatch)
+            notices.push(
+              `${mismatch} par verkar avvika från färgfördelningen i regel 8D.`,
+            );
+          if (violations)
+            notices.push(
+              `${violations} brott mot reglerna 7A eller 7B förekommer i sista ronden.`,
+            );
+          if (
+            !confirm(`Skapa rond ${number} manuellt?\n\n${notices.join("\n")}`)
+          )
+            return;
+          state.rounds.push({
+            number,
+            createdAt: new Date().toISOString(),
+            completedAt: null,
+            completed: false,
+            createdBy: "manual",
+            standingsBefore: buildRoundList(number),
+            pairings: pairings.map((p, i) => ({ ...p, board: i + 1 })),
+            warning: notices.join(" "),
+          });
+          state.warnings.push(`Rond ${number}: ${notices.join(" ")}`);
+          state.status = "running";
+          render();
+        } catch (error) {
+          alert(error.message);
+        }
+      }
 
-/* ============================================================
+      /* ============================================================
    Round completion
 ============================================================ */
 
-function getCurrentRound(){return state.rounds.find(r=>!r.completed)||null}
-function completeCurrentRound(){
-  const round=getCurrentRound();if(!round)return;
-  if(round.pairings.some(p=>p.type==="game"&&!p.result)){alert("Ange ett resultat för varje parti innan ronden avslutas.");return}
-  const adj=round.pairings.some(p=>p.type==="game"&&p.result==="ADJ");if(round.number===state.totalRounds&&adj){alert("Sista ronden kan inte avslutas med ett avbrutet parti. Ange det slutliga resultatet först.");return}
-  let message=`Avsluta rond ${round.number}? Resultat kan inte redigeras efteråt.`;if(adj)message+="\n\nAvbrutna partier räknas preliminärt som remi. Det slutliga resultatet kan registreras senare.";if(!confirm(message))return;
-  round.completed=true;round.completedAt=new Date().toISOString();refreshTournamentStatus();render()
-}
-function setPairingResult(board,result){if(!["1-0","0.5-0.5","0-1","W-F","F-W","0-0","ADJ"].includes(result))return;const round=getCurrentRound();if(!round)return;const pairing=round.pairings.find(p=>p.board===Number(board));if(!pairing||pairing.type!=="game")return;pairing.result=result;autosave()}
+      function getCurrentRound() {
+        return state.rounds.find((r) => !r.completed) || null;
+      }
+      function completeCurrentRound() {
+        const round = getCurrentRound();
+        if (!round) return;
+        if (round.pairings.some((p) => p.type === "game" && !p.result)) {
+          alert("Ange ett resultat för varje parti innan ronden avslutas.");
+          return;
+        }
+        const adj = round.pairings.some(
+          (p) => p.type === "game" && p.result === "ADJ",
+        );
+        if (round.number === state.totalRounds && adj) {
+          alert(
+            "Sista ronden kan inte avslutas med ett avbrutet parti. Ange det slutliga resultatet först.",
+          );
+          return;
+        }
+        let message = `Avsluta rond ${round.number}? Resultat kan inte redigeras efteråt.`;
+        if (adj)
+          message +=
+            "\n\nAvbrutna partier räknas preliminärt som remi. Det slutliga resultatet kan registreras senare.";
+        if (!confirm(message)) return;
+        round.completed = true;
+        round.completedAt = new Date().toISOString();
+        refreshTournamentStatus();
+        render();
+      }
+      function setPairingResult(board, result) {
+        if (
+          !["1-0", "0.5-0.5", "0-1", "W-F", "F-W", "0-0", "ADJ"].includes(
+            result,
+          )
+        )
+          return;
+        const round = getCurrentRound();
+        if (!round) return;
+        const pairing = round.pairings.find((p) => p.board === Number(board));
+        if (!pairing || pairing.type !== "game") return;
+        pairing.result = result;
+        autosave();
+      }
 
-/* ============================================================
+      /* ============================================================
    Rendering
 ============================================================ */
 
-function roundListTableHTML(rows){return`<div class="table-wrap"><table><thead><tr><th class="number">Plac.</th><th class="number">Startnr</th><th>Spelare</th><th>Klubb</th><th class="number">Rating</th><th class="number">Poäng</th><th class="number">Kvalitetspoäng</th></tr></thead><tbody>${rows.map(r=>`<tr><td class="number">${r.rank}</td><td class="number">${r.startNo}</td><td>${escapeHTML(r.name)}</td><td>${escapeHTML(r.club)}</td><td class="number">${r.rating??""}</td><td class="number score">${formatScore(r.points)}</td><td class="number">${formatNumber(r.quality)}</td></tr>`).join("")}</tbody></table></div>`}
-function renderCurrentRound(){
-  const container=document.getElementById("currentRoundContent"),round=getCurrentRound();
-  if(!round){
-    const completed=state.rounds.filter(r=>r.completed).length;
-    if(state.status==="finished"){container.innerHTML=`<h2>Turneringen är avslutad</h2><div class="notice success">Samtliga ${state.totalRounds} ronder har avslutats. Slutställningen visas nedan.</div>`;return}
-    if(state.rounds.length>=state.totalRounds&&getUnresolvedAdjournedGames().length){container.innerHTML=`<h2>Väntar på slutliga resultat</h2><div class="notice warning">Alla planerade ronder har spelats, men turneringen kan inte avslutas förrän varje avbrutet parti har fått ett slutligt resultat.</div>`;return}
-    const next=completed+1;container.innerHTML=`<h2>${completed===0?"Turneringen är klar att starta":`Rond ${completed} är avslutad`}</h2><div class="notice">Kontrollera avanmälningar och avbrutna partier och skapa sedan rond ${next}.</div><h3>Aktuell rondlista</h3>${roundListTableHTML(buildRoundList(next))}<div class="button-row"><button id="createNextRoundButton" class="success">Skapa rond ${next}</button><button id="createManualRoundButton" class="warning">Tävlingsledare: lägg in rond manuellt</button></div>`;
-    document.getElementById("createNextRoundButton").addEventListener("click",()=>{try{createNextRound()}catch(e){alert(e.message)}});document.getElementById("createManualRoundButton").addEventListener("click",createManualRound);return
-  }
-  const choices=[["1-0","1–0"],["0.5-0.5","½–½"],["0-1","0–1"],["W-F","Vit WO"],["F-W","Svart WO"],["0-0","0–0"],["ADJ","Avbrutet"]];
-  container.innerHTML=`<h2>Rond ${round.number}</h2>${round.warning?`<div class="notice warning">${escapeHTML(round.warning)}</div>`:""}<div class="button-row"><button id="printCurrentPairingsButton">Skriv ut tomt lottningsprotokoll</button><button id="printCurrentRoundListButton" class="secondary">Skriv ut listan före ronden</button></div><div class="table-wrap"><table><thead><tr><th class="number">Bord</th><th>Vit</th><th class="center">Resultat</th><th>Svart</th></tr></thead><tbody>${round.pairings.map(p=>{const white=getPlayer(p.whiteId),black=p.blackId?getPlayer(p.blackId):null;if(p.type==="bye")return`<tr><td class="number">${p.board}</td><td>${playerDisplay(white)}</td><td class="center"><strong>1 poäng</strong></td><td><strong>FRIROND</strong></td></tr>`;return`<tr><td class="number">${p.board}</td><td>${playerDisplay(white)}</td><td class="center"><div class="result-buttons" role="group" aria-label="Resultat för bord ${p.board}">${choices.map(([v,l])=>`<button type="button" class="result-choice ${p.result===v?"selected":""}" data-result-board="${p.board}" data-result-value="${v}" aria-pressed="${p.result===v}">${l}</button>`).join("")}<div class="selected-result" aria-live="polite">${escapeHTML(p.result?resultLabel(p.result):"Inget resultat valt")}</div></div></td><td>${playerDisplay(black)}</td></tr>`}).join("")}</tbody></table></div><div class="button-row"><button id="completeRoundButton" class="success">Avsluta rond ${round.number}</button></div>`;
-  container.querySelectorAll("[data-result-value]").forEach(button=>button.addEventListener("click",e=>{setPairingResult(Number(e.currentTarget.dataset.resultBoard),e.currentTarget.dataset.resultValue);renderCurrentRound()}));
-  document.getElementById("printCurrentPairingsButton").addEventListener("click",printCurrentPairings);document.getElementById("printCurrentRoundListButton").addEventListener("click",()=>printRoundList(round.number));document.getElementById("completeRoundButton").addEventListener("click",completeCurrentRound)
-}
-function renderAdjournedGames(){
-  const card=document.getElementById("adjournedGamesCard"),content=document.getElementById("adjournedGamesContent"),games=getUnresolvedAdjournedGames();
-  if(!games.length){card.classList.add("hidden");content.innerHTML="";return}card.classList.remove("hidden");
-  const choices=[["1-0","1–0"],["0.5-0.5","½–½"],["0-1","0–1"],["W-F","Vit WO"],["F-W","Svart WO"],["0-0","0–0"]];
-  content.innerHTML=`<div class="notice warning">Avbrutna partier räknas preliminärt som remi. Alla tidigare avbrutna partier måste avgöras innan den sista ronden kan lottas.</div><div class="table-wrap"><table><thead><tr><th class="number">Rond</th><th class="number">Bord</th><th>Vit</th><th>Svart</th><th class="center">Slutligt resultat</th></tr></thead><tbody>${games.map(({round,pairing:p})=>`<tr><td class="number">${round.number}</td><td class="number">${p.board}</td><td>${playerDisplay(getPlayer(p.whiteId))}</td><td>${playerDisplay(getPlayer(p.blackId))}</td><td class="center"><div class="result-buttons">${choices.map(([v,l])=>`<button type="button" class="result-choice" data-adj-round="${round.number}" data-adj-board="${p.board}" data-adj-result="${v}">${l}</button>`).join("")}</div></td></tr>`).join("")}</tbody></table></div>`;
-  content.querySelectorAll("[data-adj-result]").forEach(b=>b.addEventListener("click",e=>resolveAdjournedGame(Number(e.currentTarget.dataset.adjRound),Number(e.currentTarget.dataset.adjBoard),e.currentTarget.dataset.adjResult)))
-}
-function withdrawPlayer(){
-  if(state.status==="setup"){alert("Starta eller läs in en turnering först.");return}if(state.status==="finished"){alert("Turneringen är redan avslutad.");return}
-  const active=state.players.filter(p=>!p.withdrawn).sort((a,b)=>a.startNo-b.startNo);if(!active.length){alert("Det finns inga aktiva spelare att avanmäla.");return}
-  const value=prompt("Ange startnumret för spelaren som ska avanmälas:\n\n"+active.map(p=>`#${p.startNo} ${p.name}${p.club?` — ${p.club}`:""}`).join("\n"));if(value===null)return;
-  const number=Number(value.trim().replace(/^#/,""));if(!Number.isInteger(number)){alert("Ange ett giltigt startnummer.");return}
-  const player=active.find(p=>p.startNo===number);if(!player){alert(`Det finns ingen aktiv spelare med startnummer ${number}.`);return}
-  const current=getCurrentRound(),pairing=current&&current.pairings.find(p=>p.whiteId===player.id||p.blackId===player.id);let message=`Avanmäl #${player.startNo} ${player.name}?`;
-  if(pairing)message+="\n\nSpelaren ingår redan i den pågående ronden. Avanmälan gäller därför endast kommande ronder."+(pairing.type==="game"?"\n\nOm spelaren inte spelar det aktuella partiet ska resultatet registreras som Vit WO eller Svart WO.":"\n\nDen aktuella frironden och dess poäng ändras inte.");
-  if(!confirm(message))return;player.withdrawn=true;render()
-}
-function finalStandingsTableHTML(rows){return`<div class="table-wrap"><table><thead><tr><th class="number">Plac.</th><th class="number">Startnr</th><th>Spelare</th><th>Klubb</th><th class="number">Rating</th><th class="number">Poäng</th><th class="number">Kvalitetspoäng</th><th class="number">Återförda strukna poäng</th><th class="number">Sonneborn–Berger</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r.withdrawn?"withdrawn":""}"><td class="number">${r.rank}</td><td class="number">${r.startNo}</td><td>${escapeHTML(r.name)}${r.withdrawn?" (avanmäld)":""}</td><td>${escapeHTML(r.club)}</td><td class="number">${r.rating??""}</td><td class="number score">${formatScore(r.points)}</td><td class="number">${formatNumber(r.quality)}</td><td class="number">${formatDropped(r.dropped)}</td><td class="number">${formatNumber(r.sonnebornBerger)}</td></tr>`).join("")}</tbody></table></div>`}
-function renderFinalStandings(){const card=document.getElementById("finalResultsCard"),content=document.getElementById("finalResultsContent");if(state.status!=="finished"){card.classList.add("hidden");content.innerHTML="";return}card.classList.remove("hidden");content.innerHTML=`<p class="muted small">Spelarna rangordnas efter poäng, kvalitetspoäng efter föreskrivna strykningar, återförda strukna poäng en i taget från högst till lägst, Sonneborn–Berger och slutligen den sparade lottordningen.</p>${finalStandingsTableHTML(buildFinalStandings())}`}
-function renderHistoricalRoundSelector(){const select=document.getElementById("historyRoundSelect");if(!state.rounds.length){select.innerHTML='<option value="">Inga ronder tillgängliga</option>';return}const previous=select.value;select.innerHTML=state.rounds.map(r=>`<option value="${r.number}">Rond ${r.number} — lista före spel</option>`).join("");select.value=previous&&state.rounds.some(r=>String(r.number)===previous)?previous:String(state.rounds.at(-1).number)}
-function renderWarnings(){const c=document.getElementById("globalWarnings");c.innerHTML=state.warnings?.length?`<div class="notice warning"><strong>Lottningsmeddelanden</strong><ul>${state.warnings.map(w=>`<li>${escapeHTML(w)}</li>`).join("")}</ul></div>`:""}
-function renderTournament(){
-  document.getElementById("tournamentHeading").textContent=state.name;const completed=state.rounds.filter(r=>r.completed).length,active=state.players.filter(p=>!p.withdrawn).length,current=getCurrentRound(),adj=getUnresolvedAdjournedGames().length;
-  const status=state.status==="finished"?"Avslutad":current?`Rond ${current.number} pågår`:state.rounds.length>=state.totalRounds&&adj?"Väntar på slutliga resultat":"Mellan ronder";
-  document.getElementById("tournamentSummary").innerHTML=`<div><strong>Spelare</strong><span>${state.players.length}</span></div><div><strong>Aktiva spelare</strong><span>${active}</span></div><div><strong>Ronder</strong><span>${completed} / ${state.totalRounds}</span></div><div><strong>Avbrutna partier</strong><span>${adj}</span></div><div><strong>Status</strong><span>${status}</span></div>`;
-  renderWarnings();renderCurrentRound();renderAdjournedGames();renderHistoricalRoundSelector();renderFinalStandings()
-}
-function render(){
-  autosave();const setup=document.getElementById("setupPanel"),panel=document.getElementById("tournamentPanel"),withdraw=document.getElementById("withdrawPlayerButton"),active=state.status!=="setup"&&state.status!=="finished";
-  withdraw.classList.toggle("hidden",!active);withdraw.disabled=!active||!state.players.some(p=>!p.withdrawn);
-  const trf=document.getElementById("saveTrfButton");if(trf)trf.classList.toggle("hidden",state.status!=="finished");
-  if(state.status==="setup"){setup.classList.remove("hidden");panel.classList.add("hidden")}else{setup.classList.add("hidden");panel.classList.remove("hidden");renderTournament()}
-}
+      function roundListTableHTML(rows) {
+        return `<div class="table-wrap"><table><thead><tr><th class="number">Plac.</th><th class="number">Startnr</th><th>Spelare</th><th>Klubb</th><th class="number">Rating</th><th class="number">Poäng</th><th class="number">Kvalitetspoäng</th></tr></thead><tbody>${rows.map((r) => `<tr><td class="number">${r.rank}</td><td class="number">${r.startNo}</td><td>${escapeHTML(r.name)}</td><td>${escapeHTML(r.club)}</td><td class="number">${r.rating ?? ""}</td><td class="number score">${formatScore(r.points)}</td><td class="number">${formatNumber(r.quality)}</td></tr>`).join("")}</tbody></table></div>`;
+      }
+      function renderCurrentRound() {
+        const container = document.getElementById("currentRoundContent"),
+          round = getCurrentRound();
+        if (!round) {
+          const completed = state.rounds.filter((r) => r.completed).length;
+          if (state.status === "finished") {
+            container.innerHTML = `<h2>Turneringen är avslutad</h2><div class="notice success">Samtliga ${state.totalRounds} ronder har avslutats. Slutställningen visas nedan.</div>`;
+            return;
+          }
+          if (
+            state.rounds.length >= state.totalRounds &&
+            getUnresolvedAdjournedGames().length
+          ) {
+            container.innerHTML = `<h2>Väntar på slutliga resultat</h2><div class="notice warning">Alla planerade ronder har spelats, men turneringen kan inte avslutas förrän varje avbrutet parti har fått ett slutligt resultat.</div>`;
+            return;
+          }
+          const next = completed + 1;
+          container.innerHTML = `<h2>${completed === 0 ? "Turneringen är klar att starta" : `Rond ${completed} är avslutad`}</h2><div class="notice">Kontrollera avanmälningar och avbrutna partier och skapa sedan rond ${next}.</div><h3>Aktuell rondlista</h3>${roundListTableHTML(buildRoundList(next))}<div class="button-row"><button id="createNextRoundButton" class="success">Skapa rond ${next}</button><button id="createManualRoundButton" class="warning">Tävlingsledare: lägg in rond manuellt</button></div>`;
+          document
+            .getElementById("createNextRoundButton")
+            .addEventListener("click", () => {
+              try {
+                createNextRound();
+              } catch (e) {
+                alert(e.message);
+              }
+            });
+          document
+            .getElementById("createManualRoundButton")
+            .addEventListener("click", createManualRound);
+          return;
+        }
+        const choices = [
+          ["1-0", "1–0"],
+          ["0.5-0.5", "½–½"],
+          ["0-1", "0–1"],
+          ["W-F", "Vit WO"],
+          ["F-W", "Svart WO"],
+          ["0-0", "0–0"],
+          ["ADJ", "Avbrutet"],
+        ];
+        container.innerHTML = `<h2>Rond ${round.number}</h2>${round.warning ? `<div class="notice warning">${escapeHTML(round.warning)}</div>` : ""}<div class="button-row"><button id="printCurrentPairingsButton">Skriv ut tomt lottningsprotokoll</button><button id="printCurrentRoundListButton" class="secondary">Skriv ut listan före ronden</button></div><div class="table-wrap"><table><thead><tr><th class="number">Bord</th><th>Vit</th><th class="center">Resultat</th><th>Svart</th></tr></thead><tbody>${round.pairings
+          .map((p) => {
+            const white = getPlayer(p.whiteId),
+              black = p.blackId ? getPlayer(p.blackId) : null;
+            if (p.type === "bye")
+              return `<tr><td class="number">${p.board}</td><td>${playerDisplay(white)}</td><td class="center"><strong>1 poäng</strong></td><td><strong>FRIROND</strong></td></tr>`;
+            return `<tr><td class="number">${p.board}</td><td>${playerDisplay(white)}</td><td class="center"><div class="result-buttons" role="group" aria-label="Resultat för bord ${p.board}">${choices.map(([v, l]) => `<button type="button" class="result-choice ${p.result === v ? "selected" : ""}" data-result-board="${p.board}" data-result-value="${v}" aria-pressed="${p.result === v}">${l}</button>`).join("")}<div class="selected-result" aria-live="polite">${escapeHTML(p.result ? resultLabel(p.result) : "Inget resultat valt")}</div></div></td><td>${playerDisplay(black)}</td></tr>`;
+          })
+          .join(
+            "",
+          )}</tbody></table></div><div class="button-row"><button id="completeRoundButton" class="success">Avsluta rond ${round.number}</button></div>`;
+        container.querySelectorAll("[data-result-value]").forEach((button) =>
+          button.addEventListener("click", (e) => {
+            setPairingResult(
+              Number(e.currentTarget.dataset.resultBoard),
+              e.currentTarget.dataset.resultValue,
+            );
+            renderCurrentRound();
+          }),
+        );
+        document
+          .getElementById("printCurrentPairingsButton")
+          .addEventListener("click", printCurrentPairings);
+        document
+          .getElementById("printCurrentRoundListButton")
+          .addEventListener("click", () => printRoundList(round.number));
+        document
+          .getElementById("completeRoundButton")
+          .addEventListener("click", completeCurrentRound);
+      }
+      function renderAdjournedGames() {
+        const card = document.getElementById("adjournedGamesCard"),
+          content = document.getElementById("adjournedGamesContent"),
+          games = getUnresolvedAdjournedGames();
+        if (!games.length) {
+          card.classList.add("hidden");
+          content.innerHTML = "";
+          return;
+        }
+        card.classList.remove("hidden");
+        const choices = [
+          ["1-0", "1–0"],
+          ["0.5-0.5", "½–½"],
+          ["0-1", "0–1"],
+          ["W-F", "Vit WO"],
+          ["F-W", "Svart WO"],
+          ["0-0", "0–0"],
+        ];
+        content.innerHTML = `<div class="notice warning">Avbrutna partier räknas preliminärt som remi. Alla tidigare avbrutna partier måste avgöras innan den sista ronden kan lottas.</div><div class="table-wrap"><table><thead><tr><th class="number">Rond</th><th class="number">Bord</th><th>Vit</th><th>Svart</th><th class="center">Slutligt resultat</th></tr></thead><tbody>${games.map(({ round, pairing: p }) => `<tr><td class="number">${round.number}</td><td class="number">${p.board}</td><td>${playerDisplay(getPlayer(p.whiteId))}</td><td>${playerDisplay(getPlayer(p.blackId))}</td><td class="center"><div class="result-buttons">${choices.map(([v, l]) => `<button type="button" class="result-choice" data-adj-round="${round.number}" data-adj-board="${p.board}" data-adj-result="${v}">${l}</button>`).join("")}</div></td></tr>`).join("")}</tbody></table></div>`;
+        content
+          .querySelectorAll("[data-adj-result]")
+          .forEach((b) =>
+            b.addEventListener("click", (e) =>
+              resolveAdjournedGame(
+                Number(e.currentTarget.dataset.adjRound),
+                Number(e.currentTarget.dataset.adjBoard),
+                e.currentTarget.dataset.adjResult,
+              ),
+            ),
+          );
+      }
+      function withdrawPlayer() {
+        if (state.status === "setup") {
+          alert("Starta eller läs in en turnering först.");
+          return;
+        }
+        if (state.status === "finished") {
+          alert("Turneringen är redan avslutad.");
+          return;
+        }
+        const active = state.players
+          .filter((p) => !p.withdrawn)
+          .sort((a, b) => a.startNo - b.startNo);
+        if (!active.length) {
+          alert("Det finns inga aktiva spelare att avanmäla.");
+          return;
+        }
+        const value = prompt(
+          "Ange startnumret för spelaren som ska avanmälas:\n\n" +
+            active
+              .map(
+                (p) => `#${p.startNo} ${p.name}${p.club ? ` — ${p.club}` : ""}`,
+              )
+              .join("\n"),
+        );
+        if (value === null) return;
+        const number = Number(value.trim().replace(/^#/, ""));
+        if (!Number.isInteger(number)) {
+          alert("Ange ett giltigt startnummer.");
+          return;
+        }
+        const player = active.find((p) => p.startNo === number);
+        if (!player) {
+          alert(`Det finns ingen aktiv spelare med startnummer ${number}.`);
+          return;
+        }
+        const current = getCurrentRound(),
+          pairing =
+            current &&
+            current.pairings.find(
+              (p) => p.whiteId === player.id || p.blackId === player.id,
+            );
+        let message = `Avanmäl #${player.startNo} ${player.name}?`;
+        if (pairing)
+          message +=
+            "\n\nSpelaren ingår redan i den pågående ronden. Avanmälan gäller därför endast kommande ronder." +
+            (pairing.type === "game"
+              ? "\n\nOm spelaren inte spelar det aktuella partiet ska resultatet registreras som Vit WO eller Svart WO."
+              : "\n\nDen aktuella frironden och dess poäng ändras inte.");
+        if (!confirm(message)) return;
+        player.withdrawn = true;
+        render();
+      }
+      function finalStandingsTableHTML(rows) {
+        return `<div class="table-wrap"><table><thead><tr><th class="number">Plac.</th><th class="number">Startnr</th><th>Spelare</th><th>Klubb</th><th class="number">Rating</th><th class="number">Poäng</th><th class="number">Kvalitetspoäng</th><th class="number">Återförda strukna poäng</th><th class="number">Sonneborn–Berger</th></tr></thead><tbody>${rows.map((r) => `<tr class="${r.withdrawn ? "withdrawn" : ""}"><td class="number">${r.rank}</td><td class="number">${r.startNo}</td><td>${escapeHTML(r.name)}${r.withdrawn ? " (avanmäld)" : ""}</td><td>${escapeHTML(r.club)}</td><td class="number">${r.rating ?? ""}</td><td class="number score">${formatScore(r.points)}</td><td class="number">${formatNumber(r.quality)}</td><td class="number">${formatDropped(r.dropped)}</td><td class="number">${formatNumber(r.sonnebornBerger)}</td></tr>`).join("")}</tbody></table></div>`;
+      }
+      function renderFinalStandings() {
+        const card = document.getElementById("finalResultsCard"),
+          content = document.getElementById("finalResultsContent");
+        if (state.status !== "finished") {
+          card.classList.add("hidden");
+          content.innerHTML = "";
+          return;
+        }
+        card.classList.remove("hidden");
+        content.innerHTML = `<p class="muted small">Spelarna rangordnas efter poäng, kvalitetspoäng efter föreskrivna strykningar, återförda strukna poäng en i taget från högst till lägst, Sonneborn–Berger och slutligen den sparade lottordningen.</p>${finalStandingsTableHTML(buildFinalStandings())}`;
+      }
+      function renderHistoricalRoundSelector() {
+        const select = document.getElementById("historyRoundSelect");
+        if (!state.rounds.length) {
+          select.innerHTML =
+            '<option value="">Inga ronder tillgängliga</option>';
+          return;
+        }
+        const previous = select.value;
+        select.innerHTML = state.rounds
+          .map(
+            (r) =>
+              `<option value="${r.number}">Rond ${r.number} — lista före spel</option>`,
+          )
+          .join("");
+        select.value =
+          previous && state.rounds.some((r) => String(r.number) === previous)
+            ? previous
+            : String(state.rounds.at(-1).number);
+      }
+      function renderWarnings() {
+        const c = document.getElementById("globalWarnings");
+        c.innerHTML = state.warnings?.length
+          ? `<div class="notice warning"><strong>Lottningsmeddelanden</strong><ul>${state.warnings.map((w) => `<li>${escapeHTML(w)}</li>`).join("")}</ul></div>`
+          : "";
+      }
+      function renderTournament() {
+        document.getElementById("tournamentHeading").textContent = state.name;
+        const completed = state.rounds.filter((r) => r.completed).length,
+          active = state.players.filter((p) => !p.withdrawn).length,
+          current = getCurrentRound(),
+          adj = getUnresolvedAdjournedGames().length;
+        const status =
+          state.status === "finished"
+            ? "Avslutad"
+            : current
+              ? `Rond ${current.number} pågår`
+              : state.rounds.length >= state.totalRounds && adj
+                ? "Väntar på slutliga resultat"
+                : "Mellan ronder";
+        document.getElementById("tournamentSummary").innerHTML =
+          `<div><strong>Spelare</strong><span>${state.players.length}</span></div><div><strong>Aktiva spelare</strong><span>${active}</span></div><div><strong>Ronder</strong><span>${completed} / ${state.totalRounds}</span></div><div><strong>Avbrutna partier</strong><span>${adj}</span></div><div><strong>Status</strong><span>${status}</span></div>`;
+        renderWarnings();
+        renderCurrentRound();
+        renderAdjournedGames();
+        renderHistoricalRoundSelector();
+        renderFinalStandings();
+      }
+      function render() {
+        autosave();
+        const setup = document.getElementById("setupPanel"),
+          panel = document.getElementById("tournamentPanel"),
+          withdraw = document.getElementById("withdrawPlayerButton"),
+          active = state.status !== "setup" && state.status !== "finished";
+        withdraw.classList.toggle("hidden", !active);
+        withdraw.disabled = !active || !state.players.some((p) => !p.withdrawn);
+        const trf = document.getElementById("saveTrfButton");
+        if (trf) trf.classList.toggle("hidden", state.status !== "finished");
+        if (state.status === "setup") {
+          setup.classList.remove("hidden");
+          panel.classList.add("hidden");
+        } else {
+          setup.classList.add("hidden");
+          panel.classList.remove("hidden");
+          renderTournament();
+        }
+      }
 
-/* ============================================================
+      /* ============================================================
    Printing
 ============================================================ */
 
-function openPrintWindow(title,bodyHTML){
-  const win=window.open("","_blank");if(!win){alert("Utskriftsfönstret blockerades. Tillåt popup-fönster för sidan.");return}
-  win.document.open();win.document.write(`<!DOCTYPE html><html lang="sv"><head><meta charset="UTF-8"><title>${escapeHTML(title)}</title><style>@page{margin:14mm}body{color:#000;font:12px Arial,Helvetica,sans-serif}h1{margin:0 0 4px;font-size:22px}h2{margin:0 0 15px;font-size:17px}.meta{margin-bottom:16px;color:#444}table{width:100%;border-collapse:collapse}th,td{padding:7px;border:1px solid #000;text-align:left}th{background:#eee}.number{text-align:right}.center{text-align:center}.result{width:80px;text-align:center;font-size:18px;font-weight:bold}.notes{margin-top:18px;font-size:10px}tr{break-inside:avoid}</style></head><body><h1>${escapeHTML(state.name)}</h1>${bodyHTML}<div class="notes">Utskrivet ${escapeHTML(new Date().toLocaleString("sv-SE"))}</div></body></html>`);win.document.close();win.focus();setTimeout(()=>win.print(),250)
-}
-function printCurrentPairings(){
-  const round=getCurrentRound();if(!round){alert("Det finns ingen pågående rond att skriva ut.");return}
-  const rows=round.pairings.map(p=>{const w=getPlayer(p.whiteId),b=p.blackId?getPlayer(p.blackId):null;return`<tr><td class="number">${p.board}</td><td>#${w.startNo} ${escapeHTML(w.name)}${w.club?`<br><small>${escapeHTML(w.club)}</small>`:""}</td><td class="result">${p.type==="bye"?"1":"–"}</td><td>${p.type==="bye"?"<strong>FRIROND</strong>":`#${b.startNo} ${escapeHTML(b.name)}${b.club?`<br><small>${escapeHTML(b.club)}</small>`:""}`}</td></tr>`}).join("");
-  openPrintWindow(`${state.name} — lottning rond ${round.number}`,`<h2>Rond ${round.number} — lottningsprotokoll</h2><div class="meta">Resultatfälten för vanliga partier har lämnats tomma.</div><table><thead><tr><th class="number">Bord</th><th>Vit</th><th class="center">Resultat</th><th>Svart</th></tr></thead><tbody>${rows}</tbody></table>`)
-}
-function printRoundList(number){
-  const round=state.rounds.find(r=>r.number===Number(number));if(!round){alert("Den valda rondlistan kunde inte hittas.");return}
-  const rows=round.standingsBefore.map(r=>`<tr><td class="number">${r.rank}</td><td class="number">${r.startNo}</td><td>${escapeHTML(r.name)}${r.withdrawn?" (avanmäld)":""}</td><td>${escapeHTML(r.club)}</td><td class="number">${r.rating??""}</td><td class="number">${formatScore(r.points)}</td><td class="number">${formatNumber(r.quality)}</td></tr>`).join("");
-  openPrintWindow(`${state.name} — lista före rond ${round.number}`,`<h2>Rondlista före rond ${round.number}</h2><div class="meta">Sorterad efter poäng och därefter stigande startnummer.</div><table><thead><tr><th class="number">Plac.</th><th class="number">Startnr</th><th>Spelare</th><th>Klubb</th><th class="number">Rating</th><th class="number">Poäng</th><th class="number">Kvalitetspoäng</th></tr></thead><tbody>${rows}</tbody></table>`)
-}
-function printFinalResults(){
-  if(state.status!=="finished"){alert("Turneringen är inte avslutad.");return}
-  const rows=buildFinalStandings().map(r=>`<tr><td class="number">${r.rank}</td><td class="number">${r.startNo}</td><td>${escapeHTML(r.name)}${r.withdrawn?" (avanmäld)":""}</td><td>${escapeHTML(r.club)}</td><td class="number">${r.rating??""}</td><td class="number">${formatScore(r.points)}</td><td class="number">${formatNumber(r.quality)}</td><td class="number">${formatDropped(r.dropped)}</td><td class="number">${formatNumber(r.sonnebornBerger)}</td></tr>`).join("");
-  openPrintWindow(`${state.name} — slutställning`,`<h2>Slutställning</h2><div class="meta">${state.totalRounds} ronder</div><table><thead><tr><th class="number">Plac.</th><th class="number">Startnr</th><th>Spelare</th><th>Klubb</th><th class="number">Rating</th><th class="number">Poäng</th><th class="number">Kvalitetspoäng</th><th class="number">Återförda strykningar</th><th class="number">Sonneborn–Berger</th></tr></thead><tbody>${rows}</tbody></table>`)
-}
+      function openPrintWindow(title, bodyHTML) {
+        const win = window.open("", "_blank");
+        if (!win) {
+          alert(
+            "Utskriftsfönstret blockerades. Tillåt popup-fönster för sidan.",
+          );
+          return;
+        }
+        win.document.open();
+        win.document.write(
+          `<!DOCTYPE html><html lang="sv"><head><meta charset="UTF-8"><title>${escapeHTML(title)}</title><style>@page{margin:14mm}body{color:#000;font:12px Arial,Helvetica,sans-serif}h1{margin:0 0 4px;font-size:22px}h2{margin:0 0 15px;font-size:17px}.meta{margin-bottom:16px;color:#444}table{width:100%;border-collapse:collapse}th,td{padding:7px;border:1px solid #000;text-align:left}th{background:#eee}.number{text-align:right}.center{text-align:center}.result{width:80px;text-align:center;font-size:18px;font-weight:bold}.notes{margin-top:18px;font-size:10px}tr{break-inside:avoid}</style></head><body><h1>${escapeHTML(state.name)}</h1>${bodyHTML}<div class="notes">Utskrivet ${escapeHTML(new Date().toLocaleString("sv-SE"))}</div></body></html>`,
+        );
+        win.document.close();
+        win.focus();
+        setTimeout(() => win.print(), 250);
+      }
+      function printCurrentPairings() {
+        const round = getCurrentRound();
+        if (!round) {
+          alert("Det finns ingen pågående rond att skriva ut.");
+          return;
+        }
+        const rows = round.pairings
+          .map((p) => {
+            const w = getPlayer(p.whiteId),
+              b = p.blackId ? getPlayer(p.blackId) : null;
+            return `<tr><td class="number">${p.board}</td><td>#${w.startNo} ${escapeHTML(w.name)}${w.club ? `<br><small>${escapeHTML(w.club)}</small>` : ""}</td><td class="result">${p.type === "bye" ? "1" : "–"}</td><td>${p.type === "bye" ? "<strong>FRIROND</strong>" : `#${b.startNo} ${escapeHTML(b.name)}${b.club ? `<br><small>${escapeHTML(b.club)}</small>` : ""}`}</td></tr>`;
+          })
+          .join("");
+        openPrintWindow(
+          `${state.name} — lottning rond ${round.number}`,
+          `<h2>Rond ${round.number} — lottningsprotokoll</h2><div class="meta">Resultatfälten för vanliga partier har lämnats tomma.</div><table><thead><tr><th class="number">Bord</th><th>Vit</th><th class="center">Resultat</th><th>Svart</th></tr></thead><tbody>${rows}</tbody></table>`,
+        );
+      }
+      function printRoundList(number) {
+        const round = state.rounds.find((r) => r.number === Number(number));
+        if (!round) {
+          alert("Den valda rondlistan kunde inte hittas.");
+          return;
+        }
+        const rows = round.standingsBefore
+          .map(
+            (r) =>
+              `<tr><td class="number">${r.rank}</td><td class="number">${r.startNo}</td><td>${escapeHTML(r.name)}${r.withdrawn ? " (avanmäld)" : ""}</td><td>${escapeHTML(r.club)}</td><td class="number">${r.rating ?? ""}</td><td class="number">${formatScore(r.points)}</td><td class="number">${formatNumber(r.quality)}</td></tr>`,
+          )
+          .join("");
+        openPrintWindow(
+          `${state.name} — lista före rond ${round.number}`,
+          `<h2>Rondlista före rond ${round.number}</h2><div class="meta">Sorterad efter poäng och därefter stigande startnummer.</div><table><thead><tr><th class="number">Plac.</th><th class="number">Startnr</th><th>Spelare</th><th>Klubb</th><th class="number">Rating</th><th class="number">Poäng</th><th class="number">Kvalitetspoäng</th></tr></thead><tbody>${rows}</tbody></table>`,
+        );
+      }
+      function printFinalResults() {
+        if (state.status !== "finished") {
+          alert("Turneringen är inte avslutad.");
+          return;
+        }
+        const rows = buildFinalStandings()
+          .map(
+            (r) =>
+              `<tr><td class="number">${r.rank}</td><td class="number">${r.startNo}</td><td>${escapeHTML(r.name)}${r.withdrawn ? " (avanmäld)" : ""}</td><td>${escapeHTML(r.club)}</td><td class="number">${r.rating ?? ""}</td><td class="number">${formatScore(r.points)}</td><td class="number">${formatNumber(r.quality)}</td><td class="number">${formatDropped(r.dropped)}</td><td class="number">${formatNumber(r.sonnebornBerger)}</td></tr>`,
+          )
+          .join("");
+        openPrintWindow(
+          `${state.name} — slutställning`,
+          `<h2>Slutställning</h2><div class="meta">${state.totalRounds} ronder</div><table><thead><tr><th class="number">Plac.</th><th class="number">Startnr</th><th>Spelare</th><th>Klubb</th><th class="number">Rating</th><th class="number">Poäng</th><th class="number">Kvalitetspoäng</th><th class="number">Återförda strykningar</th><th class="number">Sonneborn–Berger</th></tr></thead><tbody>${rows}</tbody></table>`,
+        );
+      }
 
-/* ============================================================
+      /* ============================================================
    Saving, loading and validation
 ============================================================ */
 
-function collectSetupDraft(){return{tournamentName:document.getElementById("tournamentName").value,totalRounds:document.getElementById("totalRounds").value,startNumberMethod:document.getElementById("startNumberMethod").value,playersText:document.getElementById("playersText").value}}
-function restoreSetupDraft(d){if(!d)return;document.getElementById("tournamentName").value=d.tournamentName||"Norsk Monradturnering";document.getElementById("totalRounds").value=d.totalRounds||7;document.getElementById("startNumberMethod").value=d.startNumberMethod==="random"?"random":"seeded";document.getElementById("playersText").value=d.playersText||""}
-function saveTournament(){
-  const data={application:"Turneringshanterare för norsk Monrad",formatVersion:2,savedAt:new Date().toISOString(),state,setupDraft:state.status==="setup"?collectSetupDraft():null},blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a"),name=state.status==="setup"?document.getElementById("tournamentName").value:state.name;
-  a.href=url;a.download=`${safeFilename(name)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)
-}
-function validateLoadedState(result){
-  if(!Number.isInteger(result.totalRounds)||result.totalRounds<1||result.totalRounds>30)throw new Error("Turneringen har ett ogiltigt antal ronder.");
-  if(result.status==="setup"&&result.rounds.length)throw new Error("En fil i inställningsläge får inte innehålla spelade ronder.");
-  const ids=new Set(),numbers=new Set();
-  for(const p of result.players){if(!p.id||ids.has(p.id))throw new Error("Turneringsfilen innehåller ogiltiga eller dubbla spelar-ID:n.");ids.add(p.id);if(!Number.isInteger(p.startNo)||p.startNo<1||numbers.has(p.startNo))throw new Error("Turneringsfilen innehåller ogiltiga eller dubbla startnummer.");numbers.add(p.startNo)}
-  if(result.status!=="setup"&&result.players.length<2)throw new Error("En turnering måste innehålla minst två spelare.");
-  if(result.status!=="setup"&&result.players.length>=2){const max=result.players.length%2===0?result.players.length-1:result.players.length;if(result.totalRounds>max)throw new Error(`Med ${result.players.length} spelare och utan upprepade motståndare kan högst ${max} ronder spelas.`)}
-  if(result.rounds.length>result.totalRounds)throw new Error("Turneringsfilen innehåller fler ronder än planerat.");
-  const allowed=new Set([null,"1-0","0.5-0.5","0-1","W-F","F-W","0-0","ADJ"]),opponents=new Set();let incomplete=false;
-  for(let ri=0;ri<result.rounds.length;ri++){
-    const round=result.rounds[ri];if(round.number!==ri+1)throw new Error("Rondnummer saknas, är dubblerade eller ligger i fel ordning.");if(!Array.isArray(round.pairings)||!round.pairings.length)throw new Error(`Rond ${round.number} saknar lottning.`);if(incomplete)throw new Error("Det finns en senare rond efter en oavslutad rond.");if(!round.completed)incomplete=true;
-    const appearances=new Set(),boards=new Set();let byes=0;
-    for(const p of round.pairings){
-      if(!Number.isInteger(p.board)||p.board<1||boards.has(p.board))throw new Error(`Rond ${round.number} innehåller ogiltiga eller dubbla bord.`);boards.add(p.board);
-      if(!ids.has(p.whiteId)||appearances.has(p.whiteId))throw new Error(`Rond ${round.number} innehåller en okänd vitspelare eller en spelare som förekommer flera gånger.`);appearances.add(p.whiteId);
-      if(p.type==="bye"){byes++;if(p.blackId!==null||p.result!=="1-0")throw new Error(`Rond ${round.number} innehåller en ogiltig frirond.`);continue}
-      if(p.type!=="game"||!p.blackId||!ids.has(p.blackId)||p.whiteId===p.blackId||appearances.has(p.blackId))throw new Error(`Rond ${round.number} innehåller en ogiltig parning.`);appearances.add(p.blackId);
-      if(!allowed.has(p.result))throw new Error(`Rond ${round.number} innehåller ett ogiltigt resultat.`);if(round.completed&&p.result===null)throw new Error(`Avslutad rond ${round.number} saknar ett resultat.`);
-      const key=[p.whiteId,p.blackId].sort().join("|");if(opponents.has(key))throw new Error(`Turneringsfilen upprepar ett motståndarpar i rond ${round.number}.`);opponents.add(key)
-    }
-    if(byes>1)throw new Error(`Rond ${round.number} innehåller mer än en frirond.`)
-  }
-}
-function normalizeLoadedState(loaded){
-  const source=loaded&&loaded.state?loaded.state:loaded;if(!source||!Array.isArray(source.players))throw new Error("Detta är inte en giltig turneringsfil.");
-  const result={...source};result.app="NorwegianMonradWeb";result.version=2;result.status=result.status==="setup"?"setup":"running";result.name=result.name||"Inläst turnering";result.totalRounds=Number(result.totalRounds);result.startNumberMethod=result.startNumberMethod==="random"?"random":"seeded";result.rounds=Array.isArray(result.rounds)?result.rounds:[];result.warnings=Array.isArray(result.warnings)?result.warnings.map(String):[];
-  const lots=new Set();result.players=result.players.map((p,i)=>{const raw=p.rating,rating=raw===null||raw===undefined||raw===""?null:Number(String(raw).replace(",","."));let lot=p.lot===null||p.lot===undefined||p.lot===""?null:Number(p.lot);if(!Number.isFinite(lot)||lots.has(lot)){do{lot=Math.random()}while(lots.has(lot))}lots.add(lot);return{...p,id:String(p.id||makeId()),startNo:Number(p.startNo)||i+1,name:String(p.name||`Spelare ${i+1}`),club:String(p.club||""),rating:Number.isFinite(rating)?rating:null,withdrawn:Boolean(p.withdrawn),lot}});
-  result.rounds=result.rounds.map((r,ri)=>({...r,number:Number(r.number)||ri+1,completed:Boolean(r.completed),createdBy:r.createdBy||"automatic",standingsBefore:Array.isArray(r.standingsBefore)?r.standingsBefore:[],pairings:(Array.isArray(r.pairings)?r.pairings:[]).map((p,pi)=>{const type=p.type==="bye"?"bye":"game";return{...p,board:Number(p.board)||pi+1,whiteId:String(p.whiteId),blackId:type==="bye"||p.blackId===null||p.blackId===undefined?null:String(p.blackId),type,result:type==="bye"?"1-0":p.result===undefined||p.result===""?null:p.result}}),warning:String(r.warning||"")})).sort((a,b)=>a.number-b.number);
-  validateLoadedState(result);refreshTournamentStatus(result);return result
-}
-async function loadTournamentFile(file){const parsed=JSON.parse(await file.text());state=normalizeLoadedState(parsed);if(state.status==="setup"&&parsed.setupDraft)restoreSetupDraft(parsed.setupDraft);render()}
+      function collectSetupDraft() {
+        return {
+          tournamentName: document.getElementById("tournamentName").value,
+          totalRounds: document.getElementById("totalRounds").value,
+          startNumberMethod: document.getElementById("startNumberMethod").value,
+          playersText: document.getElementById("playersText").value,
+        };
+      }
+      function restoreSetupDraft(d) {
+        if (!d) return;
+        document.getElementById("tournamentName").value =
+          d.tournamentName || "Norsk Monradturnering";
+        document.getElementById("totalRounds").value = d.totalRounds || 7;
+        document.getElementById("startNumberMethod").value =
+          d.startNumberMethod === "random" ? "random" : "seeded";
+        document.getElementById("playersText").value = d.playersText || "";
+      }
+      function saveTournament() {
+        const data = {
+            application: "Turneringshanterare för norsk Monrad",
+            formatVersion: 2,
+            savedAt: new Date().toISOString(),
+            state,
+            setupDraft: state.status === "setup" ? collectSetupDraft() : null,
+          },
+          blob = new Blob([JSON.stringify(data, null, 2)], {
+            type: "application/json",
+          }),
+          url = URL.createObjectURL(blob),
+          a = document.createElement("a"),
+          name =
+            state.status === "setup"
+              ? document.getElementById("tournamentName").value
+              : state.name;
+        a.href = url;
+        a.download = `${safeFilename(name)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+      function validateLoadedState(result) {
+        if (
+          !Number.isInteger(result.totalRounds) ||
+          result.totalRounds < 1 ||
+          result.totalRounds > 30
+        )
+          throw new Error("Turneringen har ett ogiltigt antal ronder.");
+        if (result.status === "setup" && result.rounds.length)
+          throw new Error(
+            "En fil i inställningsläge får inte innehålla spelade ronder.",
+          );
+        const ids = new Set(),
+          numbers = new Set();
+        for (const p of result.players) {
+          if (!p.id || ids.has(p.id))
+            throw new Error(
+              "Turneringsfilen innehåller ogiltiga eller dubbla spelar-ID:n.",
+            );
+          ids.add(p.id);
+          if (
+            !Number.isInteger(p.startNo) ||
+            p.startNo < 1 ||
+            numbers.has(p.startNo)
+          )
+            throw new Error(
+              "Turneringsfilen innehåller ogiltiga eller dubbla startnummer.",
+            );
+          numbers.add(p.startNo);
+        }
+        if (result.status !== "setup" && result.players.length < 2)
+          throw new Error("En turnering måste innehålla minst två spelare.");
+        if (result.status !== "setup" && result.players.length >= 2) {
+          const max =
+            result.players.length % 2 === 0
+              ? result.players.length - 1
+              : result.players.length;
+          if (result.totalRounds > max)
+            throw new Error(
+              `Med ${result.players.length} spelare och utan upprepade motståndare kan högst ${max} ronder spelas.`,
+            );
+        }
+        if (result.rounds.length > result.totalRounds)
+          throw new Error(
+            "Turneringsfilen innehåller fler ronder än planerat.",
+          );
+        const allowed = new Set([
+            null,
+            "1-0",
+            "0.5-0.5",
+            "0-1",
+            "W-F",
+            "F-W",
+            "0-0",
+            "ADJ",
+          ]),
+          opponents = new Set();
+        let incomplete = false;
+        for (let ri = 0; ri < result.rounds.length; ri++) {
+          const round = result.rounds[ri];
+          if (round.number !== ri + 1)
+            throw new Error(
+              "Rondnummer saknas, är dubblerade eller ligger i fel ordning.",
+            );
+          if (!Array.isArray(round.pairings) || !round.pairings.length)
+            throw new Error(`Rond ${round.number} saknar lottning.`);
+          if (incomplete)
+            throw new Error(
+              "Det finns en senare rond efter en oavslutad rond.",
+            );
+          if (!round.completed) incomplete = true;
+          const appearances = new Set(),
+            boards = new Set();
+          let byes = 0;
+          for (const p of round.pairings) {
+            if (
+              !Number.isInteger(p.board) ||
+              p.board < 1 ||
+              boards.has(p.board)
+            )
+              throw new Error(
+                `Rond ${round.number} innehåller ogiltiga eller dubbla bord.`,
+              );
+            boards.add(p.board);
+            if (!ids.has(p.whiteId) || appearances.has(p.whiteId))
+              throw new Error(
+                `Rond ${round.number} innehåller en okänd vitspelare eller en spelare som förekommer flera gånger.`,
+              );
+            appearances.add(p.whiteId);
+            if (p.type === "bye") {
+              byes++;
+              if (p.blackId !== null || p.result !== "1-0")
+                throw new Error(
+                  `Rond ${round.number} innehåller en ogiltig frirond.`,
+                );
+              continue;
+            }
+            if (
+              p.type !== "game" ||
+              !p.blackId ||
+              !ids.has(p.blackId) ||
+              p.whiteId === p.blackId ||
+              appearances.has(p.blackId)
+            )
+              throw new Error(
+                `Rond ${round.number} innehåller en ogiltig parning.`,
+              );
+            appearances.add(p.blackId);
+            if (!allowed.has(p.result))
+              throw new Error(
+                `Rond ${round.number} innehåller ett ogiltigt resultat.`,
+              );
+            if (round.completed && p.result === null)
+              throw new Error(
+                `Avslutad rond ${round.number} saknar ett resultat.`,
+              );
+            const key = [p.whiteId, p.blackId].sort().join("|");
+            if (opponents.has(key))
+              throw new Error(
+                `Turneringsfilen upprepar ett motståndarpar i rond ${round.number}.`,
+              );
+            opponents.add(key);
+          }
+          if (byes > 1)
+            throw new Error(
+              `Rond ${round.number} innehåller mer än en frirond.`,
+            );
+        }
+      }
+      function normalizeLoadedState(loaded) {
+        const source = loaded && loaded.state ? loaded.state : loaded;
+        if (!source || !Array.isArray(source.players))
+          throw new Error("Detta är inte en giltig turneringsfil.");
+        const result = { ...source };
+        result.app = "NorwegianMonradWeb";
+        result.version = 2;
+        result.status = result.status === "setup" ? "setup" : "running";
+        result.name = result.name || "Inläst turnering";
+        result.totalRounds = Number(result.totalRounds);
+        result.startNumberMethod =
+          result.startNumberMethod === "random" ? "random" : "seeded";
+        result.rounds = Array.isArray(result.rounds) ? result.rounds : [];
+        result.warnings = Array.isArray(result.warnings)
+          ? result.warnings.map(String)
+          : [];
+        const lots = new Set();
+        result.players = result.players.map((p, i) => {
+          const raw = p.rating,
+            rating =
+              raw === null || raw === undefined || raw === ""
+                ? null
+                : Number(String(raw).replace(",", "."));
+          let lot =
+            p.lot === null || p.lot === undefined || p.lot === ""
+              ? null
+              : Number(p.lot);
+          if (!Number.isFinite(lot) || lots.has(lot)) {
+            do {
+              lot = Math.random();
+            } while (lots.has(lot));
+          }
+          lots.add(lot);
+          return {
+            ...p,
+            id: String(p.id || makeId()),
+            startNo: Number(p.startNo) || i + 1,
+            name: String(p.name || `Spelare ${i + 1}`),
+            club: String(p.club || ""),
+            rating: Number.isFinite(rating) ? rating : null,
+            withdrawn: Boolean(p.withdrawn),
+            lot,
+          };
+        });
+        result.rounds = result.rounds
+          .map((r, ri) => ({
+            ...r,
+            number: Number(r.number) || ri + 1,
+            completed: Boolean(r.completed),
+            createdBy: r.createdBy || "automatic",
+            standingsBefore: Array.isArray(r.standingsBefore)
+              ? r.standingsBefore
+              : [],
+            pairings: (Array.isArray(r.pairings) ? r.pairings : []).map(
+              (p, pi) => {
+                const type = p.type === "bye" ? "bye" : "game";
+                return {
+                  ...p,
+                  board: Number(p.board) || pi + 1,
+                  whiteId: String(p.whiteId),
+                  blackId:
+                    type === "bye" ||
+                    p.blackId === null ||
+                    p.blackId === undefined
+                      ? null
+                      : String(p.blackId),
+                  type,
+                  result:
+                    type === "bye"
+                      ? "1-0"
+                      : p.result === undefined || p.result === ""
+                        ? null
+                        : p.result,
+                };
+              },
+            ),
+            warning: String(r.warning || ""),
+          }))
+          .sort((a, b) => a.number - b.number);
+        validateLoadedState(result);
+        refreshTournamentStatus(result);
+        return result;
+      }
+      async function loadTournamentFile(file) {
+        const parsed = JSON.parse(await file.text());
+        state = normalizeLoadedState(parsed);
+        if (state.status === "setup" && parsed.setupDraft)
+          restoreSetupDraft(parsed.setupDraft);
+        render();
+      }
 
-/* ============================================================
+      /* ============================================================
    Setup actions
 ============================================================ */
 
-function startTournament(){
-  const name=document.getElementById("tournamentName").value.trim(),rounds=Number(document.getElementById("totalRounds").value),method=document.getElementById("startNumberMethod").value,parsed=parsePlayers(document.getElementById("playersText").value);
-  if(!name){alert("Ange ett turneringsnamn.");return}if(!Number.isInteger(rounds)||rounds<1||rounds>30){alert("Antalet ronder måste vara mellan 1 och 30.");return}if(parsed.length<2){alert("Ange minst två spelare.");return}
-  const max=parsed.length%2===0?parsed.length-1:parsed.length;if(rounds>max){alert(`Med ${parsed.length} spelare och utan upprepade motståndare kan högst ${max} ronder spelas.`);return}
-  if(method!=="seeded"&&method!=="random"){alert("Välj en giltig metod för tilldelning av startnummer.");return}
-  state={app:"NorwegianMonradWeb",version:2,status:"running",name,totalRounds:rounds,startNumberMethod:method,players:assignStartNumbers(parsed,method),rounds:[],warnings:[]};
-  try{createNextRound()}catch(error){alert(error.message);state=emptyState();render()}
-}
-function resetTournament(){
-  const hasData=state.status!=="setup"||document.getElementById("playersText").value.trim()!=="";
-  if(hasData&&!confirm("Starta en ny turnering? Data som inte har sparats går förlorade."))return;
-  if(!clearAutosave()){alert("Den sparade turneringen kunde inte tas bort. Den aktuella turneringen har inte återställts.");return}
-  autosaveEnabled=true;state=emptyState();document.getElementById("tournamentName").value="Norsk Monradturnering";document.getElementById("totalRounds").value="7";document.getElementById("startNumberMethod").value="seeded";document.getElementById("playersText").value="";render()
-}
+      function startTournament() {
+        const name = document.getElementById("tournamentName").value.trim(),
+          rounds = Number(document.getElementById("totalRounds").value),
+          method = document.getElementById("startNumberMethod").value,
+          parsed = parsePlayers(document.getElementById("playersText").value);
+        if (!name) {
+          alert("Ange ett turneringsnamn.");
+          return;
+        }
+        if (!Number.isInteger(rounds) || rounds < 1 || rounds > 30) {
+          alert("Antalet ronder måste vara mellan 1 och 30.");
+          return;
+        }
+        if (parsed.length < 2) {
+          alert("Ange minst två spelare.");
+          return;
+        }
+        const max = parsed.length % 2 === 0 ? parsed.length - 1 : parsed.length;
+        if (rounds > max) {
+          alert(
+            `Med ${parsed.length} spelare och utan upprepade motståndare kan högst ${max} ronder spelas.`,
+          );
+          return;
+        }
+        if (method !== "seeded" && method !== "random") {
+          alert("Välj en giltig metod för tilldelning av startnummer.");
+          return;
+        }
+        state = {
+          app: "NorwegianMonradWeb",
+          version: 2,
+          status: "running",
+          name,
+          totalRounds: rounds,
+          startNumberMethod: method,
+          players: assignStartNumbers(parsed, method),
+          rounds: [],
+          warnings: [],
+        };
+        try {
+          createNextRound();
+        } catch (error) {
+          alert(error.message);
+          state = emptyState();
+          render();
+        }
+      }
+      function resetTournament() {
+        const hasData =
+          state.status !== "setup" ||
+          document.getElementById("playersText").value.trim() !== "";
+        if (
+          hasData &&
+          !confirm(
+            "Starta en ny turnering? Data som inte har sparats går förlorade.",
+          )
+        )
+          return;
+        if (!clearAutosave()) {
+          alert(
+            "Den sparade turneringen kunde inte tas bort. Den aktuella turneringen har inte återställts.",
+          );
+          return;
+        }
+        autosaveEnabled = true;
+        state = emptyState();
+        document.getElementById("tournamentName").value =
+          "Norsk Monradturnering";
+        document.getElementById("totalRounds").value = "7";
+        document.getElementById("startNumberMethod").value = "seeded";
+        document.getElementById("playersText").value = "";
+        render();
+      }
 
-/* ============================================================
+      /* ============================================================
    TRF Export for Norwegian Monrad
 ============================================================ */
 
-function formatPlayerName(name){return String(name||"").trim()||"(Name)"}
-function generateTRF(){
-  if(!state||!Array.isArray(state.players)||!state.players.length)return"";
-  const lines=["### Replace the following placeholders within their fixed-width fields:","### ?: sex code (m or w), immediately followed by the three-character title field, with no separator.","### (E): FIDE Elo rating (4 characters)","### (F): FIDE federation code (3 characters)","### (FIDE ID): numeric FIDE ID (up to 11 characters)","### (Birth Dt): birth date in YYYY/MM/DD format (10 characters)","### Remove these comment lines before submitting the TRF file."];
-  const tournamentName=String(state.name||"").replace(/[\r\n]+/g," ").trim();lines.push(`012 ${tournamentName||"Monrad Tournament"}`,"022 (City)","032 (Federation)","102 (Chief Arbiter)");
-  const standings=buildFinalStandings(),rankMap=new Map(standings.map(s=>[s.startNo,s.rank])),stats=buildStats(Infinity),playerMap=new Map(state.players.map(p=>[p.id,p]));
-  function field(value,width,right=false){const text=String(value??"").replace(/[\r\n]+/g," ").slice(0,width);return right?text.padStart(width," "):text.padEnd(width," ")}
-  function numericField(value,width,label){const text=String(value);if(text.length>width)throw new Error(`${label} does not fit in its TRF field.`);return text.padStart(width," ")}
-  const players=[...state.players].sort((a,b)=>a.startNo-b.startNo),completed=state.rounds.filter(r=>r.completed),roundCount=completed.length;
-  for(const p of players){
-    if(!Number.isInteger(p.startNo)||p.startNo<1||p.startNo>9999)throw new Error(`Invalid starting-rank number for ${p.name}.`);
-    const rating=Number(p.rating),ratingText=Number.isInteger(rating)&&rating>0?String(rating):"(E)",points=(stats.get(p.id)?.points??0).toFixed(1),rank=rankMap.get(p.startNo)||p.startNo;
-    let line="001 "+numericField(p.startNo,4,"Starting-rank number")+" "+field("?",1)+field("",3)+" "+field(formatPlayerName(p.name),33)+" "+field(ratingText,4,true)+" "+field("(F)",3)+" "+field("(FIDE ID)",11)+" "+field("(Birth Dt)",10)+" "+numericField(points,4,"Score")+" "+numericField(rank,4,"Rank");
-    for(let i=0;i<roundCount;i++){
-      const round=completed[i],pair=(round.pairings||[]).find(x=>x.whiteId===p.id||x.blackId===p.id);let opponent="0000",color="-",result="Z";
-      if(pair){if(pair.type==="bye")result="U";else if(pair.type==="game"){
-        const white=pair.whiteId===p.id,id=white?pair.blackId:pair.whiteId,op=playerMap.get(id);
-        if(!op||!Number.isInteger(op.startNo)||op.startNo<1||op.startNo>9999)throw new Error(`Invalid opponent for ${p.name} in round ${i+1}.`);
-        opponent=numericField(op.startNo,4,"Opponent starting-rank number");color=white?"w":"b";
-        if(pair.result==="1-0")result=white?"1":"0";else if(pair.result==="0-1")result=white?"0":"1";else if(pair.result==="0.5-0.5"||pair.result==="ADJ")result="=";else if(pair.result==="W-F")result=white?"+":"-";else if(pair.result==="F-W")result=white?"-":"+";else if(pair.result==="0-0")result="-";else throw new Error(`Invalid game result for ${p.name} in round ${i+1}.`)
-      }}
-      line+=`  ${opponent} ${color} ${result}`
-    }
-    lines.push(line)
-  }
-  return lines.join("\r\n")+"\r\n"
-}
-function saveTRF(){
-  if(!state||!Array.isArray(state.players)||!state.players.length){alert("Det finns ingen turnering att exportera.");return}
-  try{const content=generateTRF();if(!content)throw new Error("Ingen TRF-fil skapades.");const blob=new Blob([content],{type:"text/plain;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a"),today=new Date(),date=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;a.href=url;a.download=`TRF26_${safeFilename(state.name)}_${date}.txt`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}catch(error){console.error(error);alert(`TRF-filen kunde inte skapas: ${error.message}`)}
-}
+      function formatPlayerName(name) {
+        return String(name || "").trim() || "(Name)";
+      }
+      function generateTRF() {
+        if (!state || !Array.isArray(state.players) || !state.players.length)
+          return "";
+        const lines = [
+          "### Replace the following placeholders within their fixed-width fields:",
+          "### ?: sex code (m or w), immediately followed by the three-character title field, with no separator.",
+          "### (E): FIDE Elo rating (4 characters)",
+          "### (F): FIDE federation code (3 characters)",
+          "### (FIDE ID): numeric FIDE ID (up to 11 characters)",
+          "### (Birth Dt): birth date in YYYY/MM/DD format (10 characters)",
+          "### Remove these comment lines before submitting the TRF file.",
+        ];
+        const tournamentName = String(state.name || "")
+          .replace(/[\r\n]+/g, " ")
+          .trim();
+        lines.push(
+          `012 ${tournamentName || "Monrad Tournament"}`,
+          "022 (City)",
+          "032 (Federation)",
+          "102 (Chief Arbiter)",
+        );
+        const standings = buildFinalStandings(),
+          rankMap = new Map(standings.map((s) => [s.startNo, s.rank])),
+          stats = buildStats(Infinity),
+          playerMap = new Map(state.players.map((p) => [p.id, p]));
+        function field(value, width, right = false) {
+          const text = String(value ?? "")
+            .replace(/[\r\n]+/g, " ")
+            .slice(0, width);
+          return right ? text.padStart(width, " ") : text.padEnd(width, " ");
+        }
+        function numericField(value, width, label) {
+          const text = String(value);
+          if (text.length > width)
+            throw new Error(`${label} does not fit in its TRF field.`);
+          return text.padStart(width, " ");
+        }
+        const players = [...state.players].sort(
+            (a, b) => a.startNo - b.startNo,
+          ),
+          completed = state.rounds.filter((r) => r.completed),
+          roundCount = completed.length;
+        for (const p of players) {
+          if (!Number.isInteger(p.startNo) || p.startNo < 1 || p.startNo > 9999)
+            throw new Error(`Invalid starting-rank number for ${p.name}.`);
+          const rating = Number(p.rating),
+            ratingText =
+              Number.isInteger(rating) && rating > 0 ? String(rating) : "(E)",
+            points = (stats.get(p.id)?.points ?? 0).toFixed(1),
+            rank = rankMap.get(p.startNo) || p.startNo;
+          let line =
+            "001 " +
+            numericField(p.startNo, 4, "Starting-rank number") +
+            " " +
+            field("?", 1) +
+            field("", 3) +
+            " " +
+            field(formatPlayerName(p.name), 33) +
+            " " +
+            field(ratingText, 4, true) +
+            " " +
+            field("(F)", 3) +
+            " " +
+            field("(FIDE ID)", 11) +
+            " " +
+            field("(Birth Dt)", 10) +
+            " " +
+            numericField(points, 4, "Score") +
+            " " +
+            numericField(rank, 4, "Rank");
+          for (let i = 0; i < roundCount; i++) {
+            const round = completed[i],
+              pair = (round.pairings || []).find(
+                (x) => x.whiteId === p.id || x.blackId === p.id,
+              );
+            let opponent = "0000",
+              color = "-",
+              result = "Z";
+            if (pair) {
+              if (pair.type === "bye") result = "U";
+              else if (pair.type === "game") {
+                const white = pair.whiteId === p.id,
+                  id = white ? pair.blackId : pair.whiteId,
+                  op = playerMap.get(id);
+                if (
+                  !op ||
+                  !Number.isInteger(op.startNo) ||
+                  op.startNo < 1 ||
+                  op.startNo > 9999
+                )
+                  throw new Error(
+                    `Invalid opponent for ${p.name} in round ${i + 1}.`,
+                  );
+                opponent = numericField(
+                  op.startNo,
+                  4,
+                  "Opponent starting-rank number",
+                );
+                color = white ? "w" : "b";
+                if (pair.result === "1-0") result = white ? "1" : "0";
+                else if (pair.result === "0-1") result = white ? "0" : "1";
+                else if (pair.result === "0.5-0.5" || pair.result === "ADJ")
+                  result = "=";
+                else if (pair.result === "W-F") result = white ? "+" : "-";
+                else if (pair.result === "F-W") result = white ? "-" : "+";
+                else if (pair.result === "0-0") result = "-";
+                else
+                  throw new Error(
+                    `Invalid game result for ${p.name} in round ${i + 1}.`,
+                  );
+              }
+            }
+            line += `  ${opponent} ${color} ${result}`;
+          }
+          lines.push(line);
+        }
+        return lines.join("\r\n") + "\r\n";
+      }
+      function saveTRF() {
+        if (!state || !Array.isArray(state.players) || !state.players.length) {
+          alert("Det finns ingen turnering att exportera.");
+          return;
+        }
+        try {
+          const content = generateTRF();
+          if (!content) throw new Error("Ingen TRF-fil skapades.");
+          const blob = new Blob([content], {
+              type: "text/plain;charset=utf-8",
+            }),
+            url = URL.createObjectURL(blob),
+            a = document.createElement("a"),
+            today = new Date(),
+            date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+          a.href = url;
+          a.download = `TRF26_${safeFilename(state.name)}_${date}.txt`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } catch (error) {
+          console.error(error);
+          alert(`TRF-filen kunde inte skapas: ${error.message}`);
+        }
+      }
 
-/* ============================================================
+      /* ============================================================
    Event handlers
 ============================================================ */
 
-document.getElementById("saveTournamentButton").addEventListener("click",saveTournament);
-document.getElementById("loadTournamentButton").addEventListener("click",()=>document.getElementById("tournamentFileInput").click());
-document.getElementById("withdrawPlayerButton").addEventListener("click",withdrawPlayer);
-document.getElementById("tournamentFileInput").addEventListener("change",async e=>{const file=e.target.files[0];if(!file)return;try{await loadTournamentFile(file)}catch(error){alert(`Turneringen kunde inte läsas in: ${error.message}`)}finally{e.target.value=""}});
-document.getElementById("newTournamentButton").addEventListener("click",resetTournament);
-document.getElementById("loadPlayerFileButton").addEventListener("click",()=>document.getElementById("playerFileInput").click());
-document.getElementById("playerFileInput").addEventListener("change",async e=>{const file=e.target.files[0];if(!file)return;try{document.getElementById("playersText").value=await file.text()}catch(error){alert(`Spelarfilen kunde inte läsas: ${error.message}`)}finally{e.target.value=""}});
-document.getElementById("loadSampleButton").addEventListener("click",()=>{document.getElementById("playersText").value=`Astrid Andersson;Stockholms Schacksällskap;2140
-Erik Berg;Lunds ASK;2075
-Elin Carlsson;Limhamns SK;2010
-Gustav Dahl;Västerås SK;1975
-Maja Ekström;Uppsala SSS;1930
-Oskar Forsberg;Örgryte SK;1885
-Linnea Gustafsson;Norrköpings SK;1840
-Hugo Holm;Stockholms Schacksällskap;1800
-Elsa Isaksson;Lunds ASK;1765
-Viktor Johansson;Limhamns SK;1720
-Saga Karlsson;Västerås SK;1680
-Axel Lindberg;Uppsala SSS;1645
-Alva Magnusson;Örgryte SK;1600
-Noah Nilsson;Norrköpings SK;1550
-Ebba Olsson;Stockholms Schacksällskap;1490
-William Persson;Lunds ASK;1420`});
-document.getElementById("clearPlayersButton").addEventListener("click",()=>document.getElementById("playersText").value="");
-document.getElementById("startTournamentButton").addEventListener("click",startTournament);
-document.getElementById("printHistoricalRoundListButton").addEventListener("click",()=>{const value=document.getElementById("historyRoundSelect").value;if(!value){alert("Ingen rondlista är tillgänglig.");return}printRoundList(Number(value))});
-document.getElementById("saveTrfButton")?.addEventListener("click",saveTRF);
-document.getElementById("saveFinalTrfButton")?.addEventListener("click",saveTRF);
-document.getElementById("printFinalResultsButton").addEventListener("click",printFinalResults);
+      document
+        .getElementById("saveTournamentButton")
+        .addEventListener("click", saveTournament);
+      document
+        .getElementById("loadTournamentButton")
+        .addEventListener("click", () =>
+          document.getElementById("tournamentFileInput").click(),
+        );
+      document
+        .getElementById("withdrawPlayerButton")
+        .addEventListener("click", withdrawPlayer);
+      document
+        .getElementById("tournamentFileInput")
+        .addEventListener("change", async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          try {
+            await loadTournamentFile(file);
+          } catch (error) {
+            alert(`Turneringen kunde inte läsas in: ${error.message}`);
+          } finally {
+            e.target.value = "";
+          }
+        });
+      document
+        .getElementById("newTournamentButton")
+        .addEventListener("click", resetTournament);
+      document
+        .getElementById("loadPlayerFileButton")
+        .addEventListener("click", () =>
+          document.getElementById("playerFileInput").click(),
+        );
+      document
+        .getElementById("playerFileInput")
+        .addEventListener("change", async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          try {
+            document.getElementById("playersText").value = await file.text();
+          } catch (error) {
+            alert(`Spelarfilen kunde inte läsas: ${error.message}`);
+          } finally {
+            e.target.value = "";
+          }
+        });
+      document
+        .getElementById("loadSampleButton")
+        .addEventListener("click", () => {
+          document.getElementById("playersText").value =
+               `Astrid Andersson;Stockholms Schacksällskap;2140
+		Erik Berg;Lunds ASK;2075
+		Elin Carlsson;Limhamns SK;2010
+		Gustav Dahl;Västerås SK;1975
+		Maja Ekström;Uppsala SSS;1930
+		Oskar Forsberg;Örgryte SK;1885
+		Linnea Gustafsson;Norrköpings SK;1840
+		Hugo Holm;Stockholms Schacksällskap;1800
+		Elsa Isaksson;Lunds ASK;1765
+		Viktor Johansson;Limhamns SK;1720
+		Saga Karlsson;Västerås SK;1680
+		Axel Lindberg;Uppsala SSS;1645
+		Alva Magnusson;Örgryte SK;1600
+		Noah Nilsson;Norrköpings SK;1550
+		Ebba Olsson;Stockholms Schacksällskap;1490
+		William Persson;Lunds ASK;1420`;
+        });
+      document
+        .getElementById("clearPlayersButton")
+        .addEventListener(
+          "click",
+          () => (document.getElementById("playersText").value = ""),
+        );
+      document
+        .getElementById("startTournamentButton")
+        .addEventListener("click", startTournament);
+      document
+        .getElementById("printHistoricalRoundListButton")
+        .addEventListener("click", () => {
+          const value = document.getElementById("historyRoundSelect").value;
+          if (!value) {
+            alert("Ingen rondlista är tillgänglig.");
+            return;
+          }
+          printRoundList(Number(value));
+        });
+      document
+        .getElementById("saveTrfButton")
+        ?.addEventListener("click", saveTRF);
+      document
+        .getElementById("saveFinalTrfButton")
+        ?.addEventListener("click", saveTRF);
+      document
+        .getElementById("printFinalResultsButton")
+        .addEventListener("click", printFinalResults);
 
-/* Offer to restore a saved tournament before the initial display. */
-offerAutosave();
-render();
-</script>
-</body>
+      /* Offer to restore a saved tournament before the initial display. */
+      offerAutosave();
+      render();
+    </script>
+  </body>
 </html>
