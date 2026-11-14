@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description"
-      content="Ett webbläsarbaserat turneringssystem med fem eller sju ronder i bergergrupper med spelarbyten mellan grupperna, följda av ytterligare schweizerronder.">
+      content="Ett webbläsarbaserat turneringssystem för schack med fem eller sju ronder i bergergrupper, följda av ytterligare schweizerronder.">
 <link rel="canonical" href="https://mats-winther.github.io/berger-schweizer.htm">
 <meta name="author" content="Mats Winther">
 <title>Berger-Schweizer Turneringssystem</title>
@@ -620,10 +620,13 @@
 
     <p id="setup-field-hint" class="hint"></p>
 
-    <label for="player-input">Spelare, en per rad: Namn Rating</label>
+    <label for="player-input">Spelarlista (sorteras automatiskt efter rating vid start)</label>
+    <p class="hint" style="margin: 0 0 8px 0;">
+      Ange en spelare per rad enligt formatet <strong>Namn;Titel;Klubb;Rating</strong>. Tabbar accepteras också. Citerade fält stöds. Klubb, titel och rating kan utelämnas. Rader som börjar med <strong>#</strong> ignoreras.
+    </p>
 
-    <textarea id="player-input"
-      placeholder="Magnus Carlsen 2823&#10;Hikaru Nakamura 2792&#10;Fabiano Caruana 2784"></textarea>
+    <textarea id="player-input" spellcheck="false"
+      placeholder="Andersson, Alice;IM;Stockholms Schacksällskap;2320&#10;Berg, Erik;;Lunds ASK;1740"></textarea>
 
     <p id="roster-info" class="hint"></p>
 
@@ -634,7 +637,7 @@
 
       <button type="button" class="secondary"
               onclick="document.getElementById('txt-input').click()">
-        📄 Läs in spelare (.txt)
+        📄 Läs in .txt- / .csv-fil
       </button>
 
       <button type="button" class="secondary"
@@ -706,9 +709,9 @@
           <tr>
             <th class="center" style="width:60px">Bord</th>
             <th style="width:120px">Grupp</th>
-            <th>Vit (TPN / rating)</th>
+            <th>Vit (TPN / Rating)</th>
             <th class="center" style="width:210px">Resultat</th>
-            <th>Svart (TPN / rating)</th>
+            <th>Svart (TPN / Rating)</th>
           </tr>
         </thead>
 
@@ -741,6 +744,7 @@
             <th class="center">Pl.</th>
             <th class="center">TPN</th>
             <th>Spelare</th>
+            <th>Klubb</th>
             <th class="center">Rating</th>
             <th>Inledande grupp</th>
             <th class="center">Poäng</th>
@@ -768,7 +772,7 @@
     <p id="save-status" class="hint" aria-live="polite"></p>
   </section>
 
-  <input id="txt-input" type="file" accept=".txt" hidden>
+  <input id="txt-input" type="file" accept=".txt,.csv,text/plain,text/csv" hidden>
   <input id="json-input" type="file" accept=".json" hidden>
 </main>
 
@@ -1139,39 +1143,39 @@ const BERGER_EIGHT = [
 ];
 
 const SAMPLE_PLAYERS = [
-  ["Andersson, Erik", 2245],
-  ["Johansson, Karl", 2225],
-  ["Karlsson, Nils", 2205],
-  ["Nilsson, Oskar", 2185],
-  ["Eriksson, Johan", 2165],
-  ["Larsson, Lars", 2145],
-  ["Olsson, Per", 2125],
-  ["Persson, Gustav", 2105],
-  ["Svensson, Emil", 2085],
-  ["Gustafsson, Axel", 2065],
-  ["Pettersson, Arvid", 2045],
-  ["Lindberg, Viktor", 2025],
-  ["Bergström, Astrid", 2005],
-  ["Lindström, Elsa", 1985],
-  ["Lindqvist, Sofia", 1965],
-  ["Berg, Ingrid", 1945],
-  ["Lundström, Maja", 1925],
-  ["Holm, Karin", 1905],
-  ["Okafor, Chinedu", 1885],
-  ["Bergman, Robert", 1865],
-  ["Lund, Stig", 1845],
-  ["Sandberg, Filip", 1825],
-  ["Nyström, Simon", 1805],
-  ["Holmberg, Rasmus", 1785],
-  ["Al-Farouq, Omar", 1765],
-  ["Lindgren, Kristina", 1745],
-  ["Sjöberg, Adam", 1725],
-  ["Ekström, Lukas", 1705],
-  ["Björk, Johan", 1685],
-  ["Ström, Olle", 1665],
-  ["Dahl, Elin", 1645],
-  ["Berglund, Anna", 1625],
-  ["Östberg, Mats", 1585]
+  ["Andersson, Erik", "IM", "Stockholms Schacksällskap", 2245],
+  ["Johansson, Karl", "FM", "Lunds ASK", 2225],
+  ["Karlsson, Nils", "FM", "Limhamns SK", 2205],
+  ["Nilsson, Oskar", "CM", "Västerås SK", 2185],
+  ["Eriksson, Johan", "FM", "Uppsala SSS", 2165],
+  ["Larsson, Lars", "", "Örgryte SK", 2145],
+  ["Olsson, Per", "CM", "Norrköpings SK", 2125],
+  ["Persson, Gustav", "FM", "Stockholms Schacksällskap", 2105],
+  ["Svensson, Emil", "", "Lunds ASK", 2085],
+  ["Gustafsson, Axel", "", "Limhamns SK", 2065],
+  ["Pettersson, Arvid", "", "Västerås SK", 2045],
+  ["Lindberg, Viktor", "", "Uppsala SSS", 2025],
+  ["Bergström, Astrid", "WFM", "Örgryte SK", 2005],
+  ["Lindström, Elsa", "", "Norrköpings SK", 1985],
+  ["Lindqvist, Sofia", "", "Stockholms Schacksällskap", 1965],
+  ["Berg, Ingrid", "", "Lunds ASK", 1945],
+  ["Lundström, Maja", "WCM", "Limhamns SK", 1925],
+  ["Holm, Karin", "", "Västerås SK", 1905],
+  ["Okafor, Chinedu", "", "Uppsala SSS", 1885],
+  ["Bergman, Robert", "", "Örgryte SK", 1865],
+  ["Lund, Stig", "", "Norrköpings SK", 1845],
+  ["Sandberg, Filip", "", "Stockholms Schacksällskap", 1825],
+  ["Nyström, Simon", "", "Lunds ASK", 1805],
+  ["Holmberg, Rasmus", "", "Limhamns SK", 1785],
+  ["Al-Farouq, Omar", "", "Västerås SK", 1765],
+  ["Lindgren, Kristina", "", "Uppsala SSS", 1745],
+  ["Sjöberg, Adam", "", "Örgryte SK", 1725],
+  ["Ekström, Lukas", "", "Norrköpings SK", 1705],
+  ["Björk, Johan", "", "Stockholms Schacksällskap", 1685],
+  ["Ström, Olle", "", "Lunds ASK", 1665],
+  ["Dahl, Elin", "", "Limhamns SK", 1645],
+  ["Berglund, Anna", "", "Västerås SK", 1625],
+  ["Östberg, Mats", "", "Uppsala SSS", 1585]
 ];
 
 let state = null;
@@ -1436,13 +1440,12 @@ function updateFormatText() {
   $("setup-tail-exchange-rule").textContent = tailExchangeText;
 
   $("setup-withdrawal-rule").textContent = convert
-    ? "Övergång till schweizerlottning vid avhopp är aktiverad." +
+    ? "Övergång till schweizerlottning vid avhopp är aktiverad. " +
       "En Bergergrupp med minst två avhopp flyttas normalt över till " +
       "schweizerfältet tillsammans med alla efterföljande grupper. Ett " +
-      "enstaka avhopp i en grupp hanteras genom frirond(er) (byes). Den " + 
-      "berörda bergergruppen och alla efterföljande grupper ansluter " +
-      "normalt till schweizerfältet. Om det saknas en nedre schweizergrupp " +
-      "och endast den sista bergergruppen berörs, behåller den sitt schema."
+      "enstaka avhopp i en grupp hanteras genom frirond(er) (byes). " +
+      "Om det saknas en nedre schweizergrupp och endast den sista " +
+      "bergergruppen berörs, behåller den sitt schema."
     : "Övergång till schweizerlottning vid avhopp är avaktiverad. Alla " +
       "bergergrupper behåller sina scheman under den inledande fasen. Ett " +
       "eventuellt befintligt schweizerfält fortsätter självständigt.";
@@ -1787,44 +1790,215 @@ function buildGroups(count, randomize = true, bergerRounds = 5) {
   return groups;
 }
 
+/* ========================================================================
+   PLAYER REGISTRATION PARSING (conforms to swiss-eng.txt)
+   ======================================================================== */
+
+function countDelimiterOutsideQuotes(line, delimiter) {
+  let count = 0;
+  let inQuotes = false;
+
+  for (let index = 0; index < line.length; index++) {
+    const character = line[index];
+
+    if (character === '"') {
+      if (inQuotes && line[index + 1] === '"') {
+        index++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (!inQuotes && character === delimiter) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
+function detectDelimiter(line) {
+  const candidates = ["\t", ";", ","];
+
+  const counts = candidates.map(delimiter => ({
+    delimiter,
+    count: countDelimiterOutsideQuotes(line, delimiter)
+  }));
+
+  counts.sort((a, b) => b.count - a.count);
+
+  return counts[0].count > 0 ? counts[0].delimiter : null;
+}
+
+function parseDelimitedLine(line, delimiter) {
+  if (!delimiter) {
+    const value = line.trim();
+
+    if (value.startsWith('"') && value.endsWith('"')) {
+      return [value.slice(1, -1).replaceAll('""', '"')];
+    }
+
+    return [value];
+  }
+
+  const fields = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < line.length; index++) {
+    const character = line[index];
+
+    if (character === '"') {
+      if (inQuotes && line[index + 1] === '"') {
+        field += '"';
+        index++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (!inQuotes && character === delimiter) {
+      fields.push(field.trim());
+      field = "";
+      continue;
+    }
+
+    field += character;
+  }
+
+  fields.push(field.trim());
+  return fields;
+}
+
+function splitPlayerLine(line) {
+  return parseDelimitedLine(line, detectDelimiter(line));
+}
+
+function looksLikePlayerHeader(parts) {
+  const first = String(parts[0] || "").trim().toLowerCase();
+  const rest = parts.slice(1).join(" ").toLowerCase();
+
+  const firstIsHeader = /^(name|player|player name|navn|spiller|namn|spelare|spelarnamn)$/.test(first);
+  const restIsHeader = /(club|klubb|förening|rating|elo|rating number|ratingtal)/.test(rest);
+
+  return firstIsHeader && restIsHeader;
+}
+
+function parsePlayerEntries(text) {
+  const lines = String(text || "").split(/\r?\n/);
+  const players = [];
+  let firstMeaningfulLine = true;
+
+  for (const originalLine of lines) {
+    const raw = originalLine.trim();
+
+    if (!raw || raw.startsWith("#")) {
+      continue;
+    }
+
+    const parts = splitPlayerLine(raw).map(part => part.trim());
+
+    if (firstMeaningfulLine && looksLikePlayerHeader(parts)) {
+      firstMeaningfulLine = false;
+      continue;
+    }
+
+    firstMeaningfulLine = false;
+
+    const name = parts[0] || "";
+    if (!name) {
+      continue;
+    }
+
+    let title = "";
+    let club = "";
+    let ratingText = "";
+
+    if (parts.length >= 4) {
+      title = parts[1] || "";
+      club = parts[2] || "";
+      ratingText = parts[3] || "";
+    } else if (parts.length === 3) {
+      const isKnownTitle = /^(gm|im|fm|cm|wgm|wim|wfm|wcm)$/i.test(parts[1]);
+      const lastIsRating = parts[2] !== "" && !isNaN(Number(parts[2].replace(",", ".")));
+      if (isKnownTitle) {
+        title = parts[1];
+        if (lastIsRating) {
+          ratingText = parts[2];
+        } else {
+          club = parts[2];
+        }
+      } else {
+        club = parts[1];
+        ratingText = parts[2];
+      }
+    } else if (parts.length === 2) {
+      if (/^(gm|im|fm|cm|wgm|wim|wfm|wcm)$/i.test(parts[1])) {
+        title = parts[1];
+      } else if (parts[1] !== "" && !isNaN(Number(parts[1].replace(",", ".")))) {
+        ratingText = parts[1];
+      } else {
+        club = parts[1];
+      }
+    }
+
+    const rating = ratingText === "" ? null : Number(ratingText.replace(",", "."));
+
+    players.push({
+      name,
+      title,
+      club,
+      rating: Number.isFinite(rating) ? rating : null
+    });
+  }
+
+  return players;
+}
+
 function parsePlayers() {
-  const lines = $("player-input").value
-    .split(/\r?\n/)
-    .map(line => line.trim())
-    .filter(Boolean);
+  const rawPlayers = parsePlayerEntries($("player-input").value);
 
-  const parsed = lines.map((line, index) => {
-    const match = line.match(/^(.+?)\s+(\d{1,4})$/);
-
-    requireCondition(
-      match,
-      `Spelarrad ${index + 1} måste avslutas med en rating:\n${line}`
-    );
-
-    const rating = Number(match[2]);
-    const name = match[1].trim();
-
-    requireCondition(
-      Number.isInteger(rating) && rating >= 0 && rating <= 4000,
-      `Ogiltig rating på spelarrad ${index + 1}.`
-    );
+  const parsed = rawPlayers.map((player, index) => {
+    const name = String(player.name || "").trim();
 
     requireCondition(
       name.length > 0 && name.length <= 200,
-      `Spelarnamnet på rad ${index + 1} är för långt.`
+      `Ogiltigt namn för spelare ${index + 1}.`
     );
 
-    return {name, rating, inputOrder: index};
+    if (player.rating !== null) {
+      requireCondition(
+        Number.isInteger(player.rating) &&
+        player.rating >= 0 &&
+        player.rating <= 4000,
+        `Ogiltig rating för ${name}.`
+      );
+    }
+
+    return {
+      name,
+      title: String(player.title || "").trim(),
+      club: String(player.club || "").trim(),
+      rating: Number.isFinite(player.rating) ? player.rating : null,
+      inputOrder: index
+    };
   });
 
-  parsed.sort((a, b) =>
-    b.rating - a.rating || a.inputOrder - b.inputOrder
-  );
+  parsed.sort((a, b) => {
+    const ratingA = Number.isFinite(a.rating) ? a.rating : -Infinity;
+    const ratingB = Number.isFinite(b.rating) ? b.rating : -Infinity;
+    if (ratingA !== ratingB) return ratingB - ratingA;
+    return a.inputOrder - b.inputOrder;
+  });
 
   return parsed.map((player, index) => ({
     id: index + 1,
     tpn: index + 1,
     name: player.name,
+    title: player.title,
+    club: player.club,
     rating: player.rating,
     withdrawnFrom: null
   }));
@@ -1842,6 +2016,8 @@ function computeStats(s) {
       id: player.id,
       tpn: player.tpn,
       name: player.name,
+      title: player.title || "",
+      club: player.club || "",
       rating: player.rating,
       score2: 0,
       whites: 0,
@@ -2605,9 +2781,16 @@ function validateTournament(s) {
       typeof player.name === "string" &&
       player.name.trim().length > 0 &&
       player.name.length <= 200 &&
-      Number.isInteger(player.rating) &&
-      player.rating >= 0 &&
-      player.rating <= 4000,
+      typeof player.title === "string" &&
+      typeof player.club === "string" &&
+      (
+        player.rating === null ||
+        (
+          Number.isInteger(player.rating) &&
+          player.rating >= 0 &&
+          player.rating <= 4000
+        )
+      ),
       "Ogiltiga spelardata eller TPN-ordning."
     );
 
@@ -2623,8 +2806,15 @@ function validateTournament(s) {
     );
 
     if (index > 0) {
+      const prevRating = Number.isFinite(s.players[index - 1].rating)
+        ? s.players[index - 1].rating
+        : -Infinity;
+      const curRating = Number.isFinite(player.rating)
+        ? player.rating
+        : -Infinity;
+
       requireCondition(
-        s.players[index - 1].rating >= player.rating,
+        prevRating >= curRating,
         "Spelarna är inte sparade i den inledande ratingordningen."
       );
     }
@@ -2953,16 +3143,18 @@ function bergerScheduleHtml(draw) {
       const cells = roundPairs.map(([whiteNo, blackNo]) => {
         const white = players.get(group.members[whiteNo - 1]);
         const black = players.get(group.members[blackNo - 1]);
+        const whiteTitle = white.title ? ` (${escapeHtml(white.title)})` : "";
+        const blackTitle = black.title ? ` (${escapeHtml(black.title)})` : "";
 
         return `
           <td>
             <div class="scheduled-player">
               <strong>Vit:&nbsp;&nbsp;&nbsp;</strong>
-              ${white.tpn}. ${escapeHtml(white.name)}
+              ${white.tpn}. ${escapeHtml(white.name)}${whiteTitle}
             </div>
             <div class="scheduled-player">
               <strong>Svart:</strong>
-              ${black.tpn}. ${escapeHtml(black.name)}
+              ${black.tpn}. ${escapeHtml(black.name)}${blackTitle}
             </div>
           </td>
         `;
@@ -3101,10 +3293,11 @@ function openWithdrawDialog() {
     for (const player of candidates) {
       const option = document.createElement("option");
       const index = groupOf.get(player.id);
+      const titleStr = player.title ? ` (${player.title})` : "";
 
       option.value = player.id;
       option.textContent =
-        `${player.tpn}. ${player.name} ` +
+        `${player.tpn}. ${player.name}${titleStr} ` +
         `(${groupName(state.groups[index], index)})`;
 
       select.appendChild(option);
@@ -3458,8 +3651,10 @@ function pairGroupLabel(s, round, pair, groupOf) {
 }
 
 function playerLabel(player, s = null) {
-  return `${escapeHtml(player.name)} ` +
-    `<span class="nowrap">(${player.tpn} / ${player.rating})</span>` +
+  const titlePart = player.title ? ` (${escapeHtml(player.title)})` : "";
+  const ratingPart = Number.isFinite(player.rating) ? player.rating : "—";
+  return `${escapeHtml(player.name)}${titlePart} ` +
+    `<span class="nowrap">(${player.tpn} / ${ratingPart})</span>` +
     (s ? withdrawalBadgeHtml(s, player) : "");
 }
 
@@ -3552,6 +3747,7 @@ function standingsRows(s, context) {
     const groupIndex = groupOf.get(player.id);
     const colors = player.history.map(history => history.color).join("");
     const original = players.get(player.id);
+    const titlePart = player.title ? ` (${escapeHtml(player.title)})` : "";
 
     const previousGroupIndex = index > 0
       ? groupOf.get(ordered[index - 1].id)
@@ -3567,10 +3763,11 @@ function standingsRows(s, context) {
         <td class="center">${index + 1}</td>
         <td class="center">${player.tpn}</td>
         <td>
-          ${escapeHtml(player.name)}
+          ${escapeHtml(player.name)}${titlePart}
           ${withdrawalBadgeHtml(s, original)}
         </td>
-        <td class="center">${player.rating}</td>
+        <td>${escapeHtml(player.club || "")}</td>
+        <td class="center">${player.rating ?? ""}</td>
         <td>${escapeHtml(groupName(s.groups[groupIndex], groupIndex))}</td>
         <td class="center"><strong>${formatScore(player.score2)}</strong></td>
         <td class="center">${player.wnt.toFixed(2)}</td>
@@ -3608,6 +3805,7 @@ function renderGroups() {
               </th>
               <th class="center">TPN</th>
               <th>Spelare</th>
+              <th>Klubb</th>
               <th class="center">Rating</th>
             </tr>
           </thead>
@@ -3615,16 +3813,18 @@ function renderGroups() {
           <tbody>
             ${group.members.map((id, localIndex) => {
               const player = players.get(id);
+              const titlePart = player.title ? ` (${escapeHtml(player.title)})` : "";
 
               return `
                 <tr>
                   <td class="center">${localIndex + 1}</td>
                   <td class="center">${player.tpn}</td>
                   <td>
-                    ${escapeHtml(player.name)}
+                    ${escapeHtml(player.name)}${titlePart}
                     ${withdrawalBadgeHtml(state, player)}
                   </td>
-                  <td class="center">${player.rating}</td>
+                  <td>${escapeHtml(player.club || "")}</td>
+                  <td class="center">${player.rating ?? ""}</td>
                 </tr>
               `;
             }).join("")}
@@ -3864,9 +4064,10 @@ function newTournament() {
 
 function loadSamplePlayers() {
   $("player-input").value = SAMPLE_PLAYERS
-    .map(([name, rating]) => `${name} ${rating}`)
+    .map(([name, title, club, rating]) => `${name};${title};${club};${rating}`)
     .join("\n");
 
+  preparedBergerDraw = null;
   updateRosterInfo();
   showMessage("");
 }
@@ -3879,10 +4080,7 @@ function clearPlayers() {
 }
 
 function updateRosterInfo() {
-  const count = $("player-input").value
-    .split(/\r?\n/)
-    .filter(line => line.trim())
-    .length;
+  const count = parsePlayerEntries($("player-input").value).length;
 
   const bergerRounds = selectedBergerRounds();
   const details = formatDetails(bergerRounds);
@@ -4125,9 +4323,9 @@ function printPairings() {
         <tr>
           <th class="center">Bord</th>
           <th>Grupp</th>
-          <th>Vit (TPN / rating)</th>
+          <th>Vit (TPN / Rating)</th>
           <th class="center">Resultat</th>
-          <th>Svart (TPN / rating)</th>
+          <th>Svart (TPN / Rating)</th>
         </tr>
       </thead>
 
@@ -4152,6 +4350,7 @@ function printStandings() {
           <th>Pl.</th>
           <th>TPN</th>
           <th>Spelare</th>
+          <th>Klubb</th>
           <th>Rating</th>
           <th>Inledande grupp</th>
           <th>Poäng</th>
@@ -4193,6 +4392,8 @@ function makeTestTournament(
       id: index + 1,
       tpn: index + 1,
       name: `Testspelare ${index + 1}`,
+      title: "",
+      club: "",
       rating: 2800 - index,
       withdrawnFrom: null
     })),
@@ -4631,7 +4832,7 @@ function runSelfChecks() {
 function formatPlayerName(name) {
   // Preserve the entered name. Enter names as "Surname, First name"
   // when the correct surname order is known.
-  return String(name || '').trim() || '(Name)';
+  return String(name || '').trim() || '(Namn)';
 }
 
 function generateTRF() {
@@ -4687,7 +4888,7 @@ function generateTRF() {
     const text = String(value);
 
     if (text.length > width) {
-      throw new Error(`${label} does not fit in its TRF field.`);
+      throw new Error(`${label} ryms inte i sitt TRF-fält.`);
     }
 
     return text.padStart(width, ' ');
@@ -4703,7 +4904,7 @@ function generateTRF() {
       p.tpn < 1 ||
       p.tpn > 9999
     ) {
-      throw new Error(`Invalid starting-rank number for ${p.name}.`);
+      throw new Error(`Ogiltigt startnummer för ${p.name}.`);
     }
 
     const sexStr = '?';
@@ -4713,17 +4914,18 @@ function generateTRF() {
     const birthDateStr = '(Birth Dt)';
 
     // Export rating if present, otherwise placeholder
-    const rating = Number(p.rating);
+    const hasRating = p.rating !== null && p.rating !== undefined && p.rating !== '';
+    const rating = hasRating ? Number(p.rating) : 0;
     if (!Number.isInteger(rating) || rating < 0 || rating > 9999) {
-      throw new Error(`Invalid rating for ${p.name}.`);
+      throw new Error(`Ogiltig rating för ${p.name}.`);
     }
 
-    // A zero rating means no rating is available.
+    // A zero or omitted rating means no rating is available.
     const fideRatingStr = rating > 0 ? String(rating) : '(E)';
 
     const pts = pointsMap.get(p.id) ?? 0;
     if (!Number.isFinite(pts) || pts < 0) {
-      throw new Error(`Invalid score for ${p.name}.`);
+      throw new Error(`Ogiltig poäng för ${p.name}.`);
     }
 
     const pointsStr = pts.toFixed(1);
@@ -4783,7 +4985,7 @@ function generateTRF() {
             opponent.tpn > 9999
           ) {
             throw new Error(
-              `Invalid opponent for ${p.name} in round ${r + 1}.`
+              `Ogiltig motståndare för ${p.name} i rond ${r + 1}.`
             );
           }
 
@@ -4834,7 +5036,7 @@ function saveTRF() {
     !Array.isArray(state.players) ||
     state.players.length === 0
   ) {
-    alert('There is no tournament to export.');
+    alert('Det finns ingen turnering att exportera.');
     return;
   }
 
@@ -4842,7 +5044,7 @@ function saveTRF() {
     const content = generateTRF();
 
     if (!content) {
-      throw new Error('No TRF content was generated.');
+      throw new Error('Ingen TRF-fil skapades.');
     }
 
     const blob = new Blob([content], {
@@ -4854,7 +5056,7 @@ function saveTRF() {
     a.href = url;
 
     const cleanName = String(
-      state.name || 'berger_swiss_tournament'
+      state.name || 'berger_schweizer_turnering'
     )
       .trim()
       .replace(/[^\w\-]+/g, '_');
@@ -4876,7 +5078,7 @@ function saveTRF() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   } catch (error) {
     console.error(error);
-    alert(`Could not generate TRF file: ${error.message}`);
+    alert(`TRF-filen kunde inte skapas: ${error.message}`);
   }
 }
 

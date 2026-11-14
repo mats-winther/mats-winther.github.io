@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description"
-      content="A browser-based tournament system combining Berger groups with Swiss rounds.">
+      content="A free browser-based tournament system for chess, combining Berger groups with Swiss rounds.">
 <link rel="canonical" href="https://mats-winther.github.io/berger-swiss.htm">
 <meta name="author" content="Mats Winther">
 <title>Berger-Swiss Tournament System</title>
@@ -617,10 +617,13 @@
 
     <p id="setup-field-hint" class="hint"></p>
 
-    <label for="player-input">Players, one per line: Name Rating</label>
+    <label for="player-input">Player List (sorted automatically by rating at start)</label>
+    <p class="hint" style="margin: 0 0 8px 0;">
+      Enter one player per line using <strong>Name;Title;Club;Rating</strong>. Tabs are also accepted. Quoted fields are supported. Club, title and rating may be omitted. Lines beginning with <strong>#</strong> are ignored.
+    </p>
 
-    <textarea id="player-input"
-      placeholder="Magnus Carlsen 2823&#10;Hikaru Nakamura 2792&#10;Fabiano Caruana 2784"></textarea>
+    <textarea id="player-input" spellcheck="false"
+      placeholder="Smith, Alice;IM;Central Chess Club;2320&#10;Jones, Bob;;Westside Chess Club;1740"></textarea>
 
     <p id="roster-info" class="hint"></p>
 
@@ -631,7 +634,7 @@
 
       <button type="button" class="secondary"
               onclick="document.getElementById('txt-input').click()">
-        📄 Load Players (.txt)
+        📄 Load .txt / .csv File
       </button>
 
       <button type="button" class="secondary"
@@ -643,7 +646,7 @@
         🗑️ Clear
       </button>
 
-      <button type="button" class="secondary" onclick="showBergerPairings()">
+      <button type="button" onclick="showBergerPairings()">
         📜 Berger Pairings
       </button>
 
@@ -738,6 +741,7 @@
             <th class="center">Pos.</th>
             <th class="center">TPN</th>
             <th>Player</th>
+            <th>Club</th>
             <th class="center">Rating</th>
             <th>Initial Group</th>
             <th class="center">Score</th>
@@ -764,7 +768,7 @@
     <p id="save-status" class="hint" aria-live="polite"></p>
   </section>
 
-  <input id="txt-input" type="file" accept=".txt" hidden>
+  <input id="txt-input" type="file" accept=".txt,.csv,text/plain,text/csv" hidden>
   <input id="json-input" type="file" accept=".json" hidden>
 </main>
 
@@ -1133,39 +1137,39 @@ const BERGER_EIGHT = [
 ];
 
 const SAMPLE_PLAYERS = [
-  ["Smith, James", 2245],
-  ["Johnson, William", 2225],
-  ["Brown, Thomas", 2205],
-  ["Taylor, Michael", 2185],
-  ["Davies, Richard", 2165],
-  ["Wilson, David", 2145],
-  ["Evans, Christopher", 2125],
-  ["Thomas, Andrew", 2105],
-  ["Roberts, Matthew", 2085],
-  ["Walker, Daniel", 2065],
-  ["Wright, Joseph", 2045],
-  ["Thompson, Nicholas", 2025],
-  ["White, Emily", 2005],
-  ["Harris, Benjamin", 1985],
-  ["Martin, Samuel", 1965],
-  ["Lewis, Alexander", 1945],
-  ["Hall, Charlotte", 1925],
-  ["Clark, Charles", 1905],
-  ["Allen, Patrick", 1885],
-  ["Okafor, Chinedu", 1865],
-  ["King, Robert", 1845],
-  ["Scott, Steven", 1825],
-  ["Green, Mark", 1805],
-  ["Baker, Philip", 1785],
-  ["Al-Farouq, Omar", 1765],
-  ["Nelson, Simon", 1745],
-  ["Hill, Ryan", 1725],
-  ["Campbell, Kevin", 1705],
-  ["Mitchell, Adam", 1685],
-  ["Carter, Luke", 1665],
-  ["Turner, Jason", 1645],
-  ["Parker, Owen", 1625],
-  ["Collins, Jack", 1585]
+  ["Smith, James", "IM", "Central Chess Club", 2245],
+  ["Johnson, William", "FM", "Northside Chess Club", 2225],
+  ["Brown, Thomas", "FM", "West End Chess Club", 2205],
+  ["Taylor, Michael", "CM", "Riverside Chess Club", 2185],
+  ["Davies, Richard", "FM", "University Chess Club", 2165],
+  ["Wilson, David", "", "Central Chess Club", 2145],
+  ["Evans, Christopher", "CM", "Northside Chess Club", 2125],
+  ["Thomas, Andrew", "FM", "West End Chess Club", 2105],
+  ["Roberts, Matthew", "", "Riverside Chess Club", 2085],
+  ["Walker, Daniel", "", "University Chess Club", 2065],
+  ["Wright, Joseph", "", "Central Chess Club", 2045],
+  ["Thompson, Nicholas", "", "Northside Chess Club", 2025],
+  ["White, Emily", "WFM", "West End Chess Club", 2005],
+  ["Harris, Benjamin", "", "Riverside Chess Club", 1985],
+  ["Martin, Samuel", "", "University Chess Club", 1965],
+  ["Lewis, Alexander", "", "Central Chess Club", 1945],
+  ["Hall, Charlotte", "WCM", "Northside Chess Club", 1925],
+  ["Clark, Charles", "", "West End Chess Club", 1905],
+  ["Allen, Patrick", "", "Riverside Chess Club", 1885],
+  ["Okafor, Chinedu", "", "University Chess Club", 1865],
+  ["King, Robert", "", "Central Chess Club", 1845],
+  ["Scott, Steven", "", "Northside Chess Club", 1825],
+  ["Green, Mark", "", "West End Chess Club", 1805],
+  ["Baker, Philip", "", "Riverside Chess Club", 1785],
+  ["Al-Farouq, Omar", "", "University Chess Club", 1765],
+  ["Nelson, Simon", "", "Central Chess Club", 1745],
+  ["Hill, Ryan", "", "Northside Chess Club", 1725],
+  ["Campbell, Kevin", "", "West End Chess Club", 1705],
+  ["Mitchell, Adam", "", "Riverside Chess Club", 1685],
+  ["Carter, Luke", "", "University Chess Club", 1665],
+  ["Turner, Jason", "", "Central Chess Club", 1645],
+  ["Parker, Owen", "", "Northside Chess Club", 1625],
+  ["Collins, Jack", "", "West End Chess Club", 1585]
 ];
 
 let state = null;
@@ -1776,44 +1780,215 @@ function buildGroups(count, randomize = true, bergerRounds = 5) {
   return groups;
 }
 
+/* ========================================================================
+   PLAYER REGISTRATION PARSING (conforms to swiss-eng.txt)
+   ======================================================================== */
+
+function countDelimiterOutsideQuotes(line, delimiter) {
+  let count = 0;
+  let inQuotes = false;
+
+  for (let index = 0; index < line.length; index++) {
+    const character = line[index];
+
+    if (character === '"') {
+      if (inQuotes && line[index + 1] === '"') {
+        index++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (!inQuotes && character === delimiter) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
+function detectDelimiter(line) {
+  const candidates = ["\t", ";"];
+
+  const counts = candidates.map(delimiter => ({
+    delimiter,
+    count: countDelimiterOutsideQuotes(line, delimiter)
+  }));
+
+  counts.sort((a, b) => b.count - a.count);
+
+  return counts[0].count > 0 ? counts[0].delimiter : null;
+}
+
+function parseDelimitedLine(line, delimiter) {
+  if (!delimiter) {
+    const value = line.trim();
+
+    if (value.startsWith('"') && value.endsWith('"')) {
+      return [value.slice(1, -1).replaceAll('""', '"')];
+    }
+
+    return [value];
+  }
+
+  const fields = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < line.length; index++) {
+    const character = line[index];
+
+    if (character === '"') {
+      if (inQuotes && line[index + 1] === '"') {
+        field += '"';
+        index++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (!inQuotes && character === delimiter) {
+      fields.push(field.trim());
+      field = "";
+      continue;
+    }
+
+    field += character;
+  }
+
+  fields.push(field.trim());
+  return fields;
+}
+
+function splitPlayerLine(line) {
+  return parseDelimitedLine(line, detectDelimiter(line));
+}
+
+function looksLikePlayerHeader(parts) {
+  const first = String(parts[0] || "").trim().toLowerCase();
+  const rest = parts.slice(1).join(" ").toLowerCase();
+
+  const firstIsHeader = /^(name|player|player name|navn|spiller)$/.test(first);
+  const restIsHeader = /(club|klubb|rating|elo|rating number)/.test(rest);
+
+  return firstIsHeader && restIsHeader;
+}
+
+function parsePlayerEntries(text) {
+  const lines = String(text || "").split(/\r?\n/);
+  const players = [];
+  let firstMeaningfulLine = true;
+
+  for (const originalLine of lines) {
+    const raw = originalLine.trim();
+
+    if (!raw || raw.startsWith("#")) {
+      continue;
+    }
+
+    const parts = splitPlayerLine(raw).map(part => part.trim());
+
+    if (firstMeaningfulLine && looksLikePlayerHeader(parts)) {
+      firstMeaningfulLine = false;
+      continue;
+    }
+
+    firstMeaningfulLine = false;
+
+    const name = parts[0] || "";
+    if (!name) {
+      continue;
+    }
+
+    let title = "";
+    let club = "";
+    let ratingText = "";
+
+    if (parts.length >= 4) {
+      title = parts[1] || "";
+      club = parts[2] || "";
+      ratingText = parts[3] || "";
+    } else if (parts.length === 3) {
+      const isKnownTitle = /^(gm|im|fm|cm|wgm|wim|wfm|wcm)$/i.test(parts[1]);
+      const lastIsRating = parts[2] !== "" && !isNaN(Number(parts[2]));
+      if (isKnownTitle) {
+        title = parts[1];
+        if (lastIsRating) {
+          ratingText = parts[2];
+        } else {
+          club = parts[2];
+        }
+      } else {
+        club = parts[1];
+        ratingText = parts[2];
+      }
+    } else if (parts.length === 2) {
+      if (/^(gm|im|fm|cm|wgm|wim|wfm|wcm)$/i.test(parts[1])) {
+        title = parts[1];
+      } else if (parts[1] !== "" && !isNaN(Number(parts[1]))) {
+        ratingText = parts[1];
+      } else {
+        club = parts[1];
+      }
+    }
+
+    const rating = ratingText === "" ? null : Number(ratingText);
+
+    players.push({
+      name,
+      title,
+      club,
+      rating: Number.isFinite(rating) ? rating : null
+    });
+  }
+
+  return players;
+}
+
 function parsePlayers() {
-  const lines = $("player-input").value
-    .split(/\r?\n/)
-    .map(line => line.trim())
-    .filter(Boolean);
+  const rawPlayers = parsePlayerEntries($("player-input").value);
 
-  const parsed = lines.map((line, index) => {
-    const match = line.match(/^(.+?)\s+(\d{1,4})$/);
-
-    requireCondition(
-      match,
-      `Player line ${index + 1} must end with a rating:\n${line}`
-    );
-
-    const rating = Number(match[2]);
-    const name = match[1].trim();
-
-    requireCondition(
-      Number.isInteger(rating) && rating >= 0 && rating <= 4000,
-      `Invalid rating on player line ${index + 1}.`
-    );
+  const parsed = rawPlayers.map((player, index) => {
+    const name = String(player.name || "").trim();
 
     requireCondition(
       name.length > 0 && name.length <= 200,
-      `Invalid name on player line ${index + 1}.`
+      `Invalid name for player ${index + 1}.`
     );
 
-    return {name, rating, inputOrder: index};
+    if (player.rating !== null) {
+      requireCondition(
+        Number.isInteger(player.rating) &&
+        player.rating >= 0 &&
+        player.rating <= 4000,
+        `Invalid rating for ${name}.`
+      );
+    }
+
+    return {
+      name,
+      title: String(player.title || "").trim(),
+      club: String(player.club || "").trim(),
+      rating: Number.isFinite(player.rating) ? player.rating : null,
+      inputOrder: index
+    };
   });
 
-  parsed.sort((a, b) =>
-    b.rating - a.rating || a.inputOrder - b.inputOrder
-  );
+  parsed.sort((a, b) => {
+    const ratingA = Number.isFinite(a.rating) ? a.rating : -Infinity;
+    const ratingB = Number.isFinite(b.rating) ? b.rating : -Infinity;
+    if (ratingA !== ratingB) return ratingB - ratingA;
+    return a.inputOrder - b.inputOrder;
+  });
 
   return parsed.map((player, index) => ({
     id: index + 1,
     tpn: index + 1,
     name: player.name,
+    title: player.title,
+    club: player.club,
     rating: player.rating,
     withdrawnFrom: null
   }));
@@ -1831,6 +2006,8 @@ function computeStats(s) {
       id: player.id,
       tpn: player.tpn,
       name: player.name,
+      title: player.title || "",
+      club: player.club || "",
       rating: player.rating,
       score2: 0,
       whites: 0,
@@ -2594,9 +2771,16 @@ function validateTournament(s) {
       typeof player.name === "string" &&
       player.name.trim().length > 0 &&
       player.name.length <= 200 &&
-      Number.isInteger(player.rating) &&
-      player.rating >= 0 &&
-      player.rating <= 4000,
+      typeof player.title === "string" &&
+      typeof player.club === "string" &&
+      (
+        player.rating === null ||
+        (
+          Number.isInteger(player.rating) &&
+          player.rating >= 0 &&
+          player.rating <= 4000
+        )
+      ),
       "Invalid player data or TPN sequence."
     );
 
@@ -2612,8 +2796,15 @@ function validateTournament(s) {
     );
 
     if (index > 0) {
+      const prevRating = Number.isFinite(s.players[index - 1].rating)
+        ? s.players[index - 1].rating
+        : -Infinity;
+      const curRating = Number.isFinite(player.rating)
+        ? player.rating
+        : -Infinity;
+
       requireCondition(
-        s.players[index - 1].rating >= player.rating,
+        prevRating >= curRating,
         "Players are not stored in initial rating order."
       );
     }
@@ -2942,16 +3133,18 @@ function bergerScheduleHtml(draw) {
       const cells = roundPairs.map(([whiteNo, blackNo]) => {
         const white = players.get(group.members[whiteNo - 1]);
         const black = players.get(group.members[blackNo - 1]);
+        const whiteTitle = white.title ? ` (${escapeHtml(white.title)})` : "";
+        const blackTitle = black.title ? ` (${escapeHtml(black.title)})` : "";
 
         return `
           <td>
             <div class="scheduled-player">
               <strong>W:</strong>
-              ${white.tpn}. ${escapeHtml(white.name)}
+              ${white.tpn}. ${escapeHtml(white.name)}${whiteTitle}
             </div>
             <div class="scheduled-player">
               <strong>B:</strong>
-              ${black.tpn}. ${escapeHtml(black.name)}
+              ${black.tpn}. ${escapeHtml(black.name)}${blackTitle}
             </div>
           </td>
         `;
@@ -3088,10 +3281,11 @@ function openWithdrawDialog() {
     for (const player of candidates) {
       const option = document.createElement("option");
       const index = groupOf.get(player.id);
+      const titleStr = player.title ? ` (${player.title})` : "";
 
       option.value = player.id;
       option.textContent =
-        `${player.tpn}. ${player.name} ` +
+        `${player.tpn}. ${player.name}${titleStr} ` +
         `(${groupName(state.groups[index], index)})`;
 
       select.appendChild(option);
@@ -3445,8 +3639,10 @@ function pairGroupLabel(s, round, pair, groupOf) {
 }
 
 function playerLabel(player, s = null) {
-  return `${escapeHtml(player.name)} ` +
-    `<span class="nowrap">(${player.tpn} / ${player.rating})</span>` +
+  const titlePart = player.title ? ` (${escapeHtml(player.title)})` : "";
+  const ratingPart = Number.isFinite(player.rating) ? player.rating : "—";
+  return `${escapeHtml(player.name)}${titlePart} ` +
+    `<span class="nowrap">(${player.tpn} / ${ratingPart})</span>` +
     (s ? withdrawalBadgeHtml(s, player) : "");
 }
 
@@ -3539,6 +3735,7 @@ function standingsRows(s, context) {
     const groupIndex = groupOf.get(player.id);
     const colors = player.history.map(history => history.color).join("");
     const original = players.get(player.id);
+    const titlePart = player.title ? ` (${escapeHtml(player.title)})` : "";
 
     const previousGroupIndex = index > 0
       ? groupOf.get(ordered[index - 1].id)
@@ -3554,10 +3751,11 @@ function standingsRows(s, context) {
         <td class="center">${index + 1}</td>
         <td class="center">${player.tpn}</td>
         <td>
-          ${escapeHtml(player.name)}
+          ${escapeHtml(player.name)}${titlePart}
           ${withdrawalBadgeHtml(s, original)}
         </td>
-        <td class="center">${player.rating}</td>
+        <td>${escapeHtml(player.club || "")}</td>
+        <td class="center">${player.rating ?? ""}</td>
         <td>${escapeHtml(groupName(s.groups[groupIndex], groupIndex))}</td>
         <td class="center"><strong>${formatScore(player.score2)}</strong></td>
         <td class="center">${player.wnt.toFixed(2)}</td>
@@ -3595,6 +3793,7 @@ function renderGroups() {
               </th>
               <th class="center">TPN</th>
               <th>Player</th>
+              <th>Club</th>
               <th class="center">Rating</th>
             </tr>
           </thead>
@@ -3602,16 +3801,18 @@ function renderGroups() {
           <tbody>
             ${group.members.map((id, localIndex) => {
               const player = players.get(id);
+              const titlePart = player.title ? ` (${escapeHtml(player.title)})` : "";
 
               return `
                 <tr>
                   <td class="center">${localIndex + 1}</td>
                   <td class="center">${player.tpn}</td>
                   <td>
-                    ${escapeHtml(player.name)}
+                    ${escapeHtml(player.name)}${titlePart}
                     ${withdrawalBadgeHtml(state, player)}
                   </td>
-                  <td class="center">${player.rating}</td>
+                  <td>${escapeHtml(player.club || "")}</td>
+                  <td class="center">${player.rating ?? ""}</td>
                 </tr>
               `;
             }).join("")}
@@ -3850,9 +4051,10 @@ function newTournament() {
 
 function loadSamplePlayers() {
   $("player-input").value = SAMPLE_PLAYERS
-    .map(([name, rating]) => `${name} ${rating}`)
+    .map(([name, title, club, rating]) => `${name};${title};${club};${rating}`)
     .join("\n");
 
+  preparedBergerDraw = null;
   updateRosterInfo();
   showMessage("");
 }
@@ -3865,10 +4067,7 @@ function clearPlayers() {
 }
 
 function updateRosterInfo() {
-  const count = $("player-input").value
-    .split(/\r?\n/)
-    .filter(line => line.trim())
-    .length;
+  const count = parsePlayerEntries($("player-input").value).length;
 
   const bergerRounds = selectedBergerRounds();
   const details = formatDetails(bergerRounds);
@@ -4138,6 +4337,7 @@ function printStandings() {
           <th>Pos.</th>
           <th>TPN</th>
           <th>Player</th>
+          <th>Club</th>
           <th>Rating</th>
           <th>Initial Group</th>
           <th>Score</th>
@@ -4179,6 +4379,8 @@ function makeTestTournament(
       id: index + 1,
       tpn: index + 1,
       name: `Test Player ${index + 1}`,
+      title: "",
+      club: "",
       rating: 2800 - index,
       withdrawnFrom: null
     })),
@@ -4699,12 +4901,13 @@ function generateTRF() {
     const birthDateStr = '(Birth Dt)';
 
     // Export rating if present, otherwise placeholder
-    const rating = Number(p.rating);
+    const hasRating = p.rating !== null && p.rating !== undefined && p.rating !== '';
+    const rating = hasRating ? Number(p.rating) : 0;
     if (!Number.isInteger(rating) || rating < 0 || rating > 9999) {
       throw new Error(`Invalid rating for ${p.name}.`);
     }
 
-    // A zero rating means no rating is available.
+    // A zero or omitted rating means no rating is available.
     const fideRatingStr = rating > 0 ? String(rating) : '(E)';
 
     const pts = pointsMap.get(p.id) ?? 0;
