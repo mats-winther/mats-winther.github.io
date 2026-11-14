@@ -255,7 +255,7 @@
     }
 
     tr.withdrawn {
-      background: #f5f5f5;
+      background: #F9F9F9;
       color: var(--muted);
     }
 
@@ -271,7 +271,7 @@
       width: auto;
       padding: 5px 8px;
       border: 1px solid #687785;
-      background: #f5f5f5;
+      background: #F9F9F9;
       color: var(--text);
       font-size: 0.86rem;
     }
@@ -576,16 +576,16 @@ display: none;
 
       <p class="muted small">
         Enter one player per line using
-        <strong>Name;Club;Rating</strong>.
-        Tabs and commas are also accepted. Quoted CSV fields are
-        supported. Club and rating may be omitted. Lines beginning
+        <strong>Name;Title;Club;Rating</strong>.
+        Tabs are also accepted. Quoted fields are
+        supported. Club, title and rating may be omitted. Lines beginning
         with <strong>#</strong> are ignored.
       </p>
 
       <textarea
         id="playersText"
         spellcheck="false"
-        placeholder="Alice Smith;Central Chess Club;1820&#10;Bob Jones;Westside Chess Club;1740"
+        placeholder="Smith, Alice;IM;Central Chess Club;2320&#10;Jones, Bob;;Westside Chess Club;1740"
       ></textarea>
 
       <div class="button-row">
@@ -1014,15 +1014,20 @@ function playerDisplay(player) {
     return "Unknown player";
   }
 
+  const title = player.title
+    ? ` (${escapeHTML(player.title)})`
+    : "";
+
   const club = player.club
-    ? ` — ${player.club}`
+    ? ` (${escapeHTML(player.club)})`
     : "";
 
   return (
     `<span class="player-number">` +
     `#${player.startNo}</span> ` +
     `${escapeHTML(player.name)}` +
-    `${escapeHTML(club)}`
+    title +
+    club
   );
 }
 
@@ -1110,7 +1115,7 @@ function countDelimiterOutsideQuotes(
 }
 
 function detectDelimiter(line) {
-  const candidates = ["\t", ";", ","];
+  const candidates = ["\t", ";"];
 
   const counts = candidates.map(delimiter => ({
     delimiter,
@@ -1242,20 +1247,50 @@ function parsePlayers(text) {
     firstMeaningfulLine = false;
 
     const name = parts[0] || "";
-    const club = parts[1] || "";
-    const ratingText = parts[2] || "";
+    if (!name) {
+      continue;
+    }
+
+    let title = "";
+    let club = "";
+    let ratingText = "";
+
+    if (parts.length >= 4) {
+      title = parts[1] || "";
+      club = parts[2] || "";
+      ratingText = parts[3] || "";
+    } else if (parts.length === 3) {
+      const isKnownTitle = /^(gm|im|fm|cm|wgm|wim|wfm|wcm)$/i.test(parts[1]);
+      const lastIsRating = parts[2] !== "" && !isNaN(Number(parts[2]));
+      if (isKnownTitle) {
+        title = parts[1];
+        if (lastIsRating) {
+          ratingText = parts[2];
+        } else {
+          club = parts[2];
+        }
+      } else {
+        club = parts[1];
+        ratingText = parts[2];
+      }
+    } else if (parts.length === 2) {
+      if (/^(gm|im|fm|cm|wgm|wim|wfm|wcm)$/i.test(parts[1])) {
+        title = parts[1];
+      } else if (parts[1] !== "" && !isNaN(Number(parts[1]))) {
+        ratingText = parts[1];
+      } else {
+        club = parts[1];
+      }
+    }
 
     const rating =
       ratingText === ""
         ? null
         : Number(ratingText);
 
-    if (!name) {
-      continue;
-    }
-
     players.push({
       name,
+      title,
       club,
       rating: Number.isFinite(rating)
         ? rating
@@ -1383,6 +1418,7 @@ function assignStartNumbers(
       id: makeId(),
       startNo: index + 1,
       name: player.name,
+      title: player.title || "",
       club: player.club || "",
 
       rating: Number.isFinite(player.rating)
@@ -1722,6 +1758,7 @@ function buildRoundList(
     startNo: row.player.startNo,
     playerId: row.player.id,
     name: row.player.name,
+    title: row.player.title || "",
     club: row.player.club,
     rating: row.player.rating,
     withdrawn: false,
@@ -1779,6 +1816,7 @@ function buildFinalStandings() {
     rank: index + 1,
     startNo: row.player.startNo,
     name: row.player.name,
+    title: row.player.title || "",
     club: row.player.club,
     rating: row.player.rating,
     withdrawn: row.player.withdrawn,
@@ -3935,7 +3973,7 @@ function roundListTableHTML(rows) {
               </td>
 
               <td>
-                ${escapeHTML(row.name)}
+                ${escapeHTML(row.name)}${row.title ? ` (${escapeHTML(row.title)})` : ""}
               </td>
 
               <td>
@@ -4446,7 +4484,7 @@ function withdrawPlayer() {
     activePlayers
       .map(player => {
         const club = player.club
-          ? ` — ${player.club}`
+          ? ` (${player.club})`
           : "";
 
         return (
@@ -4578,7 +4616,7 @@ function finalStandingsTableHTML(rows) {
               </td>
 
               <td>
-                ${escapeHTML(row.name)}
+                ${escapeHTML(row.name)}${row.title ? ` (${escapeHTML(row.title)})` : ""}
                 ${
                   row.withdrawn
                     ? " (withdrawn)"
@@ -5022,7 +5060,7 @@ function printCurrentPairings() {
 
             <td>
               #${white.startNo}
-              ${escapeHTML(white.name)}
+	      ${escapeHTML(white.name)}${white.title ? ` (${escapeHTML(white.title)})` : ""}
 
               ${
                 white.club
@@ -5046,7 +5084,7 @@ function printCurrentPairings() {
                   ? "<strong>BYE</strong>"
                   : `
                     #${black.startNo}
-                    ${escapeHTML(black.name)}
+		    ${escapeHTML(black.name)}${black.title ? ` (${escapeHTML(black.title)})` : ""}
 
                     ${
                       black.club
@@ -5124,14 +5162,10 @@ function printRoundList(roundNumber) {
             ${row.startNo}
           </td>
 
-          <td>
-            ${escapeHTML(row.name)}
-            ${
-              row.withdrawn
-                ? " (withdrawn)"
-                : ""
-            }
-          </td>
+	  <td>
+  	    ${escapeHTML(row.name)}${row.title ? ` (${escapeHTML(row.title)})` : ""}
+  	    ${row.withdrawn ? " (withdrawn)" : ""}
+	  </td>
 
           <td>
             ${escapeHTML(row.club)}
@@ -5211,14 +5245,10 @@ function printFinalResults() {
             ${row.startNo}
           </td>
 
-          <td>
-            ${escapeHTML(row.name)}
-            ${
-              row.withdrawn
-                ? " (withdrawn)"
-                : ""
-            }
-          </td>
+	  <td>
+  	    ${escapeHTML(row.name)}${row.title ? ` (${escapeHTML(row.title)})` : ""}
+  	    ${row.withdrawn ? " (withdrawn)" : ""}
+	  </td>
 
           <td>
             ${escapeHTML(row.club)}
@@ -5774,11 +5804,14 @@ function normalizeLoadedState(loaded) {
             Number(player.startNo) ||
             index + 1,
 
-          name:
+	  name:
             String(
               player.name ||
               `Player ${index + 1}`
             ),
+
+          title:
+            String(player.title || "").trim(),
 
           club:
             String(player.club || ""),
@@ -6171,7 +6204,7 @@ function generateTRF() {
       '001 ' +
       numericField(p.startNo, 4, 'Starting-rank number') + ' ' +
       field(sexStr, 1) +
-      field('', 3) + ' ' +
+      field(p.title || '', 3) + ' ' +
       field(nameStr, 33) + ' ' +
       field(fideRatingStr, 4, true) + ' ' +
       field(fedStr, 3) + ' ' +
@@ -6411,29 +6444,25 @@ document
   );
 
 document
-  .getElementById(
-    "loadSampleButton"
-  )
+  .getElementById("loadSampleButton")
   .addEventListener("click", () => {
-    document.getElementById(
-      "playersText"
-    ).value =
-`Alice Anderson;Central Chess Club;2140
-Benjamin Brooks;Northside Chess Club;2075
-Charlotte Carter;West End Chess Club;2010
-Daniel Davis;Central Chess Club;1975
-Emma Edwards;Riverside Chess Club;1930
-Felix Foster;Northside Chess Club;1885
-Grace Green;University Chess Club;1840
-Henry Harris;West End Chess Club;1800
-Isabella Irving;Central Chess Club;1765
-Jack Johnson;Riverside Chess Club;1720
-Katherine King;University Chess Club;1680
-Liam Lewis;Northside Chess Club;1645
-Mia Miller;West End Chess Club;1600
-Noah Nelson;Central Chess Club;1550
-Olivia Owens;Riverside Chess Club;1490
-Peter Parker;University Chess Club;1420`;
+    document.getElementById("playersText").value =
+`Anderson, Alice;IM;Central Chess Club;2140
+Brooks, Benjamin;FM;Northside Chess Club;2075
+Carter, Charlotte;WIM;West End Chess Club;2010
+Davis, Daniel;;Central Chess Club;1975
+Edwards, Emma;WFM;Riverside Chess Club;1930
+Foster, Felix;;Northside Chess Club;1885
+Green, Grace;;University Chess Club;1840
+Harris, Henry;;West End Chess Club;1800
+Irving, Isabella;;Central Chess Club;1765
+Johnson, Jack;;Riverside Chess Club;1720
+King, Katherine;;University Chess Club;1680
+Lewis, Liam;;Northside Chess Club;1645
+Miller, Mia;;West End Chess Club;1600
+Nelson, Noah;;Central Chess Club;1550
+Owens, Olivia;;Riverside Chess Club;1490
+Parker, Peter;;University Chess Club;1420`;
   });
 
 document
@@ -6492,6 +6521,30 @@ document
     "click",
     printFinalResults
   );
+
+const totalRoundsInput = document.getElementById("totalRounds");
+
+/* Prevent two-finger trackpad / mouse-wheel increment */
+totalRoundsInput.addEventListener("wheel", (event) => {
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}, { passive: false, capture: true });
+
+/* Fallback: blur on wheel so the browser cannot scroll-increment focused inputs */
+totalRoundsInput.addEventListener("wheel", () => {
+  if (document.activeElement === totalRoundsInput) {
+    totalRoundsInput.blur();
+    // re-focus without scrolling so typing is immediately available again
+    setTimeout(() => totalRoundsInput.focus({ preventScroll: true }), 0);
+  }
+}, { capture: true });
+
+/* Block keyboard Up / Down arrow keys */
+totalRoundsInput.addEventListener("keydown", (event) => {
+  if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+    event.preventDefault();
+  }
+});
 
 /* Offer to restore a saved tournament before the initial display. */
 offerAutosave();
