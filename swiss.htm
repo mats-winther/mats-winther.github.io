@@ -38,7 +38,6 @@
   .radio-group input[type="radio"] {
     vertical-align: -0.4mm;
   }
-
   .checkbox-group input[type="checkbox"] {
     position: relative;
     top: 0.4mm;
@@ -84,7 +83,7 @@
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 100;
   }
   .modal-box {
-    background: #fff; width: 90%; max-width: 650px; max-height: 85vh; border-radius: 8px; padding: 20px; overflow-y: auto; position: relative;
+    background: #fff; width: 90%; max-width: 750px; max-height: 85vh; border-radius: 8px; padding: 20px; overflow-y: auto; position: relative;
   }
   .close-btn { position: absolute; top: 12px; right: 14px; font-size: 22px; cursor: pointer; border: none; background: transparent; color: #64748b; }
   .print-only { display: none; }
@@ -160,11 +159,11 @@
     <div>
       <label>Färgfördelning i rond 1</label>
       <div class="radio-group">
-        <div class="radio-item"><input type="radio" name="r1-color" value="higherWhite" aria-label="Higher seeded has White" checked> 
-		Higher seeded has White (Seed #1 White)
+        <div class="radio-item"><input type="radio" name="r1-color" value="higherWhite" aria-label="Högre seedad har vit" checked> 
+		Högre seedad har vit (Seed #1 vit)
         </div>
-        <div class="radio-item"><input type="radio" name="r1-color" value="alternate" aria-label="Alternating colors"> 
-		Alternating colors (Board 1 White, Board 2 Black...)
+        <div class="radio-item"><input type="radio" name="r1-color" value="alternate" aria-label="Växlande färger"> 
+		Växlande färger (Bord 1 vit, Bord 2 svart...)
         </div>
       </div>
     </div>
@@ -200,18 +199,20 @@
         <li><strong>Färgfördelning:</strong> Spelaren med färre partier med vit får vit. Om lika får spelaren med lägst rating vit (eller lägre seedad vid samma rating). Färgbalansen är i det närmaste garanterad (färgskillnaden kommer sällan att uppgå till 3). Om färgbalansen krockar med 2-i-rad-regeln tillåts upp till tre partier i rad med samma färg.</li>
         <li><strong>Randomisering:</strong> Om "Randomisera spelare" är markerad bevaras ratinggrupperna, men spelarna inom grupperna slumpas om. Detta ger större variation i första ronden för samma grupp klubbspelare. Om antalet spelare är udda tilldelas frironden slumpmässigt till en spelare i K4.</li>
         <li><strong>Förlust på walkover och strykning:</strong> När en spelare stryks tilldelas dennes planerade motståndare automatiskt en poäng (w.o.). Om en dubbel walkover (0-0 (F)) har registrerats och båda spelarna därefter stryks, tilldelas ingen av spelarna någon poäng.</li>
-
-<li><strong>Köra flera turneringar parallellt:</strong> Du kan hantera olika turneringar samtidigt i olika webbläsare (till exempel Chrome och Edge). Varje webbläsare har sin egen autosparning, så en turnering måste återupptas i samma webbläsare som den startades i. Undvik att köra separata turneringar i flera flikar eller fönster inom samma webbläsarprofil, eftersom autosparningarna då kan skriva över varandra. För extra säkerhet, spara regelbundet JSON-säkerhetskopior.</li>
+        <li><strong>Köra flera turneringar parallellt:</strong> Du kan hantera olika turneringar samtidigt i olika webbläsare (till exempel Chrome och Edge). Varje webbläsare har sin egen autosparning, så en turnering måste återupptas i samma webbläsare som den startades i. Undvik att köra separata turneringar i flera flikar eller fönster inom samma webbläsarprofil, eftersom autosparningarna då kan skriva över varandra. För extra säkerhet, spara regelbundet JSON-säkerhetskopior.</li>
       </ul>
     </div>
 
-    <label for="player-input">Spelardeltagare (Namn Rating, en per rad – sorteras automatiskt efter rating vid start)</label>
-    <textarea id="player-input" placeholder="Magnus Carlsen 2830&#10;Hikaru Nakamura 2805..."></textarea>
+    <label for="player-input">Spelardeltagare (sorteras automatiskt efter rating vid start)</label>
+    <p style="color: var(--muted); font-size: 13px; margin: 0 0 8px 0;">
+      Ange en spelare per rad enligt formatet <strong>Namn;Titel;Klubb;Rating</strong>. Tabbar accepteras också. Citerade fält stöds. Klubb, titel och rating kan utelämnas. Rader som börjar med <strong>#</strong> ignoreras.
+    </p>
+    <textarea id="player-input" spellcheck="false" placeholder="Andersson, Alice;IM;Stockholms Schacksällskap;2320&#10;Berg, Erik;;Lunds ASK;1740"></textarea>
 
     <div class="btn-bar">
-      <input type="file" id="txt-file-input" accept=".txt" style="display:none">
+      <input type="file" id="txt-file-input" accept=".txt,.csv,text/plain,text/csv" style="display:none">
       <input type="file" id="json-file-input" accept=".json" style="display:none">
-      <button type="button" onclick="document.getElementById('txt-file-input').click()">📄 Läs in .txt-fil</button>
+      <button type="button" onclick="document.getElementById('txt-file-input').click()">📄 Läs in .txt- / .csv-fil</button>
       <button type="button" onclick="document.getElementById('json-file-input').click()">📂 Ladda turnering (JSON)</button>
       <button type="button" class="secondary" onclick="load32ClubPlayers()">🧑‍🧒‍🧒 32 klubbspelare</button>
       <button type="button" class="secondary" onclick="clearPlayerList()">🗑️ Rensa</button>
@@ -258,6 +259,7 @@
           <th>Plac.</th>
           <th>Seed</th>
           <th>Spelare</th>
+          <th>Klubb</th>
           <th>Rating</th>
           <th>Poäng</th>
           <!-- Tie-break columns injected dynamically -->
@@ -287,6 +289,7 @@
           <th>Plac.</th>
           <th>Seed</th>
           <th>Spelare</th>
+          <th>Klubb</th>
           <th>Rating</th>
           <th>Poäng</th>
         </tr>
@@ -405,9 +408,9 @@ let customPrintTitle = '';
 // AUTOSAVE (localStorage)
 // ============================================================================
 
-// NOTE: This key differs from the one used by Klubbschweizer, because that
-// page has a different structure (useGroups) and both pages live on the same
-// origin. Without separate keys they would overwrite each other's saved tournament.
+// NOTE: This key must differ from the one used by the Club Swiss page,
+// because both pages live on the same origin and would otherwise
+// overwrite each other's saved tournament.
 const AUTOSAVE_KEY = 'swissAutosave';
 
 /** Saves the current state in the browser. Fails silently if storage is unavailable. */
@@ -415,7 +418,7 @@ function autosave() {
   try {
     localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
   } catch (e) {
-    // Storage may be disabled (private mode) or full. The manual "Spara turnering" still works.
+    // Storage may be disabled (private mode) or full. The manual "Save Tournament" still works.
   }
 }
 
@@ -485,6 +488,13 @@ function loadTournamentObject(loaded) {
 
     // Fill in fields that may be missing in old or hand-edited files
     loaded.players.forEach(p => {
+      p.title = String(p.title || '').trim();
+      p.club = String(p.club || '');
+      const rawRating = p.rating;
+      const numericRating = (rawRating === null || rawRating === undefined || rawRating === '')
+        ? null
+        : Number(String(rawRating).replace(',', '.'));
+      p.rating = Number.isFinite(numericRating) ? numericRating : null;
       p.history = p.history || [];
       p.opponents = p.opponents || [];
       p.score = p.score || 0;
@@ -494,7 +504,6 @@ function loadTournamentObject(loaded) {
       p.withdrawn = !!p.withdrawn;
     });
 
-    // Backwards compatibility
     if (!loaded.tieBreakSystem) loaded.tieBreakSystem = 'wnt';
     if (loaded.randomizeRatingGroups === undefined) loaded.randomizeRatingGroups = false;
     if (!loaded.r1ColorOption) loaded.r1ColorOption = 'higherWhite';
@@ -554,21 +563,20 @@ window.addEventListener('beforeprint', () => {
   }
 });
 
-// Hantering av utskriftsläge som tål asynkron utskrift
+// Print state handling that tolerates asynchronous printing
 let printCleanupTimer = null;
 
 function applyPrintState(title, modalMode) {
   clearTimeout(printCleanupTimer);
   customPrintTitle = title;
-  document.title = title;                                      // lita inte enbart på beforeprint
-  document.body.classList.toggle('printing-modal', modalMode); // sätt alltid uttryckligen
+  document.title = title;                                   // don't rely on beforeprint alone
+  document.body.classList.toggle('printing-modal', modalMode); // always set explicitly
 }
 
 function cleanupPrintState() {
   clearTimeout(printCleanupTimer);
-  // Fördröjd, så att ett för tidigt afterprint inte tar bort läget innan
-  // utskriftsbilden är renderad. Ofarligt om den kommer sent: varje
-  // utskrift återställer läget först.
+  // Delayed, so an early afterprint can't strip the state before the snapshot is rendered.
+  // Harmless if late: every print call resets the state first.
   printCleanupTimer = setTimeout(() => {
     customPrintTitle = '';
     document.title = defaultDocTitle;
@@ -578,7 +586,7 @@ function cleanupPrintState() {
 
 window.addEventListener('afterprint', cleanupPrintState);
 
-// Reserv för webbläsare där afterprint saknas eller är opålitlig
+// Fallback for browsers where afterprint is missing or unreliable
 const printMql = window.matchMedia ? window.matchMedia('print') : null;
 if (printMql) {
   const onPrintChange = e => { if (!e.matches) cleanupPrintState(); };
@@ -610,14 +618,38 @@ function printFinalStandings() {
 
 function load32ClubPlayers() {
   const sample = [
-    "Andersson, Erik 2280", "Johansson, Lars 2245", "Svensson, Karl 2210", "Nilsson, Anders 2190",
-    "Eriksson, Johan 2165", "Gustafsson, Per 2140", "Larsson, Mikael 2115", "Al-Mansoor, Yusuf 2095",
-    "Olsson, Fredrik 2070", "Persson, Daniel 2050", "Lindberg, Mattias 2030", "Berg, Samuel 2010",
-    "Lindqvist, Emma 1990", "Martinsson, Jonas 1970", "Klark, David 1950", "Levander, Benjamin 1930",
-    "Klasson, Edvard 1910", "Jakobsson, Henrik 1890", "Wood, Lukas 1870", "Thörn, Artur 1850",
-    "Scott, Leo 1830", "Mensah, Kofi 1810", "Månsson, Karl 1790", "Vård, Robert 1770",
-    "Vats, Ludvig 1750", "Davidsson, Fredrik 1730", "Miller, Arvid 1710", "Bagare, Albin 1690",
-    "Broström, Natan 1670", "Bengtsson, Sofia 1650", "Haraldsson, Alexander 1620", "Ung, Peter 1590"
+    "Andersson, Erik;IM;Stockholms Schacksällskap;2280",
+    "Johansson, Lars;FM;Lunds ASK;2245",
+    "Svensson, Karl;FM;Limhamns SK;2210",
+    "Nilsson, Anders;CM;Västerås SK;2190",
+    "Eriksson, Johan;FM;Uppsala SSS;2165",
+    "Gustafsson, Per;;Örgryte SK;2140",
+    "Larsson, Mikael;CM;Norrköpings SK;2115",
+    "Al-Mansoor, Yusuf;FM;Stockholms Schacksällskap;2095",
+    "Olsson, Fredrik;;Lunds ASK;2070",
+    "Persson, Daniel;;Limhamns SK;2050",
+    "Lindberg, Mattias;;Västerås SK;2030",
+    "Berg, Samuel;;Uppsala SSS;2010",
+    "Lindqvist, Emma;WFM;Örgryte SK;1990",
+    "Martinsson, Jonas;;Norrköpings SK;1970",
+    "Klark, David;;Stockholms Schacksällskap;1950",
+    "Levander, Benjamin;;Lunds ASK;1930",
+    "Klasson, Edvard;;Limhamns SK;1910",
+    "Jakobsson, Henrik;;Västerås SK;1890",
+    "Wood, Lukas;;Uppsala SSS;1870",
+    "Thörn, Artur;;Örgryte SK;1850",
+    "Scott, Leo;;Norrköpings SK;1830",
+    "Mensah, Kofi;;Stockholms Schacksällskap;1810",
+    "Månsson, Karl;;Lunds ASK;1790",
+    "Vård, Robert;;Limhamns SK;1770",
+    "Vats, Ludvig;;Västerås SK;1750",
+    "Davidsson, Fredrik;;Uppsala SSS;1730",
+    "Miller, Arvid;;Örgryte SK;1710",
+    "Bagare, Albin;;Norrköpings SK;1690",
+    "Broström, Natan;;Stockholms Schacksällskap;1670",
+    "Bengtsson, Sofia;;Lunds ASK;1650",
+    "Haraldsson, Alexander;;Limhamns SK;1620",
+    "Ung, Peter;;Västerås SK;1590"
   ];
   document.getElementById('player-input').value = sample.join('\n');
 }
@@ -653,31 +685,187 @@ document.getElementById('json-file-input').addEventListener('change', function(e
   e.target.value = '';
 });
 
-function parsePlayers() {
-  const text = document.getElementById('player-input').value.trim();
-  if (!text) return [];
-  const lines = text.split('\n');
-  const players = [];
+// ============================================================================
+// PLAYER REGISTRATION PARSING (conforms to Norwegian Monrad)
+// ============================================================================
 
-  lines.forEach((line) => {
-    line = line.trim();
-    if (!line) return;
-    const match = line.match(/^(.*?)\s+(\d{3,4})$/);
-    if (match) {
-      players.push({
-        name: match[1].trim(),
-        rating: parseInt(match[2], 10)
-      });
-    } else {
-      players.push({
-        name: line,
-        rating: 1500
-      });
+function countDelimiterOutsideQuotes(line, delimiter) {
+  let count = 0;
+  let inQuotes = false;
+
+  for (let index = 0; index < line.length; index++) {
+    const character = line[index];
+
+    if (character === '"') {
+      if (inQuotes && line[index + 1] === '"') {
+        index++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
     }
-  });
 
-  // Base ranking: strictly by rating descending
-  players.sort((a, b) => b.rating - a.rating);
+    if (!inQuotes && character === delimiter) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
+function detectDelimiter(line) {
+  const candidates = ["\t", ";", ","];
+
+  const counts = candidates.map(delimiter => ({
+    delimiter,
+    count: countDelimiterOutsideQuotes(line, delimiter)
+  }));
+
+  counts.sort((a, b) => b.count - a.count);
+
+  return counts[0].count > 0 ? counts[0].delimiter : null;
+}
+
+function parseDelimitedLine(line, delimiter) {
+  if (!delimiter) {
+    const value = line.trim();
+
+    if (value.startsWith('"') && value.endsWith('"')) {
+      return [value.slice(1, -1).replaceAll('""', '"')];
+    }
+
+    return [value];
+  }
+
+  const fields = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < line.length; index++) {
+    const character = line[index];
+
+    if (character === '"') {
+      if (inQuotes && line[index + 1] === '"') {
+        field += '"';
+        index++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (!inQuotes && character === delimiter) {
+      fields.push(field.trim());
+      field = "";
+      continue;
+    }
+
+    field += character;
+  }
+
+  fields.push(field.trim());
+  return fields;
+}
+
+function splitPlayerLine(line) {
+  return parseDelimitedLine(line, detectDelimiter(line));
+}
+
+function looksLikePlayerHeader(parts) {
+  const first = String(parts[0] || "").trim().toLowerCase();
+  const rest = parts.slice(1).join(" ").toLowerCase();
+
+  const firstIsHeader = /^(name|player|player name|navn|spiller|namn|spelare|spelarnamn)$/.test(first);
+  const restIsHeader = /(club|klubb|förening|rating|elo|rating number|ratingtal)/.test(rest);
+
+  return firstIsHeader && restIsHeader;
+}
+
+function parsePlayerEntries(text) {
+  const lines = String(text || "").split(/\r?\n/);
+  const players = [];
+  let firstMeaningfulLine = true;
+
+  for (const originalLine of lines) {
+    const raw = originalLine.trim();
+
+    if (!raw || raw.startsWith("#")) {
+      continue;
+    }
+
+    const parts = splitPlayerLine(raw).map(part => part.trim());
+
+    if (firstMeaningfulLine && looksLikePlayerHeader(parts)) {
+      firstMeaningfulLine = false;
+      continue;
+    }
+
+    firstMeaningfulLine = false;
+
+    const name = parts[0] || "";
+    if (!name) {
+      continue;
+    }
+
+    let title = "";
+    let club = "";
+    let ratingText = "";
+
+    if (parts.length >= 4) {
+      title = parts[1] || "";
+      club = parts[2] || "";
+      ratingText = parts[3] || "";
+    } else if (parts.length === 3) {
+      const isKnownTitle = /^(gm|im|fm|cm|wgm|wim|wfm|wcm)$/i.test(parts[1]);
+      const lastIsRating = parts[2] !== "" && !isNaN(Number(parts[2].replace(",", ".")));
+      if (isKnownTitle) {
+        title = parts[1];
+        if (lastIsRating) {
+          ratingText = parts[2];
+        } else {
+          club = parts[2];
+        }
+      } else {
+        club = parts[1];
+        ratingText = parts[2];
+      }
+    } else if (parts.length === 2) {
+      if (/^(gm|im|fm|cm|wgm|wim|wfm|wcm)$/i.test(parts[1])) {
+        title = parts[1];
+      } else if (parts[1] !== "" && !isNaN(Number(parts[1].replace(",", ".")))) {
+        ratingText = parts[1];
+      } else {
+        club = parts[1];
+      }
+    }
+
+    const rating = ratingText === "" ? null : Number(ratingText.replace(",", "."));
+
+    players.push({
+      name,
+      title,
+      club,
+      rating: Number.isFinite(rating) ? rating : null
+    });
+  }
+
+  return players;
+}
+
+function parsePlayers() {
+  const text = document.getElementById('player-input').value;
+  const rawPlayers = parsePlayerEntries(text);
+  if (rawPlayers.length === 0) return [];
+
+  // Base ranking: strictly by rating descending (unrated players placed last, preserving input order)
+  const players = rawPlayers
+    .map((p, index) => ({ ...p, originalIndex: index }))
+    .sort((a, b) => {
+      const ratingA = Number.isFinite(a.rating) ? a.rating : -Infinity;
+      const ratingB = Number.isFinite(b.rating) ? b.rating : -Infinity;
+      if (ratingA !== ratingB) return ratingB - ratingA;
+      return a.originalIndex - b.originalIndex;
+    });
 
   // If randomize notch is active, shuffle players within each rating group separately
   const randomize = document.getElementById('randomize-rating-groups')?.checked;
@@ -712,7 +900,9 @@ function parsePlayers() {
     id: i + 1,
     seed: i + 1,
     name: p.name,
-    rating: p.rating,
+    title: p.title || '',
+    club: p.club || '',
+    rating: Number.isFinite(p.rating) ? p.rating : null,
     score: 0,
     buchholz: 0,
     sonneborn: 0,
@@ -747,6 +937,7 @@ function startTournament() {
     );
     return;
   }
+
   state.totalRounds = rounds;
   state.r1ColorOption = document.querySelector('input[name="r1-color"]:checked').value;
   state.tieBreakSystem = document.querySelector('input[name="tiebreak"]:checked').value;
@@ -880,8 +1071,10 @@ function generateRound2() {
         white = pB; black = pA; // pB had Black, so give pB White
       } else {
         // If both had the same color in R1, lowest rated player receives White
-        if (pA.rating !== pB.rating) {
-          if (pA.rating < pB.rating) {
+        const rA = Number.isFinite(pA.rating) ? pA.rating : -Infinity;
+        const rB = Number.isFinite(pB.rating) ? pB.rating : -Infinity;
+        if (rA !== rB) {
+          if (rA < rB) {
             white = pA; black = pB;
           } else {
             white = pB; black = pA;
@@ -905,7 +1098,7 @@ function generateRound2() {
 const remaining = state.players.filter(p => !paired.has(p.id) && !p.withdrawn);
 if (remaining.length > 0) {
   const extra = pairRound3Plus(remaining);
-  if (extra === null) return false;      // <-- new
+  if (extra === null) return false;
   extra.forEach(p => pairings.push({ ...p, board: board++ }));
 }
 
@@ -993,8 +1186,10 @@ function choosePreferredColor(p1, p2) {
   if (s2.whites < s1.whites) return { white: p2, black: p1 };
 
   // Lowest rated player receives White if white games are equal
-  if (p1.rating !== p2.rating) {
-    return p1.rating < p2.rating ? { white: p1, black: p2 } : { white: p2, black: p1 };
+  const r1 = Number.isFinite(p1.rating) ? p1.rating : -Infinity;
+  const r2 = Number.isFinite(p2.rating) ? p2.rating : -Infinity;
+  if (r1 !== r2) {
+    return r1 < r2 ? { white: p1, black: p2 } : { white: p2, black: p1 };
   }
 
   return p1.seed > p2.seed ? { white: p1, black: p2 } : { white: p2, black: p1 };
@@ -1044,7 +1239,6 @@ function pairRound3Plus(players) {
     .sort(compareStandings);
 
   let byePairing = null;
-  let toPair = [...available];
 
   // Bye candidates (indexes into `available`): lowest-ranked without a
   // previous bye first, then the rest. null = no bye needed.
@@ -1109,7 +1303,7 @@ function pairRound3Plus(players) {
 
   outer:
   for (const pass of passes) {
-  for (const bi of byeCandidates) {
+   for (const bi of byeCandidates) {
     const toPair = (bi === null)
       ? [...available]
       : available.filter((_, i) => i !== bi);
@@ -1129,6 +1323,12 @@ function pairRound3Plus(players) {
 
   if (byePairing) solution.push(byePairing);
   return solution.map((p, idx) => ({ board: idx + 1, ...p }));
+}
+
+function formatPairingPlayer(p) {
+  const titlePart = p.title ? ` (${p.title})` : '';
+  const ratingPart = Number.isFinite(p.rating) ? p.rating : '—';
+  return `${p.name}${titlePart} (${p.seed} / ${ratingPart})`;
 }
 
 function renderPairings() {
@@ -1155,7 +1355,7 @@ function renderPairings() {
 
     const whiteTd = document.createElement('td');
     whiteTd.textContent = pair.white
-      ? `${pair.white.name} (${pair.white.seed} / ${pair.white.rating})${rematchTag}`
+      ? `${formatPairingPlayer(pair.white)}${rematchTag}`
       : 'FRIROND';
     tr.appendChild(whiteTd);
 
@@ -1195,7 +1395,7 @@ function renderPairings() {
     tr.appendChild(resultTd);
 
     const blackTd = document.createElement('td');
-    blackTd.textContent = pair.black ? `${pair.black.name} (${pair.black.seed} / ${pair.black.rating})` : 'FRIROND';
+    blackTd.textContent = pair.black ? formatPairingPlayer(pair.black) : 'FRIROND';
     tr.appendChild(blackTd);
 
     tbody.appendChild(tr);
@@ -1382,22 +1582,25 @@ function showFinalStandings() {
 
   fillHeaderRow(
     document.getElementById('final-thead-row'),
-    ['Plac.', 'Seed', 'Spelare', 'Rating', 'Poäng', ...tiebreakHeaders(), 'Färger']
+    ['Plac.', 'Seed', 'Spelare', 'Klubb', 'Rating', 'Poäng', ...tiebreakHeaders(), 'Färger']
   );
 
   const tbody = document.getElementById('final-table-body');
   tbody.innerHTML = '';
 
   getSortedStandings().forEach((p, idx) => {
-  const colorHistory = (p.history || [])
-  .map(h => h.color === 'W' ? 'V' : h.color === 'B' ? 'S' : '-')
-  .join('');
+    const colorHistory = (p.history || [])
+      .map(h => (h.color && h.color !== '-') ? (h.color === 'W' ? 'V' : (h.color === 'B' ? 'S' : h.color)) : '-')
+      .join('');
+    const titlePart = p.title ? ` (${escapeHtml(p.title)})` : '';
+
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${idx + 1}</td>
       <td>${escapeHtml(p.seed)}</td>
-      <td>${escapeHtml(p.name)} ${p.withdrawn ? '(Utgått)' : ''}</td>
-      <td>${escapeHtml(p.rating)}</td>
+      <td>${escapeHtml(p.name)}${titlePart}${p.withdrawn ? ' (Utgått)' : ''}</td>
+      <td>${escapeHtml(p.club || '')}</td>
+      <td>${p.rating ?? ''}</td>
       <td><strong>${escapeHtml(p.score)}</strong></td>
       ${tiebreakCells(p)}
       <td style="font-family: monospace; letter-spacing: 1px;">${escapeHtml(colorHistory)}</td>
@@ -1411,19 +1614,21 @@ function openStandingsModal() {
 
   fillHeaderRow(
     document.getElementById('modal-thead-row'),
-    ['Plac.', 'Seed', 'Spelare', 'Rating', 'Poäng', ...tiebreakHeaders()]
+    ['Plac.', 'Seed', 'Spelare', 'Klubb', 'Rating', 'Poäng', ...tiebreakHeaders()]
   );
 
   const tbody = document.getElementById('modal-standings-body');
   tbody.innerHTML = '';
 
   getSortedStandings().forEach((p, idx) => {
+    const titlePart = p.title ? ` (${escapeHtml(p.title)})` : '';
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${idx + 1}</td>
       <td>${escapeHtml(p.seed)}</td>
-      <td>${escapeHtml(p.name)} ${p.withdrawn ? '(Utgått)' : ''}</td>
-      <td>${escapeHtml(p.rating)}</td>
+      <td>${escapeHtml(p.name)}${titlePart}${p.withdrawn ? ' (Utgått)' : ''}</td>
+      <td>${escapeHtml(p.club || '')}</td>
+      <td>${p.rating ?? ''}</td>
       <td><strong>${escapeHtml(p.score)}</strong></td>
       ${tiebreakCells(p)}
     `;
@@ -1444,7 +1649,10 @@ function openWithdrawModal() {
   active.forEach(p => {
     const opt = document.createElement('option');
     opt.value = p.id;
-    opt.textContent = `${p.name} (Seed #${p.seed}, Rating ${p.rating})`;
+    const titleStr = p.title ? ` (${p.title})` : '';
+    const clubStr = p.club ? `, ${p.club}` : '';
+    const ratingStr = Number.isFinite(p.rating) ? `, Rating ${p.rating}` : '';
+    opt.textContent = `${p.name}${titleStr} (Seed #${p.seed}${clubStr}${ratingStr})`;
     sel.appendChild(opt);
   });
   document.getElementById('withdraw-modal').style.display = 'flex';
@@ -1524,7 +1732,7 @@ function restartTournament() {
 function formatPlayerName(name) {
   // Preserve the entered name. Enter names as "Surname, First name"
   // when the correct surname order is known.
-  return String(name || '').trim() || '(Name)';
+  return String(name || '').trim() || '(Namn)';
 }
 
 function generateTRF() {
@@ -1585,7 +1793,7 @@ function generateTRF() {
     const text = String(value);
 
     if (text.length > width) {
-      throw new Error(`${label} does not fit in its TRF field.`);
+      throw new Error(`${label} ryms inte i sitt TRF-fält.`);
     }
 
     return text.padStart(width, ' ');
@@ -1604,7 +1812,7 @@ function generateTRF() {
   playersBySeed.forEach(p => {
     const seed = p.seed || p.id;
     if (!Number.isInteger(seed) || seed < 1 || seed > 9999) {
-      throw new Error(`Invalid starting-rank number for ${p.name}.`);
+      throw new Error(`Ogiltigt startnummer för ${p.name}.`);
     }
 
     const sexStr = '?';
@@ -1621,7 +1829,7 @@ function generateTRF() {
 
     const pts = p.score;
     if (!Number.isFinite(pts) || pts < 0) {
-      throw new Error(`Invalid score for ${p.name}.`);
+      throw new Error(`Ogiltig poäng för ${p.name}.`);
     }
 
     const pointsStr = pts.toFixed(1);
@@ -1660,7 +1868,7 @@ function generateTRF() {
           // Unpaired / Bye
           oppId = '0000';
           color = '-';
-          resChar = (p.withdrawn || pairing.result === '0-0 (Withdrawn)' || pairing.result === '0-0') ? 'Z' : 'U';
+          resChar = (p.withdrawn || pairing.result === '0-0 (Utgått)' || pairing.result === '0-0 (Withdrawn)' || pairing.result === '0-0') ? 'Z' : 'U';
         } else {
           const isWhite = pairing.white && pairing.white.id === p.id;
           const oppObj = isWhite ? pairing.black : pairing.white;
@@ -1672,7 +1880,7 @@ function generateTRF() {
             (opponent.seed || opponent.id) < 1 ||
             (opponent.seed || opponent.id) > 9999
           ) {
-            throw new Error(`Invalid opponent for ${p.name} in round ${r}.`);
+            throw new Error(`Ogiltig motståndare för ${p.name} i rond ${r}.`);
           }
 
           const oppSeed = opponent.seed || opponent.id;
@@ -1707,7 +1915,7 @@ function generateTRF() {
             resChar = '-';
           } else {
             throw new Error(
-              `Invalid game result for ${p.name} in round ${r}.`
+              `Ogiltigt partiresultat för ${p.name} i rond ${r}.`
             );
           }
         }
@@ -1733,7 +1941,7 @@ function saveTRF() {
     !Array.isArray(state.players) ||
     state.players.length === 0
   ) {
-    alert('There is no tournament to export.');
+    alert('Det finns ingen turnering att exportera.');
     return;
   }
 
@@ -1741,7 +1949,7 @@ function saveTRF() {
     const content = generateTRF();
 
     if (!content) {
-      throw new Error('No TRF content was generated.');
+      throw new Error('Ingen TRF-fil skapades.');
     }
 
     const blob = new Blob([content], {
@@ -1752,7 +1960,7 @@ function saveTRF() {
     const a = document.createElement('a');
     a.href = url;
 
-    const cleanName = String(state.name || 'swiss_tournament')
+    const cleanName = String(state.name || 'schweizisk_turnering')
       .trim()
       .replace(/[^\w\-]+/g, '_');
 
@@ -1773,7 +1981,7 @@ function saveTRF() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   } catch (error) {
     console.error(error);
-    alert(`Could not generate TRF file: ${error.message}`);
+    alert(`TRF-filen kunde inte skapas: ${error.message}`);
   }
 }
 

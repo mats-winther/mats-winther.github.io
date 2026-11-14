@@ -83,7 +83,7 @@
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 100;
   }
   .modal-box {
-    background: #fff; width: 90%; max-width: 650px; max-height: 85vh; border-radius: 8px; padding: 20px; overflow-y: auto; position: relative;
+    background: #fff; width: 90%; max-width: 750px; max-height: 85vh; border-radius: 8px; padding: 20px; overflow-y: auto; position: relative;
   }
   .close-btn { position: absolute; top: 12px; right: 14px; font-size: 22px; cursor: pointer; border: none; background: transparent; color: #64748b; }
   .print-only { display: none; }
@@ -204,13 +204,16 @@ You can run separate tournaments simultaneously in different browsers (for examp
       </ul>
     </div>
 
-    <label for="player-input">Player List (Name Rating, one per line – sorted automatically by rating at start)</label>
-    <textarea id="player-input" placeholder="Magnus Carlsen 2830&#10;Hikaru Nakamura 2805..."></textarea>
+    <label for="player-input">Player List (sorted automatically by rating at start)</label>
+    <p style="color: var(--muted); font-size: 13px; margin: 0 0 8px 0;">
+      Enter one player per line using <strong>Name;Title;Club;Rating</strong>. Tabs are also accepted. Quoted fields are supported. Club, title and rating may be omitted. Lines beginning with <strong>#</strong> are ignored.
+    </p>
+    <textarea id="player-input" spellcheck="false" placeholder="Smith, Alice;IM;Central Chess Club;2320&#10;Jones, Bob;;Westside Chess Club;1740"></textarea>
 
     <div class="btn-bar">
-      <input type="file" id="txt-file-input" accept=".txt" style="display:none">
+      <input type="file" id="txt-file-input" accept=".txt,.csv,text/plain,text/csv" style="display:none">
       <input type="file" id="json-file-input" accept=".json" style="display:none">
-      <button type="button" onclick="document.getElementById('txt-file-input').click()">📄 Load .txt File</button>
+      <button type="button" onclick="document.getElementById('txt-file-input').click()">📄 Load .txt / .csv File</button>
       <button type="button" onclick="document.getElementById('json-file-input').click()">📂 Load Tournament (JSON)</button>
       <button type="button" class="secondary" onclick="load32ClubPlayers()">🧑‍🧒‍🧒 32 Club Players</button>
       <button type="button" class="secondary" onclick="clearPlayerList()">🗑️ Clear</button>
@@ -257,6 +260,7 @@ You can run separate tournaments simultaneously in different browsers (for examp
           <th>Pos.</th>
           <th>Seed</th>
           <th>Player</th>
+          <th>Club</th>
           <th>Rating</th>
           <th>Score</th>
           <!-- Tie-break columns injected dynamically -->
@@ -286,6 +290,7 @@ You can run separate tournaments simultaneously in different browsers (for examp
           <th>Pos.</th>
           <th>Seed</th>
           <th>Player</th>
+          <th>Club</th>
           <th>Rating</th>
           <th>Score</th>
         </tr>
@@ -482,6 +487,13 @@ function loadTournamentObject(loaded) {
 
     // Fill in fields that may be missing in old or hand-edited files
     loaded.players.forEach(p => {
+      p.title = String(p.title || '').trim();
+      p.club = String(p.club || '');
+      const rawRating = p.rating;
+      const numericRating = (rawRating === null || rawRating === undefined || rawRating === '')
+        ? null
+        : Number(rawRating);
+      p.rating = Number.isFinite(numericRating) ? numericRating : null;
       p.history = p.history || [];
       p.opponents = p.opponents || [];
       p.score = p.score || 0;
@@ -491,7 +503,6 @@ function loadTournamentObject(loaded) {
       p.withdrawn = !!p.withdrawn;
     });
 
-    // Backwards compatibility
     if (!loaded.tieBreakSystem) loaded.tieBreakSystem = 'wnt';
     if (loaded.randomizeRatingGroups === undefined) loaded.randomizeRatingGroups = false;
     if (!loaded.r1ColorOption) loaded.r1ColorOption = 'higherWhite';
@@ -606,14 +617,38 @@ function printFinalStandings() {
 
 function load32ClubPlayers() {
   const sample = [
-    "Smith, Oliver 2280", "Taylor, Jack 2245", "Brown, Harry 2210", "Wilson, Jacob 2190",
-    "Evans, Charlie 2165", "Walker, Thomas 2140", "Robinson, George 2115", "Al-Mansoor, Yusuf 2095",
-    "Thompson, William 2070", "White, Daniel 2050", "Hall, Matthew 2030", "Green, Samuel 2010",
-    "Parker, Emily 1990", "Martin, Joseph 1970", "Clark, David 1950", "Lewis, Benjamin 1930",
-    "Clarke, Edward 1910", "Jackson, Henry 1890", "Wood, Lucas 1870", "Turner, Arthur 1850",
-    "Scott, Leo 1830", "Mensah, Kofi 1810", "Morris, Charles 1790", "Ward, Robert 1770",
-    "Watson, Louis 1750", "Davis, Frederick 1730", "Miller, Archie 1710", "Baker, Albert 1690",
-    "Brooks, Nathan 1670", "Young, Peter 1650", "Harris, Alexander 1620", "Bennett, Sophie 1590"
+    "Smith, Oliver;IM;Central Chess Club;2280",
+    "Taylor, Jack;FM;Northside Chess Club;2245",
+    "Brown, Harry;FM;West End Chess Club;2210",
+    "Wilson, Jacob;CM;Central Chess Club;2190",
+    "Evans, Charlie;FM;Riverside Chess Club;2165",
+    "Walker, Thomas;;Northside Chess Club;2140",
+    "Robinson, George;CM;University Chess Club;2115",
+    "Al-Mansoor, Yusuf;FM;Central Chess Club;2095",
+    "Thompson, William;;West End Chess Club;2070",
+    "White, Daniel;;Riverside Chess Club;2050",
+    "Hall, Matthew;;Northside Chess Club;2030",
+    "Green, Samuel;;University Chess Club;2010",
+    "Parker, Emily;WFM;Central Chess Club;1990",
+    "Martin, Joseph;;West End Chess Club;1970",
+    "Clark, David;;Riverside Chess Club;1950",
+    "Lewis, Benjamin;;Northside Chess Club;1930",
+    "Clarke, Edward;;University Chess Club;1910",
+    "Jackson, Henry;;Central Chess Club;1890",
+    "Wood, Lucas;;West End Chess Club;1870",
+    "Turner, Arthur;;Riverside Chess Club;1850",
+    "Scott, Leo;;Northside Chess Club;1830",
+    "Mensah, Kofi;;University Chess Club;1810",
+    "Morris, Charles;;Central Chess Club;1790",
+    "Ward, Robert;;West End Chess Club;1770",
+    "Watson, Louis;;Riverside Chess Club;1750",
+    "Davis, Frederick;;Northside Chess Club;1730",
+    "Miller, Archie;;University Chess Club;1710",
+    "Baker, Albert;;Central Chess Club;1690",
+    "Brooks, Nathan;;West End Chess Club;1670",
+    "Young, Peter;;Riverside Chess Club;1650",
+    "Harris, Alexander;;Northside Chess Club;1620",
+    "Bennett, Sophie;;University Chess Club;1590"
   ];
   document.getElementById('player-input').value = sample.join('\n');
 }
@@ -649,31 +684,187 @@ document.getElementById('json-file-input').addEventListener('change', function(e
   e.target.value = '';
 });
 
-function parsePlayers() {
-  const text = document.getElementById('player-input').value.trim();
-  if (!text) return [];
-  const lines = text.split('\n');
-  const players = [];
+// ============================================================================
+// PLAYER REGISTRATION PARSING (conforms to Norwegian Monrad)
+// ============================================================================
 
-  lines.forEach((line) => {
-    line = line.trim();
-    if (!line) return;
-    const match = line.match(/^(.*?)\s+(\d{3,4})$/);
-    if (match) {
-      players.push({
-        name: match[1].trim(),
-        rating: parseInt(match[2], 10)
-      });
-    } else {
-      players.push({
-        name: line,
-        rating: 1500
-      });
+function countDelimiterOutsideQuotes(line, delimiter) {
+  let count = 0;
+  let inQuotes = false;
+
+  for (let index = 0; index < line.length; index++) {
+    const character = line[index];
+
+    if (character === '"') {
+      if (inQuotes && line[index + 1] === '"') {
+        index++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
     }
-  });
 
-  // Base ranking: strictly by rating descending
-  players.sort((a, b) => b.rating - a.rating);
+    if (!inQuotes && character === delimiter) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
+function detectDelimiter(line) {
+  const candidates = ["\t", ";"];
+
+  const counts = candidates.map(delimiter => ({
+    delimiter,
+    count: countDelimiterOutsideQuotes(line, delimiter)
+  }));
+
+  counts.sort((a, b) => b.count - a.count);
+
+  return counts[0].count > 0 ? counts[0].delimiter : null;
+}
+
+function parseDelimitedLine(line, delimiter) {
+  if (!delimiter) {
+    const value = line.trim();
+
+    if (value.startsWith('"') && value.endsWith('"')) {
+      return [value.slice(1, -1).replaceAll('""', '"')];
+    }
+
+    return [value];
+  }
+
+  const fields = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < line.length; index++) {
+    const character = line[index];
+
+    if (character === '"') {
+      if (inQuotes && line[index + 1] === '"') {
+        field += '"';
+        index++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (!inQuotes && character === delimiter) {
+      fields.push(field.trim());
+      field = "";
+      continue;
+    }
+
+    field += character;
+  }
+
+  fields.push(field.trim());
+  return fields;
+}
+
+function splitPlayerLine(line) {
+  return parseDelimitedLine(line, detectDelimiter(line));
+}
+
+function looksLikePlayerHeader(parts) {
+  const first = String(parts[0] || "").trim().toLowerCase();
+  const rest = parts.slice(1).join(" ").toLowerCase();
+
+  const firstIsHeader = /^(name|player|player name|navn|spiller)$/.test(first);
+  const restIsHeader = /(club|klubb|rating|elo|rating number)/.test(rest);
+
+  return firstIsHeader && restIsHeader;
+}
+
+function parsePlayerEntries(text) {
+  const lines = String(text || "").split(/\r?\n/);
+  const players = [];
+  let firstMeaningfulLine = true;
+
+  for (const originalLine of lines) {
+    const raw = originalLine.trim();
+
+    if (!raw || raw.startsWith("#")) {
+      continue;
+    }
+
+    const parts = splitPlayerLine(raw).map(part => part.trim());
+
+    if (firstMeaningfulLine && looksLikePlayerHeader(parts)) {
+      firstMeaningfulLine = false;
+      continue;
+    }
+
+    firstMeaningfulLine = false;
+
+    const name = parts[0] || "";
+    if (!name) {
+      continue;
+    }
+
+    let title = "";
+    let club = "";
+    let ratingText = "";
+
+    if (parts.length >= 4) {
+      title = parts[1] || "";
+      club = parts[2] || "";
+      ratingText = parts[3] || "";
+    } else if (parts.length === 3) {
+      const isKnownTitle = /^(gm|im|fm|cm|wgm|wim|wfm|wcm)$/i.test(parts[1]);
+      const lastIsRating = parts[2] !== "" && !isNaN(Number(parts[2]));
+      if (isKnownTitle) {
+        title = parts[1];
+        if (lastIsRating) {
+          ratingText = parts[2];
+        } else {
+          club = parts[2];
+        }
+      } else {
+        club = parts[1];
+        ratingText = parts[2];
+      }
+    } else if (parts.length === 2) {
+      if (/^(gm|im|fm|cm|wgm|wim|wfm|wcm)$/i.test(parts[1])) {
+        title = parts[1];
+      } else if (parts[1] !== "" && !isNaN(Number(parts[1]))) {
+        ratingText = parts[1];
+      } else {
+        club = parts[1];
+      }
+    }
+
+    const rating = ratingText === "" ? null : Number(ratingText);
+
+    players.push({
+      name,
+      title,
+      club,
+      rating: Number.isFinite(rating) ? rating : null
+    });
+  }
+
+  return players;
+}
+
+function parsePlayers() {
+  const text = document.getElementById('player-input').value;
+  const rawPlayers = parsePlayerEntries(text);
+  if (rawPlayers.length === 0) return [];
+
+  // Base ranking: strictly by rating descending (unrated players placed last, preserving input order)
+  const players = rawPlayers
+    .map((p, index) => ({ ...p, originalIndex: index }))
+    .sort((a, b) => {
+      const ratingA = Number.isFinite(a.rating) ? a.rating : -Infinity;
+      const ratingB = Number.isFinite(b.rating) ? b.rating : -Infinity;
+      if (ratingA !== ratingB) return ratingB - ratingA;
+      return a.originalIndex - b.originalIndex;
+    });
 
   // If randomize notch is active, shuffle players within each rating group separately
   const randomize = document.getElementById('randomize-rating-groups')?.checked;
@@ -708,7 +899,9 @@ function parsePlayers() {
     id: i + 1,
     seed: i + 1,
     name: p.name,
-    rating: p.rating,
+    title: p.title || '',
+    club: p.club || '',
+    rating: Number.isFinite(p.rating) ? p.rating : null,
     score: 0,
     buchholz: 0,
     sonneborn: 0,
@@ -877,8 +1070,10 @@ function generateRound2() {
         white = pB; black = pA; // pB had Black, so give pB White
       } else {
         // If both had the same color in R1, lowest rated player receives White
-        if (pA.rating !== pB.rating) {
-          if (pA.rating < pB.rating) {
+        const rA = Number.isFinite(pA.rating) ? pA.rating : -Infinity;
+        const rB = Number.isFinite(pB.rating) ? pB.rating : -Infinity;
+        if (rA !== rB) {
+          if (rA < rB) {
             white = pA; black = pB;
           } else {
             white = pB; black = pA;
@@ -902,7 +1097,7 @@ function generateRound2() {
 const remaining = state.players.filter(p => !paired.has(p.id) && !p.withdrawn);
 if (remaining.length > 0) {
   const extra = pairRound3Plus(remaining);
-  if (extra === null) return false;      // <-- new
+  if (extra === null) return false;
   extra.forEach(p => pairings.push({ ...p, board: board++ }));
 }
 
@@ -990,8 +1185,10 @@ function choosePreferredColor(p1, p2) {
   if (s2.whites < s1.whites) return { white: p2, black: p1 };
 
   // Lowest rated player receives White if white games are equal
-  if (p1.rating !== p2.rating) {
-    return p1.rating < p2.rating ? { white: p1, black: p2 } : { white: p2, black: p1 };
+  const r1 = Number.isFinite(p1.rating) ? p1.rating : -Infinity;
+  const r2 = Number.isFinite(p2.rating) ? p2.rating : -Infinity;
+  if (r1 !== r2) {
+    return r1 < r2 ? { white: p1, black: p2 } : { white: p2, black: p1 };
   }
 
   return p1.seed > p2.seed ? { white: p1, black: p2 } : { white: p2, black: p1 };
@@ -1041,7 +1238,6 @@ function pairRound3Plus(players) {
     .sort(compareStandings);
 
   let byePairing = null;
-  let toPair = [...available];
 
   // Bye candidates (indexes into `available`): lowest-ranked without a
   // previous bye first, then the rest. null = no bye needed.
@@ -1115,7 +1311,7 @@ function pairRound3Plus(players) {
     solution = solve(toPair, pass.streak, pass.relaxed);
     if (solution !== null) {
       if (bi !== null) {
-        byePairing = { white: available[bi], black: null, result: '1-0 (Frirond)' };
+        byePairing = { white: available[bi], black: null, result: '1-0 (Bye)' };
       }
       break outer;
     }
@@ -1126,6 +1322,12 @@ function pairRound3Plus(players) {
 
   if (byePairing) solution.push(byePairing);
   return solution.map((p, idx) => ({ board: idx + 1, ...p }));
+}
+
+function formatPairingPlayer(p) {
+  const titlePart = p.title ? ` (${p.title})` : '';
+  const ratingPart = Number.isFinite(p.rating) ? p.rating : '—';
+  return `${p.name}${titlePart} (${p.seed} / ${ratingPart})`;
 }
 
 function renderPairings() {
@@ -1152,7 +1354,7 @@ function renderPairings() {
 
     const whiteTd = document.createElement('td');
     whiteTd.textContent = pair.white
-      ? `${pair.white.name} (${pair.white.seed} / ${pair.white.rating})${rematchTag}`
+      ? `${formatPairingPlayer(pair.white)}${rematchTag}`
       : 'BYE';
     tr.appendChild(whiteTd);
 
@@ -1192,7 +1394,7 @@ function renderPairings() {
     tr.appendChild(resultTd);
 
     const blackTd = document.createElement('td');
-    blackTd.textContent = pair.black ? `${pair.black.name} (${pair.black.seed} / ${pair.black.rating})` : 'BYE';
+    blackTd.textContent = pair.black ? formatPairingPlayer(pair.black) : 'BYE';
     tr.appendChild(blackTd);
 
     tbody.appendChild(tr);
@@ -1379,7 +1581,7 @@ function showFinalStandings() {
 
   fillHeaderRow(
     document.getElementById('final-thead-row'),
-    ['Pos.', 'Seed', 'Player', 'Rating', 'Score', ...tiebreakHeaders(), 'Colors']
+    ['Pos.', 'Seed', 'Player', 'Club', 'Rating', 'Score', ...tiebreakHeaders(), 'Colors']
   );
 
   const tbody = document.getElementById('final-table-body');
@@ -1389,13 +1591,15 @@ function showFinalStandings() {
     const colorHistory = (p.history || [])
       .map(h => (h.color && h.color !== '-') ? h.color : '-')
       .join('');
+    const titlePart = p.title ? ` (${escapeHtml(p.title)})` : '';
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${idx + 1}</td>
       <td>${escapeHtml(p.seed)}</td>
-      <td>${escapeHtml(p.name)} ${p.withdrawn ? '(Withdrawn)' : ''}</td>
-      <td>${escapeHtml(p.rating)}</td>
+      <td>${escapeHtml(p.name)}${titlePart}${p.withdrawn ? ' (Withdrawn)' : ''}</td>
+      <td>${escapeHtml(p.club || '')}</td>
+      <td>${p.rating ?? ''}</td>
       <td><strong>${escapeHtml(p.score)}</strong></td>
       ${tiebreakCells(p)}
       <td style="font-family: monospace; letter-spacing: 1px;">${escapeHtml(colorHistory)}</td>
@@ -1409,19 +1613,21 @@ function openStandingsModal() {
 
   fillHeaderRow(
     document.getElementById('modal-thead-row'),
-    ['Pos.', 'Seed', 'Player', 'Rating', 'Score', ...tiebreakHeaders()]
+    ['Pos.', 'Seed', 'Player', 'Club', 'Rating', 'Score', ...tiebreakHeaders()]
   );
 
   const tbody = document.getElementById('modal-standings-body');
   tbody.innerHTML = '';
 
   getSortedStandings().forEach((p, idx) => {
+    const titlePart = p.title ? ` (${escapeHtml(p.title)})` : '';
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${idx + 1}</td>
       <td>${escapeHtml(p.seed)}</td>
-      <td>${escapeHtml(p.name)} ${p.withdrawn ? '(Withdrawn)' : ''}</td>
-      <td>${escapeHtml(p.rating)}</td>
+      <td>${escapeHtml(p.name)}${titlePart}${p.withdrawn ? ' (Withdrawn)' : ''}</td>
+      <td>${escapeHtml(p.club || '')}</td>
+      <td>${p.rating ?? ''}</td>
       <td><strong>${escapeHtml(p.score)}</strong></td>
       ${tiebreakCells(p)}
     `;
@@ -1442,7 +1648,10 @@ function openWithdrawModal() {
   active.forEach(p => {
     const opt = document.createElement('option');
     opt.value = p.id;
-    opt.textContent = `${p.name} (Seed #${p.seed}, Rating ${p.rating})`;
+    const titleStr = p.title ? ` (${p.title})` : '';
+    const clubStr = p.club ? `, ${p.club}` : '';
+    const ratingStr = Number.isFinite(p.rating) ? `, Rating ${p.rating}` : '';
+    opt.textContent = `${p.name}${titleStr} (Seed #${p.seed}${clubStr}${ratingStr})`;
     sel.appendChild(opt);
   });
   document.getElementById('withdraw-modal').style.display = 'flex';
