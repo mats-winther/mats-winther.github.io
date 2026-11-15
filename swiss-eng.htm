@@ -272,6 +272,7 @@ You can run separate tournaments simultaneously in different browsers (for examp
 
     <div class="btn-bar no-print" style="margin-top:16px;">
       <button type="button" onclick="printFinalStandings()">🖨️ Print Final Standings</button>
+      <button type="button" class="secondary" onclick="openAllRoundsModal()">📜 All Rounds & Results</button>
       <button type="button" class="secondary" onclick="saveTournament()">💾 Save Tournament</button>
       <button type="button" class="secondary" onclick="saveTRF()">💾 Save TRF-file</button>
       <button type="button" class="secondary" onclick="restartTournament()">🔄 New Tournament</button>
@@ -300,6 +301,19 @@ You can run separate tournaments simultaneously in different browsers (for examp
     <div class="btn-bar" style="margin-top:14px;">
       <button type="button" class="secondary" onclick="printStandings()">🖨️ Print Standings</button>
       <button type="button" onclick="closeStandingsModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal: All Rounds & Results -->
+<div id="all-rounds-modal" class="modal-overlay">
+  <div class="modal-box" style="max-width: 800px;">
+    <button class="close-btn" onclick="closeAllRoundsModal()">&times;</button>
+    <h2>All Rounds & Results</h2>
+    <div id="all-rounds-container"></div>
+    <div class="btn-bar" style="margin-top:14px;">
+      <button type="button" onclick="closeAllRoundsModal()">Close</button>
     </div>
   </div>
 </div>
@@ -1671,6 +1685,55 @@ function openWntModal(e) {
 
 function closeWntModal() {
   document.getElementById('wnt-modal').style.display = 'none';
+}
+
+function openAllRoundsModal() {
+  const container = document.getElementById('all-rounds-container');
+  container.innerHTML = '';
+
+  state.rounds.forEach(r => {
+    const heading = document.createElement('h3');
+    heading.textContent = `Round ${r.roundNum}`;
+    heading.style.marginTop = '18px';
+    heading.style.color = 'var(--primary)';
+    container.appendChild(heading);
+
+    const table = document.createElement('table');
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th style="width:50px;">Board</th>
+          <th>White</th>
+          <th style="width:110px; text-align:center;">Result</th>
+          <th>Black</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${r.pairings.map(pair => {
+          const wStr = pair.white ? formatPairingPlayer(pair.white) : 'BYE';
+          const bStr = pair.black ? formatPairingPlayer(pair.black) : 'BYE';
+          let res = pair.result || '–';
+          if (res === '0.5-0.5') res = '½-½';
+          if (pair.forfeit && pair.result !== '0-0') res += ' (w.o.)';
+          return `
+            <tr>
+              <td>${pair.board}</td>
+              <td>${escapeHtml(wStr)}</td>
+              <td style="text-align:center;"><strong>${escapeHtml(res)}</strong></td>
+              <td>${escapeHtml(bStr)}</td>
+            </tr>
+          `;
+        }).join('')}
+      </tbody>
+    `;
+    container.appendChild(table);
+  });
+
+  document.getElementById('all-rounds-modal').style.display = 'flex';
+}
+
+function closeAllRoundsModal() {
+  document.getElementById('all-rounds-modal').style.display = 'none';
 }
 
 function confirmWithdrawal() {
