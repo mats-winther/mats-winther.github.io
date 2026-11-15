@@ -607,6 +607,14 @@ if (printMql) {
   else if (printMql.addListener) printMql.addListener(onPrintChange);
 }
 
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+      modal.style.display = 'none';
+    });
+  }
+});
+
 function printPairings() {
   const tName = (state.name || 'Tournament').trim();
   applyPrintState(`${tName} - Round ${state.currentRound}`, false);

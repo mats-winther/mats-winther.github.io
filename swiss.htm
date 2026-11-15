@@ -576,6 +576,14 @@ window.addEventListener('beforeprint', () => {
   }
 });
 
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+      modal.style.display = 'none';
+    });
+  }
+});
+
 // Print state handling that tolerates asynchronous printing
 let printCleanupTimer = null;
 
@@ -1693,7 +1701,7 @@ function openAllRoundsModal() {
 
   state.rounds.forEach(r => {
     const heading = document.createElement('h3');
-    heading.textContent = `Round ${r.roundNum}`;
+    heading.textContent = `Rond ${r.roundNum}`;
     heading.style.marginTop = '18px';
     heading.style.color = 'var(--primary)';
     container.appendChild(heading);
