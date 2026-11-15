@@ -203,6 +203,7 @@
     min-height: 124px;
     resize: vertical;
     font-size: 0.94rem;
+    font-family: monospace;
   }
 
   fieldset {
@@ -523,13 +524,14 @@
 
       <div class="field">
         <label for="input-players">
-          Players and ratings: one player per line
+          Player List (sorted automatically by rating at start)
         </label>
         <textarea id="input-players"
+                  spellcheck="false"
                   maxlength="40000"
-                  placeholder="Magnus Carlsen; 2830&#10;Hikaru Nakamura; 2800&#10;Alireza Firouzja; 2760"></textarea>
+                  placeholder="Smith, Alice;IM;Central Chess Club;2320&#10;Jones, Bob;;Westside Chess Club;1740"></textarea>
         <p class="hint">
-          Accepted formats: Name; 2200, Name, 2200, or Name 2200.
+          Enter one player per line using <strong>Name;Title;Club;Rating</strong>. Tabs are also accepted. Quoted fields are supported. Club, title and rating may be omitted. Lines beginning with <strong>#</strong> are ignored.
           Use 3–256 players and integer ratings from 0 to 4000.
           Players are sorted by rating; equal ratings retain input order.
         </p>
@@ -609,7 +611,7 @@
         <button type="button"
                 class="secondary"
                 onclick="choosePlayerFile()">
-          📄 Load Player File (.txt)
+          📄 Load .txt / .csv File
         </button>
         <button type="button"
                 class="secondary"
@@ -830,7 +832,7 @@
 
 <input id="player-file"
        type="file"
-       accept=".txt,text/plain"
+       accept=".txt,.csv,text/plain,text/csv"
        hidden
        onchange="importPlayerFile(event)">
 
@@ -1507,47 +1509,210 @@ async function yieldToBrowser(job, percent, message) {
 }
 
 /* ============================================================
-   Parsing and personal rating groups
+   Parsing (conforms to swiss-eng.txt) and personal rating groups
    ============================================================ */
 
-function parseRoster(text) {
-  const lines = text.replace(/^\uFEFF/, "")
-    .split(/\r?\n/)
-    .map(line => line.trim())
-    .filter(Boolean);
+function countDelimiterOutsideQuotes(line, delimiter) {
+  let count = 0;
+  let inQuotes = false;
 
-  if (lines.length < 3 || lines.length > MAX_PLAYERS) {
+  for (let index = 0; index < line.length; index++) {
+    const character = line[index];
+
+    if (character === '"') {
+      if (inQuotes && line[index + 1] === '"') {
+        index++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (!inQuotes && character === delimiter) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
+function detectDelimiter(line) {
+  const candidates = ["\t", ";"];
+
+  const counts = candidates.map(delimiter => ({
+    delimiter,
+    count: countDelimiterOutsideQuotes(line, delimiter)
+  }));
+
+  counts.sort((a, b) => b.count - a.count);
+
+  return counts[0].count > 0 ? counts[0].delimiter : null;
+}
+
+function parseDelimitedLine(line, delimiter) {
+  if (!delimiter) {
+    const value = line.trim();
+
+    if (value.startsWith('"') && value.endsWith('"')) {
+      return [value.slice(1, -1).replaceAll('""', '"')];
+    }
+
+    return [value];
+  }
+
+  const fields = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < line.length; index++) {
+    const character = line[index];
+
+    if (character === '"') {
+      if (inQuotes && line[index + 1] === '"') {
+        field += '"';
+        index++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (!inQuotes && character === delimiter) {
+      fields.push(field.trim());
+      field = "";
+      continue;
+    }
+
+    field += character;
+  }
+
+  fields.push(field.trim());
+  return fields;
+}
+
+function splitPlayerLine(line) {
+  return parseDelimitedLine(line, detectDelimiter(line));
+}
+
+function looksLikePlayerHeader(parts) {
+  const first = String(parts[0] || "").trim().toLowerCase();
+  const rest = parts.slice(1).join(" ").toLowerCase();
+
+  const firstIsHeader = /^(name|player|player name|navn|spiller)$/.test(first);
+  const restIsHeader = /(club|klubb|rating|elo|rating number)/.test(rest);
+
+  return firstIsHeader && restIsHeader;
+}
+
+function parsePlayerEntries(text) {
+  const lines = String(text || "").split(/\r?\n/);
+  const players = [];
+  let firstMeaningfulLine = true;
+
+  for (const originalLine of lines) {
+    const raw = originalLine.trim();
+
+    if (!raw || raw.startsWith("#")) {
+      continue;
+    }
+
+    const parts = splitPlayerLine(raw).map(part => part.trim());
+
+    if (firstMeaningfulLine && looksLikePlayerHeader(parts)) {
+      firstMeaningfulLine = false;
+      continue;
+    }
+
+    firstMeaningfulLine = false;
+
+    const name = parts[0] || "";
+    if (!name) {
+      continue;
+    }
+
+    let title = "";
+    let club = "";
+    let ratingText = "";
+
+    if (parts.length >= 4) {
+      title = parts[1] || "";
+      club = parts[2] || "";
+      ratingText = parts[3] || "";
+    } else if (parts.length === 3) {
+      const isKnownTitle = /^(gm|im|fm|cm|wgm|wim|wfm|wcm)$/i.test(parts[1]);
+      const lastIsRating = parts[2] !== "" && !isNaN(Number(parts[2]));
+      if (isKnownTitle) {
+        title = parts[1];
+        if (lastIsRating) {
+          ratingText = parts[2];
+        } else {
+          club = parts[2];
+        }
+      } else {
+        club = parts[1];
+        ratingText = parts[2];
+      }
+    } else if (parts.length === 2) {
+      if (/^(gm|im|fm|cm|wgm|wim|wfm|wcm)$/i.test(parts[1])) {
+        title = parts[1];
+      } else if (parts[1] !== "" && !isNaN(Number(parts[1]))) {
+        ratingText = parts[1];
+      } else {
+        club = parts[1];
+      }
+    }
+
+    const rating = ratingText === "" ? null : Number(ratingText);
+
+    players.push({
+      name,
+      title,
+      club,
+      rating: Number.isFinite(rating) ? rating : null
+    });
+  }
+
+  return players;
+}
+
+function parseRoster(text) {
+  const rawPlayers = parsePlayerEntries(text.replace(/^\uFEFF/, ""));
+
+  if (rawPlayers.length < 3 || rawPlayers.length > MAX_PLAYERS) {
     throw new Error("Enter between 3 and " + MAX_PLAYERS + " players.");
   }
 
-  const roster = lines.map((line, index) => {
-    const match =
-      line.match(/^(.*?)\s*[;,\t]\s*(\d{1,4})\s*$/) ||
-      line.match(/^(.*?)\s+(\d{1,4})\s*$/);
-
-    if (!match) {
-      throw new Error(
-        "Line " + (index + 1) +
-        ": use a player name followed by an integer rating."
-      );
-    }
-
-    const name = match[1].trim();
-    const rating = Number(match[2]);
+  const roster = rawPlayers.map((entry, index) => {
+    const name = String(entry.name || "").trim();
+    const title = String(entry.title || "").trim();
+    const club = String(entry.club || "").trim();
+    const rating = entry.rating === null ? 0 : entry.rating;
 
     if (!name || name.length > 120) {
       throw new Error(
-        "Line " + (index + 1) + ": invalid or overly long player name."
+        "Player " + (index + 1) + ": invalid or overly long player name."
+      );
+    }
+
+    if (title.length > 20) {
+      throw new Error(
+        "Player " + (index + 1) + ": invalid or overly long title."
+      );
+    }
+
+    if (club.length > 120) {
+      throw new Error(
+        "Player " + (index + 1) + ": invalid or overly long club name."
       );
     }
 
     if (!Number.isInteger(rating) || rating < 0 || rating > 4000) {
       throw new Error(
-        "Line " + (index + 1) + ": rating must be from 0 to 4000."
+        "Player " + (index + 1) + " (" + name + "): rating must be an integer from 0 to 4000."
       );
     }
 
-    return {name, rating, inputOrder: index};
+    return {name, title, club, rating, inputOrder: index};
   });
 
   const names = roster.map(player =>
@@ -1568,6 +1733,8 @@ function parseRoster(text) {
     id,
     tpn: id + 1,
     name: player.name,
+    title: player.title,
+    club: player.club,
     rating: player.rating,
     withdrawnFrom: null
   }));
@@ -3653,12 +3820,15 @@ function openWithdrawal() {
     ? tournament.players.filter(player => player.withdrawnFrom === null)
     : tournament.players;
 
-  $("withdraw-player").innerHTML = candidates.map(player => `
-    <option value="${player.id}">
-      ${html(player.tpn + ". " + player.name +
-        (player.withdrawnFrom !== null ? " (withdrawn)" : ""))}
-    </option>
-  `).join("");
+  $("withdraw-player").innerHTML = candidates.map(player => {
+    const titlePart = player.title ? " (" + player.title + ")" : "";
+    return `
+      <option value="${player.id}">
+        ${html(player.tpn + ". " + player.name + titlePart +
+          (player.withdrawnFrom !== null ? " (withdrawn)" : ""))}
+      </option>
+    `;
+  }).join("");
 
   $("withdraw-heading").textContent = inSwiss
     ? "Withdraw Player After the Published Swiss Round"
@@ -3925,6 +4095,7 @@ function playerHTML(id, roundIndex, piece = "") {
   const info = scheduleReport.information;
   const withdrawn = player.withdrawnFrom !== null &&
     roundIndex >= player.withdrawnFrom;
+  const titlePart = player.title ? " (" + html(player.title) + ")" : "";
 
   const span = (info.lower[id] + 1) + "–" + (info.upper[id] + 1);
   const title = "Personal-group opponents: TPN " +
@@ -3937,7 +4108,7 @@ function playerHTML(id, roundIndex, piece = "") {
         <span class="piece-icon piece-${piece}"
               title="${piece === "white" ? "White" : "Black"}"></span>
       ` : ""}
-      <strong>${player.tpn}. ${html(player.name)}</strong>
+      <strong>${player.tpn}. ${html(player.name)}${titlePart}</strong>
       <span class="badge">${player.rating}</span>
       <span class="badge group-badge" title="${html(title)}">
         G ${span}
@@ -4066,13 +4237,14 @@ function byeHTML(roundIndex) {
   if (bye === null) return "";
 
   const player = tournament.players[bye];
+  const titlePart = player.title ? " (" + html(player.title) + ")" : "";
   const swiss = isSwissRound(tournament, roundIndex);
   const credited = swiss ? round.closed : isRoundComplete(round);
 
   return `
     <div class="bye-box">
       <strong>${swiss ? "Swiss bye:" : "Rest:"}</strong>
-      ${player.tpn}. ${html(player.name)}
+      ${player.tpn}. ${html(player.name)}${titlePart}
       — ${formatPoints(tournament.byePoints)}
       point${tournament.byePoints === 1 ? "" : "s"}
       ${credited
@@ -4087,24 +4259,26 @@ function byeHTML(roundIndex) {
   `;
 }
 
-function standingsTableHTML(standings) {
+function standingsTableHTML(standings, showClub = false) {
   const info = scheduleReport.information;
 
   const body = standings.rows.map(row => {
     const player = tournament.players[row.id];
+    const titlePart = player.title ? " (" + html(player.title) + ")" : "";
 
     return `
       <tr class="${row.position === 1 ? "leader-row" : ""}">
         <td class="numeric">${row.position}${row.tied ? "=" : ""}</td>
         <td class="numeric">${player.tpn}</td>
         <td>
-          <strong>${html(player.name)}</strong>
+          <strong>${html(player.name)}${titlePart}</strong>
           ${player.withdrawnFrom !== null ? `
             <br><span class="withdrawn">
               Withdrawn from R${player.withdrawnFrom + 1}
             </span>
           ` : ""}
         </td>
+        ${showClub ? `<td>${html(player.club || "")}</td>` : ""}
         <td class="numeric">${player.rating}</td>
         <td class="numeric">${formatNumber(info.targets[row.id])}</td>
         <td class="numeric">${row.played}</td>
@@ -4123,14 +4297,15 @@ function standingsTableHTML(standings) {
         <thead>
           <tr>
             <th class="numeric">Rank</th>
-            <th class="numeric">TPN</th>
+            <th class="numeric" title="Tournament Player Number">TPN</th>
             <th>Player</th>
+            ${showClub ? "<th>Club</th>" : ""}
             <th class="numeric">Rating</th>
             <th class="numeric">RBT target mean</th>
             <th class="numeric">Pld</th>
-            <th class="numeric">W</th>
-            <th class="numeric">D</th>
-            <th class="numeric">L</th>
+            <th class="numeric" title="Wins">W</th>
+	    <th class="numeric" title="Draws">D</th>
+	    <th class="numeric" title="Losses">L</th>
             <th class="numeric">Points</th>
             <th class="numeric">${html(TIE_BREAKS[tournament.tb])}</th>
           </tr>
@@ -4315,7 +4490,7 @@ function renderStandings() {
   $("final-tb").value = tournament.tb;
 
   $("standings-container").innerHTML =
-    standingsTableHTML(calculateStandings(false));
+    standingsTableHTML(calculateStandings(false), false);
 
   if (tournament.finished) {
     const info = finalViewInfo();
@@ -4323,7 +4498,7 @@ function renderStandings() {
     $("final-notice").hidden = !info.notice;
     $("final-notice").textContent = info.notice;
     $("final-container").innerHTML =
-      standingsTableHTML(calculateStandings(true));
+      standingsTableHTML(calculateStandings(true), true);
   }
 }
 
@@ -4393,10 +4568,13 @@ function playerBudgetsHTML() {
           </tr>
         </thead>
         <tbody>
-          ${scheduleReport.rows.map(row => `
+          ${scheduleReport.rows.map(row => {
+            const p = tournament.players[row.id];
+            const titlePart = p.title ? " (" + html(p.title) + ")" : "";
+            return `
             <tr>
-              <td class="numeric">${tournament.players[row.id].tpn}</td>
-              <td>${html(tournament.players[row.id].name)}</td>
+              <td class="numeric">${p.tpn}</td>
+              <td>${html(p.name)}${titlePart}</td>
               <td>${personalGroupLabel(info, row.id)}</td>
               <td class="numeric">${formatNumber(row.target)}</td>
               <td class="numeric">${row.games}</td>
@@ -4413,7 +4591,8 @@ function playerBudgetsHTML() {
               </td>
               <td class="numeric">${row.maximumRun}</td>
             </tr>
-          `).join("")}
+          `;
+          }).join("")}
         </tbody>
       </table>
     </div>
@@ -4439,7 +4618,14 @@ function completeScheduleHTML(interactive = true) {
           </tr>
         </thead>
         <tbody>
-          ${tournament.rounds.slice(0, tournament.rbtRounds).map((round, index) => `
+          ${tournament.rounds.slice(0, tournament.rbtRounds).map((round, index) => {
+            let byeText = "—";
+            if (round.bye !== null) {
+              const bp = tournament.players[round.bye];
+              const titlePart = bp.title ? " (" + html(bp.title) + ")" : "";
+              byeText = (round.bye + 1) + ". " + html(bp.name) + titlePart;
+            }
+            return `
             <tr>
               <td>
                 ${interactive ? `
@@ -4453,12 +4639,10 @@ function completeScheduleHTML(interactive = true) {
                   (game.w + 1) + "–" + (game.b + 1)
                 ).join(" &nbsp; | &nbsp; ")}
               </td>
-              <td>
-                ${round.bye === null ? "—" :
-                  (round.bye + 1) + ". " + html(tournament.players[round.bye].name)}
-              </td>
+              <td>${byeText}</td>
             </tr>
-          `).join("")}
+          `;
+          }).join("")}
         </tbody>
       </table>
     </div>
@@ -4653,7 +4837,10 @@ function validateFixedRBTData(raw, options = {}) {
     if (!player || typeof player !== "object" ||
         player.id !== id || player.tpn !== id + 1 ||
         typeof player.name !== "string" || !player.name.trim() ||
-        player.name.length > 120 || !Number.isInteger(player.rating) ||
+        player.name.length > 120 ||
+        typeof player.title !== "string" || player.title.length > 20 ||
+        typeof player.club !== "string" || player.club.length > 120 ||
+        !Number.isInteger(player.rating) ||
         player.rating < 0 || player.rating > 4000) {
       throw new Error("Invalid player record.");
     }
@@ -4670,6 +4857,8 @@ function validateFixedRBTData(raw, options = {}) {
       id,
       tpn: id + 1,
       name: player.name.trim(),
+      title: player.title.trim(),
+      club: player.club.trim(),
       rating: player.rating,
       withdrawnFrom: player.withdrawnFrom
     };
@@ -5297,56 +5486,56 @@ async function importPlayerFile(event) {
 
 function loadSamplePlayers() {
   $("input-players").value =
-`Smith, James; 2400
-Brown, Oliver; 2370
-Davies, Charlotte; 2355
-Wilson, Harry; 2340
-Brooks, Nathan; 2325
-Evans, Sophie; 2310
-Roberts, Olivia; 2280
-Reed, Isabella; 2265
-Al-Mansoor, Yusuf; 2250
-Green, Chloe; 2190
-Wright, Thomas; 2175
-Hassan, Fatima; 2160
-Rahman, Aisha; 2145
-Hall, William; 2130
-Lewis, Grace; 2115
-Clarke, Charlie; 2100
-Morgan, Leo; 2085
-Robinson, Jessica; 2070
-Harris, Benjamin; 2055
-Turner, Lily; 2040
-Richardson, Eva; 2025
-Mensah, Kofi; 2010
-Clark, Daniel; 1995
-Wood, Lucas; 1980
-Hughes, Adam; 1965
-Cooper, Ella; 1950
-King, Samuel; 1935
-Taylor, Emily; 1925
-Baker, Hannah; 1920
-Patel, Freya; 1905
-Thomas, George; 1870
-Scott, Alexander; 1850
-Diallo, Amara; 1835
-Phillips, Mia; 1825
-Williams, Noah; 1815
-Campbell, Liam; 1810
-Mitchell, Zoe; 1800
-Anderson, Ruby; 1790
-Adams, Ethan; 1785
-Collins, Arthur; 1770
-Foster, Clara; 1755
-Grant, Felix; 1740
-Walker, Amelia; 1735
-Bennett, Oscar; 1730
-Sullivan, Nina; 1725
-Walsh, Adrian; 1710
-Shah, Priya; 1695
-Rossi, Elena; 1680
-Okafor, David; 1665
-Johnson, Jack; 1640`;
+`Smith, James;GM;Central Chess Club;2400
+Brown, Oliver;IM;Northside Chess Club;2370
+Davies, Charlotte;WGM;West End Chess Club;2355
+Wilson, Harry;IM;Riverside Chess Club;2340
+Brooks, Nathan;FM;University Chess Club;2325
+Evans, Sophie;WIM;Central Chess Club;2310
+Roberts, Olivia;FM;Northside Chess Club;2280
+Reed, Isabella;WIM;West End Chess Club;2265
+Al-Mansoor, Yusuf;FM;Riverside Chess Club;2250
+Green, Chloe;WFM;University Chess Club;2190
+Wright, Thomas;CM;Central Chess Club;2175
+Hassan, Fatima;WFM;Northside Chess Club;2160
+Rahman, Aisha;;West End Chess Club;2145
+Hall, William;;Riverside Chess Club;2130
+Lewis, Grace;;University Chess Club;2115
+Clarke, Charlie;;Central Chess Club;2100
+Morgan, Leo;;Northside Chess Club;2085
+Robinson, Jessica;;West End Chess Club;2070
+Harris, Benjamin;;Riverside Chess Club;2055
+Turner, Lily;;University Chess Club;2040
+Richardson, Eva;;Central Chess Club;2025
+Mensah, Kofi;;Northside Chess Club;2010
+Clark, Daniel;;West End Chess Club;1995
+Wood, Lucas;;Riverside Chess Club;1980
+Hughes, Adam;;University Chess Club;1965
+Cooper, Ella;;Central Chess Club;1950
+King, Samuel;;Northside Chess Club;1935
+Taylor, Emily;;West End Chess Club;1925
+Baker, Hannah;;Riverside Chess Club;1920
+Patel, Freya;;University Chess Club;1905
+Thomas, George;;Central Chess Club;1870
+Scott, Alexander;;Northside Chess Club;1850
+Diallo, Amara;;West End Chess Club;1835
+Phillips, Mia;;Riverside Chess Club;1825
+Williams, Noah;;University Chess Club;1815
+Campbell, Liam;;Central Chess Club;1810
+Mitchell, Zoe;;Northside Chess Club;1800
+Anderson, Ruby;;West End Chess Club;1790
+Adams, Ethan;;Riverside Chess Club;1785
+Collins, Arthur;;University Chess Club;1770
+Foster, Clara;;Central Chess Club;1755
+Grant, Felix;;Northside Chess Club;1740
+Walker, Amelia;;West End Chess Club;1735
+Bennett, Oscar;;Riverside Chess Club;1730
+Sullivan, Nina;;University Chess Club;1725
+Walsh, Adrian;;Central Chess Club;1710
+Shah, Priya;;Northside Chess Club;1695
+Rossi, Elena;;West End Chess Club;1680
+Okafor, David;;Riverside Chess Club;1665
+Johnson, Jack;;University Chess Club;1640`;
 
   if (!$("input-name").value.trim()) {
     $("input-name").value = "Sample RBT Tournament";
@@ -5497,15 +5686,18 @@ function printCompleteSchedule() {
         </tr>
       </thead>
       <tbody>
-        ${tournament.players.map(player => `
+        ${tournament.players.map(player => {
+          const titlePart = player.title ? " (" + html(player.title) + ")" : "";
+          return `
           <tr>
             <td>${player.tpn}</td>
-            <td>${html(player.name)}</td>
+            <td>${html(player.name)}${titlePart}</td>
             <td>${player.rating}</td>
             <td>${personalGroupLabel(info, player.id)}</td>
             <td>${formatNumber(info.targets[player.id])}</td>
           </tr>
-        `).join("")}
+        `;
+        }).join("")}
       </tbody>
     </table>
   `;
@@ -5524,7 +5716,7 @@ function printFinalReport() {
 
   let content = reportHeader(info.heading) +
     (info.notice ? "<p>" + html(info.notice) + "</p>" : "") +
-    standingsTableHTML(calculateStandings(true));
+    standingsTableHTML(calculateStandings(true), true);
 
   tournament.rounds.forEach((_, index) => {
     content += "<h2>" + roundReportHeading(index) + "</h2>" +
@@ -5569,6 +5761,8 @@ function makeHybridTestData(count, rbtRounds, swissRounds, byePoints = 1) {
     id,
     tpn: id + 1,
     name: "Test Player " + (id + 1),
+    title: "",
+    club: "",
     rating: 2800 - id,
     withdrawnFrom: null
   }));
@@ -6096,9 +6290,6 @@ function saveTRF() {
     alert(`Could not generate TRF file: ${error.message}`);
   }
 }
-
-// On page load: offer to resume an autosaved tournament, if any
-checkAutosave();
 
 /* ============================================================
    Storage notice and initialization
