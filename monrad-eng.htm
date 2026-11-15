@@ -35,7 +35,7 @@
 
     .container {
       width: 100%;
-      max-width: 910px;
+      max-width: 930px;
     }
 
     header {
@@ -383,7 +383,7 @@ button.about-button:hover {
     <p>Chess tournament management &ndash; local or online</p>
   </header>
 
-  <!-- 1. ANGE SPELARE -->
+  <!-- 1. ENTER PLAYER -->
   <section id="section-setup" class="card">
 
     <!-- Visas bara om en automatiskt sparad turnering finns i den här webbläsaren -->
@@ -441,7 +441,7 @@ button.about-button:hover {
     </div>
   </section>
 
-  <!-- 2. RONDÖVERSIKT -->
+  <!-- 2. ROUND OVERVIEW -->
   <section id="section-round" class="card hidden">
     <h2>
       <span id="round-title">Round 1</span>
@@ -473,7 +473,7 @@ button.about-button:hover {
     </form>
   </section>
 
-  <!-- 3. AKTUELL STÄLLNING -->
+  <!-- 3. ACTUAL STANDINGS -->
   <section id="section-standings" class="card hidden">
     <h2>
       <span>Current Standings</span>
@@ -493,7 +493,7 @@ button.about-button:hover {
     </table>
   </section>
 
-  <!-- 4. SLUTSTÄLLNING -->
+  <!-- 4. FINAL STANDINGS -->
   <section id="section-final" class="card hidden">
     <h2>
       <span>🏆 Final Standings</span>
@@ -529,16 +529,26 @@ button.about-button:hover {
       <tbody id="final-tbody"></tbody>
     </table>
 
-    <h2 style="margin-top: 32px;">Played games round by round</h2>
-    <div id="final-matches-history"></div>
-
     <div class="btn-group" style="margin-top: 20px;">
-      <button onclick="saveTournament()" class="secondary">💾 Save tournament</button>
+      <button type="button" class="secondary" onclick="openAllRoundsModal()">📜 Played games</button>
+      <button type="button" class="secondary" onclick="printFinalStandings()">🖨️ Print final standings</button>
+      <button type="button" class="secondary" onclick="saveTournament()">💾 Save tournament</button>
       <button type="button" class="secondary" onclick="saveTRF()">💾 Save TRF-file</button>
-      <button onclick="resetTournament()" class="danger">🔄 New tournament</button>
-      <button onclick="printFinalStandings()" class="secondary">🖨️ Print standings & games</button>
+      <button type="button" class="danger" onclick="resetTournament()">🔄 New tournament</button>
     </div>
   </section>
+</div>
+
+<!-- MODAL: PLAYED GAMES ROUND BY ROUND -->
+<div id="all-rounds-modal" class="modal-overlay hidden">
+  <div class="modal-box" style="max-width: 750px; max-height: 85vh; overflow-y: auto;">
+    <h3 style="margin-top: 0; color: var(--primary); font-size: 1.2rem;">Played Games Round by Round</h3>
+    <div id="modal-matches-history"></div>
+    <div class="btn-group" style="justify-content: flex-end; margin-top: 14px;">
+      <button type="button" onclick="closeAllRoundsModal()">Close</button>
+    </div>
+  </div>
+</div>
 </div>
 
 <!-- MODAL: WNT INFORMATION -->
@@ -728,6 +738,7 @@ document.addEventListener("keydown", function (event) {
   if (event.key === "Escape") {
     closeWntModal();
     closeWithdrawModal();
+    closeAllRoundsModal();
   }
 });
 
@@ -1821,7 +1832,6 @@ function getColourSequence(player) {
       tbody.appendChild(tr);
     });
 
-    document.getElementById("final-matches-history").innerHTML = generateMatchesHistoryHtml();
   }
 
   function generateMatchesHistoryHtml() {
@@ -2132,7 +2142,16 @@ function getColourSequence(player) {
     openPrintPage(`${tournamentTitle} - Round ${currentRound}`, pairingsHtml);
   }
 
-  function printFinalStandings() {
+function openAllRoundsModal() {
+  document.getElementById("modal-matches-history").innerHTML = generateMatchesHistoryHtml();
+  document.getElementById("all-rounds-modal").classList.remove("hidden");
+}
+
+function closeAllRoundsModal() {
+  document.getElementById("all-rounds-modal").classList.add("hidden");
+}
+
+function printFinalStandings() {
     const tournamentTitle = tournamentName.trim() ? tournamentName.trim() : "Monrad Chess Tournament";
     let tbLabel = "Winther";
     if (tieBreakSystem === "buchholz") {
@@ -2174,8 +2193,6 @@ function getColourSequence(player) {
     });
 
     finalHtml += `</tbody></table>`;
-    finalHtml += `<h2>All Played Games</h2>`;
-    finalHtml += generateMatchesHistoryHtml();
 
     openPrintPage(`${tournamentTitle} - Final Standings`, finalHtml);
   }
