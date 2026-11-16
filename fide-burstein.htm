@@ -377,7 +377,7 @@ a { color:var(--blue); }
             32 exempelspelare
           </button>
           <button id="emulateButton" onclick="emulateTournament()">
-            Emulera turnering
+            Simulera turnering
           </button>
           <button id="resetButton" class="danger" onclick="resetTournament()">
             Återställ
@@ -5835,7 +5835,7 @@ function runNextEmulatedRound(tally) {
   if (tournamentComplete()) {
     showTab("standings");
     message(
-      `Turneringen emulerad (${tournament.rounds.length} ronder; ` +
+      `Turneringen simulerad (${tournament.rounds.length} ronder; ` +
       `vita vinster: ${tally.white}; remier: ${tally.draw}; ` +
       `svarta vinster: ${tally.black}). Slutresultatet inkluderar Buchholz cut 1, ` +
       `Buchholz, Sonneborn-Berger och färgskillnad.`,

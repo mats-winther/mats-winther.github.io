@@ -319,7 +319,7 @@
           <button id="importButton" onclick="document.getElementById('playersFile').click()">Importera spelare</button>
           <button id="pasteButton" onclick="document.getElementById('paste').showModal()">Klistra in spelare</button>
           <button id="sampleButton" onclick="samplePlayers()">32 exempelspelare</button>
-	  <button id="emulateButton" onclick="emulateTournament()">Emulera turnering</button>
+	  <button id="emulateButton" onclick="emulateTournament()">Simulera turnering</button>
           <button class="danger" onclick="resetTournament()">Återställ</button>
         </div>
       </div>
@@ -1884,7 +1884,7 @@ function runNextEmulatedRound(tally) {
   if (complete()) {
     tab("standings");
     notice(
-      `Turneringen emulerad (${tournament.rounds.length} ronder; ` +
+      `Turneringen simulerad (${tournament.rounds.length} ronder; ` +
       `vita vinster: ${tally.white}; remier: ${tally.draw}; ` +
       `svarta vinster: ${tally.black}). Slutresultatet inkluderar Buchholz cut 1, ` +
       `Buchholz, Sonneborn-Berger och färgskillnad.`,

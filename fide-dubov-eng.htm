@@ -439,6 +439,11 @@ a { color:var(--accent); }
             32 sample players
           </button>
 
+          <button id="emulateButton"
+                  onclick="emulateTournament()">
+            Simulate tournament
+          </button>
+
           <button id="resetButton"
                   class="danger"
                   onclick="resetTournament()">
@@ -5818,78 +5823,45 @@ function changeResult(
   });
 }
 
+function finalizeActiveRound() {
+  tournament.rounds.push({
+    roundNumber:tournament.currentRound,
+    pairings:JSON.parse(JSON.stringify(tournament.activePairings)),
+    upfloaterIds:[...(tournament.activeUpfloaterIds || [])],
+    audit:tournament.activeAudit
+  });
+
+  tournament.activePairings = [];
+  tournament.activeUpfloaterIds = [];
+  tournament.activeAudit = null;
+  tournament.currentRound = tournament.rounds.length;
+
+  tournament.players.forEach(player => {
+    player.nextRoundStatus = "pair";
+  });
+
+  rebuildState();
+  renderAll();
+  autoSave();
+}
+
 function confirmRound() {
   guarded(() => {
     requireIdle();
 
-    if (
-      !tournament
-        .activePairings.length
-    ) {
+    if (!tournament.activePairings.length) {
       return;
     }
 
     if (
-      tournament
-        .activePairings
-        .some(
-          record =>
-            record.kind ===
-              "game" &&
-            record.result === "*"
-        )
+      tournament.activePairings.some(
+        record => record.kind === "game" && record.result === "*"
+      )
     ) {
-      throw new Error(
-        "Enter all board results before confirming."
-      );
+      throw new Error("Enter all board results before confirming.");
     }
 
-    tournament.rounds.push({
-      roundNumber:
-        tournament.currentRound,
-
-      pairings:
-        JSON.parse(
-          JSON.stringify(
-            tournament
-              .activePairings
-          )
-        ),
-
-      upfloaterIds:[
-        ...(
-          tournament
-            .activeUpfloaterIds ||
-          []
-        )
-      ],
-
-      audit:
-        tournament.activeAudit
-    });
-
-    tournament.activePairings =
-      [];
-
-    tournament.activeUpfloaterIds =
-      [];
-
-    tournament.activeAudit =
-      null;
-
-    tournament.currentRound =
-      tournament.rounds.length;
-
-    tournament.players.forEach(
-      player => {
-        player.nextRoundStatus =
-          "pair";
-      }
-    );
-
-    rebuildState();
-    renderAll();
-    autoSave();
+    finalizeActiveRound();
     showTab("standings");
 
     message(
@@ -5898,6 +5870,181 @@ function confirmRound() {
         : `Round ${tournament.rounds.length} confirmed. You may now generate the next round.`,
       "success"
     );
+  });
+}
+
+function assignEmulatedResults(tally) {
+  for (const record of tournament.activePairings) {
+    if (record.kind !== "game") continue;
+
+    const white = playersById.get(record.whiteId);
+    const black = playersById.get(record.blackId);
+
+    const diff = (white ? white.rating : 1500) -
+      (black ? black.rating : 1500);
+
+    // Base rates: 40% White wins, 35% draws, 25% Black wins.
+    // Shift White vs Black win chances symmetrically by rating difference.
+    const shift = 0.23 * Math.tanh(diff / 150);
+    const pWhite = 0.40 + shift;
+    const pDraw = 0.35;
+
+    const r = Math.random();
+
+    if (r < pWhite) {
+      record.result = "1-0";
+      if (tally) tally.white++;
+    } else if (r < pWhite + pDraw) {
+      record.result = "½-½";
+      if (tally) tally.draw++;
+    } else {
+      record.result = "0-1";
+      if (tally) tally.black++;
+    }
+  }
+}
+
+function runNextEmulatedRound(tally) {
+  if (tournamentComplete()) {
+    showTab("standings");
+    message(
+      `Tournament simulated (${tournament.rounds.length} rounds; ` +
+      `White wins: ${tally.white}, Draws: ${tally.draw}, ` +
+      `Black wins: ${tally.black}). Final standings calculated using ` +
+      "Buchholz Cut 1 and Sonneborn-Berger.",
+      "success"
+    );
+    return;
+  }
+
+  const roundNumber = tournament.rounds.length + 1;
+  const active = tournament.players.filter(player => player.active);
+
+  const toPair = active.filter(
+    player => player.nextRoundStatus === "pair"
+  );
+
+  const scheduled = active.filter(
+    player => player.nextRoundStatus !== "pair"
+  );
+
+  const input = {
+    roundNumber,
+    totalRounds:tournament.totalRounds,
+    winPoints:tournament.winPoints,
+    initialColor:tournament.initialColor,
+    players:JSON.parse(JSON.stringify(toPair))
+  };
+
+  const finishRound = result => {
+    commitRound(result, roundNumber, scheduled);
+    assignEmulatedResults(tally);
+    finalizeActiveRound();
+    runNextEmulatedRound(tally);
+  };
+
+  if (!toPair.length) {
+    finishRound({
+      engineVersion:Core.VERSION,
+      pairs:[],
+      pabId:null,
+      upfloaterIds:[],
+      trace:[],
+      stats:{nodes:0, elapsedMs:0}
+    });
+    return;
+  }
+
+  message(
+    `Emulating round ${roundNumber} of ${tournament.totalRounds}...`,
+    "warning"
+  );
+
+  try {
+    const source = `
+      const core = (${Dubov2026Core.toString()})();
+
+      self.onmessage = function(event) {
+        try {
+          const result = core.solve(
+            event.data.input,
+            event.data.limits
+          );
+          self.postMessage({type:"done", result});
+        } catch (error) {
+          self.postMessage({
+            type:"error",
+            message:error.message,
+            code:error.code || ""
+          });
+        }
+      };
+    `;
+
+    const blob = new Blob([source], {type:"application/javascript"});
+    const workerUrl = URL.createObjectURL(blob);
+    const worker = new Worker(workerUrl);
+    URL.revokeObjectURL(workerUrl);
+
+    job = worker;
+    updateControls();
+
+    worker.onmessage = event => {
+      job = null;
+      worker.terminate();
+
+      if (event.data.type === "done") {
+        guarded(() => finishRound(event.data.result));
+      } else {
+        updateControls();
+        message("Pairing error: " + event.data.message, "error");
+      }
+    };
+
+    worker.onerror = event => {
+      job = null;
+      worker.terminate();
+      updateControls();
+      message(
+        "Pairing worker error: " +
+        (event.message || "Unknown worker error."),
+        "error"
+      );
+    };
+
+    worker.postMessage({
+      type:"pair",
+      input,
+      limits:{seconds:30}
+    });
+  } catch (error) {
+    job = null;
+    const result = Core.solve(input, {seconds:30});
+    finishRound(result);
+  }
+}
+
+function emulateTournament() {
+  guarded(() => {
+    requireIdle(true);
+    rebuildState();
+
+    if (tournamentComplete()) {
+      throw new Error("Tournament is already complete.");
+    }
+
+    if (!tournament.players.length) {
+      throw new Error("Register players before simulating a tournament.");
+    }
+
+    const active = tournament.players.filter(player => player.active);
+
+    if (!active.length) {
+      throw new Error("No active players.");
+    }
+
+    showTab("pairings");
+    runNextEmulatedRound({white:0, draw:0, black:0});
   });
 }
 
@@ -6425,7 +6572,12 @@ function updateControls() {
     trfBtn.style.display = finished ? "" : "none";
   }
 
-  $("pairButton").disabled =
+$("pairButton").disabled =
+    busy ||
+    pending ||
+    finished;
+
+  $("emulateButton").disabled =
     busy ||
     pending ||
     finished;

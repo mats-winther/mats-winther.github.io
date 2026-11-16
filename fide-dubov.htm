@@ -439,6 +439,11 @@ a { color:var(--accent); }
             32 exempelspelare
           </button>
 
+          <button id="emulateButton"
+                  onclick="emulateTournament()">
+            Simulera turnering
+          </button>
+
           <button id="resetButton"
                   class="danger"
                   onclick="resetTournament()">
@@ -5871,86 +5876,228 @@ function changeResult(
   });
 }
 
+function finalizeActiveRound() {
+  tournament.rounds.push({
+    roundNumber:tournament.currentRound,
+    pairings:JSON.parse(JSON.stringify(tournament.activePairings)),
+    upfloaterIds:[...(tournament.activeUpfloaterIds || [])],
+    audit:tournament.activeAudit
+  });
+
+  tournament.activePairings = [];
+  tournament.activeUpfloaterIds = [];
+  tournament.activeAudit = null;
+  tournament.currentRound = tournament.rounds.length;
+
+  tournament.players.forEach(player => {
+    player.nextRoundStatus = "pair";
+  });
+
+  rebuildState();
+  renderAll();
+  autoSave();
+}
+
 function confirmRound() {
   guarded(() => {
     requireIdle();
 
-    if (
-      !tournament
-        .activePairings.length
-    ) {
+    if (!tournament.activePairings.length) {
       return;
     }
 
     if (
-      tournament
-        .activePairings
-        .some(
-          record =>
-            record.kind ===
-              "game" &&
-            record.result === "*"
-        )
+      tournament.activePairings.some(
+        record => record.kind === "game" && record.result === "*"
+      )
     ) {
-      throw new Error(
-        "Mata in resultat för samtliga partier innan ronden bekräftas."
-      );
+      throw new Error("Ange först resultaten för alla bord.");
     }
 
-    tournament.rounds.push({
-      roundNumber:
-        tournament.currentRound,
-
-      pairings:
-        JSON.parse(
-          JSON.stringify(
-            tournament
-              .activePairings
-          )
-        ),
-
-      upfloaterIds:[
-        ...(
-          tournament
-            .activeUpfloaterIds ||
-          []
-        )
-      ],
-
-      audit:
-        tournament.activeAudit
-    });
-
-    tournament.activePairings =
-      [];
-
-    tournament.activeUpfloaterIds =
-      [];
-
-    tournament.activeAudit =
-      null;
-
-    tournament.currentRound =
-      tournament.rounds.length;
-
-    tournament.players.forEach(
-      player => {
-        player.nextRoundStatus =
-          "pair";
-      }
-    );
-
-    rebuildState();
-    renderAll();
-    autoSave();
+    finalizeActiveRound();
     showTab("standings");
 
     message(
       tournamentComplete()
-        ? "Turneringen är avslutad! Slutställningen har beräknats med Buchholz Cut 1 och Sonneborn-Berger."
-        : `Rond ${tournament.rounds.length} bekräftad. Du kan nu lotta nästa rond.`,
+        ? "Turneringen är avslutad! Slutresultatet har beräknats enligt Buchholz Cut 1 och Sonneborn-Berger."
+        : `Rond ${tournament.rounds.length} registrerad. Nästa rond kan nu genereras.`,
       "success"
     );
+  });
+}
+
+function assignEmulatedResults(tally) {
+  for (const record of tournament.activePairings) {
+    if (record.kind !== "game") continue;
+
+    const white = playersById.get(record.whiteId);
+    const black = playersById.get(record.blackId);
+
+    const diff = (white ? white.rating : 1500) -
+      (black ? black.rating : 1500);
+
+    // Base rates: 40% White wins, 35% draws, 25% Black wins.
+    // Shift White vs Black win chances symmetrically by rating difference.
+    const shift = 0.23 * Math.tanh(diff / 150);
+    const pWhite = 0.40 + shift;
+    const pDraw = 0.35;
+
+    const r = Math.random();
+
+    if (r < pWhite) {
+      record.result = "1-0";
+      if (tally) tally.white++;
+    } else if (r < pWhite + pDraw) {
+      record.result = "½-½";
+      if (tally) tally.draw++;
+    } else {
+      record.result = "0-1";
+      if (tally) tally.black++;
+    }
+  }
+}
+
+function runNextEmulatedRound(tally) {
+  if (tournamentComplete()) {
+    showTab("standings");
+    message(
+      `Turneringen simulerad (${tournament.rounds.length} ronder; ` +
+      `vita vinster: ${tally.white}; remier: ${tally.draw}; ` +
+      `svarta vinster: ${tally.black}). Slutresultatet inkluderar Buchholz cut 1 ` +
+      `och Sonneborn-Berger.`,
+      "success"
+    );
+    return;
+  }
+
+  const roundNumber = tournament.rounds.length + 1;
+  const active = tournament.players.filter(player => player.active);
+
+  const toPair = active.filter(
+    player => player.nextRoundStatus === "pair"
+  );
+
+  const scheduled = active.filter(
+    player => player.nextRoundStatus !== "pair"
+  );
+
+  const input = {
+    roundNumber,
+    totalRounds:tournament.totalRounds,
+    winPoints:tournament.winPoints,
+    initialColor:tournament.initialColor,
+    players:JSON.parse(JSON.stringify(toPair))
+  };
+
+  const finishRound = result => {
+    commitRound(result, roundNumber, scheduled);
+    assignEmulatedResults(tally);
+    finalizeActiveRound();
+    runNextEmulatedRound(tally);
+  };
+
+  if (!toPair.length) {
+    finishRound({
+      engineVersion:Core.VERSION,
+      pairs:[],
+      pabId:null,
+      upfloaterIds:[],
+      trace:[],
+      stats:{nodes:0, elapsedMs:0}
+    });
+    return;
+  }
+
+  message(
+    `Emulating round ${roundNumber} of ${tournament.totalRounds}...`,
+    "warning"
+  );
+
+  try {
+    const source = `
+      const core = (${Dubov2026Core.toString()})();
+
+      self.onmessage = function(event) {
+        try {
+          const result = core.solve(
+            event.data.input,
+            event.data.limits
+          );
+          self.postMessage({type:"done", result});
+        } catch (error) {
+          self.postMessage({
+            type:"error",
+            message:error.message,
+            code:error.code || ""
+          });
+        }
+      };
+    `;
+
+    const blob = new Blob([source], {type:"application/javascript"});
+    const workerUrl = URL.createObjectURL(blob);
+    const worker = new Worker(workerUrl);
+    URL.revokeObjectURL(workerUrl);
+
+    job = worker;
+    updateControls();
+
+    worker.onmessage = event => {
+      job = null;
+      worker.terminate();
+
+      if (event.data.type === "done") {
+        guarded(() => finishRound(event.data.result));
+      } else {
+        updateControls();
+        message("Pairing error: " + event.data.message, "error");
+      }
+    };
+
+    worker.onerror = event => {
+      job = null;
+      worker.terminate();
+      updateControls();
+      message(
+        "Pairing worker error: " +
+        (event.message || "Unknown worker error."),
+        "error"
+      );
+    };
+
+    worker.postMessage({
+      type:"pair",
+      input,
+      limits:{seconds:30}
+    });
+  } catch (error) {
+    job = null;
+    const result = Core.solve(input, {seconds:30});
+    finishRound(result);
+  }
+}
+
+function emulateTournament() {
+  guarded(() => {
+    requireIdle(true);
+    rebuildState();
+
+    if (tournamentComplete()) {
+      throw new Error("Turneringen har avslutats.");
+    }
+
+    if (!tournament.players.length) {
+      throw new Error("Registrera spelarna innan du simulerar en turnering.");
+    }
+
+    const active = tournament.players.filter(player => player.active);
+
+    if (!active.length) {
+      throw new Error("Det finns inga aktiva spelare.");
+    }
+
+    showTab("pairings");
+    runNextEmulatedRound({white:0, draw:0, black:0});
   });
 }
 
@@ -6486,6 +6633,11 @@ function updateControls() {
   }
 
   $("pairButton").disabled =
+    busy ||
+    pending ||
+    finished;
+
+  $("emulateButton").disabled =
     busy ||
     pending ||
     finished;

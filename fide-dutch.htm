@@ -391,7 +391,7 @@ a { color:var(--blue); }
             32 sample players
           </button>
           <button id="emulateButton" onclick="emulateTournament()">
-            Emulate tournament
+            Simulate tournament
           </button>
           <button id="resetButton" class="danger" onclick="resetTournament()">
             Reset
@@ -5410,7 +5410,7 @@ function runNextEmulatedRound(tally) {
   if (tournamentComplete()) {
     showTab("standings");
     message(
-      `Tournament emulated (${tournament.rounds.length} rounds; ` +
+      `Tournament simulated (${tournament.rounds.length} rounds; ` +
       `White wins: ${tally.white}, Draws: ${tally.draw}, ` +
       `Black wins: ${tally.black}). Final Result includes Buchholz cut 1, ` +
       "Buchholz, Sonneborn-Berger and Color Difference.",
@@ -5484,7 +5484,7 @@ function emulateTournament() {
     }
 
     if (!tournament.players.length) {
-      throw new Error("Register players before emulating a tournament.");
+      throw new Error("Register players before simulating a tournament.");
     }
 
     const active = tournament.players.filter(p => p.active);

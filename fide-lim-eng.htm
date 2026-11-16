@@ -319,7 +319,7 @@
           <button id="importButton" onclick="document.getElementById('playersFile').click()">Import players</button>
           <button id="pasteButton" onclick="document.getElementById('paste').showModal()">Paste players</button>
           <button id="sampleButton" onclick="samplePlayers()">32 sample players</button>
-	  <button id="emulateButton" onclick="emulateTournament()">Emulate tournament</button>
+	  <button id="emulateButton" onclick="emulateTournament()">Simulate tournament</button>
           <button class="danger" onclick="resetTournament()">Reset</button>
         </div>
       </div>
@@ -1883,7 +1883,7 @@ function runNextEmulatedRound(tally) {
   if (complete()) {
     tab("standings");
     notice(
-      `Tournament emulated (${tournament.rounds.length} rounds; ` +
+      `Tournament simulated (${tournament.rounds.length} rounds; ` +
       `White wins: ${tally.white}, Draws: ${tally.draw}, ` +
       `Black wins: ${tally.black}). Final Result includes BH-1, BH, and SB.`,
       "success"
@@ -1937,7 +1937,7 @@ function emulateTournament() {
 
     if (complete()) throw Error("Tournament complete.");
     if (!tournament.players.length)
-      throw Error("Register players before emulating a tournament.");
+      throw Error("Register players before simulating a tournament.");
 
     const active=tournament.players.filter(p=>p.active);
     if (!active.length) throw Error("No active players.");
