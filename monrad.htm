@@ -35,7 +35,7 @@
 
     .container {
       width: 100%;
-      max-width: 910px;
+      max-width: 930px;
     }
 
     header {
@@ -406,7 +406,7 @@ button.about-button:hover {
     </div>
 
     <p style="color: #64748b; font-size: 0.9rem; margin-top: 0; margin-bottom: 6px;">
-      Skriv ett namn per rad (minst 2 spelare). Du kan även öppna en textfil eller läsa in en sparad turnering.
+      Skriv en spelare per rad (minst 2 spelare). Du kan även ladda en textfil eller öppna en sparad turnering.
     </p>
     <textarea id="input-players" placeholder="Magnus Carlsen&#10;Hikaru Nakamura&#10;Alireza Firouzja...&#10;"></textarea>
     
@@ -564,6 +564,9 @@ Observera att den övre och den undre halvan av startfältet slumpas separat. F�
 </p>
 <p>
   Programmet sparar automatiskt den aktuella turneringen. När programmet startas om visas en dialogruta där turneringen kan återupptas. Om du vill spara turneringsronderna permanent använder du funktionen Spara turnering. Sparade turneringar kan sedan läsas in från startsidan.
+</p>
+<p>
+  Du kan ange klubb och rating efter spelarens namn i formatet ;klubb;rating. Klubb och rating visas därefter i slutställningen, och ratingen inkluderas även i TRF-filen (Tournament Report File). TRF-formatet kräver att spelarnamnen anges som "Efternamn, Förnamn". Om du inte avser att använda TRF-filen spelar namnformatet dock ingen roll.
 </p>
 <p>
   Du kan hantera olika turneringar samtidigt i olika webbläsare (till exempel Chrome och Edge). Varje webbläsare har sin egen autosparning, så en turnering måste återupptas i samma webbläsare som den startades i. Undvik att köra separata turneringar i flera flikar eller fönster inom samma webbläsarprofil, eftersom autosparningarna då kan skriva över varandra. För extra säkerhet, spara regelbundet JSON-säkerhetskopior.
@@ -802,12 +805,23 @@ document.addEventListener("keydown", function (event) {
       document.getElementById("input-tournament-name").value = tournamentName;
       updateTournamentTitles();
 
-      players = data.players.map(p => ({
-        ...p,
-        withdrawn: !!p.withdrawn,
-        matchResults: p.matchResults || [],
-        wnt: p.wnt || 0
-      }));
+      players = data.players.map(p => {
+        const rawRating = p.rating;
+        const numRating = (rawRating === null || rawRating === undefined || rawRating === '')
+          ? null
+          : Number(rawRating);
+
+        return {
+          ...p,
+          title: p.title || '',
+          club: p.club || '',
+          rating: Number.isFinite(numRating) && numRating > 0 ? numRating : null,
+          withdrawn: !!p.withdrawn,
+          matchResults: p.matchResults || [],
+          wnt: p.wnt || 0
+        };
+      });
+
       currentRound = data.currentRound;
       roundHistory = data.roundHistory || [];
       tournamentFinished = !!data.finished;
@@ -957,6 +971,61 @@ document.addEventListener("keydown", function (event) {
     return p.name + (p.withdrawn ? " (utgått)" : "");
   }
 
+  function getFinalPlayerDisplayName(p) {
+    const details = [];
+    if (p.club) details.push(p.club);
+    if (Number.isFinite(p.rating) && p.rating > 0) details.push(p.rating);
+
+    const detailStr = details.length > 0 ? ` &nbsp;(${details.join(', ')})` : '';
+    const withdrawnStr = p.withdrawn ? ' (utgått)' : '';
+
+    return `<strong>${p.name}</strong>${detailStr}${withdrawnStr}`;
+  }
+
+  function parsePlayerLine(line) {
+    const raw = line.trim();
+    if (!raw || raw.startsWith('#')) return null;
+
+    const delimiter = raw.includes('\t') ? '\t' : ';';
+    const parts = raw.split(delimiter).map(p => p.trim().replace(/^["']|["']$/g, ''));
+    const name = parts[0] || '';
+    if (!name) return null;
+
+    let title = '';
+    let club = '';
+    let ratingText = '';
+
+    if (parts.length >= 4) {
+      title = parts[1] || '';
+      club = parts[2] || '';
+      ratingText = parts[3] || '';
+    } else if (parts.length === 3) {
+      const isKnownTitle = /^(gm|im|fm|cm|wgm|wim|wfm|wcm)$/i.test(parts[1]);
+      const lastIsRating = parts[2] !== '' && !isNaN(Number(parts[2]));
+      if (isKnownTitle) {
+        title = parts[1];
+        if (lastIsRating) ratingText = parts[2];
+        else club = parts[2];
+      } else {
+        club = parts[1];
+        ratingText = parts[2];
+      }
+    } else if (parts.length === 2) {
+      if (/^(gm|im|fm|cm|wgm|wim|wfm|wcm)$/i.test(parts[1])) {
+        title = parts[1];
+      } else if (parts[1] !== '' && !isNaN(Number(parts[1]))) {
+        ratingText = parts[1];
+      } else {
+        club = parts[1];
+      }
+    }
+
+    const ratingNum = ratingText === '' ? null : Number(ratingText.replace(',', '.'));
+    const rating = Number.isFinite(ratingNum) && ratingNum > 0 ? ratingNum : null;
+
+    return { name, title, club, rating };
+  }
+
   function loadPlayersFile() {
     fetch('spelare.txt')
       .then(response => {
@@ -1093,33 +1162,40 @@ Lundin, Moa`;
       return;
     }
 
-    let names = text.split("\n").map(n => n.trim()).filter(n => n.length > 0);
-    if (names.length < 2) {
+    const lines = text.split(/\r?\n/);
+    let parsedPlayers = [];
+    for (const line of lines) {
+      const p = parsePlayerLine(line);
+      if (p) parsedPlayers.push(p);
+    }
+
+    if (parsedPlayers.length < 2) {
       alert("Du måste ange minst 2 spelare.");
       return;
     }
 
-    // Split the entered names into two halves. If the number of players
-    // is odd, the second half contains one more player.
-    const midpoint = Math.floor(names.length / 2);
-    const firstHalf = names.slice(0, midpoint);
-    const secondHalf = names.slice(midpoint);
+    // Split into two halves and shuffle each half independently
+    const midpoint = Math.floor(parsedPlayers.length / 2);
+    const firstHalf = parsedPlayers.slice(0, midpoint);
+    const secondHalf = parsedPlayers.slice(midpoint);
 
-    // Shuffle each half independently.
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-       [array[i], array[j]] = [array[j], array[i]];
+        [array[i], array[j]] = [array[j], array[i]];
       }
     }
 
     shuffle(firstHalf);
     shuffle(secondHalf);
-    names = firstHalf.concat(secondHalf);
+    const combined = firstHalf.concat(secondHalf);
 
-    players = names.map((name, index) => ({
+    players = combined.map((p, index) => ({
       id: index + 1,
-      name: name,
+      name: p.name,
+      title: p.title || '',
+      club: p.club || '',
+      rating: p.rating,
       originalPos: index + 1,
       currentPos: index + 1,
       score: 0,
@@ -1141,7 +1217,7 @@ Lundin, Moa`;
     document.getElementById("section-round").classList.remove("hidden");
     document.getElementById("section-standings").classList.remove("hidden");
 
-    lotRound();   // autosparar när lottningen är klar
+    lotRound();
   }
 
   /* --- STRYK SPELARE --- */
@@ -1214,13 +1290,13 @@ Lundin, Moa`;
   /* --- MONRADS LOTTMETOD OCH RONDSKAPANDE --- */
 
 function lotRound() {
-  document.getElementById("round-title").innerText = `Round ${currentRound}`;
+  document.getElementById("round-title").innerText = `Rond ${currentRound}`;
 
   const pool = players.filter(p => !p.withdrawn);
 
   if (pool.length < 2) {
-    alert("Fewer than 2 active players remain. The tournament is ending.");
-    finishTournamentEarly();
+    alert("Färre än 2 aktiva spelare återstår. Turneringen avslutas.");
+    finishTournamentEarly(true);
     return;
   }
 
@@ -1279,8 +1355,8 @@ function lotRound() {
   }
 
   if (!pairings) {
-    alert("Could not generate pairings. The tournament is ending.");
-    finishTournamentEarly();
+    alert("Kunde inte skapa parningar. Turneringen avslutas.");
+    finishTournamentEarly(true);
     return;
   }
 
@@ -1825,7 +1901,7 @@ function getColourSequence(player) {
 
       tr.innerHTML = `
         <td style="font-weight: bold; color: #64748b;">${idx + 1}</td>
-        <td><strong>${getPlayerDisplayName(p)}</strong></td>
+        <td>${getFinalPlayerDisplayName(p)}</td>
         <td><span class="score-badge">${formatPoints(p.score)}</span></td>
         <td style="font-weight: 600;">${formatTieBreak(tbValue, tieBreakSystem)}</td>
         <td style="font-family: monospace; overflow-wrap: anywhere;">${getColourSequence(p)}</td>
@@ -2186,7 +2262,7 @@ function printFinalStandings() {
       finalHtml += `
         <tr>
           <td style="text-align: center; font-weight: bold;">${idx + 1}</td>
-          <td><strong>${getPlayerDisplayName(p)}</strong></td>
+          <td>${getFinalPlayerDisplayName(p)}</td>
           <td style="font-weight: bold;">${formatPoints(p.score)}</td>
           <td>${formatTieBreak(tbValue, tieBreakSystem)}</td>
         </tr>
@@ -2389,7 +2465,7 @@ function generateTRF() {
 
 function saveTRF() {
   if (!players || !Array.isArray(players) || players.length === 0) {
-    alert('There is no tournament to export.');
+    alert('Det finns ingen turnering att exportera.');
     return;
   }
 
@@ -2397,7 +2473,7 @@ function saveTRF() {
     const content = generateTRF();
 
     if (!content) {
-      throw new Error('No TRF content was generated.');
+      throw new Error('Ingen TRF-data genererades.');
     }
 
     const blob = new Blob([content], {
@@ -2408,7 +2484,7 @@ function saveTRF() {
     const a = document.createElement('a');
     a.href = url;
 
-    const cleanName = String(tournamentName || 'monrad_tournament')
+    const cleanName = String(tournamentName || 'monrad_turnering')
       .trim()
       .replace(/[^\w\-]+/g, '_');
 
@@ -2429,7 +2505,7 @@ function saveTRF() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   } catch (error) {
     console.error(error);
-    alert(`Could not generate TRF file: ${error.message}`);
+    alert(`Kunde inte generera TRF-fil: ${error.message}`);
   }
 }
 

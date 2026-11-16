@@ -566,6 +566,9 @@ Note that the upper and lower halves of the field are randomized separately. As 
   This program automatically saves the current tournament. When the program is restarted, a dialog box allows the tournament to be resumed. To save the tournament rounds permanently, use the Save Tournament function. Saved tournaments can be loaded from the start page.
 </p>
 <p>
+  You may add the club and rating after the player's name in the format ;club;rating. The club and rating will then be displayed in the final standings, and the rating will also be included in the Tournament Report File (TRF). The TRF format requires player names to be entered as "Surname, First Name". However, if you do not intend to use the TRF file, the name format does not matter.
+</p>
+<p>
   You can run separate tournaments simultaneously in different browsers (for example, Chrome and Edge). Each browser maintains its own autosave, so a tournament should be resumed in the browser where it was started. Avoid running separate tournaments in multiple tabs or windows within the same browser profile, as their autosaves may overwrite one another. For added safety, save JSON backups regularly.
 </p>
 <p>
@@ -801,12 +804,23 @@ document.addEventListener("keydown", function (event) {
       document.getElementById("input-tournament-name").value = tournamentName;
       updateTournamentTitles();
 
-      players = data.players.map(p => ({
-        ...p,
-        withdrawn: !!p.withdrawn,
-        matchResults: p.matchResults || [],
-        wnt: p.wnt || 0
-      }));
+      players = data.players.map(p => {
+        const rawRating = p.rating;
+        const numRating = (rawRating === null || rawRating === undefined || rawRating === '')
+          ? null
+          : Number(rawRating);
+
+        return {
+          ...p,
+          title: p.title || '',
+          club: p.club || '',
+          rating: Number.isFinite(numRating) && numRating > 0 ? numRating : null,
+          withdrawn: !!p.withdrawn,
+          matchResults: p.matchResults || [],
+          wnt: p.wnt || 0
+        };
+      });
+
       currentRound = data.currentRound;
       roundHistory = data.roundHistory || [];
       tournamentFinished = !!data.finished;
@@ -1082,7 +1096,7 @@ Mitchell, Zoe
 Adams, Ethan`;
   }
 
-  function startTournament() {
+function startTournament() {
     tournamentName = document.getElementById("input-tournament-name").value.trim();
     updateTournamentTitles();
 
@@ -1092,33 +1106,40 @@ Adams, Ethan`;
       return;
     }
 
-    let names = text.split("\n").map(n => n.trim()).filter(n => n.length > 0);
-    if (names.length < 2) {
+    const lines = text.split(/\r?\n/);
+    let parsedPlayers = [];
+    for (const line of lines) {
+      const p = parsePlayerLine(line);
+      if (p) parsedPlayers.push(p);
+    }
+
+    if (parsedPlayers.length < 2) {
       alert("You must enter at least 2 players.");
       return;
     }
 
-    // Split the entered names into two halves. If the number of players
-    // is odd, the second half contains one more player.
-    const midpoint = Math.floor(names.length / 2);
-    const firstHalf = names.slice(0, midpoint);
-    const secondHalf = names.slice(midpoint);
+    // Split into two halves and shuffle each half independently
+    const midpoint = Math.floor(parsedPlayers.length / 2);
+    const firstHalf = parsedPlayers.slice(0, midpoint);
+    const secondHalf = parsedPlayers.slice(midpoint);
 
-    // Shuffle each half independently.
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-       [array[i], array[j]] = [array[j], array[i]];
+        [array[i], array[j]] = [array[j], array[i]];
       }
     }
 
     shuffle(firstHalf);
     shuffle(secondHalf);
-    names = firstHalf.concat(secondHalf);
+    const combined = firstHalf.concat(secondHalf);
 
-    players = names.map((name, index) => ({
+    players = combined.map((p, index) => ({
       id: index + 1,
-      name: name,
+      name: p.name,
+      title: p.title || '',
+      club: p.club || '',
+      rating: p.rating,
       originalPos: index + 1,
       currentPos: index + 1,
       score: 0,
@@ -1140,10 +1161,10 @@ Adams, Ethan`;
     document.getElementById("section-round").classList.remove("hidden");
     document.getElementById("section-standings").classList.remove("hidden");
 
-    lotRound();   // autosparar när lottningen är klar
+    lotRound();
   }
 
-  /* --- STRYK SPELARE --- */
+  /* --- DELETE PLAYER --- */
 
   function openWithdrawModal() {
     const activePlayers = players.filter(p => !p.withdrawn);
@@ -1824,7 +1845,7 @@ function getColourSequence(player) {
 
       tr.innerHTML = `
         <td style="font-weight: bold; color: #64748b;">${idx + 1}</td>
-        <td><strong>${getPlayerDisplayName(p)}</strong></td>
+        <td>${getFinalPlayerDisplayName(p)}</td>
         <td><span class="score-badge">${formatPoints(p.score)}</span></td>
         <td style="font-weight: 600;">${formatTieBreak(tbValue, tieBreakSystem)}</td>
         <td style="font-family: monospace; overflow-wrap: anywhere;">${getColourSequence(p)}</td>
@@ -2185,7 +2206,7 @@ function printFinalStandings() {
       finalHtml += `
         <tr>
           <td style="text-align: center; font-weight: bold;">${idx + 1}</td>
-          <td><strong>${getPlayerDisplayName(p)}</strong></td>
+          <td>${getFinalPlayerDisplayName(p)}</td>
           <td style="font-weight: bold;">${formatPoints(p.score)}</td>
           <td>${formatTieBreak(tbValue, tieBreakSystem)}</td>
         </tr>
@@ -2196,6 +2217,63 @@ function printFinalStandings() {
 
     openPrintPage(`${tournamentTitle} - Final Standings`, finalHtml);
   }
+
+function parsePlayerLine(line) {
+  const raw = line.trim();
+  if (!raw || raw.startsWith('#')) return null;
+
+  const delimiter = raw.includes('\t') ? '\t' : ';';
+  const parts = raw.split(delimiter).map(p => p.trim().replace(/^["']|["']$/g, ''));
+  const name = parts[0] || '';
+  if (!name) return null;
+
+  let title = '';
+  let club = '';
+  let ratingText = '';
+
+  if (parts.length >= 4) {
+    title = parts[1] || '';
+    club = parts[2] || '';
+    ratingText = parts[3] || '';
+  } else if (parts.length === 3) {
+    const isKnownTitle = /^(gm|im|fm|cm|wgm|wim|wfm|wcm)$/i.test(parts[1]);
+    const lastIsRating = parts[2] !== '' && !isNaN(Number(parts[2]));
+    if (isKnownTitle) {
+      title = parts[1];
+      if (lastIsRating) ratingText = parts[2];
+      else club = parts[2];
+    } else {
+      club = parts[1];
+      ratingText = parts[2];
+    }
+  } else if (parts.length === 2) {
+    if (/^(gm|im|fm|cm|wgm|wim|wfm|wcm)$/i.test(parts[1])) {
+      title = parts[1];
+    } else if (parts[1] !== '' && !isNaN(Number(parts[1]))) {
+      ratingText = parts[1];
+    } else {
+      club = parts[1];
+    }
+  }
+
+  const ratingNum = ratingText === '' ? null : Number(ratingText.replace(',', '.'));
+  const rating = Number.isFinite(ratingNum) && ratingNum > 0 ? ratingNum : null;
+
+  return { name, title, club, rating };
+}
+
+function getFinalPlayerDisplayName(p) {
+  const details = [];
+  if (p.club) details.push(p.club);
+  if (Number.isFinite(p.rating) && p.rating > 0) details.push(p.rating);
+  
+  // " &nbsp;(" creates an extra blank space between the name and the parenthesis
+  const detailStr = details.length > 0 ? ` &nbsp;(${details.join(', ')})` : '';
+  const withdrawnStr = p.withdrawn ? ' (withdrawn)' : '';
+  
+  return `<strong>${p.name}</strong>${detailStr}${withdrawnStr}`;
+}
+
 
 /* ============================================================
    TRF Export adapted for Monrad Pairing System
