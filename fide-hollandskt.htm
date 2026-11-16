@@ -325,6 +325,9 @@ a { color:var(--blue); }
             Klistra in spelare
           </button>
           <button id="sampleButton" onclick="loadSamplePlayers()">32 exempelspelare</button>
+          <button id="emulateButton" onclick="emulateTournament()">
+            Emulera turnering
+          </button>
           <button id="resetButton" class="danger" onclick="resetTournament()">Återställ</button>
         </div>
       </div>
@@ -3817,39 +3820,187 @@ function changeResult(index, value) {
   });
 }
 
+function finalizeActiveRound() {
+  tournament.rounds.push({
+    roundNumber:tournament.currentRound,
+    pairings:JSON.parse(
+      JSON.stringify(tournament.activePairings)
+    ),
+    audit:tournament.activeAudit
+  });
+
+  tournament.activePairings = [];
+  tournament.activeAudit = null;
+  tournament.currentRound = tournament.rounds.length;
+
+  tournament.players.forEach(p => {
+    p.nextRoundStatus = "pair";
+  });
+
+  pendingImported = false;
+
+  rebuildState();
+  renderAll();
+  autoSave();
+}
+
 function confirmRound() {
   guarded(() => {
     requireIdle();
+
     if (!tournament.activePairings.length) return;
+
     if (tournament.activePairings.some(
       r => r.kind === "game" && !RESULTS.includes(r.result)
-    )) throw new Error("Ange resultatet på varje bord före bekräftelsen.");
+    )) {
+      throw new Error(
+        "Mata in resultaten för samtliga bord innan du bekräftar."
+      );
+    }
 
     if (!confirm(
-      "Bekräfta och arkivera denna rond? Kontrollera först resultaten och de faktiskt spelade färgerna."
-    )) return;
+      "Bekräfta och arkivera denna rond? Kontrollera först " +
+      "resultaten och de faktiskt spelade färgerna."
+    )) {
+      return;
+    }
 
-    tournament.rounds.push({
-      roundNumber:tournament.currentRound,
-      pairings:JSON.parse(JSON.stringify(tournament.activePairings)),
-      audit:tournament.activeAudit
-    });
-    tournament.activePairings = [];
-    tournament.activeAudit = null;
-    tournament.currentRound = tournament.rounds.length;
-    tournament.players.forEach(p => { p.nextRoundStatus = "pair"; });
-    pendingImported = false;
-
-    rebuildState();
-    renderAll();
-    autoSave();
+    finalizeActiveRound();
     showTab("standings");
+
     message(
       tournamentComplete()
-        ? "Turneringen är avslutad. Slutresultatet visar Buchholz med lägsta värdet struket, " +
-          "Buchholz, Sonneborn-Berger och färgdifferens."
-        : "Ronden har bekräftats. Deltagandet i nästa rond kan nu uppdateras."
+	? "Turneringen är avslutad. Slutresultatet inkluderar Buchholz cut 1, " +
+	  "Buchholz, Sonneborn-Berger och färgskillnad."
+        : "Ronden är bekräftad. Deltagandet inför nästa rond kan nu uppdateras."
     );
+  });
+}
+
+function assignEmulatedResults(tally) {
+  const map = new Map(
+    tournament.players.map(p => [p.id, p])
+  );
+
+  for (const record of tournament.activePairings) {
+    if (record.kind !== "game") continue;
+
+    const white = map.get(record.whiteId);
+    const black = map.get(record.blackId);
+
+    const diff = (white ? white.rating : 1500) -
+      (black ? black.rating : 1500);
+
+    // Base rates: 40% White wins, 35% draws, 25% Black wins.
+    // Shift White vs Black win chances symmetrically by rating difference.
+    const shift = 0.23 * Math.tanh(diff / 150);
+    const pWhite = 0.40 + shift;
+    const pDraw = 0.35;
+
+    const r = Math.random();
+
+    if (r < pWhite) {
+      record.result = "1-0";
+      if (tally) tally.white++;
+    } else if (r < pWhite + pDraw) {
+      record.result = "0.5-0.5";
+      if (tally) tally.draw++;
+    } else {
+      record.result = "0-1";
+      if (tally) tally.black++;
+    }
+  }
+}
+
+function runNextEmulatedRound(tally) {
+  if (tournamentComplete()) {
+    showTab("standings");
+    message(
+      `Turneringen har emulerats (${tournament.rounds.length} ronder; ` +
+      `vita vinster: ${tally.white}; remier: ${tally.draw}; ` +
+      `svarta vinster: ${tally.black}). Slutresultatet inkluderar Buchholz cut 1, ` +
+      `Buchholz, Sonneborn-Berger och färgskillnad.`,
+      "success"
+    );
+    return;
+  }
+
+  const roundNumber = tournament.rounds.length + 1;
+  const active = tournament.players.filter(p => p.active);
+
+  const toPair = active.filter(
+    p => p.nextRoundStatus === "pair"
+  );
+
+  const scheduled = active.filter(
+    p => p.nextRoundStatus !== "pair"
+  );
+
+  const input = {
+    roundNumber,
+    totalRounds:tournament.totalRounds,
+    winPoints:tournament.winPoints,
+    initialColor:tournament.initialColor,
+    players:JSON.parse(JSON.stringify(toPair))
+  };
+
+  const plan = {
+    roundNumber,
+    input,
+    scheduled:scheduled.map(p => ({
+      id:p.id,
+      ...unplayedDetails(p)
+    }))
+  };
+
+  const finishRound = result => {
+    commitRound(result, plan);
+    assignEmulatedResults(tally);
+    finalizeActiveRound();
+    runNextEmulatedRound(tally);
+  };
+
+  if (!toPair.length) {
+    finishRound({
+      engineVersion:Core.VERSION,
+      pairs:[],
+      pabId:null,
+      byeScore:null,
+      trace:[],
+      stats:{
+        nodes:0,
+        assignmentCalls:0,
+        dfsRemainderPartitions:0,
+        elapsedMs:0
+      }
+    });
+  } else {
+    launchWorker("pair", input, finishRound);
+  }
+}
+
+function emulateTournament() {
+  guarded(() => {
+    requireIdle(true);
+    applySettings();
+    rebuildState();
+
+    if (tournamentComplete()) {
+      throw new Error("Turneringen har avslutats.");
+    }
+
+    if (!tournament.players.length) {
+      throw new Error("Registrera spelarna innan du simulerar en turnering.");
+    }
+
+    const active = tournament.players.filter(p => p.active);
+
+    if (!active.length) {
+      throw new Error("Det finns inga aktiva spelare.");
+    }
+
+    showTab("pairings");
+    runNextEmulatedRound({white:0, draw:0, black:0});
   });
 }
 
@@ -4043,7 +4194,7 @@ function renderStandings() {
       }
       <th title="V = vit, S = svart, - = ospelad rond">Färger per rond</th>
       <th title="Färgdifferens: antal vita partier minus antal svarta">FD</th>
-      <th title="D = nedflyttning, U = uppflyttning, - = ingen flytning">Flytningar per rond</th>
+      <th title="D = nedflyttning, U = uppflyttning, - = ingen flyttning">Flyttningar per rond</th>
     </tr>`;
 
   const sorted = [...tournament.players].sort((a,b) => {

@@ -319,6 +319,7 @@
           <button id="importButton" onclick="document.getElementById('playersFile').click()">Import players</button>
           <button id="pasteButton" onclick="document.getElementById('paste').showModal()">Paste players</button>
           <button id="sampleButton" onclick="samplePlayers()">32 sample players</button>
+	  <button id="emulateButton" onclick="emulateTournament()">Emulate tournament</button>
           <button class="danger" onclick="resetTournament()">Reset</button>
         </div>
       </div>
@@ -1818,6 +1819,21 @@ function swapColours(index, roundNumber = null) {
   });
 }
 
+function finalizeActiveRound() {
+  tournament.rounds.push({
+    number:tournament.rounds.length+1,
+    pairings:structuredClone(tournament.pending),
+    audit:tournament.pendingAudit
+  });
+  tournament.pending=[];
+  tournament.pendingAudit=null;
+  tournament.players.forEach(p=>p.status="pair");
+  importedPending=false;
+  rebuild();
+  render();
+  saveLocal();
+}
+
 function confirmRound() {
   guarded(()=>{
     requireIdle();
@@ -1825,13 +1841,109 @@ function confirmRound() {
     if (tournament.pending.some(r=>r.kind==="game"&&!RESULTS.includes(r.result)))
       throw Error("Enter every board result first.");
     if (!confirm("Confirm and archive this round? Check results and actual colours.")) return;
-    tournament.rounds.push({number:tournament.rounds.length+1,
-      pairings:structuredClone(tournament.pending),
-      audit:tournament.pendingAudit});
-    tournament.pending=[];tournament.pendingAudit=null;
-    tournament.players.forEach(p=>p.status="pair");
-    importedPending=false;rebuild();render();saveLocal();tab("standings");
+    finalizeActiveRound();
+    tab("standings");
     notice(complete()?"Tournament complete.":"Round archived. Set participation for the next round.");
+  });
+}
+
+function assignEmulatedResults(tally) {
+  const map=new Map(tournament.players.map(p=>[p.id,p]));
+
+  for (const rec of tournament.pending) {
+    if (rec.kind!=="game") continue;
+
+    const white=map.get(rec.whiteId);
+    const black=map.get(rec.blackId);
+
+    const diff=(white?white.rating:1500)-(black?black.rating:1500);
+
+    // Base rates: 40% White wins, 35% draws, 25% Black wins.
+    // Shift White vs Black win chances symmetrically by rating difference.
+    const shift=0.23*Math.tanh(diff/150);
+    const pWhite=0.40+shift;
+    const pDraw=0.35;
+
+    const r=Math.random();
+
+    if (r<pWhite) {
+      rec.result="1-0";
+      if (tally) tally.white++;
+    } else if (r<pWhite+pDraw) {
+      rec.result="½-½";
+      if (tally) tally.draw++;
+    } else {
+      rec.result="0-1";
+      if (tally) tally.black++;
+    }
+  }
+}
+
+function runNextEmulatedRound(tally) {
+  if (complete()) {
+    tab("standings");
+    notice(
+      `Tournament emulated (${tournament.rounds.length} rounds; ` +
+      `White wins: ${tally.white}, Draws: ${tally.draw}, ` +
+      `Black wins: ${tally.black}). Final Result includes BH-1, BH, and SB.`,
+      "success"
+    );
+    return;
+  }
+
+  const n=tournament.rounds.length+1;
+  const active=tournament.players.filter(p=>p.active);
+  const pairing=active.filter(p=>p.status==="pair");
+  const scheduled=active.filter(p=>p.status!=="pair").map(p=>({
+    id:p.id,
+    points:p.status==="unplayed-draw"?.5:p.status==="unplayed-win"?1:0,
+    label:p.status==="unplayed-win"?"Administrative full-point absence":
+      p.status==="unplayed-draw"?"Requested half-point absence":
+      "Requested zero-point absence"
+  }));
+  const input={
+    roundNumber:n,
+    totalRounds:tournament.totalRounds,
+    initialColor:tournament.initialColor,
+    players:JSON.parse(JSON.stringify(pairing))
+  };
+  const plan={number:n,input,scheduled};
+
+  const finishRound=result=>{
+    commit(result,plan);
+    assignEmulatedResults(tally);
+    finalizeActiveRound();
+    runNextEmulatedRound(tally);
+  };
+
+  if (!pairing.length) {
+    finishRound({
+      engineVersion:Core.VERSION,
+      pairs:[],
+      pabId:null,
+      trace:[],
+      stats:{nodes:0,elapsedMs:0}
+    });
+  } else {
+    startWorker("pair",input,finishRound);
+  }
+}
+
+function emulateTournament() {
+  guarded(()=>{
+    requireIdle(true);
+    settings();
+    rebuild();
+
+    if (complete()) throw Error("Tournament complete.");
+    if (!tournament.players.length)
+      throw Error("Register players before emulating a tournament.");
+
+    const active=tournament.players.filter(p=>p.active);
+    if (!active.length) throw Error("No active players.");
+
+    tab("pairings");
+    runNextEmulatedRound({white:0,draw:0,black:0});
   });
 }
 
@@ -2128,6 +2240,7 @@ function render() {
                      "importButton", "pasteButton", "sampleButton"])
     $(key).disabled = registrationBlocked;
   $("generateButton").disabled = busy || pending || finished;
+  $("emulateButton").disabled = busy || pending || finished;
   $("cancelButton").disabled = !busy;
   $("testsButton").disabled = busy;
   $("confirmButton").disabled = busy || !pending ||
