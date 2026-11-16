@@ -297,8 +297,8 @@
     }
 
     .player-number {
-      color: var(--muted);
-      font-size: 0.9em;
+      color: inherit;
+      font-size: 1em;
     }
 
     .score {
@@ -1024,7 +1024,7 @@ function playerDisplay(player) {
 
   return (
     `<span class="player-number">` +
-    `#${player.startNo}</span> ` +
+    `${player.startNo}.</span> ` +
     `${escapeHTML(player.name)}` +
     title +
     club
@@ -5059,7 +5059,7 @@ function printCurrentPairings() {
             </td>
 
             <td>
-              #${white.startNo}
+              ${white.startNo}.
 	      ${escapeHTML(white.name)}${white.title ? ` (${escapeHTML(white.title)})` : ""}
 
               ${
@@ -5083,7 +5083,7 @@ function printCurrentPairings() {
                 pairing.type === "bye"
                   ? "<strong>BYE</strong>"
                   : `
-                    #${black.startNo}
+                    ${black.startNo}.
 		    ${escapeHTML(black.name)}${black.title ? ` (${escapeHTML(black.title)})` : ""}
 
                     ${

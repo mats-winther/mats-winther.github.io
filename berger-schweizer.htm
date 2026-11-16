@@ -631,9 +631,6 @@
     <p id="roster-info" class="hint"></p>
 
     <div class="btn-bar">
-      <button type="button" class="secondary" onclick="loadSamplePlayers()">
-        🧑‍🧒‍🧒 33 exempelspelare
-      </button>
 
       <button type="button" class="secondary"
               onclick="document.getElementById('txt-input').click()">
@@ -643,6 +640,10 @@
       <button type="button" class="secondary"
               onclick="document.getElementById('json-input').click()">
         📂 Läs in turnering (.json)
+      </button>
+
+      <button type="button" class="secondary" onclick="loadSamplePlayers()">
+        🧑‍🧒‍🧒 33 exempelspelare
       </button>
 
       <button type="button" class="secondary" onclick="clearPlayers()">
@@ -1819,7 +1820,7 @@ function countDelimiterOutsideQuotes(line, delimiter) {
 }
 
 function detectDelimiter(line) {
-  const candidates = ["\t", ";", ","];
+  const candidates = ["\t", ";"];
 
   const counts = candidates.map(delimiter => ({
     delimiter,
