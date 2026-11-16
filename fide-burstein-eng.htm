@@ -388,6 +388,9 @@ a { color:var(--blue); }
           <button id="sampleButton" onclick="loadSamplePlayers()">
             32 sample players
           </button>
+          <button id="emulateButton" onclick="emulateTournament()">
+            Emulate tournament
+          </button>
           <button id="resetButton" class="danger" onclick="resetTournament()">
             Reset
           </button>
@@ -7920,6 +7923,30 @@ function changeResult(index,value) {
   });
 }
 
+function finalizeActiveRound() {
+  tournament.rounds.push({
+    roundNumber:tournament.currentRound,
+    pairings:JSON.parse(
+      JSON.stringify(tournament.activePairings)
+    ),
+    audit:tournament.activeAudit
+  });
+
+  tournament.activePairings = [];
+  tournament.activeAudit = null;
+  tournament.currentRound = tournament.rounds.length;
+
+  tournament.players.forEach(p => {
+    p.nextRoundStatus = "pair";
+  });
+
+  pendingImported = false;
+
+  rebuildState();
+  renderAll();
+  autoSave();
+}
+
 function confirmRound() {
   guarded(() => {
     requireIdle();
@@ -7941,27 +7968,7 @@ function confirmRound() {
       return;
     }
 
-    tournament.rounds.push({
-      roundNumber:tournament.currentRound,
-      pairings:JSON.parse(
-        JSON.stringify(tournament.activePairings)
-      ),
-      audit:tournament.activeAudit
-    });
-
-    tournament.activePairings = [];
-    tournament.activeAudit = null;
-    tournament.currentRound = tournament.rounds.length;
-
-    tournament.players.forEach(p => {
-      p.nextRoundStatus = "pair";
-    });
-
-    pendingImported = false;
-
-    rebuildState();
-    renderAll();
-    autoSave();
+    finalizeActiveRound();
     showTab("standings");
 
     message(
@@ -7969,6 +7976,130 @@ function confirmRound() {
         ? "Tournament complete. Final Result includes Buchholz cut 1, Buchholz, Sonnenborn-Berger and Color Difference."
         : "Round confirmed. Participation for the next round may now be updated."
     );
+  });
+}
+
+function assignEmulatedResults(tally) {
+  const map = new Map(
+    tournament.players.map(p => [p.id, p])
+  );
+
+  for (const record of tournament.activePairings) {
+    if (record.kind !== "game") continue;
+
+    const white = map.get(record.whiteId);
+    const black = map.get(record.blackId);
+
+    const diff = (white ? white.rating : 1500) -
+      (black ? black.rating : 1500);
+
+    // Base rates: 40% White wins, 35% draws, 25% Black wins.
+    // Shift White vs Black win chances symmetrically by rating difference.
+    const shift = 0.23 * Math.tanh(diff / 150);
+    const pWhite = 0.40 + shift;
+    const pDraw = 0.35;
+
+    const r = Math.random();
+
+    if (r < pWhite) {
+      record.result = "1-0";
+      if (tally) tally.white++;
+    } else if (r < pWhite + pDraw) {
+      record.result = "0.5-0.5";
+      if (tally) tally.draw++;
+    } else {
+      record.result = "0-1";
+      if (tally) tally.black++;
+    }
+  }
+}
+
+function runNextEmulatedRound(tally) {
+  if (tournamentComplete()) {
+    showTab("standings");
+    message(
+      `Tournament emulated (${tournament.rounds.length} rounds; ` +
+      `White wins: ${tally.white}, Draws: ${tally.draw}, ` +
+      `Black wins: ${tally.black}). Final Result includes Buchholz cut 1, ` +
+      "Buchholz, Sonneborn-Berger and Color Difference.",
+      "success"
+    );
+    return;
+  }
+
+  applyBursteinPairingIndex(tournament);
+
+  const roundNumber = tournament.rounds.length + 1;
+  const active = tournament.players.filter(p => p.active);
+
+  const toPair = active.filter(
+    p => p.nextRoundStatus === "pair"
+  );
+
+  const scheduled = active.filter(
+    p => p.nextRoundStatus !== "pair"
+  );
+
+  const input = {
+    roundNumber,
+    totalRounds:tournament.totalRounds,
+    winPoints:tournament.winPoints,
+    initialColor:tournament.initialColor,
+    players:JSON.parse(JSON.stringify(toPair))
+  };
+
+  const plan = {
+    roundNumber,
+    input,
+    scheduled:scheduled.map(p => ({
+      id:p.id,
+      ...unplayedDetails(p)
+    }))
+  };
+
+  const finishRound = result => {
+    commitRound(result, plan);
+    assignEmulatedResults(tally);
+    finalizeActiveRound();
+    runNextEmulatedRound(tally);
+  };
+
+  if (!toPair.length) {
+    finishRound({
+      engineVersion:Core.VERSION,
+      pairs:[],
+      pabId:null,
+      byeScore:null,
+      trace:[],
+      stats:{nodes:0,elapsedMs:0}
+    });
+  } else {
+    launchWorker("pair", input, finishRound);
+  }
+}
+
+function emulateTournament() {
+  guarded(() => {
+    requireIdle(true);
+    applySettings();
+    rebuildState();
+
+    if (tournamentComplete()) {
+      throw new Error("The tournament is complete.");
+    }
+
+    if (!tournament.players.length) {
+      throw new Error("Register players before emulating a tournament.");
+    }
+
+    const active = tournament.players.filter(p => p.active);
+
+    if (!active.length) {
+      throw new Error("No players are active.");
+    }
+
+    showTab("pairings");
+    runNextEmulatedRound({white:0, draw:0, black:0});
   });
 }
 
@@ -8413,7 +8544,8 @@ function updateControls() {
   $("resetButton").disabled = busy;
   $("testButton").disabled = busy;
 
-  $("pairButton").disabled = busy || pending || finished;
+$("pairButton").disabled = busy || pending || finished;
+  $("emulateButton").disabled = busy || pending || finished;
   $("cancelButton").disabled = !busy;
 
   $("confirmButton").disabled =
