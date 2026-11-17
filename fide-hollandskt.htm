@@ -314,7 +314,7 @@ a { color:var(--blue); }
 
     <div class="card">
       <div class="row between">
-        <h2>Spelare (<span id="playerCount">0 / 60</span>)</h2>
+        <h2>Spelare (<span id="playerCount">0 / 70</span>)</h2>
         <div class="row no-print">
           <button id="importButton"
                   onclick="document.getElementById('playersFile').click()">
@@ -365,7 +365,7 @@ a { color:var(--blue); }
         Kontrollera den inledande ordningen efter rating, titel och namn.
         Lottningen styrs av sparade startnummer, inte av särskiljningen i resultatlistan.
         Vid import av en TRF-fil hämtas endast registreringsuppgifter, inte turneringshistoriken.
-        Deltagarlistan är begränsad till 60 spelare.
+        Deltagarlistan är begränsad till 70 spelare.
       </p>
 
       <div class="table-wrap">
@@ -475,7 +475,7 @@ a { color:var(--blue); }
   <p>
     Sökningen sker lokalt inom varje lottningsgrupp, med föreskriven framförhållning enligt C8.
     Avbrutna beräkningar publicerar aldrig en preliminär bästa lottning.
-    Lottningssökningar har en fast tidsgräns på 20 sekunder.
+    Lottningssökningar har en fast tidsgräns.
   </p>
   <p>
     Fasta homogena S1/S2-indelningar med noll eller en nedflyttad spelare
@@ -509,7 +509,7 @@ a { color:var(--blue); }
   Inställningar och turneringsdata sparas automatiskt och kontinuerligt i webbläsarens lagringsutrymme (localStorage). För att köra separata turneringar samtidigt utan att skriva över data, använd olika webbläsare (t.ex. Chrome och Edge). Spara en JSON-säkerhetskopia efter varje rond. För att korrigera ett tidigare inrapporterat resultat, återställ säkerhetskopian från den ronden och mata in resultaten på nytt.</p>
 
   <p><strong>Registrering &amp; spelarkapacitet:</strong> 
-  Turneringen är begränsad till maximalt <strong>60 deltagare</strong>. Så snart lottningen för rond 1 har skapats stängs registreringen permanent (inga nya spelare kan läggas till) och turneringsinställningarna låses. Mellan ronderna kan spelare redigeras, avanmälas, återinsättas eller tilldelas ospelade ronder (noll-, remi- eller vinstvärde).</p>
+  Turneringen är begränsad till maximalt <strong>70 deltagare</strong>. Så snart lottningen för rond 1 har skapats stängs registreringen permanent (inga nya spelare kan läggas till) och turneringsinställningarna låses. Mellan ronderna kan spelare redigeras, avanmälas, återinsättas eller tilldelas ospelade ronder (noll-, remi- eller vinstvärde).</p>
 
   <p><strong>Importera spelarlistor:</strong> 
   Spelarlistor kan importeras via fil (.txt, .csv, .trf) eller klistras in direkt. Rader som börjar med # eller //, samt tomma rader, ignoreras.</p>
@@ -581,6 +581,7 @@ function Dutch2026Core() {
       const c = Array.isArray(a[i])
         ? compareArrays(a[i], b[i])
         : Math.sign(a[i] - b[i]);
+
       if (c) return c;
     }
     return 0;
@@ -598,41 +599,71 @@ function Dutch2026Core() {
 
   function preference(player) {
     const h = player.playedColors;
-    if (!h.length) return {color:null, strength:0, type:"none"};
+
+    if (!h.length) {
+      return {color:null, strength:0, type:"none"};
+    }
 
     const cd = colorDifference(player);
     const last = h[h.length - 1];
     const two = h.length >= 2 && last === h[h.length - 2];
+
     const absoluteWhite = cd < -1 || (two && last === "B");
     const absoluteBlack = cd > 1 || (two && last === "W");
 
     if (absoluteWhite && absoluteBlack) {
       throw fault(
         "INPUT",
-        "Motstridiga absoluta färgkrav i historiken för startnummer " +
-        player.tpn + ". Rätta de bakomliggande turneringsuppgifterna."
+        "Conflicting absolute color requirements in the history of TPN " +
+        player.tpn + ". Resolve the underlying tournament data."
       );
     }
-    if (absoluteWhite) return {color:"W", strength:3, type:"absolute"};
-    if (absoluteBlack) return {color:"B", strength:3, type:"absolute"};
-    if (cd === 1) return {color:"B", strength:2, type:"strong"};
-    if (cd === -1) return {color:"W", strength:2, type:"strong"};
-    return {color:last === "W" ? "B" : "W", strength:1, type:"mild"};
+
+    if (absoluteWhite) {
+      return {color:"W", strength:3, type:"absolute"};
+    }
+
+    if (absoluteBlack) {
+      return {color:"B", strength:3, type:"absolute"};
+    }
+
+    if (cd === 1) {
+      return {color:"B", strength:2, type:"strong"};
+    }
+
+    if (cd === -1) {
+      return {color:"W", strength:2, type:"strong"};
+    }
+
+    return {
+      color:last === "W" ? "B" : "W",
+      strength:1,
+      type:"mild"
+    };
   }
 
   function topscorer(player, context) {
     return context.roundNumber === context.totalRounds &&
-      player.score > ((context.roundNumber - 1) * context.winPoints) / 2;
+      player.score >
+        ((context.roundNumber - 1) * context.winPoints) / 2;
   }
 
   function compatible(a, b, context) {
     if (!a || !b || a.id === b.id) return false;
-    if (a.opponents.includes(b.id) || b.opponents.includes(a.id)) return false;
+
+    if (a.opponents.includes(b.id) || b.opponents.includes(a.id)) {
+      return false;
+    }
+
     const pa = preference(a);
     const pb = preference(b);
+
     return !(
-      !topscorer(a, context) && !topscorer(b, context) &&
-      pa.strength === 3 && pb.strength === 3 && pa.color === pb.color
+      !topscorer(a, context) &&
+      !topscorer(b, context) &&
+      pa.strength === 3 &&
+      pb.strength === 3 &&
+      pa.color === pb.color
     );
   }
 
@@ -644,28 +675,42 @@ function Dutch2026Core() {
 
     function give(player, color) {
       const other = player === high ? low : high;
+
       return color === "W"
         ? {white:player, black:other}
         : {white:other, black:player};
     }
 
-    if (hp.color && lp.color && hp.color !== lp.color) return give(high, hp.color);
-    if (hp.strength > lp.strength) return give(high, hp.color);
-    if (lp.strength > hp.strength) return give(low, lp.color);
+    if (hp.color && lp.color && hp.color !== lp.color) {
+      return give(high, hp.color);
+    }
+
+    if (hp.strength > lp.strength) {
+      return give(high, hp.color);
+    }
+
+    if (lp.strength > hp.strength) {
+      return give(low, lp.color);
+    }
 
     if (hp.strength === 3 && lp.strength === 3) {
       const hd = Math.abs(colorDifference(high));
       const ld = Math.abs(colorDifference(low));
+
       if (hd > ld) return give(high, hp.color);
       if (ld > hd) return give(low, lp.color);
     }
 
     const hh = high.playedColors;
     const lh = low.playedColors;
+
     for (let back = 1; back <= Math.min(hh.length, lh.length); back++) {
       const hc = hh[hh.length - back];
       const lc = lh[lh.length - back];
-      if (hc !== lc) return give(high, hc === "W" ? "B" : "W");
+
+      if (hc !== lc) {
+        return give(high, hc === "W" ? "B" : "W");
+      }
     }
 
     if (hp.color) return give(high, hp.color);
@@ -674,6 +719,7 @@ function Dutch2026Core() {
     const color = high.tpn % 2
       ? initialColor
       : (initialColor === "W" ? "B" : "W");
+
     return give(high, color);
   }
 
@@ -688,15 +734,19 @@ function Dutch2026Core() {
    */
   function hasPerfectMatchingGraph(graph, work = () => {}) {
     work();
+
     const n = graph.length;
+
     if (n % 2) return false;
     if (n === 0) return true;
+
     for (let v = 0; v < n; v++) {
       if (graph[v].length === 0) return false;
     }
 
     const mate = new Int32Array(n);
     mate.fill(-1);
+
     let matchedVertices = 0;
 
     /*
@@ -705,8 +755,10 @@ function Dutch2026Core() {
      */
     for (let v = 0; v < n; v++) {
       if (mate[v] !== -1) continue;
+
       for (const u of graph[v]) {
         work();
+
         if (mate[u] === -1) {
           mate[v] = u;
           mate[u] = v;
@@ -721,22 +773,29 @@ function Dutch2026Core() {
     const parent = new Int32Array(n);
     const base = new Int32Array(n);
     const queue = new Int32Array(n);
+
     const used = new Uint8Array(n);
     const blossom = new Uint8Array(n);
     const ancestor = new Uint8Array(n);
 
     function lowestCommonAncestor(a, b) {
       ancestor.fill(0);
+
       while (true) {
         work();
+
         a = base[a];
         ancestor[a] = 1;
+
         if (mate[a] === -1) break;
         a = parent[mate[a]];
       }
+
       while (true) {
         work();
+
         b = base[b];
+
         if (ancestor[b]) return b;
         b = parent[mate[b]];
       }
@@ -745,8 +804,10 @@ function Dutch2026Core() {
     function markPath(v, blossomBase, child) {
       while (base[v] !== blossomBase) {
         work();
+
         blossom[base[v]] = 1;
         blossom[base[mate[v]]] = 1;
+
         parent[v] = child;
         child = mate[v];
         v = parent[mate[v]];
@@ -756,28 +817,44 @@ function Dutch2026Core() {
     function findAugmentingEndpoint(root) {
       parent.fill(-1);
       used.fill(0);
-      for (let v = 0; v < n; v++) base[v] = v;
+
+      for (let v = 0; v < n; v++) {
+        base[v] = v;
+      }
+
       let head = 0;
       let tail = 0;
+
       queue[tail++] = root;
       used[root] = 1;
 
       while (head < tail) {
         const v = queue[head++];
+
         for (const u of graph[v]) {
           work();
-          if (base[v] === base[u] || mate[v] === u) continue;
 
-          if (u === root || (mate[u] !== -1 && parent[mate[u]] !== -1)) {
+          if (base[v] === base[u] || mate[v] === u) {
+            continue;
+          }
+
+          if (
+            u === root ||
+            (mate[u] !== -1 && parent[mate[u]] !== -1)
+          ) {
             const blossomBase = lowestCommonAncestor(v, u);
+
             blossom.fill(0);
             markPath(v, blossomBase, u);
             markPath(u, blossomBase, v);
 
             for (let i = 0; i < n; i++) {
               work();
+
               if (!blossom[base[i]]) continue;
+
               base[i] = blossomBase;
+
               if (!used[i]) {
                 used[i] = 1;
                 queue[tail++] = i;
@@ -785,8 +862,11 @@ function Dutch2026Core() {
             }
           } else if (parent[u] === -1) {
             parent[u] = v;
+
             if (mate[u] === -1) return u;
+
             const next = mate[u];
+
             if (!used[next]) {
               used[next] = 1;
               queue[tail++] = next;
@@ -794,25 +874,37 @@ function Dutch2026Core() {
           }
         }
       }
+
       return -1;
     }
 
     for (let root = 0; root < n; root++) {
       if (mate[root] !== -1) continue;
+
       let v = findAugmentingEndpoint(root);
+
       if (v === -1) continue;
 
       while (v !== -1) {
         work();
+
         const p = parent[v];
         const next = p === -1 ? -1 : mate[p];
+
         mate[v] = p;
-        if (p !== -1) mate[p] = v;
+
+        if (p !== -1) {
+          mate[p] = v;
+        }
+
         v = next;
       }
+
       matchedVertices += 2;
+
       if (matchedVertices === n) return true;
     }
+
     return false;
   }
 
@@ -831,35 +923,50 @@ function Dutch2026Core() {
    */
   function minimumCostAssignment(cost, work = () => {}) {
     work();
+
     const n = cost.length;
+
     if (n === 0) return [];
 
     const u = new Array(n + 1).fill(0n);
     const v = new Array(n + 1).fill(0n);
+
     const p = new Int32Array(n + 1);
     const way = new Int32Array(n + 1);
 
     for (let row = 1; row <= n; row++) {
       work();
+
       p[0] = row;
+
       const minv = new Array(n + 1).fill(null);
       const used = new Uint8Array(n + 1);
+
       let column0 = 0;
 
       do {
         used[column0] = 1;
+
         const row0 = p[column0];
         const matrixRow = cost[row0 - 1];
+
         let delta = null;
         let column1 = -1;
 
         for (let column = 1; column <= n; column++) {
           if (used[column]) continue;
+
           work();
+
           const raw = matrixRow[column - 1];
+
           if (raw !== null) {
             const reduced = raw - u[row0] - v[column];
-            if (minv[column] === null || reduced < minv[column]) {
+
+            if (
+              minv[column] === null ||
+              reduced < minv[column]
+            ) {
               minv[column] = reduced;
               way[column] = column0;
             }
@@ -870,7 +977,10 @@ function Dutch2026Core() {
            * row in this augmenting-path search, even when the
            * current row has no edge to this column.
            */
-          if (minv[column] !== null && (delta === null || minv[column] < delta)) {
+          if (
+            minv[column] !== null &&
+            (delta === null || minv[column] < delta)
+          ) {
             delta = minv[column];
             column1 = column;
           }
@@ -886,20 +996,24 @@ function Dutch2026Core() {
             minv[column] -= delta;
           }
         }
+
         column0 = column1;
       } while (p[column0] !== 0);
 
       do {
         const previousColumn = way[column0];
+
         p[column0] = p[previousColumn];
         column0 = previousColumn;
       } while (column0 !== 0);
     }
 
     const columns = new Array(n).fill(-1);
+
     for (let column = 1; column <= n; column++) {
       columns[p[column] - 1] = column - 1;
     }
+
     return columns;
   }
 
@@ -907,13 +1021,15 @@ function Dutch2026Core() {
     const started = performance.now();
     const seconds = Number(limits.seconds ?? 20);
     const nodeLimit = Number(limits.nodes ?? 0);
-    const deadline = seconds > 0 ? started + seconds * 1000 : Infinity;
+    const deadline = seconds > 0
+      ? started + seconds * 1000
+      : Infinity;
 
     if (
       !Number.isFinite(seconds) || seconds < 0 ||
       !Number.isSafeInteger(nodeLimit) || nodeLimit < 0
     ) {
-      throw fault("INPUT", "Ogiltiga sökgränser.");
+      throw fault("INPUT", "Invalid search limits.");
     }
 
     let nodes = 0;
@@ -925,19 +1041,24 @@ function Dutch2026Core() {
      * the assignment path against the existing DFS path.
      */
     const assignmentFastPath = limits.assignmentFastPath !== false;
-    let phase = "Förbereder lottningsuppgifter";
+
+    let phase = "Preparing pairing data";
     let lastProgress = started;
 
     function tick() {
       nodes++;
+
       if (nodeLimit > 0 && nodes > nodeLimit) {
-        throw fault("LIMIT", "Sökningens arbetsgräns har nåtts.");
+        throw fault("LIMIT", "The search work limit was reached.");
       }
+
       if ((nodes & 255) === 0 || nodes === 1) {
         const now = performance.now();
+
         if (now >= deadline) {
-          throw fault("LIMIT", "Sökningens tidsgräns har nåtts.");
+          throw fault("LIMIT", "The search time limit was reached.");
         }
+
         if (now - lastProgress >= 200) {
           progress({phase, nodes, elapsedMs:now - started});
           lastProgress = now;
@@ -961,11 +1082,14 @@ function Dutch2026Core() {
       !["W","B"].includes(context.initialColor) ||
       !Array.isArray(input.players)
     ) {
-      throw fault("INPUT", "Ogiltiga lottningsförutsättningar.");
+      throw fault("INPUT", "Invalid pairing context.");
     }
 
     if (input.acceleration || (input.restrictions || []).length) {
-      throw fault("INPUT", "Acceleration och extra begränsningar stöds inte.");
+      throw fault(
+        "INPUT",
+        "Acceleration and extra restrictions are unsupported."
+      );
     }
 
     const completed = context.roundNumber - 1;
@@ -974,6 +1098,7 @@ function Dutch2026Core() {
 
     const players = input.players.map(raw => {
       tick();
+
       const p = {
         id:String(raw.id),
         tpn:Number(raw.tpn),
@@ -987,7 +1112,8 @@ function Dutch2026Core() {
 
       if (
         !p.id || seenIds.has(p.id) ||
-        !Number.isSafeInteger(p.tpn) || p.tpn < 1 || seenTPNs.has(p.tpn) ||
+        !Number.isSafeInteger(p.tpn) ||
+        p.tpn < 1 || seenTPNs.has(p.tpn) ||
         !Number.isFinite(p.score) || p.score < 0 ||
         !Number.isInteger(p.score * 2) ||
         p.score > completed * context.winPoints ||
@@ -996,62 +1122,90 @@ function Dutch2026Core() {
         p.floats.length !== completed ||
         p.floats.some(f => !["-","D","U"].includes(f))
       ) {
-        throw fault("INPUT", "Ogiltiga spelaruppgifter för bland annat startnummer " + p.tpn + ".");
+        throw fault(
+          "INPUT",
+          "Invalid state for a player, including TPN " + p.tpn + "."
+        );
       }
 
       seenIds.add(p.id);
       seenTPNs.add(p.tpn);
+
       p.unplayedCount = completed - p.playedColors.length;
       p.pref = preference(p);
       p.cd = colorDifference(p);
       p.top = topscorer(p, context);
+
       return p;
     }).sort(rank);
 
     const N = players.length;
     const ids = players.map((_, i) => i);
-    const eligible = i => !players[i].hadPAB && !players[i].hadUnplayedWin;
+    const eligible = i =>
+      !players[i].hadPAB && !players[i].hadUnplayedWin;
+
     const numericSort = (a, b) => a - b;
     const ordered = xs => [...xs].sort(numericSort);
     const keyOf = xs => ordered(xs).join(",");
-    const scoreList = xs => xs.map(i => players[i].score).sort((a,b) => b-a);
-    const previous = (i, back) => players[i].floats[completed - back] || "-";
+    const scoreList = xs =>
+      xs.map(i => players[i].score).sort((a,b) => b-a);
+    const previous = (i, back) =>
+      players[i].floats[completed - back] || "-";
 
-    const edge = Array.from({length:N}, () => new Array(N).fill(false));
+    const edge = Array.from(
+      {length:N}, () => new Array(N).fill(false)
+    );
     const colors = Array.from({length:N}, () => new Array(N));
     const pairCost = Array.from({length:N}, () => new Array(N));
+
     const allScores = players.map(p => p.score);
-    const REFLOAT = N ? Math.max(...allScores) - Math.min(...allScores) + 1 : 1;
+    const REFLOAT = N
+      ? Math.max(...allScores) - Math.min(...allScores) + 1
+      : 1;
 
     for (let i = 0; i < N; i++) {
       for (let j = i + 1; j < N; j++) {
         tick();
+
         const a = players[i];
         const b = players[j];
+
         edge[i][j] = edge[j][i] = compatible(a, b, context);
 
         const allocation = allocate(a, b, context.initialColor);
         const wi = allocation.white === a ? i : j;
         const bi = wi === i ? j : i;
+
         colors[i][j] = colors[j][i] = [wi, bi];
+
         const cost = [0,0,0,0];
 
         for (const [pi, color] of [[wi,"W"],[bi,"B"]]) {
           const p = players[pi];
+
           if (p.pref.color && p.pref.color !== color) {
             cost[2]++;
+
             if (p.pref.strength === 2) cost[3]++;
           }
+
           if (a.top || b.top) {
-            if (Math.abs(p.cd + (color === "W" ? 1 : -1)) > 2) cost[0]++;
+            if (Math.abs(p.cd + (color === "W" ? 1 : -1)) > 2) {
+              cost[0]++;
+            }
+
             const h = p.playedColors;
+
             if (
               h.length >= 2 &&
               h[h.length - 1] === color &&
               h[h.length - 2] === color
-            ) cost[1]++;
+            ) {
+              cost[1]++;
+            }
           }
         }
+
         pairCost[i][j] = pairCost[j][i] = cost;
       }
     }
@@ -1063,6 +1217,7 @@ function Dutch2026Core() {
      *    0 otherwise
      */
     const colorWant = new Int8Array(N);
+
     for (let i = 0; i < N; i++) {
       const c = players[i].pref.color;
       colorWant[i] = c === "W" ? 1 : c === "B" ? -1 : 0;
@@ -1073,13 +1228,19 @@ function Dutch2026Core() {
 
     function perfectMatching(list, restricted = new Set()) {
       tick();
+
       const xs = ordered(list);
       const n = xs.length;
+
       if (n % 2) return false;
       if (n === 0) return true;
 
-      const key = xs.join(",") + "/" + xs.filter(i => restricted.has(i)).join(",");
-      if (matchingMemo.has(key)) return matchingMemo.get(key);
+      const key = xs.join(",") + "/" +
+        xs.filter(i => restricted.has(i)).join(",");
+
+      if (matchingMemo.has(key)) {
+        return matchingMemo.get(key);
+      }
 
       const graph = Array.from({length:n}, () => []);
       const blocked = xs.map(i => restricted.has(i));
@@ -1087,7 +1248,11 @@ function Dutch2026Core() {
       for (let a = 0; a < n; a++) {
         for (let b = a + 1; b < n; b++) {
           tick();
-          if (edge[xs[a]][xs[b]] && !(blocked[a] && blocked[b])) {
+
+          if (
+            edge[xs[a]][xs[b]] &&
+            !(blocked[a] && blocked[b])
+          ) {
             graph[a].push(b);
             graph[b].push(a);
           }
@@ -1099,7 +1264,10 @@ function Dutch2026Core() {
       /*
        * Clearing the bounded cache affects performance, not results.
        */
-      if (matchingMemo.size >= MATCHING_MEMO_CAP) matchingMemo.clear();
+      if (matchingMemo.size >= MATCHING_MEMO_CAP) {
+        matchingMemo.clear();
+      }
+
       matchingMemo.set(key, answer);
       return answer;
     }
@@ -1150,7 +1318,8 @@ function canRemoveForBye(list, score) {
   return ok;
 }
 
-    phase = "Fastställer C4 och lägsta möjliga poäng för frirond";
+    phase = "Establishing C4 and the minimum feasible bye score";
+
     let byeScore = null;
 
     if (N % 2) {
@@ -1164,14 +1333,18 @@ function canRemoveForBye(list, score) {
           break;
         }
       }
+
       if (byeScore === null) {
         throw fault(
           "NO_LEGAL_COMPLETION",
-          "Det finns ingen fullständig rond som uppfyller C1–C3 och behörighetskraven för frirond."
+          "No complete round satisfying C1–C3 and bye eligibility exists."
         );
       }
     } else if (!perfectMatching(ids)) {
-      throw fault("NO_LEGAL_COMPLETION", "Det finns ingen fullständig rond som uppfyller C1–C3.");
+      throw fault(
+        "NO_LEGAL_COMPLETION",
+        "No complete round satisfying C1–C3 exists."
+      );
     }
 
     const completionMemo = new Map();
@@ -1179,25 +1352,37 @@ function canRemoveForBye(list, score) {
     function canComplete(list) {
       const xs = ordered(list);
       const key = xs.join(",");
+
       if (completionMemo.has(key)) return completionMemo.get(key);
 
       let answer = false;
-      if (!(xs.length % 2)) answer = perfectMatching(xs);
-      else if (byeScore !== null) answer = canRemoveForBye(xs, byeScore);
+
+      if (!(xs.length % 2)) {
+        answer = perfectMatching(xs);
+      } else if (byeScore !== null) {
+        answer = canRemoveForBye(xs, byeScore);
+      }
+
       completionMemo.set(key, answer);
       return answer;
     }
 
     const groups = [];
+
     for (const i of ids) {
       const score = players[i].score;
       const last = groups[groups.length - 1];
-      if (!last || last.score !== score) groups.push({score, ids:[i]});
-      else last.ids.push(i);
+
+      if (!last || last.score !== score) {
+        groups.push({score, ids:[i]});
+      } else {
+        last.ids.push(i);
+      }
     }
 
     const tails = new Array(groups.length + 1);
     tails[groups.length] = [];
+
     for (let i = groups.length - 1; i >= 0; i--) {
       tails[i] = [...groups[i].ids, ...tails[i + 1]];
     }
@@ -1209,26 +1394,34 @@ function canRemoveForBye(list, score) {
     function bracketContext(index, incoming) {
       const mdps = ordered(incoming);
       const key = index + ":" + mdps.join(",");
+
       if (contexts.has(key)) return contexts.get(key);
 
       const residents = groups[index].ids;
       const value = {
-        key, index, score:groups[index].score,
-        mdps, mdpSet:new Set(mdps), residents,
+        key,
+        index,
+        score:groups[index].score,
+        mdps,
+        mdpSet:new Set(mdps),
+        residents,
         all:ordered([...mdps, ...residents]),
         lower:tails[index + 1],
         last:index === groups.length - 1
       };
+
       contexts.set(key, value);
       return value;
     }
 
     function* combinations(items, count, start = 0, chosen = []) {
       tick();
+
       if (count === 0) {
         yield [...chosen];
         return;
       }
+
       for (let i = start; i <= items.length - count; i++) {
         chosen.push(items[i]);
         yield* combinations(items, count - 1, i + 1, chosen);
@@ -1238,183 +1431,273 @@ function canRemoveForBye(list, score) {
 
     function groupedScores(list) {
       const result = [];
+
       for (const i of ordered(list)) {
         const score = players[i].score;
         const last = result[result.length - 1];
-        if (!last || last.score !== score) result.push({score, ids:[i]});
-        else last.ids.push(i);
+
+        if (!last || last.score !== score) {
+          result.push({score, ids:[i]});
+        } else {
+          last.ids.push(i);
+        }
       }
+
       return result;
     }
 
     function* scoreProfiles(list, count) {
       const gs = groupedScores(list);
       const remaining = new Array(gs.length + 1).fill(0);
+
       for (let i = gs.length - 1; i >= 0; i--) {
         remaining[i] = remaining[i + 1] + gs[i].ids.length;
       }
 
       function* visit(index, needed, profile) {
         tick();
+
         if (index === gs.length) {
           if (needed === 0) yield profile;
           return;
         }
+
         const minimum = Math.max(0, needed - remaining[index + 1]);
         const maximum = Math.min(needed, gs[index].ids.length);
+
         for (let take = minimum; take <= maximum; take++) {
           yield* visit(
-            index + 1, needed - take,
+            index + 1,
+            needed - take,
             [...profile, ...new Array(take).fill(gs[index].score)]
           );
         }
       }
+
       yield* visit(0, count, []);
     }
 
     function* setsWithScores(list, profile) {
       const gs = groupedScores(list);
       const counts = new Map();
-      for (const score of profile) counts.set(score, (counts.get(score) || 0) + 1);
+
+      for (const score of profile) {
+        counts.set(score, (counts.get(score) || 0) + 1);
+      }
 
       function* visit(index, chosen) {
         tick();
+
         if (index === gs.length) {
           yield chosen;
           return;
         }
+
         const count = counts.get(gs[index].score) || 0;
+
         for (const part of combinations(gs[index].ids, count)) {
           yield* visit(index + 1, [...chosen, ...part]);
         }
       }
+
       yield* visit(0, []);
     }
 
     function futureOK(ctx, down) {
       if (ctx.last) {
         if (N % 2) {
-          return down.length === 1 && eligible(down[0]) &&
+          return down.length === 1 &&
+            eligible(down[0]) &&
             players[down[0]].score === byeScore;
         }
+
         return down.length === 0;
       }
+
       return canComplete([...down, ...ctx.lower]);
     }
 
     function feasibleDownset(ctx, down) {
       const key = ctx.key + "|" + keyOf(down);
-      if (feasibleMemo.has(key)) return feasibleMemo.get(key);
+
+      if (feasibleMemo.has(key)) {
+        return feasibleMemo.get(key);
+      }
+
       const downSet = new Set(down);
       const paired = ctx.all.filter(i => !downSet.has(i));
-      const answer = futureOK(ctx, down) && perfectMatching(paired, ctx.mdpSet);
+      const answer = futureOK(ctx, down) &&
+        perfectMatching(paired, ctx.mdpSet);
+
       feasibleMemo.set(key, answer);
       return answer;
     }
 
     function compareHigh(a, b) {
-      return a.count - b.count || compareArrays(a.scores, b.scores);
+      return a.count - b.count ||
+        compareArrays(a.scores, b.scores);
     }
 
     function theoreticalHigh(ctx) {
-      const pairs = Math.min(Math.floor(ctx.all.length / 2), ctx.residents.length);
+      const pairs = Math.min(
+        Math.floor(ctx.all.length / 2),
+        ctx.residents.length
+      );
       const count = ctx.all.length - 2 * pairs;
-      const scores = ctx.all.map(i => players[i].score)
-        .sort((a,b) => a-b).slice(0, count).sort((a,b) => b-a);
+      const scores = ctx.all
+        .map(i => players[i].score)
+        .sort((a,b) => a-b)
+        .slice(0, count)
+        .sort((a,b) => b-a);
+
       return {count, scores};
     }
 
     function highFor(index, incoming) {
       const ctx = bracketContext(index, incoming);
+
       if (highMemo.has(ctx.key)) return highMemo.get(ctx.key);
+
       const lowerBound = theoreticalHigh(ctx);
 
-      for (let count = lowerBound.count; count <= ctx.all.length; count += 2) {
+      for (
+        let count = lowerBound.count;
+        count <= ctx.all.length;
+        count += 2
+      ) {
         if (ctx.last && count !== N % 2) continue;
+
         for (const profile of scoreProfiles(ctx.all, count)) {
           for (const down of setsWithScores(ctx.all, profile)) {
             if (!feasibleDownset(ctx, down)) continue;
-            const limboCount = down.filter(i => ctx.mdpSet.has(i)).length;
+
+            const limboCount = down.filter(
+              i => ctx.mdpSet.has(i)
+            ).length;
+
             const high = {
-              count, scores:profile,
+              count,
+              scores:profile,
               pairs:(ctx.all.length - count) / 2,
               m1:ctx.mdps.length - limboCount,
               exampleDown:down
             };
+
             highMemo.set(ctx.key, high);
             return high;
           }
         }
       }
+
       highMemo.set(ctx.key, null);
       return null;
     }
 
     function bestLookAhead(ctx, high) {
       if (ctx.last) return {count:0, scores:[]};
-      const nextBound = theoreticalHigh(bracketContext(ctx.index + 1, high.exampleDown));
+
+      const nextBound = theoreticalHigh(
+        bracketContext(ctx.index + 1, high.exampleDown)
+      );
+
       let best = null;
 
       for (const down of setsWithScores(ctx.all, high.scores)) {
         if (!feasibleDownset(ctx, down)) continue;
+
         const next = highFor(ctx.index + 1, down);
         if (!next) continue;
+
         if (!best || compareHigh(next, best) < 0) {
           best = {count:next.count, scores:next.scores};
         }
+
         if (compareHigh(best, nextBound) === 0) break;
       }
+
       if (!best) {
         throw fault(
           "NO_DUTCH_CANDIDATE",
-          "Ingen kandidat för nästa lottningsgrupp kunde fastställas. Ingen lottning returneras."
+          "No next-bracket candidate was established. " +
+          "No pairing is being returned."
         );
       }
+
       return best;
     }
 
     function matchesLookAhead(ctx, down, lookAhead) {
       if (ctx.last) return true;
+
       const next = highFor(ctx.index + 1, down);
+
       return next !== null && compareHigh(next, lookAhead) === 0;
     }
 
     function c9Applies(high) {
-      return byeScore !== null && high.count === 1 && high.scores[0] === byeScore;
+      return byeScore !== null &&
+        high.count === 1 &&
+        high.scores[0] === byeScore;
     }
 
     function bestC9(ctx, high, lookAhead) {
       if (!c9Applies(high)) return 0;
+
       let best = Infinity;
+
       for (const down of setsWithScores(ctx.all, high.scores)) {
-        if (feasibleDownset(ctx, down) && matchesLookAhead(ctx, down, lookAhead)) {
-          best = Math.min(best, players[down[0]].unplayedCount);
+        if (
+          feasibleDownset(ctx, down) &&
+          matchesLookAhead(ctx, down, lookAhead)
+        ) {
+          best = Math.min(
+            best,
+            players[down[0]].unplayedCount
+          );
+
           if (best === 0) break;
         }
       }
+
       if (!Number.isFinite(best)) {
-        throw fault("NO_DUTCH_CANDIDATE", "Ingen kandidat som uppfyller C9 kunde fastställas.");
+        throw fault(
+          "NO_DUTCH_CANDIDATE",
+          "No C9-compatible candidate was established."
+        );
       }
+
       return best;
     }
 
-    function* sumCombinations(items, count, target, start = 0, chosen = []) {
+    function* sumCombinations(
+      items, count, target, start = 0, chosen = []
+    ) {
       tick();
+
       if (count === 0) {
         if (target === 0) yield [...chosen];
         return;
       }
+
       if (items.length - start < count) return;
+
       let minimum = 0;
       let maximum = 0;
+
       for (let k = 0; k < count; k++) {
         minimum += items[start + k];
         maximum += items[items.length - 1 - k];
       }
+
       if (target < minimum || target > maximum) return;
+
       for (let i = start; i <= items.length - count; i++) {
         chosen.push(items[i]);
-        yield* sumCombinations(items, count - 1, target - items[i], i + 1, chosen);
+
+        yield* sumCombinations(
+          items, count - 1, target - items[i], i + 1, chosen
+        );
+
         chosen.pop();
       }
     }
@@ -1422,8 +1705,15 @@ function canRemoveForBye(list, score) {
     function* exchangeConfigurations(list, pairCount) {
       const n = list.length;
       const A = Array.from({length:pairCount}, (_,i) => i + 1);
-      const B = Array.from({length:n - pairCount}, (_,i) => pairCount + i + 1);
-      yield {s1:list.slice(0, pairCount), s2:list.slice(pairCount)};
+      const B = Array.from(
+        {length:n - pairCount}, (_,i) => pairCount + i + 1
+      );
+
+      yield {
+        s1:list.slice(0, pairCount),
+        s2:list.slice(pairCount)
+      };
+
       const maxSize = Math.min(A.length, B.length);
 
       for (let size = 1; size <= maxSize; size++) {
@@ -1434,16 +1724,27 @@ function canRemoveForBye(list, score) {
         ) {
           for (const outgoing of combinations([...A].reverse(), size)) {
             const sum = outgoing.reduce((a,b) => a+b, 0);
-            for (const incoming of sumCombinations(B, size, sum + difference)) {
+
+            for (
+              const incoming of sumCombinations(
+                B, size, sum + difference
+              )
+            ) {
               tick();
+
               const outSet = new Set(outgoing);
               const inSet = new Set(incoming);
+
               const s1 = [
-                ...A.filter(x => !outSet.has(x)), ...incoming
+                ...A.filter(x => !outSet.has(x)),
+                ...incoming
               ].sort(numericSort).map(x => list[x - 1]);
+
               const s2 = [
-                ...B.filter(x => !inSet.has(x)), ...outgoing
+                ...B.filter(x => !inSet.has(x)),
+                ...outgoing
               ].sort(numericSort).map(x => list[x - 1]);
+
               yield {s1, s2};
             }
           }
@@ -1462,22 +1763,31 @@ function canRemoveForBye(list, score) {
       const n = s1.length;
       const suf2 = new Array(n + 1).fill(0);
       const suf3 = new Array(n + 1).fill(0);
+
       for (let i = n - 1; i >= 0; i--) {
         tick();
+
         const row = s1[i];
         let m2 = Infinity;
         let m3 = Infinity;
+
         for (let k = 0; k < s2.length; k++) {
           const b = s2[k];
+
           if (!edge[row][b]) continue;
+
           const pc = pairCost[row][b];
+
           if (pc[2] < m2) m2 = pc[2];
           if (pc[3] < m3) m3 = pc[3];
+
           if (m2 === 0 && m3 === 0) break;
         }
+
         suf2[i] = suf2[i + 1] + (m2 === Infinity ? 0 : m2);
         suf3[i] = suf3[i + 1] + (m3 === Infinity ? 0 : m3);
       }
+
       return {suf2, suf3};
     }
 
@@ -1497,67 +1807,111 @@ function canRemoveForBye(list, score) {
      */
     function* prefixPairings(
       s1, s2, canWin, sums, dfsUsed,
-      suffixMinP2, suffixMinP3, useDominance = false
+      suffixMinP2, suffixMinP3,
+      useDominance = false
     ) {
       const pairs = [];
+
       const memo = useDominance ? new Map() : null;
       const MEMO_CAP = 100000;
-      const bits = useDominance ? s2.map((_,k) => 1n << BigInt(k)) : null;
+
+      const bits = useDominance
+        ? s2.map((_,k) => 1n << BigInt(k))
+        : null;
 
       function* visit(position, mask) {
         tick();
-        if (!canWin(position, suffixMinP2, suffixMinP3)) return;
+
+        if (!canWin(position, suffixMinP2, suffixMinP3)) {
+          return;
+        }
 
         if (memo) {
-          const cost = [sums.p0, sums.p1, sums.p2, sums.p3];
+          const cost = [
+            sums.p0,
+            sums.p1,
+            sums.p2,
+            sums.p3
+          ];
+
           const earlier = memo.get(mask);
-          if (earlier !== undefined && compareArrays(earlier, cost) <= 0) return;
-          if (memo.size >= MEMO_CAP) memo.clear();
+
+          if (
+            earlier !== undefined &&
+            compareArrays(earlier, cost) <= 0
+          ) {
+            return;
+          }
+
+          if (memo.size >= MEMO_CAP) {
+            memo.clear();
+          }
+
           memo.set(mask, cost);
         }
 
         if (position === s1.length) {
-          yield {pairs:[...pairs], unused:s2.filter(i => !dfsUsed[i])};
+          yield {
+            pairs:[...pairs],
+            unused:s2.filter(i => !dfsUsed[i])
+          };
           return;
         }
 
         const first = s1[position];
+
         for (let k = 0; k < s2.length; k++) {
           const second = s2[k];
-          if (dfsUsed[second] || !edge[first][second]) continue;
+
+          if (dfsUsed[second] || !edge[first][second]) {
+            continue;
+          }
+
           const pc = pairCost[first][second];
           const wa = colorWant[first];
           const wb = colorWant[second];
 
           dfsUsed[second] = 1;
           pairs.push([first, second]);
+
           sums.p0 += pc[0];
           sums.p1 += pc[1];
           sums.p2 += pc[2];
           sums.p3 += pc[3];
+
           if (wa === 1) sums.pairedW++;
           else if (wa === -1) sums.pairedB++;
+
           if (wb === 1) sums.pairedW++;
           else if (wb === -1) sums.pairedB++;
+
           sums.count++;
 
           try {
-            yield* visit(position + 1, memo ? mask | bits[k] : 0n);
+            yield* visit(
+              position + 1,
+              memo ? mask | bits[k] : 0n
+            );
           } finally {
             sums.p0 -= pc[0];
             sums.p1 -= pc[1];
             sums.p2 -= pc[2];
             sums.p3 -= pc[3];
+
             if (wa === 1) sums.pairedW--;
             else if (wa === -1) sums.pairedB--;
+
             if (wb === 1) sums.pairedW--;
             else if (wb === -1) sums.pairedB--;
+
             sums.count--;
+
             pairs.pop();
             dfsUsed[second] = 0;
           }
         }
       }
+
       yield* visit(0, 0n);
     }
 
@@ -1582,11 +1936,16 @@ function canRemoveForBye(list, score) {
       const realRows = s1.length;
       const size = s2.length;
       const downCount = size - realRows;
+
       if (downCount !== 0 && downCount !== 1) {
-        throw fault("INTERNAL", "Tilldelningsindelningens form stöds inte.");
+        throw fault(
+          "INTERNAL",
+          "Unsupported assignment-partition shape."
+        );
       }
 
       let allowedDown = null;
+
       if (downCount === 0) {
         if (!allowDown([])) return null;
       } else {
@@ -1594,6 +1953,7 @@ function canRemoveForBye(list, score) {
           tick();
           return allowDown([player]);
         });
+
         if (!allowedDown.some(Boolean)) return null;
       }
 
@@ -1602,7 +1962,13 @@ function canRemoveForBye(list, score) {
        * Base N+1 preserves the exact lexicographic priorities.
        */
       const base = BigInt(N + 1);
-      const qualityWeights = [base ** 5n, base ** 4n, base ** 3n, base ** 2n];
+
+      const qualityWeights = [
+        base ** 5n,
+        base ** 4n,
+        base ** 3n,
+        base ** 2n
+      ];
 
       /*
        * Lowest priority: the S2 column sequence assigned to the
@@ -1610,71 +1976,116 @@ function canRemoveForBye(list, score) {
        */
       const sequenceBase = BigInt(size + 1);
       const positionWeights = new Array(realRows);
+
       let sequenceScale = 1n;
+
       for (let row = realRows - 1; row >= 0; row--) {
         positionWeights[row] = sequenceScale;
         sequenceScale *= sequenceBase;
       }
 
       const matrix = [];
+
       for (let row = 0; row < realRows; row++) {
         tick();
+
         const a = s1[row];
         const costs = new Array(size).fill(null);
+
         for (let column = 0; column < size; column++) {
           const b = s2[column];
+
           if (!edge[a][b]) continue;
+
           const pc = pairCost[a][b];
+
           let qualityCost = 0n;
+
           for (let component = 0; component < 4; component++) {
-            qualityCost += BigInt(pc[component]) * qualityWeights[component];
+            qualityCost +=
+              BigInt(pc[component]) * qualityWeights[component];
           }
-          costs[column] = qualityCost * sequenceScale +
+
+          costs[column] =
+            qualityCost * sequenceScale +
             BigInt(column) * positionWeights[row];
         }
+
         matrix.push(costs);
       }
 
       if (downCount === 1) {
         const dummy = new Array(size).fill(null);
+
         for (let column = 0; column < size; column++) {
           tick();
+
           if (!allowedDown[column]) continue;
+
           const player = s2[column];
+
           const c14 = previous(player, 1) === "D" ? 1n : 0n;
           const c16 = previous(player, 2) === "D" ? 1n : 0n;
-          dummy[column] = (c14 * base + c16) * sequenceScale;
+
+          dummy[column] =
+            (c14 * base + c16) * sequenceScale;
         }
+
         matrix.push(dummy);
       }
 
       assignmentCalls++;
+
       const assigned = minimumCostAssignment(matrix, tick);
+
       if (assigned === null) return null;
 
       const pairs = [];
       const colorCost = [0,0,0,0];
+
       for (let row = 0; row < realRows; row++) {
         const a = s1[row];
         const b = s2[assigned[row]];
+
         pairs.push([a,b]);
+
         const pc = pairCost[a][b];
+
         for (let component = 0; component < 4; component++) {
           colorCost[component] += pc[component];
         }
       }
 
-      const down = downCount === 1 ? [s2[assigned[realRows]]] : [];
+      const down = downCount === 1
+        ? [s2[assigned[realRows]]]
+        : [];
+
       return {pairs, down, colorCost};
     }
 
+    function binomialWithin(n, k, limit) {
+      if (k < 0 || k > n) return false;
+      if (k > n - k) k = n - k;
+
+      let res = 1;
+      for (let i = 1; i <= k; i++) {
+        res = (res * (n - k + i)) / i;
+        if (res > limit) return false;
+      }
+      return true;
+    }
+
     function* homogeneousCandidates(
-      list, pairCount, canWin, shouldSkipPartition, sums, dfsUsed, allowDown
+      list, pairCount, canWin, shouldSkipPartition,
+      sums, dfsUsed, allowDown
     ) {
       const sorted = ordered(list);
       const downCount = sorted.length - 2 * pairCount;
+
       if (pairCount === 0) {
-        if (allowDown(sorted)) yield {pairs:[], down:sorted};
+        if (allowDown(sorted)) {
+          yield {pairs:[], down:sorted};
+        }
         return;
       }
 
@@ -1688,89 +2099,264 @@ function canRemoveForBye(list, score) {
         if (shouldSkipPartition) {
           const lb = [0,0,0,0];
           let feasible = true;
+
           for (const a of s1) {
             let bestRow = null;
+
             for (const b of s2) {
               if (!edge[a][b]) continue;
+
               const pc = pairCost[a][b];
-              if (bestRow === null || compareArrays(pc, bestRow) < 0) bestRow = pc;
+
+              if (
+                bestRow === null ||
+                compareArrays(pc, bestRow) < 0
+              ) {
+                bestRow = pc;
+              }
             }
+
             if (bestRow === null) {
               feasible = false;
               break;
             }
+
             for (let component = 0; component < 4; component++) {
               lb[component] += bestRow[component];
             }
           }
+
           if (!feasible || shouldSkipPartition(lb)) continue;
+
+const colMins = [];
+          let unpairableCols = 0;
+
+          for (const b of s2) {
+            let bestCol = null;
+
+            for (const a of s1) {
+              if (!edge[a][b]) continue;
+
+              const pc = pairCost[a][b];
+
+              if (
+                bestCol === null ||
+                compareArrays(pc, bestCol) < 0
+              ) {
+                bestCol = pc;
+              }
+            }
+
+            if (bestCol === null) {
+              unpairableCols++;
+              if (unpairableCols > downCount) {
+                feasible = false;
+                break;
+              }
+            } else {
+              colMins.push(bestCol);
+            }
+          }
+
+          if (!feasible) continue;
+
+          if (colMins.length > s1.length) {
+            colMins.sort(compareArrays);
+          }
+
+          const colLb = [0,0,0,0];
+          for (let k = 0; k < s1.length; k++) {
+            const pc = colMins[k];
+            for (let component = 0; component < 4; component++) {
+              colLb[component] += pc[component];
+            }
+          }
+
+          if (shouldSkipPartition(colLb)) continue;
         }
 
         /*
          * Direct optimization for zero or one resident downfloater.
          * Only the best candidate for this fixed partition is needed.
          */
-        if (assignmentFastPath && (downCount === 0 || downCount === 1)) {
-          const candidate = optimalHomogeneousPartition(s1, s2, allowDown);
+       if (
+          assignmentFastPath &&
+          (downCount === 0 || downCount === 1)
+        ) {
+          const candidate = optimalHomogeneousPartition(
+            s1, s2, allowDown
+          );
+
           if (candidate === null) continue;
-          if (shouldSkipPartition && shouldSkipPartition(candidate.colorCost)) continue;
-          yield {pairs:candidate.pairs, down:candidate.down};
+
+          if (
+            shouldSkipPartition &&
+            shouldSkipPartition(candidate.colorCost)
+          ) {
+            continue;
+          }
+
+          yield {
+            pairs:candidate.pairs,
+            down:candidate.down
+          };
+
           continue;
         }
+
+        if (
+          assignmentFastPath &&
+          downCount >= 2 &&
+          binomialWithin(s2.length, downCount, 500)
+        ) {
+          let bestPart = null;
+
+          for (const down of combinations(s2, downCount)) {
+            if (!allowDown(down)) continue;
+
+            const downSet = new Set(down);
+            const s2Rem = s2.filter(x => !downSet.has(x));
+            const candidate = optimalHomogeneousPartition(
+              s1, s2Rem, () => true
+            );
+
+            if (candidate === null) continue;
+
+            if (
+              shouldSkipPartition &&
+              shouldSkipPartition(candidate.colorCost)
+            ) {
+              continue;
+            }
+
+            const c14 = down.filter(
+              p => previous(p, 1) === "D"
+            ).length;
+            const c16 = down.filter(
+              p => previous(p, 2) === "D"
+            ).length;
+            const seq = candidate.pairs.map(p => p[1]);
+            const key = [
+              ...candidate.colorCost, c14, c16, seq
+            ];
+
+            if (!bestPart || compareQuality(key, bestPart.key) < 0) {
+              bestPart = {
+                pairs:candidate.pairs,
+                down,
+                key
+              };
+            }
+          }
+
+          if (bestPart) {
+            yield {
+              pairs:bestPart.pairs,
+              down:bestPart.down
+            };
+          }
+
+          continue;
+        }        
 
         /*
          * Retain DFS for two or more resident downfloaters,
          * and for regression comparisons.
          */
         dfsRemainderPartitions++;
+
         const {suf2, suf3} = computeSuffixBounds(s1, s2);
+
         for (const candidate of prefixPairings(
           s1, s2, canWin, sums, dfsUsed, suf2, suf3, true
         )) {
           if (!allowDown(candidate.unused)) continue;
-          yield {pairs:candidate.pairs, down:candidate.unused};
+
+          yield {
+            pairs:candidate.pairs,
+            down:candidate.unused
+          };
         }
       }
     }
 
     function* bracketCandidates(
-      ctx, high, canWin, shouldSkipPartition, sums, dfsUsed, acceptableDown
+      ctx, high, canWin, shouldSkipPartition,
+      sums, dfsUsed, acceptableDown
     ) {
       if (!ctx.mdps.length) {
         yield* homogeneousCandidates(
-          ctx.residents, high.pairs, canWin, shouldSkipPartition,
-          sums, dfsUsed, acceptableDown
+          ctx.residents,
+          high.pairs,
+          canWin,
+          shouldSkipPartition,
+          sums,
+          dfsUsed,
+          acceptableDown
         );
         return;
       }
 
-      const requiredLimboScores = high.scores.filter(score => score > ctx.score);
+      const requiredLimboScores = high.scores.filter(
+        score => score > ctx.score
+      );
+
       for (const selected of combinations(ctx.mdps, high.m1)) {
         const selectedSet = new Set(selected);
         const limbo = ctx.mdps.filter(i => !selectedSet.has(i));
-        if (compareArrays(scoreList(limbo), requiredLimboScores)) continue;
-        const allowRemainderDown = down => acceptableDown(ordered([...limbo, ...down]));
+
+        if (
+          compareArrays(scoreList(limbo), requiredLimboScores)
+        ) {
+          continue;
+        }
+
+        const allowRemainderDown = down => acceptableDown(
+          ordered([...limbo, ...down])
+        );
 
         /*
          * If Limbo contains all downfloaters, their acceptability
          * is independent of the MDP anchor assignment.
          */
-        if (high.count === limbo.length && !allowRemainderDown([])) continue;
-        const {suf2, suf3} = computeSuffixBounds(selected, ctx.residents);
+        if (
+          high.count === limbo.length &&
+          !allowRemainderDown([])
+        ) {
+          continue;
+        }
+
+        const {suf2, suf3} = computeSuffixBounds(
+          selected, ctx.residents
+        );
 
         /*
          * Retain the MDP anchor search because different mappings
          * can affect the MDP-related float criteria.
          */
         for (const mdpPairing of prefixPairings(
-          selected, ctx.residents, canWin, sums, dfsUsed, suf2, suf3
+          selected,
+          ctx.residents,
+          canWin,
+          sums,
+          dfsUsed,
+          suf2,
+          suf3
         )) {
           for (const remainder of homogeneousCandidates(
-            mdpPairing.unused, high.pairs - high.m1,
-            canWin, shouldSkipPartition, sums, dfsUsed, allowRemainderDown
+            mdpPairing.unused,
+            high.pairs - high.m1,
+            canWin,
+            shouldSkipPartition,
+            sums,
+            dfsUsed,
+            allowRemainderDown
           )) {
             yield {
-              pairs:[...mdpPairing.pairs, ...remainder.pairs],
+              pairs:[
+                ...mdpPairing.pairs,
+                ...remainder.pairs
+              ],
               down:ordered([...limbo, ...remainder.down])
             };
           }
@@ -1781,13 +2367,18 @@ function canRemoveForBye(list, score) {
     function quality(ctx, candidate) {
       const v = [0,0,0,0,0,0,0,0,[],[],[],[]];
       const mates = new Map();
+
       for (const [a,b] of candidate.pairs) {
         const pc = pairCost[a][b];
+
         for (let k = 0; k < 4; k++) v[k] += pc[k];
+
         mates.set(a,b);
         mates.set(b,a);
+
         let resident = null;
         let mdp = null;
+
         if (ctx.mdpSet.has(a)) {
           mdp = a;
           resident = b;
@@ -1795,12 +2386,15 @@ function canRemoveForBye(list, score) {
           mdp = b;
           resident = a;
         }
+
         if (mdp !== null) {
           const gap = players[mdp].score - players[resident].score;
+
           if (previous(resident, 1) === "U") {
             v[5]++;
             v[9].push(gap);
           }
+
           if (previous(resident, 2) === "U") {
             v[7]++;
             v[11].push(gap);
@@ -1810,6 +2404,7 @@ function canRemoveForBye(list, score) {
 
       for (const i of candidate.down) {
         if (ctx.mdpSet.has(i)) continue;
+
         if (previous(i, 1) === "D") v[4]++;
         if (previous(i, 2) === "D") v[6]++;
       }
@@ -1818,11 +2413,15 @@ function canRemoveForBye(list, score) {
         const gap = mates.has(i)
           ? players[i].score - players[mates.get(i)].score
           : REFLOAT;
+
         if (previous(i, 1) === "D") v[8].push(gap);
         if (previous(i, 2) === "D") v[10].push(gap);
       }
 
-      for (let k = 8; k < 12; k++) v[k].sort((a,b) => b-a);
+      for (let k = 8; k < 12; k++) {
+        v[k].sort((a,b) => b-a);
+      }
+
       return v;
     }
 
@@ -1834,51 +2433,110 @@ function canRemoveForBye(list, score) {
       const residentDown = down - limboCount;
 
       const countPreference = (color, strongOnly) =>
-        ctx.all.filter(i => players[i].pref.color === color &&
-          (!strongOnly || players[i].pref.strength === 2)).length;
+        ctx.all.filter(i =>
+          players[i].pref.color === color &&
+          (!strongOnly || players[i].pref.strength === 2)
+        ).length;
 
       const colorBound = strongOnly =>
         Math.max(0, countPreference("W", strongOnly) - pairs - down) +
         Math.max(0, countPreference("B", strongOnly) - pairs - down);
 
       const residentHistoryCount = (marker, back) =>
-        ctx.residents.filter(i => previous(i, back) === marker).length;
+        ctx.residents.filter(
+          i => previous(i, back) === marker
+        ).length;
 
-      const d1 = Math.max(0, residentDown - (r - residentHistoryCount("D", 1)));
-      const u1 = Math.max(0, high.m1 - (r - residentHistoryCount("U", 1)));
-      const d2 = Math.max(0, residentDown - (r - residentHistoryCount("D", 2)));
-      const u2 = Math.max(0, high.m1 - (r - residentHistoryCount("U", 2)));
+      const d1 = Math.max(
+        0, residentDown - (r - residentHistoryCount("D", 1))
+      );
+      const u1 = Math.max(
+        0, high.m1 - (r - residentHistoryCount("U", 1))
+      );
+      const d2 = Math.max(
+        0, residentDown - (r - residentHistoryCount("D", 2))
+      );
+      const u2 = Math.max(
+        0, high.m1 - (r - residentHistoryCount("U", 2))
+      );
+
       const limboByScore = new Map();
 
       for (const score of high.scores) {
         if (score > ctx.score) {
-          limboByScore.set(score, (limboByScore.get(score) || 0) + 1);
+          limboByScore.set(
+            score, (limboByScore.get(score) || 0) + 1
+          );
         }
       }
 
       function mdpBound(back) {
         const result = [];
+
         for (const group of groupedScores(ctx.mdps)) {
-          const protectedCount = group.ids.filter(i => previous(i, back) === "D").length;
+          const protectedCount = group.ids.filter(
+            i => previous(i, back) === "D"
+          ).length;
+
           const limbo = limboByScore.get(group.score) || 0;
-          const forcedProtectedLimbo = Math.max(0, limbo - (group.ids.length - protectedCount));
-          result.push(...new Array(forcedProtectedLimbo).fill(REFLOAT));
+          const forcedProtectedLimbo = Math.max(
+            0, limbo - (group.ids.length - protectedCount)
+          );
+
           result.push(
-            ...new Array(protectedCount - forcedProtectedLimbo).fill(group.score - ctx.score)
+            ...new Array(forcedProtectedLimbo).fill(REFLOAT)
+          );
+          result.push(
+            ...new Array(protectedCount - forcedProtectedLimbo)
+              .fill(group.score - ctx.score)
           );
         }
+
         return result.sort((a,b) => b-a);
       }
 
       const pairedMdpGaps = [];
+
       for (const group of groupedScores(ctx.mdps)) {
-        const count = group.ids.length - (limboByScore.get(group.score) || 0);
-        pairedMdpGaps.push(...new Array(count).fill(group.score - ctx.score));
+        const count = group.ids.length -
+          (limboByScore.get(group.score) || 0);
+
+        pairedMdpGaps.push(
+          ...new Array(count).fill(group.score - ctx.score)
+        );
       }
+
       pairedMdpGaps.sort((a,b) => a-b);
 
+        const strongColorBound = color => {
+        const want = ctx.all.filter(
+          i => players[i].pref.color === color
+        );
+        const excess = Math.max(0, want.length - pairs - down);
+
+        if (excess === 0) return 0;
+
+        const mild = want.filter(
+          i => players[i].pref.strength === 1
+        ).length;
+        const abs = want.filter(
+          i => players[i].pref.strength === 3
+        );
+        const absCanViolate =
+          abs.length >= 2 && abs.some(i => players[i].top);
+
+        if (absCanViolate) {
+          const strong = want.filter(
+            i => players[i].pref.strength === 2
+          ).length;
+          return Math.max(0, strong - pairs - down);
+        }
+
+        return Math.max(0, excess - mild);
+      };
+
       return [
-        0,0,colorBound(false),colorBound(true),
+        0,0,colorBound(false),strongColorBound("W") + strongColorBound("B"),
         d1,u1,d2,u2,
         mdpBound(1),
         pairedMdpGaps.slice(0, u1).sort((a,b) => b-a),
@@ -1889,41 +2547,58 @@ function canRemoveForBye(list, score) {
 
     function selectBracket(index, incoming) {
       const ctx = bracketContext(index, incoming);
-      phase = "Fastställer gränser för lottningsgruppen vid poängen " + ctx.score;
+      phase = "Establishing bracket bounds at score " + ctx.score;
+
       let totalW = 0;
       let totalB = 0;
 
       for (const v of ctx.all) {
         const c = colorWant[v];
+
         if (c === 1) totalW++;
         else if (c === -1) totalB++;
       }
 
       let bestLimitCache = null;
       let bestValueCache = null;
+
       const high = highFor(index, incoming);
+
       if (!high) {
         throw fault(
           "NO_DUTCH_CANDIDATE",
-          "Ingen kandidat för lottningsgruppen kunde fastställas vid poängen " + ctx.score + "."
+          "No bracket candidate was established at score " +
+          ctx.score + "."
         );
       }
 
-      phase = "Utvärderar framförhållning enligt C8 vid poängen " + ctx.score;
+      phase = "Evaluating C8 look-ahead at score " + ctx.score;
+
       const lookAhead = bestLookAhead(ctx, high);
       const c9 = bestC9(ctx, high, lookAhead);
       const lowerBound = qualityLowerBound(ctx, high);
-      phase = "Optimerar partilldelningar vid poängen " + ctx.score;
+
+      phase = "Optimizing pair assignments at score " + ctx.score;
+
       const acceptableMemo = new Map();
 
       function acceptableDown(down) {
         const key = keyOf(down);
-        if (acceptableMemo.has(key)) return acceptableMemo.get(key);
-        const answer = down.length === high.count &&
+
+        if (acceptableMemo.has(key)) {
+          return acceptableMemo.get(key);
+        }
+
+        const answer =
+          down.length === high.count &&
           compareArrays(scoreList(down), high.scores) === 0 &&
           feasibleDownset(ctx, down) &&
           matchesLookAhead(ctx, down, lookAhead) &&
-          (!c9Applies(high) || players[down[0]].unplayedCount === c9);
+          (
+            !c9Applies(high) ||
+            players[down[0]].unplayedCount === c9
+          );
+
         acceptableMemo.set(key, answer);
         return answer;
       }
@@ -1937,23 +2612,33 @@ function canRemoveForBye(list, score) {
         p0:0, p1:0, p2:0, p3:0,
         pairedW:0, pairedB:0, count:0
       };
+
       const dfsUsed = new Uint8Array(N);
 
       function canWin(position, suffixMinP2, suffixMinP3) {
         let limit;
+
         if (best) {
           if (best.value !== bestValueCache) {
             bestValueCache = best.value;
-            bestLimitCache = [best.value[0], best.value[1], best.value[2], best.value[3]];
+            bestLimitCache = [
+              best.value[0], best.value[1],
+              best.value[2], best.value[3]
+            ];
           }
+
           limit = bestLimitCache;
-        } else limit = cap;
+        } else {
+          limit = cap;
+        }
 
         if (!limit) return true;
+
         const p0 = sums.p0;
         const p1 = sums.p1;
         const p2 = sums.p2;
         const p3 = sums.p3;
+
         if (p0 !== limit[0]) return p0 < limit[0];
         if (p1 !== limit[1]) return p1 < limit[1];
 
@@ -1961,13 +2646,22 @@ function canRemoveForBye(list, score) {
         const bWant = totalB - sums.pairedB;
         const remaining = ctx.all.length - 2 * sums.count;
         const fp = (remaining - high.count) / 2;
-        const lb2 = Math.max(0, wWant - high.count - fp) +
+
+        const lb2 =
+          Math.max(0, wWant - high.count - fp) +
           Math.max(0, bWant - high.count - fp);
-        const p2Remaining = Math.max(lb2, suffixMinP2[position]);
+
+        const p2Remaining = Math.max(
+          lb2, suffixMinP2[position]
+        );
         const low2 = p2 + p2Remaining;
+
         if (low2 !== limit[2]) return low2 < limit[2];
+
         const low3 = p3 + suffixMinP3[position];
+
         if (low3 !== limit[3]) return low3 < limit[3];
+
         return true;
       }
 
@@ -1977,18 +2671,157 @@ function canRemoveForBye(list, score) {
          * Include any already-fixed MDP anchor costs.
          */
         const total = [
-          sums.p0 + lb[0], sums.p1 + lb[1],
-          sums.p2 + lb[2], sums.p3 + lb[3]
+          sums.p0 + lb[0],
+          sums.p1 + lb[1],
+          sums.p2 + lb[2],
+          sums.p3 + lb[3]
         ];
+
         let limit = cap;
+
         if (best) {
           if (best.value !== bestValueCache) {
             bestValueCache = best.value;
-            bestLimitCache = [best.value[0], best.value[1], best.value[2], best.value[3]];
+            bestLimitCache = [
+              best.value[0],
+              best.value[1],
+              best.value[2],
+              best.value[3]
+            ];
           }
+
           limit = bestLimitCache;
         }
-        return limit !== null && compareArrays(total, limit) > 0;
+
+        if (limit === null) return false;
+
+        const cmp = compareArrays(total, limit);
+        if (cmp > 0) return true;
+
+        if (cmp === 0 && !ctx.mdps.length && best) {
+          if (high.count === 0) return true;
+          if (
+            high.count === 1 &&
+            best.value[4] <= lowerBound[4] &&
+            best.value[6] <= lowerBound[6]
+          ) {
+            return true;
+          }
+        }
+
+        return false;
+      }
+
+      let checkedZeroC12 = null;
+      let checkedZeroC13 = null;
+
+      function canAchieveSubgraph(filterEdge) {
+        const list = ctx.all;
+        const n = list.length;
+        const graph = Array.from({length:n}, () => []);
+
+        for (let a = 0; a < n; a++) {
+          for (let b = a + 1; b < n; b++) {
+            tick();
+            const u = list[a];
+            const v = list[b];
+            if (edge[u][v] && filterEdge(u, v)) {
+              graph[a].push(b);
+              graph[b].push(a);
+            }
+          }
+        }
+
+        return hasPerfectMatchingGraph(graph, tick);
+      }
+
+      function isProvenOptimal(bestVal) {
+        if (compareQuality(bestVal, lowerBound) === 0) {
+          return true;
+        }
+
+        if (ctx.mdps.length || high.count !== 0) {
+          return false;
+        }
+
+        if (bestVal[0] !== 0 || bestVal[1] !== 0) {
+          return false;
+        }
+
+        const n = ctx.all.length;
+        const pairs = high.pairs;
+
+        if (
+          bestVal[2] === lowerBound[2] &&
+          bestVal[3] === 1 &&
+          lowerBound[3] === 0
+        ) {
+          if (checkedZeroC13 === null) {
+            checkedZeroC13 = canAchieveSubgraph((u, v) => {
+              const pc = pairCost[u][v];
+              if (pc[0] !== 0 || pc[1] !== 0 || pc[3] !== 0) {
+                return false;
+              }
+              const wu = colors[u][v][0] === u ? "W" : "B";
+              const wv = wu === "W" ? "B" : "W";
+
+              if (totalW > pairs && totalB <= pairs) {
+                if (
+                  (colorWant[u] === -1 && wu === "W") ||
+                  (colorWant[v] === -1 && wv === "W")
+                ) {
+                  return false;
+                }
+              } else if (totalB > pairs && totalW <= pairs) {
+                if (
+                  (colorWant[u] === 1 && wu === "B") ||
+                  (colorWant[v] === 1 && wv === "B")
+                ) {
+                  return false;
+                }
+              } else if (totalW <= pairs && totalB <= pairs) {
+                return pc[2] === 0;
+              }
+              return true;
+            });
+          }
+
+          return !checkedZeroC13;
+        }
+
+        if (lowerBound[2] === 0 && bestVal[2] > 0) {
+          if (checkedZeroC12 === null) {
+            checkedZeroC12 = canAchieveSubgraph((u, v) => {
+              const pc = pairCost[u][v];
+              return pc[0] === 0 && pc[1] === 0 && pc[2] === 0;
+            });
+          }
+
+          if (!checkedZeroC12) {
+            const allWant = totalW + totalB === n;
+            const evenParity =
+              allWant && ((totalW - pairs) & 1) === 0;
+            const minC12 = evenParity ? 2 : 1;
+
+            if (bestVal[2] === minC12) {
+              const hasMild = ctx.all.some(
+                i => players[i].pref.strength === 1
+              );
+              const hasTopAbs = ctx.all.some(
+                i => players[i].top && players[i].pref.strength === 3
+              );
+
+              if (
+                bestVal[3] === 0 ||
+                (!hasMild && !hasTopAbs && bestVal[3] <= minC12)
+              ) {
+                return true;
+              }
+            }
+          }
+        }
+
+        return false;
       }
 
       const caps = [
@@ -1999,39 +2832,52 @@ function canRemoveForBye(list, score) {
 
       for (const c of caps) {
         cap = c;
+
         sums.p0 = sums.p1 = sums.p2 = sums.p3 = 0;
         sums.pairedW = sums.pairedB = sums.count = 0;
         dfsUsed.fill(0);
 
         for (const candidate of bracketCandidates(
-          ctx, high, canWin, shouldSkipPartition, sums, dfsUsed, acceptableDown
+          ctx, high, canWin, shouldSkipPartition,
+          sums, dfsUsed, acceptableDown
         )) {
           tick();
           ordinal++;
+
           if (!acceptableDown(candidate.down)) continue;
+
           const value = quality(ctx, candidate);
+
           if (!best || compareQuality(value, best.value) < 0) {
             best = {...candidate, value, ordinal};
           }
-          if (compareQuality(best.value, lowerBound) === 0) {
-            proof = "lower-bound-attained";
+
+          if (isProvenOptimal(best.value)) {
+            proof = compareQuality(best.value, lowerBound) === 0
+              ? "lower-bound-attained"
+              : "blossom-optimality-proven";
             break;
           }
         }
+
         if (best) break;
       }
 
       if (!best) {
         throw fault(
           "NO_DUTCH_CANDIDATE",
-          "Ingen valbar kandidat kunde fastställas vid poängen " + ctx.score + "."
+          "No selectable candidate was established at score " +
+          ctx.score + "."
         );
       }
 
       const qualityNames = [
-        "C10","C11","C12","C13","C14","C15","C16","C17","C18","C19","C20","C21"
+        "C10","C11","C12","C13","C14","C15","C16","C17",
+        "C18","C19","C20","C21"
       ];
+
       const evaluated = {};
+
       qualityNames.forEach((name,k) => {
         evaluated[name] = Array.isArray(best.value[k])
           ? best.value[k].map(x => x === REFLOAT ? "REFLOAT" : x)
@@ -2053,7 +2899,7 @@ function canRemoveForBye(list, score) {
             nextDownfloaters:lookAhead.count,
             nextDownfloaterScores:lookAhead.scores
           },
-          C9:c9Applies(high) ? c9 : "inte tillämpligt",
+          C9:c9Applies(high) ? c9 : "not applicable",
           ...evaluated,
           downfloaters:best.down.map(i => players[i].tpn),
           selectedGeneratedCandidate:best.ordinal,
@@ -2065,51 +2911,75 @@ function canRemoveForBye(list, score) {
     const allPairs = [];
     const trace = [];
     let incoming = [];
+
     for (let index = 0; index < groups.length; index++) {
       const selected = selectBracket(index, incoming);
+
       allPairs.push(...selected.pairs);
       trace.push(selected.trace);
       incoming = selected.down;
     }
 
     if (incoming.length !== N % 2) {
-      throw fault("INTERNAL", "Slutkontrollen av spelartäckningen misslyckades.");
+      throw fault("INTERNAL", "Final coverage check failed.");
     }
 
     const pabIndex = incoming.length ? incoming[0] : null;
-    if (pabIndex !== null && (!eligible(pabIndex) || players[pabIndex].score !== byeScore)) {
-      throw fault("INTERNAL", "Slutkontrollen av frironden misslyckades.");
+
+    if (
+      pabIndex !== null &&
+      (
+        !eligible(pabIndex) ||
+        players[pabIndex].score !== byeScore
+      )
+    ) {
+      throw fault("INTERNAL", "Final bye check failed.");
     }
 
     const covered = new Set();
     const outputPairs = [];
+
     for (const [a,b] of allPairs) {
       if (!edge[a][b] || covered.has(a) || covered.has(b)) {
-        throw fault("INTERNAL", "Slutkontrollen av tillåtna par eller unika spelare misslyckades.");
+        throw fault(
+          "INTERNAL",
+          "Final pair legality or uniqueness check failed."
+        );
       }
+
       covered.add(a);
       covered.add(b);
+
       const [w,bl] = colors[a][b];
-      outputPairs.push({whiteId:players[w].id, blackId:players[bl].id});
+
+      outputPairs.push({
+        whiteId:players[w].id,
+        blackId:players[bl].id
+      });
     }
 
     if (pabIndex !== null) {
       if (covered.has(pabIndex)) {
-        throw fault("INTERNAL", "Samma frirondsmottagare förekommer flera gånger.");
+        throw fault("INTERNAL", "Duplicate bye recipient.");
       }
+
       covered.add(pabIndex);
     }
+
     if (covered.size !== N) {
-      throw fault("INTERNAL", "Alla spelare omfattas inte av lottningen.");
+      throw fault("INTERNAL", "Incomplete player coverage.");
     }
 
     return {
       engineVersion:VERSION,
       pairs:outputPairs,
       pabId:pabIndex === null ? null : players[pabIndex].id,
-      byeScore, trace,
+      byeScore,
+      trace,
       stats:{
-        nodes, assignmentCalls, dfsRemainderPartitions,
+        nodes,
+        assignmentCalls,
+        dfsRemainderPartitions,
         elapsedMs:performance.now() - started
       }
     };
@@ -2130,13 +3000,23 @@ function canRemoveForBye(list, score) {
 
     function fixture(count, roundNumber = 1, totalRounds = 5) {
       const m = roundNumber - 1;
+
       return {
-        roundNumber, totalRounds, winPoints:1, initialColor:"W",
+        roundNumber,
+        totalRounds,
+        winPoints:1,
+        initialColor:"W",
         players:Array.from({length:count}, (_,i) => ({
-          id:"P" + (i + 1), tpn:i + 1, score:0, opponents:[],
-          playedColors:Array.from({length:m}, (_,r) => (r + i) % 2 ? "B" : "W"),
+          id:"P" + (i + 1),
+          tpn:i + 1,
+          score:0,
+          opponents:[],
+          playedColors:Array.from(
+            {length:m}, (_,r) => (r + i) % 2 ? "B" : "W"
+          ),
           floats:new Array(m).fill("-"),
-          hadPAB:false, hadUnplayedWin:false
+          hadPAB:false,
+          hadUnplayedWin:false
         }))
       };
     }
@@ -2151,115 +3031,173 @@ function canRemoveForBye(list, score) {
       ).sort();
     }
 
-    test("Vanlig första rond med udda spelarantal", () => {
+    test("Ordinary odd first round", () => {
       const result = run(fixture(15));
-      check(result.pabId === "P15", "Startnummer 15 förväntades få frironden.");
+
+      check(
+        result.pabId === "P15",
+        "Expected TPN 15 to receive the bye."
+      );
+
       for (let i = 1; i <= 7; i++) {
         check(
           result.pairs.some(p =>
             [p.whiteId, p.blackId].includes("P" + i) &&
             [p.whiteId, p.blackId].includes("P" + (i + 7))
           ),
-          "Fel motståndare i första ronden."
+          "Incorrect first-round opponent."
         );
       }
+
       check(
-        result.pairs.some(p => p.whiteId === "P1" && p.blackId === "P8"),
-        "Fel inledande färg i första ronden."
+        result.pairs.some(p =>
+          p.whiteId === "P1" && p.blackId === "P8"
+        ),
+        "Incorrect first-round initial color."
       );
+
       check(
-        result.pairs.some(p => p.whiteId === "P9" && p.blackId === "P2"),
-        "Fel inledande färg för jämnt startnummer."
+        result.pairs.some(p =>
+          p.whiteId === "P9" && p.blackId === "P2"
+        ),
+        "Incorrect even-TPN initial color."
       );
     });
 
-    test("Kanonisk ordning vid likvärdiga kandidater", () => {
+    test("Canonical tie order", () => {
       const input = fixture(4, 3, 5);
+
       input.players.forEach(p => {
         p.score = 1;
         p.playedColors = ["W","B"];
       });
+
       const result = run(input);
+
       check(
-        JSON.stringify(opponents(result)) === JSON.stringify(["P1-P3","P2-P4"]),
-        "Den naturliga kandidaten med övre halvan mot undre halvan förväntades."
+        JSON.stringify(opponents(result)) ===
+          JSON.stringify(["P1-P3","P2-P4"]),
+        "Expected the natural top-half/bottom-half candidate."
       );
     });
 
-    test("Spelhistoriker jämförda från slutet", () => {
-      const a = {id:"A", tpn:1, score:2, playedColors:["W","W","B"]};
-      const b = {id:"B", tpn:2, score:2, playedColors:["W","B","W"]};
+    test("Played histories aligned from the end", () => {
+      const a = {
+        id:"A", tpn:1, score:2, playedColors:["W","W","B"]
+      };
+      const b = {
+        id:"B", tpn:2, score:2, playedColors:["W","B","W"]
+      };
+
       check(
         allocate(a, b, "W").white.id === "A",
-        "Färgtilldelningen jämförde historikerna på fel sätt."
+        "Color allocation used the wrong historical alignment."
       );
     });
 
-    test("C3 är absolut utanför undantaget för toppspelare", () => {
+    test("C3 is absolute outside the topscorer exception", () => {
       const input = fixture(2, 3, 4);
+
       input.players.forEach(p => {
         p.score = 2;
         p.playedColors = ["W","W"];
       });
+
       let refused = false;
-      try { run(input); }
-      catch (error) { refused = error.code === "NO_LEGAL_COMPLETION"; }
-      check(refused, "Samma absoluta färgönskemål borde förbjuda detta par.");
+
+      try {
+        run(input);
+      } catch (error) {
+        refused = error.code === "NO_LEGAL_COMPLETION";
+      }
+
+      check(
+        refused,
+        "Same absolute preferences should prohibit this pairing."
+      );
+
       input.totalRounds = 3;
-      check(run(input).pairs.length === 1, "Undantaget för toppspelare i sista ronden misslyckades.");
+
+      check(
+        run(input).pairs.length === 1,
+        "Final-round topscorer exception failed."
+      );
     });
 
-    test("C4 kan kräva ytterligare nedflyttade spelare", () => {
+    test("C4 can require extra downfloaters", () => {
       const input = fixture(4, 2, 5);
+
       input.players[0].score = 1;
       input.players[1].score = 1;
       input.players[2].opponents = ["P4"];
       input.players[3].opponents = ["P3"];
+
       const result = run(input);
-      check(result.trace[0].MaxPairs === 0, "Den övre lottningsgruppen måste lämna båda spelarna tillgängliga.");
-      check(result.pairs.length === 2, "En fullständig lottning över poänggrupperna förväntades.");
+
+      check(
+        result.trace[0].MaxPairs === 0,
+        "The upper bracket must leave both players available."
+      );
+
+      check(
+        result.pairs.length === 2,
+        "Expected complete cross-score pairing."
+      );
     });
 
-    test("C5 väljer lägsta möjliga poäng", () => {
+    test("C5 chooses the minimum feasible score", () => {
       const input = fixture(3, 2, 5);
+
       input.players[0].score = 1;
       input.players[2].score = 1;
       input.players[0].opponents = ["P3"];
       input.players[1].opponents = ["P3"];
       input.players[2].opponents = ["P1","P2"];
+
       const result = run(input);
+
       check(
         result.pabId === "P3" && result.byeScore === 1,
-        "Fel val av möjlig poäng för frirond."
+        "Incorrect feasible bye-score selection."
       );
     });
 
-    test("C9 skyddar en spelare med färre spelade partier", () => {
+    test("C9 protects a player with fewer played games", () => {
       const input = fixture(3, 2, 5);
       input.players[2].playedColors = [];
+
       check(
         run(input).pabId === "P2",
-        "Startnummer 2, inte tidigare frånvarande startnummer 3, förväntades få frironden."
+        "Expected TPN 2, not previously absent TPN 3, to receive the bye."
       );
     });
 
-    test("C8 optimerar nästa lottningsgrupp före aktuella färger", () => {
+    test("C8 optimizes the next bracket before current colors", () => {
       const input = fixture(8, 3, 6);
+
       input.players.forEach((p,i) => {
         p.score = i < 3 ? 2 : i < 6 ? 1 : 0;
         p.playedColors = ["W","B"];
       });
+
       input.players[3].opponents = ["P2","P3","P5","P6"];
-      for (const i of [1,2,4,5]) input.players[i].opponents.push("P4");
+
+      for (const i of [1,2,4,5]) {
+        input.players[i].opponents.push("P4");
+      }
+
       const result = run(input);
+
       check(
-        JSON.stringify(result.trace[0].downfloaters) === JSON.stringify([1]),
-        "Startnummer 1 förväntades lösa oförenligheten i nästa lottningsgrupp."
+        JSON.stringify(result.trace[0].downfloaters) ===
+          JSON.stringify([1]),
+        "Expected TPN 1 to solve the next bracket's incompatibility."
       );
     });
 
-    test("C18 skyddar en inkommande MDP-spelare mot Limbo/PAB", () => {
+    test("C18 protects an incoming MDP against Limbo/PAB", () => {
       const input = fixture(3, 3, 5);
+
       input.players[0].score = input.players[1].score = 2;
       input.players[0].playedColors = ["B","B"];
       input.players[1].playedColors = ["B","B"];
@@ -2267,146 +3205,230 @@ function canRemoveForBye(list, score) {
       input.players[2].score = 1;
       input.players[2].playedColors = [];
       input.players[2].hadPAB = true;
+
       check(
         run(input).pabId === "P1",
-        "Den skyddade MDP-spelaren borde paras i stället för att flyttas ned igen till frirond."
+        "The protected MDP should be paired rather than refloated to the bye."
       );
     });
 
-    test("Resursavbrott returnerar ingen preliminär lösning", () => {
+    test("Resource interruption returns no provisional solution", () => {
       let stopped = false;
-      try { run(fixture(8), {seconds:0, nodes:1}); }
-      catch (error) { stopped = error.code === "LIMIT"; }
-      check(stopped, "Ett undantag för uppnådd resursgräns förväntades.");
+
+      try {
+        run(fixture(8), {seconds:0, nodes:1});
+      } catch (error) {
+        stopped = error.code === "LIMIT";
+      }
+
+      check(stopped, "Expected a resource-limit exception.");
     });
 
-    test("Blossom-kontrollen överensstämmer med uttömmande kontroll av små grafer", () => {
+    test("Blossom feasibility agrees with exhaustive small graphs", () => {
       function brute(graph, remaining) {
         if (!remaining.length) return true;
+
         const first = remaining[0];
         const rest = remaining.slice(1);
+
         for (const second of rest) {
           if (!graph[first].includes(second)) continue;
-          if (brute(graph, rest.filter(v => v !== second))) return true;
+
+          if (brute(
+            graph,
+            rest.filter(v => v !== second)
+          )) {
+            return true;
+          }
         }
+
         return false;
       }
 
       const n = 6;
       const possibleEdges = [];
+
       for (let a = 0; a < n; a++) {
-        for (let b = a + 1; b < n; b++) possibleEdges.push([a,b]);
+        for (let b = a + 1; b < n; b++) {
+          possibleEdges.push([a,b]);
+        }
       }
+
       const vertices = Array.from({length:n}, (_,i) => i);
       const graphCount = 2 ** possibleEdges.length;
 
       for (let mask = 0; mask < graphCount; mask++) {
         const graph = Array.from({length:n}, () => []);
+
         possibleEdges.forEach(([a,b], bit) => {
           if (mask & (1 << bit)) {
             graph[a].push(b);
             graph[b].push(a);
           }
         });
+
         check(
           hasPerfectMatchingGraph(graph) === brute(graph, vertices),
-          "Avvikande matchningsresultat för sexhörnsgraf " + mask
+          "Matching disagreement for six-vertex graph " + mask
         );
       }
     });
 
-    test("Första ronder med 59 och 60 spelare", () => {
+    test("59- and 60-player first rounds", () => {
       const even = run(fixture(60));
+
       check(
         even.pairs.length === 30 && even.pabId === null,
-        "30 partier och ingen frirond förväntades för 60 spelare."
+        "Expected 30 games and no bye for 60 players."
       );
+
       for (let i = 1; i <= 30; i++) {
         check(
           even.pairs.some(p =>
             [p.whiteId, p.blackId].includes("P" + i) &&
             [p.whiteId, p.blackId].includes("P" + (i + 30))
           ),
-          "Fel motståndare i första ronden för startnummer " + i
+          "Incorrect first-round opponent for TPN " + i
         );
       }
+
       const odd = run(fixture(59));
+
       check(
         odd.pairs.length === 29 && odd.pabId === "P59",
-        "29 partier och frirond till den sista spelaren i startnummerordningen förväntades för 59 spelare."
+        "Expected 29 games and the lowest-TPN-order bye for 59 players."
       );
     });
 
-    test("Tilldelningslösaren överensstämmer med uttömmande sökning", () => {
+    test("Assignment solver agrees with brute force", () => {
       let seed = 123456789;
+
       function random() {
-        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+        seed = (
+          Math.imul(seed, 1664525) + 1013904223
+        ) >>> 0;
+
         return seed;
       }
+
       function brute(matrix) {
         const n = matrix.length;
         const used = new Uint8Array(n);
+
         let best = null;
+
         function visit(row, total) {
           if (row === n) {
-            if (best === null || total < best) best = total;
+            if (best === null || total < best) {
+              best = total;
+            }
             return;
           }
+
           for (let column = 0; column < n; column++) {
-            if (used[column] || matrix[row][column] === null) continue;
+            if (
+              used[column] ||
+              matrix[row][column] === null
+            ) {
+              continue;
+            }
+
             used[column] = 1;
-            visit(row + 1, total + matrix[row][column]);
+
+            visit(
+              row + 1,
+              total + matrix[row][column]
+            );
+
             used[column] = 0;
           }
         }
+
         visit(0, 0n);
         return best;
       }
 
       for (let sample = 0; sample < 72; sample++) {
         const n = sample % 7;
+
         const matrix = Array.from({length:n}, () =>
           Array.from({length:n}, () => {
             const r = random();
-            return r % 5 === 0 ? null : BigInt(r % 17);
+
+            return r % 5 === 0
+              ? null
+              : BigInt(r % 17);
           })
         );
+
         const expected = brute(matrix);
         const assigned = minimumCostAssignment(matrix);
+
         if (expected === null) {
-          check(assigned === null, "Tilldelningslösaren accepterade en olösbar matris.");
+          check(
+            assigned === null,
+            "Assignment solver accepted an infeasible matrix."
+          );
           continue;
         }
-        check(assigned !== null, "Tilldelningslösaren avvisade en lösbar matris.");
-        check(new Set(assigned).size === n, "Tilldelningslösaren återanvände en kolumn.");
+
+        check(
+          assigned !== null,
+          "Assignment solver rejected a feasible matrix."
+        );
+
+        check(
+          new Set(assigned).size === n,
+          "Assignment solver reused a column."
+        );
+
         let actual = 0n;
+
         for (let row = 0; row < n; row++) {
           const value = matrix[row][assigned[row]];
-          check(value !== null, "Tilldelningslösaren använde en förbjuden kant.");
+
+          check(
+            value !== null,
+            "Assignment solver used a forbidden edge."
+          );
+
           actual += value;
         }
-        check(actual === expected, "Tilldelningslösaren returnerade en kostnad som inte var minimal.");
+
+        check(
+          actual === expected,
+          "Assignment solver returned a nonminimum cost."
+        );
       }
     });
 
-    test("Den snabba tilldelningsmetoden överensstämmer med DFS", () => {
+    test("Assignment fast path agrees with DFS", () => {
       function signature(result) {
         return JSON.stringify({
-          pairs:result.pairs.map(pair => [pair.whiteId, pair.blackId].join("/")).sort(),
-          pabId:result.pabId, byeScore:result.byeScore
+          pairs:result.pairs.map(pair =>
+            [pair.whiteId, pair.blackId].join("/")
+          ).sort(),
+          pabId:result.pabId,
+          byeScore:result.byeScore
         });
       }
-      const cases = [fixture(8), fixture(9)];
+
+      const cases = [
+        fixture(8),
+        fixture(9)
+      ];
 
       /*
        * Every player wants Black absolutely and is a topscorer.
        * Some final-round color penalties are unavoidable.
        */
       const finalColors = fixture(6, 5, 5);
+
       finalColors.players.forEach(player => {
         player.score = 3;
         player.playedColors = ["W","B","W","W"];
       });
+
       cases.push(finalColors);
 
       /*
@@ -2414,37 +3436,55 @@ function canRemoveForBye(list, score) {
        * followed by transposition order, determines the bye.
        */
       const finalFloats = fixture(7, 5, 5);
+
       finalFloats.players.forEach(player => {
         player.score = 2;
         player.playedColors = ["W","B","W","B"];
       });
+
       finalFloats.players[6].floats[3] = "D";
       finalFloats.players[5].floats[2] = "D";
+
       cases.push(finalFloats);
 
       /*
        * A heterogeneous bracket with a homogeneous remainder.
        */
       const mixed = fixture(8, 3, 6);
+
       mixed.players.forEach((player,index) => {
         player.score = index < 3 ? 2 : 1;
         player.playedColors = ["W","B"];
       });
+
       cases.push(mixed);
 
       for (let index = 0; index < cases.length; index++) {
         const input = cases[index];
-        const optimized = run(input, {seconds:10, nodes:0, assignmentFastPath:true});
-        const reference = run(input, {seconds:10, nodes:0, assignmentFastPath:false});
+
+        const optimized = run(input, {
+          seconds:10,
+          nodes:0,
+          assignmentFastPath:true
+        });
+
+        const reference = run(input, {
+          seconds:10,
+          nodes:0,
+          assignmentFastPath:false
+        });
+
         check(
           signature(optimized) === signature(reference),
-          "Avvikelse mellan tilldelningsmetoden och DFS i fall " + index
+          "Assignment/DFS disagreement in case " + index
         );
       }
+
       const floatResult = run(finalFloats);
+
       check(
         floatResult.pabId === "P5",
-        "Fel hantering av nedflytningshistorik eller transpositionsordning."
+        "Incorrect downfloater-history or transposition ordering."
       );
     });
 
@@ -2452,8 +3492,14 @@ function canRemoveForBye(list, score) {
   }
 
   return {
-    VERSION, solve, selfTest, rank, preference,
-    colorDifference, compatible, allocate
+    VERSION,
+    solve,
+    selfTest,
+    rank,
+    preference,
+    colorDifference,
+    compatible,
+    allocate
   };
 }
 
@@ -2466,15 +3512,15 @@ const STORAGE_KEY = "fide_dutch_2026_reference_v4";
 const LEGACY_STORAGE_KEY = "experimental_fide_dutch_2026_en";
 
 const FIXED_SEARCH_LIMITS = Object.freeze({
-  seconds:20,
-  nodes:0 // No node cap; the 20-second wall-clock limit is the search bound.
+  seconds:45,
+  nodes:0 // No node cap; the 45-second wall-clock limit is the search bound.
 });
 
 /*
  * Hard upper bound on registered participants.
  * Enforced on registration and tournament-file loading.
  */
-const MAX_PLAYERS = 60;
+const MAX_PLAYERS = 70;
 
 const TITLE_WEIGHTS = {
   GM:8, IM:7, WGM:6, FM:5, WIM:4, CM:3, WFM:2, WCM:1, "":0
