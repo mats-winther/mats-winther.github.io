@@ -484,11 +484,6 @@ a { color:var(--blue); }
     använder fortsatt referenssökningen.
   </p>
   <p>
-    Registreringen stängs automatiskt när den första ronden har lottats.
-    Befintliga spelare kan därefter tas ur turneringen eller återinsättas mellan ronderna.
-    Nya spelare kan inte läggas till efter att registreringen har stängts.
-  </p>
-  <p>
     Slutresultatet rangordnas efter poäng, Buchholz med lägsta värdet struket (BH-1),
     Buchholz (BH) och Sonneborn-Berger (SB).
     Spelare som fortfarande är lika delar placering.
@@ -508,34 +503,28 @@ a { color:var(--blue); }
   <p>
     För oparade MDP-spelare används en markör för förnyad nedflyttning som
     är större än varje faktisk poängskillnad, enligt den konvention som
-    förklaras i TEC:s kommentarer.
-  </p>
-  <p><b>Observera:</b> Det högsta antalet deltagare är 60.</p>
-  <p>
-    Efter att en rond har bekräftats kan ett felregistrerat resultat rättas
-    genom att öppna en tidigare sparad säkerhetskopia. Ändringar efter säkerhetskopians tidpunkt måste då göras om.
-    Använd funktionen ”Spara turnering” för att skapa säkerhetskopior.
-  </p>
-<p>
-    Du kan hantera olika turneringar samtidigt i olika webbläsare
-    (till exempel Chrome och Edge). Varje webbläsare har sin egen
-    autosparning, så en turnering måste återupptas i samma webbläsare
-    som den startades i. Undvik att köra separata turneringar i flera
-    flikar eller fönster inom samma webbläsarprofil, eftersom
-    autosparningarna då kan skriva över varandra. 
-  <p>
-  <p>
-    Turneringen sparas automatiskt i webbläsaren när lagring
-    är tillgänglig. För extra säkerhet, spara regelbundet JSON-säkerhetskopior.
-    Inga uppgifter skickas till en server, och separata
-    webbläsarflikar synkroniseras inte.
-  </p>
-  <p>
-    Inte implementerat: acceleration, godtyckliga extra lottningsbegränsningar,
-    avbrutna partier eller ett administrativt arbetsflöde för att ändra publicerade
-    lottningar och rätta arkiverade resultat.
-    De inbyggda testerna är regressionstester för utveckling, inte FIDE:s officiella godkännandetester.
-  </p>
+    förklaras i TEC:s kommentarer.</p>
+
+<p><strong>Autosparande &amp; säkerhetskopior:</strong> 
+  Inställningar och turneringsdata sparas automatiskt och kontinuerligt i webbläsarens lagringsutrymme (localStorage). För att köra separata turneringar samtidigt utan att skriva över data, använd olika webbläsare (t.ex. Chrome och Edge). Spara en JSON-säkerhetskopia efter varje rond. För att korrigera ett tidigare inrapporterat resultat, återställ säkerhetskopian från den ronden och mata in resultaten på nytt.</p>
+
+  <p><strong>Registrering &amp; spelarkapacitet:</strong> 
+  Turneringen är begränsad till maximalt <strong>60 deltagare</strong>. Så snart lottningen för rond 1 har skapats stängs registreringen permanent (inga nya spelare kan läggas till) och turneringsinställningarna låses. Mellan ronderna kan spelare redigeras, avanmälas, återinsättas eller tilldelas ospelade ronder (noll-, remi- eller vinstvärde).</p>
+
+  <p><strong>Importera spelarlistor:</strong> 
+  Spelarlistor kan importeras via fil (.txt, .csv, .trf) eller klistras in direkt. Rader som börjar med # eller //, samt tomma rader, ignoreras.</p>
+
+  <p>1. <strong>Avgränsad text:</strong> Fälten separeras med semikolon (;), tabbar (\t) eller kommatecken (,).<br>  
+  &bull; <strong>Rating:</strong> 0–9999 (standardvärdet är 1500 om fältet utelämnas).<br>
+  &bull; <strong>Titel:</strong> Valfri (GM, IM, WGM, FM, WIM, CM, WFM, WCM, eller tomt fält).<br>
+  &bull; <strong>Namn som innehåller kommatecken</strong> kan anges som citatteckenomgivet CSV-fält ("Carlsen, Magnus", 2832, GM), fyra fält utan citattecken (Carlsen, Magnus, 2832, GM), eller semikolon-/tabbseparerat (Carlsen, Magnus; 2832; GM).</p>
+
+  <p>2. <strong>TRF-import:</strong> Standard FIDE TRF06- / TRF26-poster som börjar med 001 extraherar endast registreringsfält (Titel: kol. 11–13, Namn: kol. 15–47, Rating: kol. 49–52). Tidigare lottningar och historik ignoreras.</p>
+
+  <p><strong>TRF-export:</strong> 
+  När samtliga ronder i turneringen har slutförts visas knappen <strong>Save TRF-file</strong>. TRF-exporten innehåller endast tävlingsresultaten och den information som registrerats i appen; tävlingsledaren måste komplettera filen med spelarnas FIDE-ID, födelsedatum och federationskoder före slutlig inlämning.</p>
+
+  <p>Denna applikation stöder inte efteranmälningar, accelererad lottning eller hängpartier. De inbyggda testerna är regressionstester för utvecklare, inte FIDE:s officiella godkännandesvit.</p>
   <ul>
     <li>
       <a href="https://handbook.fide.com/chapter/C0403202602"

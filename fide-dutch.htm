@@ -571,20 +571,14 @@ a { color:var(--blue); }
 
   <p>
     Search is bracket-local, with the specified C8 look-ahead. Interrupted
-    calculations never publish a provisional best pairing. Pairing searches
-    use a fixed 20-second time limit.
+    calculations never publish a provisional best pairing. Calculations run
+    in a background Web Worker with a fixed timeout.
   </p>
 
   <p>
     Fixed homogeneous S1/S2 partitions with zero or one resident downfloater
     use exact minimum-cost assignment. Other partitions and MDP anchor
     assignments retain the reference search.
-  </p>
-
-  <p>
-    Registration closes automatically when the first round is successfully
-    generated. Existing players can subsequently be withdrawn or reinstated
-    between rounds. New players cannot be added after registration closes.
   </p>
 
   <p>
@@ -612,34 +606,26 @@ a { color:var(--blue); }
     gap, following the convention explained in the TEC annotations.
   </p>
 
-  <p>
-    <b>Note:</b> The maximum number of participants is 60.
-  </p>
+  <p><strong>Autosave &amp; Backups:</strong> 
+  Settings and tournament data autosave continuously to browser storage (localStorage). To run separate tournaments simultaneously without overwriting data, use different browsers (e.g., Chrome and Edge). Save a JSON backup after each round. To correct a previously entered result, restore the backup from that round and re-enter the results.</p>
 
-  <p>
-    Once a round is confirmed, an incorrectly recorded result can be
-    corrected through the GUI, provided that a tournament backup was
-    previously created using the "Save Tournament" function.
-  </p>
-  <p>
-     You can run separate tournaments simultaneously in different
-     browsers (for example, Chrome and Edge). Each browser maintains
-     its own autosave, so a tournament should be resumed in the browser
-     where it was started. Avoid running separate tournaments in multiple
-     tabs or windows within the same browser profile, as their autosaves
-     may overwrite one another. 
-  </p>
-  <p>
-    Browser storage saves automatically when available. For added safety,
-    save JSON backups regularly. No data is sent to a server and tabs do
-    not synchronize.
-  </p>
-  <p>
-    Not implemented: acceleration, arbitrary additional pairing restrictions,
-    adjournments, or an administrative workflow for altering published
-    pairings and correcting archived results. The built-in tests are
-    developer regression tests, not the official FIDE endorsement suite.
-  </p>
+  <p><strong>Registration &amp; Player Capacity:</strong> 
+  The tournament is limited to a maximum of <strong>60 participants</strong>. Once Round 1 pairings are generated, registration closes permanently (no new players may be added) and tournament settings lock. Between rounds, players can be edited, withdrawn, reinstated, or assigned unplayed rounds (zero, draw, or win value).</p>
+
+  <p><strong>Importing Player Lists:</strong> 
+  Player lists can be imported via file (.txt, .csv, .trf) or pasted directly. Lines starting with # or //, as well as blank lines, are ignored.</p>
+
+  <p>1. <strong>Delimited Text:</strong> Fields are separated by semicolons (;), tabs (\t), or commas (,).<br>  
+  &bull; <strong>Rating:</strong> 0–9999 (defaults to 1500 if omitted).<br>
+  &bull; <strong>Title:</strong> Optional (GM, IM, WGM, FM, WIM, CM, WFM, WCM, or blank).<br>
+  &bull; <strong>Names with commas</strong> can be entered as quoted CSV ("Carlsen, Magnus", 2832, GM), four unquoted fields (Carlsen, Magnus, 2832, GM), or semicolon/tab-separated (Carlsen, Magnus; 2832; GM).</p>
+
+  <p>2. <strong>TRF Import:</strong> Standard FIDE TRF06 / TRF26 records starting with 001 extract only registration fields (Title: cols 11–13, Name: cols 15–47, Rating: cols 49–52). Previous pairings and history are ignored.</p>
+
+  <p><strong>TRF Export:</strong> 
+  Once all tournament rounds are completed, the <strong>Save TRF-file</strong> button appears. The TRF export includes only the tournament results and data recorded in the app; the tournament director must complete the file with player FIDE IDs, birthdates, and federation codes before final submission.</p>
+
+  <p>This application does not support late entries, accelerated pairings, or adjourned games. The built-in tests are developer regression tests, not the official FIDE endorsement suite.</p>
 
   <ul>
     <li>
@@ -665,8 +651,7 @@ a { color:var(--blue); }
       </a>
     </li>
   </ul>
-  <p class="small-note">FIDE Dutch Pairing System was developed by Mats Winther in September 2026.<br>&nbsp;
-  </p>
+  <p class="small-note">FIDE Dutch Pairing System was developed by Mats Winther in September 2026.<br>&nbsp;</p>
 
   <button onclick="document.getElementById('aboutDialog').close()">
     Close
