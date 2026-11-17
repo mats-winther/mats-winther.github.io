@@ -2284,7 +2284,7 @@ const colMins = [];
          * Direct optimization for zero or one resident downfloater.
          * Only the best candidate for this fixed partition is needed.
          */
-if (
+       if (
           assignmentFastPath &&
           (downCount === 0 || downCount === 1)
         ) {
@@ -2650,7 +2650,7 @@ if (
       ];
     }
 
-function selectBracket(index, incoming) {
+    function selectBracket(index, incoming) {
       const ctx = bracketContext(index, incoming);
       phase = "Establishing bracket bounds at score " + ctx.score;
 
