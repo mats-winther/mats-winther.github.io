@@ -746,7 +746,7 @@ function $(id) {
 /* ========================================================================== */
 
 function Dubov2026Core() {
-  const VERSION = "2026-dubov-v3-corrected";
+  const VERSION = "2026-dubov-v3-optimized";
 
   function fault(code, message) {
     const error = new Error(message);
@@ -832,7 +832,7 @@ function Dubov2026Core() {
     ) {
       throw fault(
         "INPUT",
-        "Motstridiga absoluta färgkrav för TPN " +
+        "Conflicting absolute color requirements for TPN " +
         player.tpn
       );
     }
@@ -1209,18 +1209,14 @@ function Dubov2026Core() {
       first < length;
       first++
     ) {
+      const u = vertices[first];
+      const uEdges = edge[u];
       for (
         let second = first + 1;
         second < length;
         second++
       ) {
-        if (
-          edge[
-            vertices[first]
-          ][
-            vertices[second]
-          ]
-        ) {
+        if (uEdges[vertices[second]]) {
           graph[first].push(second);
           graph[second].push(first);
         } else {
@@ -1233,17 +1229,38 @@ function Dubov2026Core() {
       return true;
     }
 
-    if (
-      graph.some(
-        neighbours =>
-          neighbours.length === 0
-      )
-    ) {
-      return false;
+    for (let i = 0; i < length; i++) {
+      if (graph[i].length === 0) {
+        return false;
+      }
     }
 
     const match =
       new Int32Array(length);
+
+    match.fill(-1);
+
+    // Greedy pre-pass avoids running Blossom from scratch for obvious pairs.
+    let matchedCount = 0;
+    for (let u = 0; u < length; u++) {
+      if (match[u] !== -1) {
+        continue;
+      }
+      const adj = graph[u];
+      for (let j = 0; j < adj.length; j++) {
+        const v = adj[j];
+        if (match[v] === -1) {
+          match[u] = v;
+          match[v] = u;
+          matchedCount += 2;
+          break;
+        }
+      }
+    }
+
+    if (matchedCount === length) {
+      return true;
+    }
 
     const parent =
       new Int32Array(length);
@@ -1259,8 +1276,6 @@ function Dubov2026Core() {
 
     const blossom =
       new Uint8Array(length);
-
-    match.fill(-1);
 
     function lowestCommonAncestor(
       first,
@@ -1700,10 +1715,10 @@ function Dubov2026Core() {
     };
   }
 
-  function hasBipartitePerfectMatching(
+  function findBipartitePerfectMatching(
     rows,
     columns,
-    allowed
+    edge
   ) {
     const length =
       rows.length;
@@ -1712,11 +1727,11 @@ function Dubov2026Core() {
       length !==
       columns.length
     ) {
-      return false;
+      return null;
     }
 
     if (length === 0) {
-      return true;
+      return new Int32Array(0);
     }
 
     const adjacency =
@@ -1730,8 +1745,8 @@ function Dubov2026Core() {
       localRow < length;
       localRow++
     ) {
-      const originalRow =
-        rows[localRow];
+      const originalRowEdges =
+        edge[rows[localRow]];
 
       for (
         let localColumn = 0;
@@ -1739,9 +1754,7 @@ function Dubov2026Core() {
         localColumn++
       ) {
         if (
-          allowed[
-            originalRow
-          ][
+          originalRowEdges[
             columns[localColumn]
           ]
         ) {
@@ -1758,7 +1771,7 @@ function Dubov2026Core() {
           localRow
         ].length === 0
       ) {
-        return false;
+        return null;
       }
     }
 
@@ -1768,14 +1781,48 @@ function Dubov2026Core() {
     const pairColumn =
       new Int32Array(length);
 
+    pairRow.fill(-1);
+    pairColumn.fill(-1);
+
+    let matchingSize = 0;
+
+    // Greedy pre-pass handles nearly all round-2/3 matchings without BFS/DFS.
+    for (
+      let row = 0;
+      row < length;
+      row++
+    ) {
+      const adj =
+        adjacency[row];
+
+      for (
+        let index = 0;
+        index < adj.length;
+        index++
+      ) {
+        const column =
+          adj[index];
+
+        if (
+          pairColumn[column] === -1
+        ) {
+          pairRow[row] = column;
+          pairColumn[column] = row;
+          matchingSize++;
+          break;
+        }
+      }
+    }
+
+    if (matchingSize === length) {
+      return pairRow;
+    }
+
     const distance =
       new Int32Array(length);
 
     const queue =
       new Int32Array(length);
-
-    pairRow.fill(-1);
-    pairColumn.fill(-1);
 
     function bfs() {
       let head = 0;
@@ -1863,8 +1910,6 @@ function Dubov2026Core() {
       return false;
     }
 
-    let matchingSize = 0;
-
     while (bfs()) {
       for (
         let row = 0;
@@ -1880,9 +1925,176 @@ function Dubov2026Core() {
       }
     }
 
-    return (
-      matchingSize === length
-    );
+    return matchingSize === length
+      ? pairRow
+      : null;
+  }
+
+  function lexicographicallySmallestMatching(
+    allowed,
+    initialRowMatch
+  ) {
+    const length =
+      allowed.length;
+
+    if (length === 0) {
+      return [];
+    }
+
+    const matchRow =
+      new Int32Array(
+        initialRowMatch
+      );
+
+    const matchCol =
+      new Int32Array(length);
+
+    for (
+      let row = 0;
+      row < length;
+      row++
+    ) {
+      matchCol[
+        matchRow[row]
+      ] = row;
+    }
+
+    const colLocked =
+      new Uint8Array(length);
+
+    const colVisit =
+      new Int32Array(length);
+
+    const parentRow =
+      new Int32Array(length);
+
+    const queue =
+      new Int32Array(length);
+
+    let visitStamp = 0;
+
+    function trySwap(
+      lockedRow,
+      forbiddenCol,
+      targetCol
+    ) {
+      const startRow =
+        matchCol[forbiddenCol];
+
+      visitStamp++;
+      colVisit[forbiddenCol] =
+        visitStamp;
+
+      let head = 0;
+      let tail = 0;
+      queue[tail++] = startRow;
+
+      let found = false;
+
+      while (
+        head < tail &&
+        !found
+      ) {
+        const row =
+          queue[head++];
+
+        const rowAllowed =
+          allowed[row];
+
+        for (
+          let col = 0;
+          col < length;
+          col++
+        ) {
+          if (
+            colLocked[col] ||
+            colVisit[col] ===
+              visitStamp ||
+            !rowAllowed[col]
+          ) {
+            continue;
+          }
+
+          colVisit[col] =
+            visitStamp;
+
+          parentRow[col] = row;
+
+          if (col === targetCol) {
+            found = true;
+            break;
+          }
+
+          queue[tail++] =
+            matchCol[col];
+        }
+      }
+
+      if (!found) {
+        return false;
+      }
+
+      let curCol = targetCol;
+
+      while (curCol !== -1) {
+        const row =
+          parentRow[curCol];
+
+        const prevCol =
+          row === startRow
+            ? -1
+            : matchRow[row];
+
+        matchRow[row] = curCol;
+        matchCol[curCol] = row;
+        curCol = prevCol;
+      }
+
+      matchRow[lockedRow] =
+        forbiddenCol;
+
+      matchCol[forbiddenCol] =
+        lockedRow;
+
+      return true;
+    }
+
+    for (
+      let row = 0;
+      row < length;
+      row++
+    ) {
+      const currentCol =
+        matchRow[row];
+
+      const rowAllowed =
+        allowed[row];
+
+      let selected = currentCol;
+
+      for (
+        let col = 0;
+        col < currentCol;
+        col++
+      ) {
+        if (
+          !colLocked[col] &&
+          rowAllowed[col] &&
+          trySwap(
+            row,
+            col,
+            currentCol
+          )
+        ) {
+          selected = col;
+          break;
+        }
+      }
+
+      colLocked[selected] = 1;
+    }
+
+    return Array.from(matchRow);
   }
 
   function lexicographicallySmallestOptimalAssignment(
@@ -1933,84 +2145,10 @@ function Dubov2026Core() {
       }
     }
 
-    const assignment =
-      new Array(length).fill(-1);
-
-    let remainingColumns =
-      Array.from(
-        { length },
-        (_, index) => index
-      );
-
-    for (
-      let row = 0;
-      row < length;
-      row++
-    ) {
-      let selected = -1;
-
-      for (
-        let position = 0;
-        position <
-          remainingColumns.length;
-        position++
-      ) {
-        const column =
-          remainingColumns[
-            position
-          ];
-
-        if (
-          !equalityGraph[
-            row
-          ][
-            column
-          ]
-        ) {
-          continue;
-        }
-
-        const laterRows = [];
-
-        for (
-          let laterRow = row + 1;
-          laterRow < length;
-          laterRow++
-        ) {
-          laterRows.push(
-            laterRow
-          );
-        }
-
-        const laterColumns =
-          remainingColumns.filter(
-            (_, index) =>
-              index !== position
-          );
-
-        if (
-          hasBipartitePerfectMatching(
-            laterRows,
-            laterColumns,
-            equalityGraph
-          )
-        ) {
-          selected = column;
-          remainingColumns =
-            laterColumns;
-          break;
-        }
-      }
-
-      if (selected === -1) {
-        return solution.assignment;
-      }
-
-      assignment[row] =
-        selected;
-    }
-
-    return assignment;
+    return lexicographicallySmallestMatching(
+      equalityGraph,
+      solution.assignment
+    );
   }
 
   function solve(
@@ -2044,7 +2182,7 @@ function Dubov2026Core() {
       ) {
         throw fault(
           "LIMIT",
-          "Tidsgränsen för sökningen har överskridits."
+          "Search time limit exceeded."
         );
       }
     }
@@ -2079,8 +2217,8 @@ function Dubov2026Core() {
         ) {
           throw fault(
             "INPUT",
-            "Varje spelare måste ha en giltig eller provisorisk rating. " +
-            `Ogiltig rating för TPN ${raw.tpn}.`
+            "Every player must have a positive rating or provisional rating. " +
+            `Invalid rating for TPN ${raw.tpn}.`
           );
         }
 
@@ -2129,6 +2267,12 @@ function Dubov2026Core() {
           player.upfloatCount >=
           MaxT;
 
+        player.upfloatedPreviously =
+          player.floats.length > 0 &&
+          player.floats[
+            player.floats.length - 1
+          ] === "U";
+
         rawMap.set(
           player.id,
           player
@@ -2162,23 +2306,37 @@ function Dubov2026Core() {
             .fill(false)
       );
 
+    const edgeMask =
+      new Array(playerCount)
+        .fill(0n);
+
     for (
       let first = 0;
       first < playerCount;
       first++
     ) {
+      let mask = 0n;
+
       for (
-        let second = first + 1;
+        let second = 0;
         second < playerCount;
         second++
       ) {
-        edge[first][second] =
-          edge[second][first] =
-            compatible(
-              players[first],
-              players[second]
-            );
+        if (
+          second > first
+            ? compatible(
+                players[first],
+                players[second]
+              )
+            : edge[second][first]
+        ) {
+          edge[first][second] = true;
+          edge[second][first] = true;
+          mask |= 1n << BigInt(second);
+        }
       }
+
+      edgeMask[first] = mask;
     }
 
     const completionCache =
@@ -2246,7 +2404,7 @@ function Dubov2026Core() {
     ) {
       progress({
         phase:
-          "Tilldelar frirond / PAB (Artikel 3.1)",
+          "Assigning Pairing-Allocated Bye (Article 3.1)",
         nodes,
         elapsedMs:
           performance.now() -
@@ -2294,7 +2452,7 @@ function Dubov2026Core() {
       if (pabIndex === null) {
         throw fault(
           "NO_LEGAL_COMPLETION",
-          "Ingen giltig fullständig lottning som uppfyller C1–C3 existerar."
+          "No complete pairing satisfying C1–C3 exists."
         );
       }
 
@@ -2308,7 +2466,7 @@ function Dubov2026Core() {
     ) {
       throw fault(
         "NO_LEGAL_COMPLETION",
-        "Ingen giltig fullständig rond som uppfyller C1–C3 existerar."
+        "No complete round satisfying C1–C3 exists."
       );
     }
 
@@ -2317,9 +2475,8 @@ function Dubov2026Core() {
     const roundUpfloaterIds = [];
     let pool = [...toPair];
 
-    function getSortedUpfloaterSets(
-      lowersList,
-      count
+    function buildLowerScoreGroups(
+      lowersList
     ) {
       const sortedLowers =
         [...lowersList].sort(
@@ -2330,108 +2487,240 @@ function Dubov2026Core() {
               players[b].tpn
         );
 
-      const sequenceIndex =
-        new Map(
-          sortedLowers.map(
-            (index, position) =>
-              [index, position]
-          )
-        );
-
-      const sets = [];
+      const groups = [];
 
       for (
-        const combination of
-        combinations(
-          sortedLowers,
-          count
-        )
+        let pos = 0;
+        pos < sortedLowers.length;
+        pos++
       ) {
-        const scoresAsc =
-          combination
-            .map(index =>
-              players[index].score
-            )
-            .sort(
-              (a, b) => a - b
-            );
+        const playerIndex =
+          sortedLowers[pos];
 
-        const maximumUpfloaters =
-          combination.filter(
-            index =>
-              players[index]
-                .isMaxUpfloater
-          );
+        const score =
+          players[playerIndex].score;
 
-        const maxUCount =
-          maximumUpfloaters.length;
+        let group =
+          groups[groups.length - 1];
 
-        const maximumUpfloatHistory =
-          maximumUpfloaters.reduce(
-            (sum, index) =>
-              sum +
-              players[index]
-                .upfloatCount,
-            0
-          );
-
-        const previousUpfloaters =
-          combination.filter(index => {
-            const floats =
-              players[index].floats;
-
-            return (
-              floats.length > 0 &&
-              floats[
-                floats.length - 1
-              ] === "U"
-            );
-          }).length;
-
-        const sequenceIndices =
-          combination
-            .map(index =>
-              sequenceIndex.get(index)
-            )
-            .sort(
-              (a, b) => a - b
-            );
-
-        sets.push({
-          combination,
-          scoresAsc,
-          maxUCount,
-          maximumUpfloatHistory,
-          previousUpfloaters,
-          sequenceIndices
-        });
-      }
-
-      sets.sort((a, b) => {
-        for (
-          let index = 0;
-          index <
-            a.scoresAsc.length;
-          index++
+        if (
+          !group ||
+          group.score !== score
         ) {
-          if (
-            a.scoresAsc[index] !==
-            b.scoresAsc[index]
-          ) {
-            return (
-              b.scoresAsc[index] -
-              a.scoresAsc[index]
-            );
-          }
+          group = {
+            score,
+            items:[],
+            wCount:0,
+            bCount:0,
+            maxUCount:0,
+            prevUCount:0,
+            maxUHistSorted:[]
+          };
+          groups.push(group);
         }
 
-        return compareArrays(
-          a.sequenceIndices,
-          b.sequenceIndices
-        );
-      });
+        const p =
+          players[playerIndex];
 
-      return sets;
+        group.items.push({
+          playerIndex,
+          seqIndex:pos
+        });
+
+        if (p.pref.color === "W") {
+          group.wCount++;
+        } else {
+          group.bCount++;
+        }
+
+        if (p.isMaxUpfloater) {
+          group.maxUCount++;
+          group.maxUHistSorted.push(
+            p.upfloatCount
+          );
+        }
+
+        if (p.upfloatedPreviously) {
+          group.prevUCount++;
+        }
+      }
+
+      for (const group of groups) {
+        group.maxUHistSorted.sort(
+          (a, b) => a - b
+        );
+      }
+
+      return groups;
+    }
+
+    // Yields score-group counts [c_0, ..., c_{S-1}] in exact [C6] order
+    // (descending scoresAsc === lexicographically ascending from lowest score).
+    function* generateScoreProfiles(
+      groups,
+      totalNeeded
+    ) {
+      const groupCount =
+        groups.length;
+
+      const capAbove =
+        new Int32Array(groupCount);
+
+      let running = 0;
+      for (
+        let g = 0;
+        g < groupCount;
+        g++
+      ) {
+        capAbove[g] = running;
+        running +=
+          groups[g].items.length;
+      }
+
+      if (running < totalNeeded) {
+        return;
+      }
+
+      const counts =
+        new Int32Array(groupCount);
+
+      function* backtrack(
+        g,
+        remaining
+      ) {
+        if (g < 0) {
+          if (remaining === 0) {
+            yield Array.from(counts);
+          }
+          return;
+        }
+
+        const minCount =
+          Math.max(
+            0,
+            remaining - capAbove[g]
+          );
+
+        const maxCount =
+          Math.min(
+            remaining,
+            groups[g].items.length
+          );
+
+        for (
+          let c = minCount;
+          c <= maxCount;
+          c++
+        ) {
+          counts[g] = c;
+          yield* backtrack(
+            g - 1,
+            remaining - c
+          );
+        }
+      }
+
+      yield* backtrack(
+        groupCount - 1,
+        totalNeeded
+      );
+    }
+
+    // Lazily yields combinations matching `counts` in exact Article 4.2 order.
+    function* generateProfileCandidates(
+      groups,
+      counts
+    ) {
+      const active = [];
+
+      for (
+        let g = 0;
+        g < groups.length;
+        g++
+      ) {
+        if (counts[g] > 0) {
+          active.push({
+            items:groups[g].items,
+            count:counts[g]
+          });
+        }
+      }
+
+      const picked =
+        new Array(active.length);
+
+      function* recurse(depth) {
+        if (depth === active.length) {
+          const combination = [];
+          const sequenceIndices = [];
+          let maxUCount = 0;
+          let maximumUpfloatHistory = 0;
+          let previousUpfloaters = 0;
+          let upWCount = 0;
+
+          for (
+            let i = 0;
+            i < picked.length;
+            i++
+          ) {
+            const chunk = picked[i];
+            for (
+              let j = 0;
+              j < chunk.length;
+              j++
+            ) {
+              const item = chunk[j];
+              const p =
+                players[item.playerIndex];
+
+              combination.push(
+                item.playerIndex
+              );
+              sequenceIndices.push(
+                item.seqIndex
+              );
+
+              if (p.pref.color === "W") {
+                upWCount++;
+              }
+
+              if (p.isMaxUpfloater) {
+                maxUCount++;
+                maximumUpfloatHistory +=
+                  p.upfloatCount;
+              }
+
+              if (p.upfloatedPreviously) {
+                previousUpfloaters++;
+              }
+            }
+          }
+
+          yield {
+            combination,
+            sequenceIndices,
+            maxUCount,
+            maximumUpfloatHistory,
+            previousUpfloaters,
+            upWCount
+          };
+          return;
+        }
+
+        const spec = active[depth];
+        for (
+          const chunk of
+          combinations(
+            spec.items,
+            spec.count
+          )
+        ) {
+          picked[depth] = chunk;
+          yield* recurse(depth + 1);
+        }
+      }
+
+      yield* recurse(0);
     }
 
     function pairSingleBracket(
@@ -2628,6 +2917,39 @@ function Dubov2026Core() {
             );
         }
 
+        let bracketWCount = 0;
+        for (
+          let i = 0;
+          i < bracketIndices.length;
+          i++
+        ) {
+          if (
+            players[bracketIndices[i]]
+              .pref.color === "W"
+          ) {
+            bracketWCount++;
+          }
+        }
+
+        const minBracketC7Cost =
+          Math.abs(bracketWCount - half);
+
+        const uniformCostAtZero =
+          (initialG1.length === 0 ||
+            initialG1.every(
+              index =>
+                players[index].pref.color ===
+                players[initialG1[0]]
+                  .pref.color
+            )) &&
+          (initialG2.length === 0 ||
+            initialG2.every(
+              index =>
+                players[index].pref.color ===
+                players[initialG2[0]]
+                  .pref.color
+            ));
+
         function orderedShifters(
           indices,
           color
@@ -2656,6 +2978,10 @@ function Dubov2026Core() {
           sourceName,
           shifted
         ) {
+          if (shifted.length === 0) {
+            return { G1, G2 };
+          }
+
           const shiftedSet =
             new Set(shifted);
 
@@ -2684,6 +3010,96 @@ function Dubov2026Core() {
                 !shiftedSet.has(index)
             )
           };
+        }
+
+        function maskOf(indices) {
+          let mask = 0n;
+          for (
+            let i = 0;
+            i < indices.length;
+            i++
+          ) {
+            mask |=
+              1n << BigInt(indices[i]);
+          }
+          return mask;
+        }
+
+        function* generateSecondShifts(
+          candidates,
+          count,
+          fixedOpposite,
+          initialSourceMask
+        ) {
+          if (count === 0) {
+            yield [];
+            return;
+          }
+
+          const chosen = [];
+          const len = candidates.length;
+
+          function* backtrack(
+            start,
+            remaining,
+            sourceMask
+          ) {
+            if (remaining === 0) {
+              yield [...chosen];
+              return;
+            }
+
+            for (
+              let index = start;
+              index <= len - remaining;
+              index++
+            ) {
+              const cand =
+                candidates[index];
+
+              const nextSourceMask =
+                sourceMask &
+                ~(1n << BigInt(cand));
+
+              // Prune immediately if any fixed player in the opposite
+              // subgroup loses all compatible opponents in the remaining source.
+              let dead = false;
+              for (
+                let i = 0;
+                i < fixedOpposite.length;
+                i++
+              ) {
+                if (
+                  (edgeMask[
+                    fixedOpposite[i]
+                  ] &
+                    nextSourceMask) ===
+                  0n
+                ) {
+                  dead = true;
+                  break;
+                }
+              }
+
+              if (dead) {
+                continue;
+              }
+
+              chosen.push(cand);
+              yield* backtrack(
+                index + 1,
+                remaining - 1,
+                nextSourceMask
+              );
+              chosen.pop();
+            }
+          }
+
+          yield* backtrack(
+            0,
+            count,
+            initialSourceMask
+          );
         }
 
         function* configurations(
@@ -2765,6 +3181,11 @@ function Dubov2026Core() {
                 ? afterFirst.G1
                 : afterFirst.G2;
 
+            const fixedOpposite =
+              secondSourceName === "G1"
+                ? afterFirst.G2
+                : afterFirst.G1;
+
             const secondCount =
               Math.abs(
                 difference
@@ -2800,11 +3221,16 @@ function Dubov2026Core() {
                 secondColor
               );
 
+            const initialSourceMask =
+              maskOf(secondSource);
+
             for (
               const secondShift of
-              combinations(
+              generateSecondShifts(
                 secondSequence,
-                secondCount
+                secondCount,
+                fixedOpposite,
+                initialSourceMask
               )
             ) {
               const balanced =
@@ -2839,11 +3265,49 @@ function Dubov2026Core() {
         function materialize(
           candidate
         ) {
-          const assignment =
-            lexicographicallySmallestOptimalAssignment(
-              candidate.costs,
-              candidate.solution
-            );
+          const subgroupOne =
+            candidate.subgroupOne;
+
+          const subgroupTwo =
+            candidate.subgroupTwo;
+
+          let assignment;
+
+          if (candidate.uniformBipartite) {
+            const allowed =
+              Array.from(
+                { length:half },
+                (_, row) => {
+                  const uEdges =
+                    edge[subgroupOne[row]];
+                  const rowArr =
+                    new Array(half);
+                  for (
+                    let col = 0;
+                    col < half;
+                    col++
+                  ) {
+                    rowArr[col] =
+                      uEdges[
+                        subgroupTwo[col]
+                      ];
+                  }
+                  return rowArr;
+                }
+              );
+
+            assignment =
+              lexicographicallySmallestMatching(
+                allowed,
+                candidate.initialMatch
+              );
+          } else {
+            assignment =
+              lexicographicallySmallestOptimalAssignment(
+                candidate.costs,
+                candidate.solution
+              );
+          }
 
           const pairs = [];
 
@@ -2855,17 +3319,22 @@ function Dubov2026Core() {
             const column =
               assignment[row];
 
-            const allocation =
-              candidate
-                .allocations[
-                  row
-                ][
-                  column
-                ];
+            const u =
+              players[subgroupOne[row]];
 
-            if (!allocation) {
+            const v =
+              players[subgroupTwo[column]];
+
+            if (!edge[u.index ?? subgroupOne[row]][subgroupTwo[column]]) {
               return null;
             }
+
+            const allocation =
+              allocate(
+                u,
+                v,
+                context.initialColor
+              );
 
             pairs.push({
               whiteId:
@@ -2877,10 +3346,8 @@ function Dubov2026Core() {
 
           return {
             pairs,
-            c7Cost:
-              candidate.solution.cost,
-            bracket:
-              bracketIndices,
+            c7Cost:candidate.cost,
+            bracket:bracketIndices,
             shifters:[
               ...candidate.shifters
             ]
@@ -2888,7 +3355,8 @@ function Dubov2026Core() {
         }
 
         function evaluateConfiguration(
-          configuration
+          configuration,
+          isZeroUnavoidable
         ) {
           if (
             configuration.G1.length !==
@@ -2897,6 +3365,33 @@ function Dubov2026Core() {
               half
           ) {
             return null;
+          }
+
+          const g1Mask =
+            maskOf(configuration.G1);
+
+          const g2Mask =
+            maskOf(configuration.G2);
+
+          for (
+            let i = 0;
+            i < half;
+            i++
+          ) {
+            if (
+              (edgeMask[
+                configuration.G1[i]
+              ] &
+                g2Mask) ===
+                0n ||
+              (edgeMask[
+                configuration.G2[i]
+              ] &
+                g1Mask) ===
+                0n
+            ) {
+              return null;
+            }
           }
 
           const subgroupOne =
@@ -2917,6 +3412,63 @@ function Dubov2026Core() {
                   players[b].tpn
               );
 
+          if (
+            isZeroUnavoidable &&
+            uniformCostAtZero
+          ) {
+            const initialMatch =
+              findBipartitePerfectMatching(
+                subgroupOne,
+                subgroupTwo,
+                edge
+              );
+
+            if (!initialMatch) {
+              return null;
+            }
+
+            let cost = 0;
+            for (
+              let row = 0;
+              row < half;
+              row++
+            ) {
+              if (
+                players[subgroupOne[row]]
+                  .pref.color ===
+                players[
+                  subgroupTwo[
+                    initialMatch[row]
+                  ]
+                ].pref.color
+              ) {
+                cost++;
+              }
+            }
+
+            return {
+              uniformBipartite:true,
+              subgroupOne,
+              subgroupTwo,
+              initialMatch,
+              cost,
+              shifters:[
+                ...configuration.shifters
+              ]
+            };
+          }
+
+          // Quick feasibility check before running O(h^3) Hungarian.
+          if (
+            !findBipartitePerfectMatching(
+              subgroupOne,
+              subgroupTwo,
+              edge
+            )
+          ) {
+            return null;
+          }
+
           const costs =
             Array.from(
               { length:half },
@@ -2927,14 +3479,6 @@ function Dubov2026Core() {
                   )
             );
 
-          const allocations =
-            Array.from(
-              { length:half },
-              () =>
-                new Array(half)
-                  .fill(null)
-            );
-
           for (
             let row = 0;
             row < half;
@@ -2942,6 +3486,11 @@ function Dubov2026Core() {
           ) {
             const leftIndex =
               subgroupOne[row];
+            const leftColor =
+              players[leftIndex]
+                .pref.color;
+            const leftEdges =
+              edge[leftIndex];
 
             for (
               let column = 0;
@@ -2951,37 +3500,16 @@ function Dubov2026Core() {
               const rightIndex =
                 subgroupTwo[column];
 
-              if (
-                !edge[
-                  leftIndex
-                ][
-                  rightIndex
-                ]
-              ) {
+              if (!leftEdges[rightIndex]) {
                 continue;
               }
 
-              const allocation =
-                allocate(
-                  players[leftIndex],
-                  players[rightIndex],
-                  context.initialColor
-                );
-
-              allocations[
-                row
-              ][
-                column
-              ] = allocation;
-
-              costs[
-                row
-              ][
-                column
-              ] =
-                allocationC7Cost(
-                  allocation
-                );
+              costs[row][column] =
+                leftColor ===
+                players[rightIndex]
+                  .pref.color
+                  ? 1
+                  : 0;
             }
           }
 
@@ -2995,9 +3523,12 @@ function Dubov2026Core() {
           }
 
           return {
+            uniformBipartite:false,
+            subgroupOne,
+            subgroupTwo,
             costs,
-            allocations,
             solution,
+            cost:solution.cost,
             shifters:[
               ...configuration.shifters
             ]
@@ -3022,6 +3553,8 @@ function Dubov2026Core() {
           unavoidablePairCount++
         ) {
           let bestForCount = null;
+          const isZero =
+            unavoidablePairCount === 0;
 
           for (
             const configuration of
@@ -3033,7 +3566,8 @@ function Dubov2026Core() {
 
             const candidate =
               evaluateConfiguration(
-                configuration
+                configuration,
+                isZero
               );
 
             if (!candidate) {
@@ -3042,16 +3576,15 @@ function Dubov2026Core() {
 
             if (
               !bestForCount ||
-              candidate.solution.cost <
-                bestForCount
-                  .solution.cost
+              candidate.cost <
+                bestForCount.cost
             ) {
               bestForCount =
                 candidate;
 
               if (
-                candidate
-                  .solution.cost === 0
+                candidate.cost <=
+                minBracketC7Cost
               ) {
                 return materialize(
                   candidate
@@ -3098,8 +3631,8 @@ function Dubov2026Core() {
 
       progress({
         phase:
-          `Lottar grupp vid poäng ${maxScore} ` +
-          `(${residents.length} ordinarie spelare)`,
+          `Pairing bracket at score ${maxScore} ` +
+          `(${residents.length} residents)`,
         nodes,
         elapsedMs:
           performance.now() -
@@ -3113,6 +3646,26 @@ function Dubov2026Core() {
         residents.length % 2 === 1
           ? 1
           : 0;
+
+      const isLastRound =
+        context.roundNumber ===
+        context.totalRounds;
+
+      let resWCount = 0;
+      for (
+        let i = 0;
+        i < residents.length;
+        i++
+      ) {
+        if (
+          players[residents[i]]
+            .pref.color === "W"
+        ) {
+          resWCount++;
+        }
+      }
+
+      let lowerGroups = null;
 
       for (
         let upfloaterCount =
@@ -3157,53 +3710,134 @@ function Dubov2026Core() {
           continue;
         }
 
-        const isLastRound =
-          context.roundNumber ===
-          context.totalRounds;
+        if (!lowerGroups) {
+          lowerGroups =
+            buildLowerScoreGroups(
+              lowers
+            );
+        }
 
-        const candidates =
-          getSortedUpfloaterSets(
-            lowers,
+        const half =
+          (residents.length +
+            upfloaterCount) /
+          2;
+
+        for (
+          const counts of
+          generateScoreProfiles(
+            lowerGroups,
             upfloaterCount
-          );
-
-        let position = 0;
-
-        while (
-          position <
-            candidates.length &&
-          !bracketPairing
+          )
         ) {
-          const scoreProfile =
-            candidates[position]
-              .scoresAsc;
+          // Compute exact theoretical lower bounds for this score profile.
+          let minWAdd = 0;
+          let maxWAdd = 0;
+          let profileMinMaxU = 0;
+          let profileMinMaxUHist = 0;
+          let profileMinPrevU = 0;
 
-          const profileCandidates =
-            [];
-
-          while (
-            position <
-              candidates.length &&
-            compareArrays(
-              candidates[position]
-                .scoresAsc,
-              scoreProfile
-            ) === 0
+          for (
+            let g = 0;
+            g < lowerGroups.length;
+            g++
           ) {
-            profileCandidates.push(
-              candidates[position]
+            const c = counts[g];
+            if (c === 0) {
+              continue;
+            }
+            const group =
+              lowerGroups[g];
+
+            minWAdd += Math.max(
+              0,
+              c - group.bCount
+            );
+            maxWAdd += Math.min(
+              c,
+              group.wCount
             );
 
-            position++;
+            const nonMaxU =
+              group.items.length -
+              group.maxUCount;
+            const forcedMaxU =
+              Math.max(0, c - nonMaxU);
+            profileMinMaxU +=
+              forcedMaxU;
+            for (
+              let k = 0;
+              k < forcedMaxU;
+              k++
+            ) {
+              profileMinMaxUHist +=
+                group.maxUHistSorted[k];
+            }
+
+            const nonPrevU =
+              group.items.length -
+              group.prevUCount;
+            profileMinPrevU +=
+              Math.max(0, c - nonPrevU);
           }
+
+          const lowW =
+            resWCount + minWAdd;
+          const highW =
+            resWCount + maxWAdd;
+          const profileMinC7 =
+            half >= lowW &&
+            half <= highW
+              ? 0
+              : Math.min(
+                  Math.abs(lowW - half),
+                  Math.abs(highW - half)
+                );
 
           let best = null;
 
           for (
             const candidate of
-            profileCandidates
+            generateProfileCandidates(
+              lowerGroups,
+              counts
+            )
           ) {
             tick();
+
+            const candMinC7 =
+              Math.abs(
+                resWCount +
+                  candidate.upWCount -
+                  half
+              );
+
+            if (best) {
+              const lowerQuality = [
+                candMinC7
+              ];
+              if (!isLastRound) {
+                lowerQuality.push(
+                  candidate.maxUCount,
+                  candidate
+                    .maximumUpfloatHistory,
+                  candidate
+                    .previousUpfloaters
+                );
+              }
+              lowerQuality.push(
+                ...candidate
+                  .sequenceIndices
+              );
+
+              if (
+                compareArrays(
+                  lowerQuality,
+                  best.quality
+                ) >= 0
+              ) {
+                continue;
+              }
+            }
 
             const upfloaterSet =
               candidate.combination;
@@ -3268,6 +3902,20 @@ function Dubov2026Core() {
                 upfloaterSet,
                 quality
               };
+
+              if (
+                quality[0] ===
+                  profileMinC7 &&
+                (isLastRound ||
+                  (quality[1] ===
+                    profileMinMaxU &&
+                    quality[2] ===
+                      profileMinMaxUHist &&
+                    quality[3] ===
+                      profileMinPrevU))
+              ) {
+                break;
+              }
             }
           }
 
@@ -3277,6 +3925,7 @@ function Dubov2026Core() {
 
             chosenUpfloaters =
               best.upfloaterSet;
+            break;
           }
         }
 
@@ -3288,8 +3937,8 @@ function Dubov2026Core() {
       if (!bracketPairing) {
         throw fault(
           "NO_DUBOV_CANDIDATE",
-          "Ingen giltig Dubov-lottning kunde hittas " +
-          `för poänggrupp ${maxScore}.`
+          "No legal Dubov pairing could be found " +
+          `for scoregroup ${maxScore}.`
         );
       }
 
@@ -3443,7 +4092,7 @@ function Dubov2026Core() {
     }
 
     test(
-      "Mittenförskjutningssekvens (Art. 4.3.3)",
+      "Middle-out shifter sequence (Art. 4.3.3)",
       () => {
         const sample = [
           "A","B","C","D",
@@ -3459,13 +4108,13 @@ function Dubov2026Core() {
             "D","C","E","B",
             "F","A","G"
           ]),
-          "Felaktig mittenordning"
+          "Incorrect middle-out order"
         );
       }
     );
 
     test(
-      "ARO-beräkning med avrundning till närmaste heltal (Art. 1.7.1)",
+      "ARO Calculation with half-up rounding (Art. 1.7.1)",
       () => {
         const playersMap =
           new Map([
@@ -3494,14 +4143,14 @@ function Dubov2026Core() {
 
         check(
           aro === 2451,
-          "Förväntade 2451, fick " +
+          "Expected 2451, got " +
           aro
         );
       }
     );
 
     test(
-      "Allmän perfekt matchning: blossom-graf",
+      "General perfect matching: blossom graph",
       () => {
         const edge =
           Array.from(
@@ -3529,13 +4178,13 @@ function Dubov2026Core() {
             [0,1,2,3,4,5],
             edge
           ),
-          "Förväntade en perfekt matchning"
+          "Expected a perfect matching"
         );
       }
     );
 
     test(
-      "Ungerska algoritmen: tilldelningsproblem med minsta kostnad",
+      "Hungarian minimum-cost assignment",
       () => {
         const result =
           minimumCostAssignment([
@@ -3546,19 +4195,19 @@ function Dubov2026Core() {
 
         check(
           result !== null,
-          "Förväntade en tilldelning"
+          "Expected an assignment"
         );
 
         check(
           result.cost === 5,
-          "Förväntade tilldelningskostnad 5, fick " +
+          "Expected assignment cost 5, got " +
           result.cost
         );
       }
     );
 
     test(
-      "Dubov rond 1 (15 spelare: P15 frirond/PAB, 1 mot 8, 2 mot 9 osv.)",
+      "Dubov Round 1 (15 players: P15 PAB, 1 vs 8, 2 vs 9, etc.)",
       () => {
         const input = {
           roundNumber:1,
@@ -3574,7 +4223,7 @@ function Dubov2026Core() {
                   (index + 1),
                 tpn:index + 1,
                 name:
-                  "Spelare " +
+                  "Player " +
                   (index + 1),
                 rating:
                   2800 -
@@ -3598,12 +4247,12 @@ function Dubov2026Core() {
 
         check(
           result.pabId === "P15",
-          "Förväntade att P15 skulle få frirond (PAB)"
+          "Expected P15 to receive PAB"
         );
 
         check(
           result.pairs.length === 7,
-          "Förväntade 7 bord"
+          "Expected 7 boards"
         );
 
         check(
@@ -3614,7 +4263,7 @@ function Dubov2026Core() {
               pairing.blackId ===
                 "P8"
           ),
-          "Förväntade bord 1: P1 Vit mot P8 Svart"
+          "Expected Board 1: P1 White vs P8 Black"
         );
 
         check(
@@ -3625,13 +4274,13 @@ function Dubov2026Core() {
               pairing.blackId ===
                 "P2"
           ),
-          "Förväntade bord 2: P9 Vit mot P2 Svart"
+          "Expected Board 2: P9 White vs P2 Black"
         );
       }
     );
 
     test(
-      "Dubov rond 1 skalbarhet med 32 spelare",
+      "Dubov Round 1 scalability with 32 players",
       () => {
         const input = {
           roundNumber:1,
@@ -3647,7 +4296,7 @@ function Dubov2026Core() {
                   (index + 1),
                 tpn:index + 1,
                 name:
-                  "Skalningsspelare " +
+                  "Scale Player " +
                   (index + 1),
                 rating:
                   2800 -
@@ -3671,18 +4320,88 @@ function Dubov2026Core() {
 
         check(
           result.pairs.length === 16,
-          "Förväntade 16 bord"
+          "Expected 16 boards"
         );
 
         check(
           result.pabId === null,
-          "Oväntad frirond (PAB)"
+          "Unexpected PAB"
         );
       }
     );
 
     test(
-      "C3 Absolut förbud (inget undantag för ledare i Dubov)",
+      "Dubov Round 2 scalability with 101 players (PAB + imbalanced scoregroups)",
+      () => {
+        const players = Array.from(
+          { length:101 },
+          (_, index) => ({
+            id:"M" + (index + 1),
+            tpn:index + 1,
+            name:"Player " + (index + 1),
+            rating:2800 - index * 5,
+            score:0,
+            opponents:[],
+            playedOpponents:[],
+            playedColors:[],
+            floats:["-"],
+            hadPAB:false,
+            hadUnplayedWin:false
+          })
+        );
+
+        for (let i = 0; i < 50; i++) {
+          const top = players[i];
+          const bot = players[50 + i];
+          const topWhite = i % 2 === 0;
+          const w = topWhite ? top : bot;
+          const b = topWhite ? bot : top;
+
+          w.opponents.push(b.id);
+          w.playedOpponents.push(b.id);
+          w.playedColors.push("W");
+          b.opponents.push(w.id);
+          b.playedOpponents.push(w.id);
+          b.playedColors.push("B");
+
+          if (i < 22) {
+            w.score = 1;
+          } else if (i < 38) {
+            w.score = 0.5;
+            b.score = 0.5;
+          } else {
+            b.score = 1;
+          }
+        }
+
+        players[100].score = 1;
+        players[100].hadPAB = true;
+
+        const result = solve(
+          {
+            roundNumber:2,
+            totalRounds:7,
+            winPoints:1,
+            initialColor:"W",
+            players
+          },
+          { seconds:5 }
+        );
+
+        check(
+          result.pairs.length === 50,
+          "Expected 50 boards"
+        );
+
+        check(
+          result.pabId !== null && result.pabId !== "M101",
+          "Expected valid non-repeat PAB"
+        );
+      }
+    );
+
+    test(
+      "C3 Absolute prohibition (no topscorer exception in Dubov)",
       () => {
         const first = {
           id:"A",
@@ -3703,13 +4422,13 @@ function Dubov2026Core() {
             first,
             second
           ),
-          "Dubov förbjuder strikt möte vid samma absoluta färgpreferens"
+          "Dubov strictly forbids meeting with same absolute preference"
         );
       }
     );
 
     test(
-      "Artikel 3.2.4 tvåstegs omgruppering av G1/G2",
+      "Article 3.2.4 two-stage G1/G2 re-composition",
       () => {
         const input = {
           roundNumber:3,
@@ -3791,18 +4510,18 @@ function Dubov2026Core() {
 
         check(
           pairSets.includes("A-B"),
-          "Förväntade att A och B lottas mot varandra"
+          "Expected A and B to be paired"
         );
 
         check(
           pairSets.includes("C-D"),
-          "Förväntade att C och D lottas mot varandra"
+          "Expected C and D to be paired"
         );
       }
     );
 
     test(
-      "Motorn returnerar stabila id:n för uppflyttade spelare",
+      "Engine returns stable upfloater IDs",
       () => {
         const input = {
           roundNumber:2,
@@ -3875,19 +4594,19 @@ function Dubov2026Core() {
           Array.isArray(
             result.upfloaterIds
           ),
-          "Förväntade en array med uppflyttnings-ID:n"
+          "Expected an upfloater ID array"
         );
 
         check(
           result.upfloaterIds.length >
             0,
-          "Förväntade minst en uppflyttad spelare"
+          "Expected at least one upfloater"
         );
       }
     );
 
     test(
-      "Noll i rating avvisas",
+      "Zero rating is rejected",
       () => {
         let rejected = false;
 
@@ -3921,7 +4640,7 @@ function Dubov2026Core() {
 
         check(
           rejected,
-          "Förväntade att noll i rating skulle avvisas"
+          "Expected zero rating to be rejected"
         );
       }
     );
