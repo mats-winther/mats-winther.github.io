@@ -717,7 +717,7 @@ Player lists can be imported via file (.txt, .csv, .trf) or pasted directly. Lin
 <p>2. <strong>TRF Import: </strong>Standard FIDE TRF06 / TRF26 records starting with 001 extract only registration fields (Title: cols 11–13, Name: cols 15–47, Rating: cols 49–52). Previous pairings and history are ignored.</p>
 
 <p><strong>Pairing Search &amp; Export: </strong> 
-Pairings are calculated in a background Web Worker with a strict timeout setting. Once all tournament rounds are completed, the <strong>Save TRF-file </strong>button appears. The TRF export includes only the tournament results and data recorded in the app; the tournament director must add player FIDE IDs, birthdates, and federation codes before final submission.</p>
+Pairings are calculated in a background Web Worker with a strict timeout setting. The maximum number of simulator rounds is 30, but the simulator will stop early if the pairing engine can no longer find a legal round under FIDE rules. Once all tournament rounds are completed, the <strong>Save TRF-file </strong>button appears. The TRF export includes only the tournament results and data recorded in the app; the tournament director must add player FIDE IDs, birthdates, and federation codes before final submission.</p>
 
 <p>This application does not support late entries, accelerated pairings, or adjourned games.</p>
   <ul style=padding-left:70px;>
