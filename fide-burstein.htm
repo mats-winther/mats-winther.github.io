@@ -579,7 +579,9 @@ a { color:var(--blue); }
   <p>
     Lottningssökningen har fasta tids- och nodgränser.
     En avbruten sökning publicerar aldrig en preliminär lottning.
-    Stora eller svåra lottningslägen kan teoretiskt överskrida sökgränserna.
+    Det maximala antalet simuleringsronder är 30, men simuleringen avbryts
+    tidigare om lottningsmotorn inte längre kan hitta någon giltig rond
+    enligt FIDE:s regler.
   </p>
   <p>
     När en rond har bekräftats kan ett felregistrerat resultat rättas

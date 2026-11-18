@@ -572,7 +572,9 @@ a { color:var(--blue); }
   <p>
     Search is bracket-local, with the specified C8 look-ahead. Interrupted
     calculations never publish a provisional best pairing. Calculations run
-    in a background Web Worker with a fixed timeout.
+    in a background Web Worker with a fixed timeout. The maximum number of
+    simulator rounds is 30, but the simulator will stop early if the pairing
+    engine can no longer find a legal round under FIDE rules.
   </p>
 
   <p>

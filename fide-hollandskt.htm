@@ -475,7 +475,9 @@ a { color:var(--blue); }
   <p>
     Sökningen sker lokalt inom varje lottningsgrupp, med föreskriven framförhållning enligt C8.
     Avbrutna beräkningar publicerar aldrig en preliminär bästa lottning.
-    Lottningssökningar har en fast tidsgräns.
+    Lottningssökningar har en fast tidsgräns. Det maximala antalet simuleringsronder är 30,
+    men simuleringen avbryts tidigare om lottningsmotorn inte längre kan hitta någon giltig
+    rond enligt FIDE:s regler.
   </p>
   <p>
     Fasta homogena S1/S2-indelningar med noll eller en nedflyttad spelare

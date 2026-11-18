@@ -601,7 +601,9 @@ a { color:var(--blue); }
 <p>
   Pairing searches use fixed time and node limits.
   An interrupted search never publishes a provisional pairing.
-  Large or difficult positions may still exceed the search limits.
+  The maximum number of simulator rounds is 30, but the simulator
+  will stop early if the pairing engine can no longer find a legal
+  round under FIDE rules.
 </p>
 
 <p>
