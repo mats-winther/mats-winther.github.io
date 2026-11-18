@@ -374,7 +374,7 @@ a { color:var(--blue); }
 
     <div class="card">
       <div class="row between">
-        <h2>Players (<span id="playerCount">0 / 80</span>)</h2>
+        <h2>Players (<span id="playerCount">0 / 70</span>)</h2>
 
         <div class="row no-print">
           <button id="importButton"
@@ -436,7 +436,7 @@ a { color:var(--blue); }
         pairing order. After seeding, players within each Burstein bracket
         are ranked by Buchholz, then Sonneborn-Berger, then ascending TPN.
         Importing a TRF here imports registration fields only, not its
-        tournament history. The participant list is limited to 80 players.
+        tournament history. The participant list is limited to 70 players.
       </p>
 
       <div class="table-wrap">
@@ -605,7 +605,7 @@ a { color:var(--blue); }
 </p>
 
 <p>
-  <b>Note:</b> The maximum number of participants is 80.
+  <b>Note:</b> The maximum number of participants is 70.
 </p>
 
 <p>
@@ -677,7 +677,7 @@ a { color:var(--blue); }
 /* ========================================================================== */
 
 function Dutch2026Core() {
-  const VERSION = "2026-reference-3";
+  const VERSION = "2026-reference-4";
 
   function fault(code, message) {
     const error = new Error(message);
@@ -2179,6 +2179,18 @@ function canRemoveForBye(list, score) {
       return {pairs, down, colorCost};
     }
 
+    function binomialWithin(n, k, limit) {
+      if (k < 0 || k > n) return false;
+      if (k > n - k) k = n - k;
+
+      let res = 1;
+      for (let i = 1; i <= k; i++) {
+        res = (res * (n - k + i)) / i;
+        if (res > limit) return false;
+      }
+      return true;
+    }
+
     function* homogeneousCandidates(
       list, pairCount, canWin, shouldSkipPartition,
       sums, dfsUsed, allowDown
@@ -2231,13 +2243,59 @@ function canRemoveForBye(list, score) {
           }
 
           if (!feasible || shouldSkipPartition(lb)) continue;
+
+const colMins = [];
+          let unpairableCols = 0;
+
+          for (const b of s2) {
+            let bestCol = null;
+
+            for (const a of s1) {
+              if (!edge[a][b]) continue;
+
+              const pc = pairCost[a][b];
+
+              if (
+                bestCol === null ||
+                compareArrays(pc, bestCol) < 0
+              ) {
+                bestCol = pc;
+              }
+            }
+
+            if (bestCol === null) {
+              unpairableCols++;
+              if (unpairableCols > downCount) {
+                feasible = false;
+                break;
+              }
+            } else {
+              colMins.push(bestCol);
+            }
+          }
+
+          if (!feasible) continue;
+
+          if (colMins.length > s1.length) {
+            colMins.sort(compareArrays);
+          }
+
+          const colLb = [0,0,0,0];
+          for (let k = 0; k < s1.length; k++) {
+            const pc = colMins[k];
+            for (let component = 0; component < 4; component++) {
+              colLb[component] += pc[component];
+            }
+          }
+
+          if (shouldSkipPartition(colLb)) continue;
         }
 
         /*
          * Direct optimization for zero or one resident downfloater.
          * Only the best candidate for this fixed partition is needed.
          */
-        if (
+       if (
           assignmentFastPath &&
           (downCount === 0 || downCount === 1)
         ) {
@@ -2261,6 +2319,61 @@ function canRemoveForBye(list, score) {
 
           continue;
         }
+
+        if (
+          assignmentFastPath &&
+          downCount >= 2 &&
+          binomialWithin(s2.length, downCount, 500)
+        ) {
+          let bestPart = null;
+
+          for (const down of combinations(s2, downCount)) {
+            if (!allowDown(down)) continue;
+
+            const downSet = new Set(down);
+            const s2Rem = s2.filter(x => !downSet.has(x));
+            const candidate = optimalHomogeneousPartition(
+              s1, s2Rem, () => true
+            );
+
+            if (candidate === null) continue;
+
+            if (
+              shouldSkipPartition &&
+              shouldSkipPartition(candidate.colorCost)
+            ) {
+              continue;
+            }
+
+            const c14 = down.filter(
+              p => previous(p, 1) === "D"
+            ).length;
+            const c16 = down.filter(
+              p => previous(p, 2) === "D"
+            ).length;
+            const seq = candidate.pairs.map(p => p[1]);
+            const key = [
+              ...candidate.colorCost, c14, c16, seq
+            ];
+
+            if (!bestPart || compareQuality(key, bestPart.key) < 0) {
+              bestPart = {
+                pairs:candidate.pairs,
+                down,
+                key
+              };
+            }
+          }
+
+          if (bestPart) {
+            yield {
+              pairs:bestPart.pairs,
+              down:bestPart.down
+            };
+          }
+
+          continue;
+        }        
 
         /*
          * Retain DFS for two or more resident downfloaters,
@@ -2511,8 +2624,35 @@ function canRemoveForBye(list, score) {
 
       pairedMdpGaps.sort((a,b) => a-b);
 
+        const strongColorBound = color => {
+        const want = ctx.all.filter(
+          i => players[i].pref.color === color
+        );
+        const excess = Math.max(0, want.length - pairs - down);
+
+        if (excess === 0) return 0;
+
+        const mild = want.filter(
+          i => players[i].pref.strength === 1
+        ).length;
+        const abs = want.filter(
+          i => players[i].pref.strength === 3
+        );
+        const absCanViolate =
+          abs.length >= 2 && abs.some(i => players[i].top);
+
+        if (absCanViolate) {
+          const strong = want.filter(
+            i => players[i].pref.strength === 2
+          ).length;
+          return Math.max(0, strong - pairs - down);
+        }
+
+        return Math.max(0, excess - mild);
+      };
+
       return [
-        0,0,colorBound(false),colorBound(true),
+        0,0,colorBound(false),strongColorBound("W") + strongColorBound("B"),
         d1,u1,d2,u2,
         mdpBound(1),
         pairedMdpGaps.slice(0, u1).sort((a,b) => b-a),
@@ -2669,8 +2809,135 @@ function canRemoveForBye(list, score) {
           limit = bestLimitCache;
         }
 
-        return limit !== null &&
-          compareArrays(total, limit) > 0;
+        if (limit === null) return false;
+
+        const cmp = compareArrays(total, limit);
+        if (cmp > 0) return true;
+
+        if (cmp === 0 && !ctx.mdps.length && best) {
+          if (high.count === 0) return true;
+          if (
+            high.count === 1 &&
+            best.value[4] <= lowerBound[4] &&
+            best.value[6] <= lowerBound[6]
+          ) {
+            return true;
+          }
+        }
+
+        return false;
+      }
+
+      let checkedZeroC12 = null;
+      let checkedZeroC13 = null;
+
+      function canAchieveSubgraph(filterEdge) {
+        const list = ctx.all;
+        const n = list.length;
+        const graph = Array.from({length:n}, () => []);
+
+        for (let a = 0; a < n; a++) {
+          for (let b = a + 1; b < n; b++) {
+            tick();
+            const u = list[a];
+            const v = list[b];
+            if (edge[u][v] && filterEdge(u, v)) {
+              graph[a].push(b);
+              graph[b].push(a);
+            }
+          }
+        }
+
+        return hasPerfectMatchingGraph(graph, tick);
+      }
+
+      function isProvenOptimal(bestVal) {
+        if (compareQuality(bestVal, lowerBound) === 0) {
+          return true;
+        }
+
+        if (ctx.mdps.length || high.count !== 0) {
+          return false;
+        }
+
+        if (bestVal[0] !== 0 || bestVal[1] !== 0) {
+          return false;
+        }
+
+        const n = ctx.all.length;
+        const pairs = high.pairs;
+
+        if (
+          bestVal[2] === lowerBound[2] &&
+          bestVal[3] === 1 &&
+          lowerBound[3] === 0
+        ) {
+          if (checkedZeroC13 === null) {
+            checkedZeroC13 = canAchieveSubgraph((u, v) => {
+              const pc = pairCost[u][v];
+              if (pc[0] !== 0 || pc[1] !== 0 || pc[3] !== 0) {
+                return false;
+              }
+              const wu = colors[u][v][0] === u ? "W" : "B";
+              const wv = wu === "W" ? "B" : "W";
+
+              if (totalW > pairs && totalB <= pairs) {
+                if (
+                  (colorWant[u] === -1 && wu === "W") ||
+                  (colorWant[v] === -1 && wv === "W")
+                ) {
+                  return false;
+                }
+              } else if (totalB > pairs && totalW <= pairs) {
+                if (
+                  (colorWant[u] === 1 && wu === "B") ||
+                  (colorWant[v] === 1 && wv === "B")
+                ) {
+                  return false;
+                }
+              } else if (totalW <= pairs && totalB <= pairs) {
+                return pc[2] === 0;
+              }
+              return true;
+            });
+          }
+
+          return !checkedZeroC13;
+        }
+
+        if (lowerBound[2] === 0 && bestVal[2] > 0) {
+          if (checkedZeroC12 === null) {
+            checkedZeroC12 = canAchieveSubgraph((u, v) => {
+              const pc = pairCost[u][v];
+              return pc[0] === 0 && pc[1] === 0 && pc[2] === 0;
+            });
+          }
+
+          if (!checkedZeroC12) {
+            const allWant = totalW + totalB === n;
+            const evenParity =
+              allWant && ((totalW - pairs) & 1) === 0;
+            const minC12 = evenParity ? 2 : 1;
+
+            if (bestVal[2] === minC12) {
+              const hasMild = ctx.all.some(
+                i => players[i].pref.strength === 1
+              );
+              const hasTopAbs = ctx.all.some(
+                i => players[i].top && players[i].pref.strength === 3
+              );
+
+              if (
+                bestVal[3] === 0 ||
+                (!hasMild && !hasTopAbs && bestVal[3] <= minC12)
+              ) {
+                return true;
+              }
+            }
+          }
+        }
+
+        return false;
       }
 
       const caps = [
@@ -2701,8 +2968,10 @@ function canRemoveForBye(list, score) {
             best = {...candidate, value, ordinal};
           }
 
-          if (compareQuality(best.value, lowerBound) === 0) {
-            proof = "lower-bound-attained";
+          if (isProvenOptimal(best.value)) {
+            proof = compareQuality(best.value, lowerBound) === 0
+              ? "lower-bound-attained"
+              : "blossom-optimality-proven";
             break;
           }
         }
@@ -5797,7 +6066,7 @@ const STORAGE_KEY = "fide_burstein_2026_reference_v1";
 const LEGACY_STORAGE_KEY = "experimental_fide_burstein_2026_en";
 
 const FIXED_SEARCH_LIMITS = Object.freeze({
-  seconds:30,
+  seconds:90,
   nodes:0
 });
 
@@ -5805,7 +6074,7 @@ const FIXED_SEARCH_LIMITS = Object.freeze({
  * Hard upper bound on registered participants.
  * Enforced on registration and tournament-file loading.
  */
-const MAX_PLAYERS = 80;
+const MAX_PLAYERS = 70;
 
 const TITLE_WEIGHTS = {
   GM:8,IM:7,WGM:6,FM:5,WIM:4,CM:3,WFM:2,WCM:1,"":0
