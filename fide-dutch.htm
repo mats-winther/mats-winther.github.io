@@ -666,7 +666,7 @@ a { color:var(--blue); }
 /* ========================================================================== */
 
 function Dutch2026Core() {
-  const VERSION = "2026-reference-3";
+  const VERSION = "2026-reference-4";
 
   function fault(code, message) {
     const error = new Error(message);
@@ -3618,8 +3618,8 @@ const STORAGE_KEY = "fide_dutch_2026_reference_v4";
 const LEGACY_STORAGE_KEY = "experimental_fide_dutch_2026_en";
 
 const FIXED_SEARCH_LIMITS = Object.freeze({
-  seconds:45,
-  nodes:0 // No node cap; the 45-second wall-clock limit is the search bound.
+  seconds:90,
+  nodes:0 // No node cap; the 90-second wall-clock limit is the search bound.
 });
 
 /*
