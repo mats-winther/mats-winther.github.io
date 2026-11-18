@@ -209,13 +209,16 @@
   dialog::backdrop {
     background: #0008;
   }
-  pre {
-    white-space: pre-wrap;
-    overflow: auto;
-    font-size: 0.8rem;
-    background: #f5f7fa;
-    padding: 0.75rem;
-  }
+pre {
+  overflow:auto;
+  background:#f8fafc;
+  border:1px solid var(--border);
+  padding:.7rem;
+}
+code {
+  font-size: 0.9rem;       /* Or 1.1em if you want it slightly more prominent */
+  font-family: Courier New, Courier New;
+}
   a {
     color: var(--blue);
   }
@@ -389,55 +392,109 @@
     <button class="primary" onclick="importPaste()">Import</button></div>
 </dialog>
 <dialog id="about">
-  <h2>About the FIDE Lim Pairing System</h2>
-  <p>Experimental implementation of FIDE C.04.4.3 Lim, effective 1 February 2026.
-     Not FIDE-endorsed.</p>
+  <h2>About this implementation</h2>
+
   <p>
-    The main idea behind Lim is to work towards the middle of the score table
-    from both ends, rather than processing every scoregroup from top to bottom,
-    as in FIDE Dutch. This gives Lim a different way of handling players who
-    cannot be paired within their own scoregroup.
+    Experimental reference implementation of the FIDE Lim System (Handbook C.04.4.3), 
+    effective February 1, 2026. It is not FIDE-endorsed and must not be treated as a 
+    certified pairing checker.
   </p>
-  <p>
-    In Lim, scoregroups above the middle are processed downward, while those
-    below the middle are processed upward. As a result, unpaired players tend
-    to move towards the middle from either side. This approach can be appealing
-    because it gives both the top and the bottom of the standings attention as
-    the round is constructed.
+
+  <p><strong>Two-Sided Traversal:</strong><br>
+    The core philosophy of the Lim System is to construct pairings by working towards the 
+    middle of the score table from both extremes simultaneously, rather than processing every 
+    scoregroup strictly from top to bottom as in the Dutch System. Scoregroups above the median 
+    score are processed downwards, while scoregroups below the median are processed upwards. 
+    Unpaired players (floaters) are pushed towards the center from both directions, culminating 
+    in a median-group pairing that can repair local blocks by cracking adjacent pairings when necessary.
   </p>
-  <p>This program implements ordinary, non-Maxi pairing, the two-sided scoregroup traversal,
-     compatible-opponent checks, floater selection, median-group repair,
-     colour preferences and the last-round same-score exception.
-     Complex cases can have more than one interpretation; this is not an official checker.</p>
-  <p>The program does not currently support late entries, acceleration, or adjournments.
-     The actual colours of a game in the latest archived round can be corrected before
-     generating the next round; other archived results cannot be edited directly.
-     To change a previously reported result, a backup of the round must be loaded
-     and the round results re-entered.</p> 
-<p>This non-Maxi implementation does not minimise or cap the rating difference between opponents.
-     The program has a built-in fixed search limit.
-     Failure or interruption never publishes a partial round.</p>
-  <p>
-     You can run separate tournaments simultaneously in different
-     browsers (for example, Chrome and Edge). Each browser maintains
-     its own autosave, so a tournament should be resumed in the browser
-     where it was started. Avoid running separate tournaments in multiple
-     tabs or windows within the same browser profile, as their autosaves
-     may overwrite one another. 
+
+  <p><strong>Engine &amp; Search Implementation:</strong><br>
+    This program implements standard (non-Maxi) Lim pairing, compatible-opponent checks, 
+    floater selection, median-group resolution, colour preferences, and the final-round 
+    same-score colour exception. Calculations run in a background Web Worker with a fixed 
+    time and work limit; an interrupted or failed search never publishes a partial or 
+    provisional round. The maximum number of tournament rounds is 30, but simulation will 
+    stop early if the pairing engine can no longer find a legal round under FIDE rules.
   </p>
-  <p>
-    Browser storage saves automatically when available. For added safety,
-    save JSON backups regularly. No data is sent to a server and tabs do
-    not synchronize.
+
+  <p><strong>Standings &amp; Tie-Break Calculations:</strong><br>
+    Final results are ranked by points, Buchholz Cut 1 (BH-1), Buchholz (BH), and 
+    Sonneborn-Berger (SB). Players still equal share a rank; TPN controls only the display order. 
+    Tie-break calculations implement the individual Swiss provisions of the FIDE Play-Off and 
+    Tie-Break Regulations effective March 1, 2026, including adjusted opponent scores, 
+    dummy-score caps for unplayed rounds, and the voluntary-unplayed-round (VUR) exception for BH-1.
+  </p>
+
+  <p><strong>Autosave &amp; Backups:</strong><br>
+    Settings and tournament data autosave continuously to browser storage (<code>localStorage</code>). 
+    To run separate tournaments simultaneously without overwriting data, use different browsers 
+    (e.g., Chrome and Edge) or different browser profiles. Save a JSON backup after each round. 
+    To correct a previously entered result from an earlier round, restore the backup from that 
+    round and re-enter the results.
+  </p>
+
+  <p><strong>Registration &amp; Player Capacity:</strong><br>
+    Once Round 1 pairings 
+    are generated, registration closes permanently (no new players may be added) and tournament 
+    settings lock. Between rounds, players can be edited, withdrawn, reinstated, or assigned 
+    unplayed rounds (zero, draw, or win value).
+  </p>
+
+  <p><strong>Actual Colour Corrections:</strong><br>
+    If players mistakenly played with reversed colours on a board, the application allows swapping 
+    the actual colours directly on the pending round or on the latest completed round prior to 
+    generating the next round. Swapping colours automatically reverses the recorded game result 
+    so that each player's awarded score remains intact while their colour histories are updated correctly.
+  </p>
+
+  <p><strong>Importing Player Lists:</strong><br>
+    Player lists can be imported via file (<code>.txt</code>, <code>.csv</code>, <code>.trf</code>) or pasted directly. 
+    Lines starting with <code>#</code> or <code>//</code>, as well as blank lines, are ignored.<br>
+    &bull; <strong>Delimited Text:</strong> Fields are separated by semicolons (<code>;</code>), tabs (<code>\t</code>), 
+    or commas (<code>,</code>). Ratings default to 1500 if omitted. Names with commas can be entered as quoted CSV 
+    (<code>"Carlsen, Magnus", 2832, GM</code>) or semicolon/tab-separated (<code>Carlsen, Magnus; 2832; GM</code>).<br>
+    &bull; <strong>TRF Import:</strong> Standard FIDE TRF06 / TRF26 records starting with <code>001</code> extract 
+    only registration fields (Title, Name, Rating). Previous pairings and history are ignored.
+  </p>
+
+  <p><strong>TRF Export:</strong><br>
+    Once all tournament rounds are completed, the <strong>Save TRF-file</strong> button appears. The export 
+    contains all recorded pairings, colours, and results; the tournament director must complete player FIDE IDs, 
+    birthdates, and federation codes before final submission.
+  </p>
+
+  <p class="small-note">
+    This application does not support late entries, accelerated pairings, or adjourned games. 
+    The built-in tests are developer regression tests, not the official FIDE endorsement suite.
   </p>
 
   <ul>
-    <li><a href="https://handbook.fide.com/chapter/C040403202602" target="_blank" rel="noopener">Lim rules</a></li>
-    <li><a href="https://handbook.fide.com/chapter/GeneralHandlingRulesForSwissTournaments202602" target="_blank" rel="noopener">General handling rules</a></li>
-    <li><a href="https://handbook.fide.com/chapter/TieBreakRegulations032026" target="_blank" rel="noopener">Tie-break regulations</a></li>
-    <li><a href="https://mats-winther.github.io/bg/chesspairing.htm" target="_blank" rel="noopener">Chess Pairings: A Review of Monrad, Swiss, and Berger</a></li>
+    <li>
+      <a href="https://handbook.fide.com/chapter/C040403202602" target="_blank" rel="noopener">
+        Official FIDE Lim Rules
+      </a>
+    </li>
+    <li>
+      <a href="https://handbook.fide.com/chapter/GeneralHandlingRulesForSwissTournaments202602" target="_blank" rel="noopener">
+        General Handling Rules for Swiss Tournaments
+      </a>
+    </li>
+    <li>
+      <a href="https://handbook.fide.com/chapter/TieBreakRegulations032026" target="_blank" rel="noopener">
+        Play-Off and Tie-Break Regulations
+      </a>
+    </li>
+    <li>
+      <a href="https://mats-winther.github.io/bg/chesspairing.htm" target="_blank" rel="noopener">
+        Chess Pairings: A Review of Monrad, Swiss, and Berger
+      </a>
+    </li>
   </ul>
-  <p class="small-note">The FIDE Lim Pairing System was developed by Mats Winther in September 2026.<br>&nbsp;</p>
+
+  <p class="small-note">
+    The FIDE Lim Pairing System was developed by Mats Winther in September 2026.<br>&nbsp;
+  </p>
 
   <button onclick="document.getElementById('about').close()">Close</button>
 </dialog>

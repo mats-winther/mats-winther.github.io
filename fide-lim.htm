@@ -209,13 +209,16 @@
   dialog::backdrop {
     background: #0008;
   }
-  pre {
-    white-space: pre-wrap;
-    overflow: auto;
-    font-size: 0.8rem;
-    background: #f5f7fa;
-    padding: 0.75rem;
-  }
+pre {
+  overflow:auto;
+  background:#f8fafc;
+  border:1px solid var(--border);
+  padding:.7rem;
+}
+code {
+  font-size: 0.9rem;       /* Or 1.1em if you want it slightly more prominent */
+  font-family: Courier New, Courier New;
+}
   a {
     color: var(--blue);
   }
@@ -389,57 +392,114 @@
     <button class="primary" onclick="importPaste()">Importera</button></div>
 </dialog>
 <dialog id="about">
-  <h2>Om FIDE Lim-lottningssystem</h2>
-  <p>Experimentell implementering av FIDE C.04.4.3 Lim, gällande från 1 februari 2026.
-     Ej godkänd av FIDE.</p>
+  <h2>Om denna implementation</h2>
+
   <p>
-     Grundidén bakom Lim är att arbeta in mot mitten av poängtabellen från båda ändar,
-     i stället för att gå igenom varje poänggrupp uppifrån och ned, som i FIDE Dutch.
-     Det ger Lim ett annat sätt att hantera spelare som inte kan paras ihop inom sin
-     egen poänggrupp.
+    Experimentell referensimplementation av FIDE:s Lim-system (Handbok C.04.4.3), 
+    gällande från 1 februari 2026. Det är inte godkänt av FIDE och får inte betraktas 
+    som en certifierad lottningskontrollant.
   </p>
-  <p>
-     I Lim behandlas poänggrupperna ovanför mitten uppifrån och ned, medan grupperna
-     nedanför mitten behandlas nedifrån och upp. Därför tenderar oparade spelare från
-     båda håll att föras in mot mitten. Det här tillvägagångssättet kan vara tilltalande 
-     eftersom det tar hänsyn till både toppen och botten av ställningen när rondens
-     parningar skapas.
+
+  <p><strong>Tvåsidig sökning:</strong><br>
+    Grundidén bakom Lim-systemet är att konstruera lottningen genom att arbeta in mot 
+    mitten av poängtabellen från båda ändarna samtidigt, snarare än att hantera varje 
+    poänggrupp strikt uppifrån och ned som i det holländska systemet. Poänggrupper ovanför 
+    medianpoängen hanteras nedåt, medan poänggrupper under medianen hanteras uppåt. 
+    Oparade spelare (flyttare) drivs mot mitten från båda hållen, vilket kulminerar i 
+    lottningen av mediangruppen som vid behov kan lösa lokala blockeringar genom att 
+    bryta upp intilliggande par.
   </p>
-  <p>Programmet implementerar vanlig non-Maxi-lottning, den tvåsidiga genomgången av poänggrupper,
-     kontroller av kompatibla motståndare, urval av flyttare, reparation av mediangruppen,
-     färgpreferenser och undantaget för samma poäng i sista ronden.
-     Komplexa fall kan ha mer än en tolkning. Detta är inte ett officiellt godkänt kontrollprogram.</p>
-  <p>Programmet implementerar inte sena anmälningar, acceleration eller uppskjutna partier.
-   De faktiska färgerna i ett parti i den senast arkiverade ronden kan korrigeras innan
-   nästa rond genereras. Andra arkiverade resultat kan inte redigeras direkt. För att
-   ändra ett tidigare rapporterat resultat måste en säkerhetskopia av ronden laddas och
-   rondresultaten matas in på nytt.</p> 
-<p>Denna icke-Maxi-lösning minimerar eller begränsar inte ratingdifferensen mellan
-     motståndare. Programmet har en inbyggd fast sökbegränsning.
-     Misslyckande eller avbrott publicerar aldrig en ofullständig rond.</p>
-  <p>
-    Du kan hantera olika turneringar samtidigt i olika webbläsare
-    (till exempel Chrome och Edge). Varje webbläsare har sin egen
-    autosparning, så en turnering måste återupptas i samma webbläsare
-    som den startades i. Undvik att köra separata turneringar i flera
-    flikar eller fönster inom samma webbläsarprofil, eftersom
-    autosparningarna då kan skriva över varandra. 
-  <p>
-  <p>
-    Turneringen sparas automatiskt i webbläsaren när lagring
-    är tillgänglig. För extra säkerhet, spara regelbundet JSON-säkerhetskopior.
-    Inga uppgifter skickas till en server, och separata
-    webbläsarflikar synkroniseras inte.
+
+  <p><strong>Lottningsmotor &amp; sökmetod:</strong><br>
+    Detta program implementerar standard (icke-Maxi) Lim-lottning, kontroller av kompatibla 
+    motståndare, urval av flyttare, lösning av mediangruppen, färgpreferenser samt undantaget 
+    för samma poäng i sista ronden. Beräkningarna körs i en bakgrundsprocess (Web Worker) med 
+    fasta tids- och arbetsgränser; en avbruten eller misslyckad sökning publicerar aldrig en 
+    partiell eller preliminär rond. Det maximala antalet ronder i turneringen är 30, men 
+    simuleringen avbryts tidigare om lottningsmotorn inte längre kan finna en tillåten rond 
+    enligt FIDE:s regler.
   </p>
+
+  <p><strong>Slutställning &amp; beräkning av särskiljning:</strong><br>
+    Slutresultatet rangordnas efter poäng, Buchholz med lägsta värdet struket (BH-1), Buchholz (BH) 
+    och Sonneborn-Berger (SB). Spelare som fortfarande är lika delar placering; startnumret (TPN) 
+    styr endast visningsordningen. Beräkningarna för särskiljning följer bestämmelserna för 
+    individuella schweizerturneringar i FIDE:s regler för särspel och särskiljning från 1 mars 2026, 
+    inklusive justerade motståndarpoäng, begränsningar av fiktiva motståndarpoäng för ospelade ronder 
+    och undantaget för frivilligt ospelade ronder (VUR) vid BH-1.
+  </p>
+
+  <p><strong>Autosparande &amp; säkerhetskopior:</strong><br>
+    Inställningar och turneringsdata sparas automatiskt och kontinuerligt i webbläsarens lagringsutrymme 
+    (<code>localStorage</code>). För att köra separata turneringar samtidigt utan att skriva över data, 
+    använd olika webbläsare (t.ex. Chrome och Edge) eller separata webbläsarprofiler. Spara en 
+    JSON-säkerhetskopia efter varje rond. För att korrigera ett tidigare inrapporterat resultat från 
+    en tidigare rond, återställ säkerhetskopian från den ronden och mata in resultaten på nytt.
+  </p>
+
+  <p><strong>Registrering &amp; spelarkapacitet:</strong><br>
+    Så snart lottningen för 
+    rond 1 har skapats stängs registreringen permanent (inga nya spelare kan läggas till) och 
+    turneringsinställningarna låses. Mellan ronderna kan spelare redigeras, avanmälas, återinsättas 
+    eller tilldelas ospelade ronder (noll-, remi- eller vinstvärde).
+  </p>
+
+  <p><strong>Korrigering av faktiskt spelade färger:</strong><br>
+    Om spelare av misstag spelat med omvända färger på ett bord gör programmet det möjligt att byta 
+    de faktiska färgerna direkt på den pågående ronden, eller på den senast slutförda ronden innan 
+    nästa rond lottas. När färgerna byts vänds det registrerade partiresultatet automatiskt så att 
+    varje spelares tilldelade poäng förblir intakt samtidigt som deras färghistorik uppdateras korrekt.
+  </p>
+
+  <p><strong>Importera spelarlistor:</strong><br>
+    Spelarlistor kan importeras via fil (<code>.txt</code>, <code>.csv</code>, <code>.trf</code>) eller 
+    klistras in direkt. Rader som börjar med <code>#</code> eller <code>//</code>, samt tomma rader, ignoreras.<br>
+    &bull; <strong>Avgränsad text:</strong> Fälten separeras med semikolon (<code>;</code>), tabbar 
+    (<code>\t</code>) eller kommatecken (<code>,</code>). Standardvärdet för rating är 1500 om fältet 
+    utelämnas. Namn som innehåller kommatecken kan anges som citatteckenomgivet CSV-fält 
+    (<code>"Carlsen, Magnus", 2832, GM</code>) eller semikolon-/tabbseparerat (<code>Carlsen, Magnus; 2832; GM</code>).<br>
+    &bull; <strong>TRF-import:</strong> Standard FIDE TRF06- / TRF26-poster som börjar med <code>001</code> 
+    extraherar endast registreringsfält (titel, namn, rating). Tidigare lottningar och historik ignoreras.
+  </p>
+
+  <p><strong>TRF-export:</strong><br>
+    När samtliga ronder i turneringen har slutförts visas knappen <strong>Spara TRF-fil</strong>. Exporten 
+    innehåller alla registrerade lottningar, färger och resultat; tävlingsledaren måste komplettera filen 
+    med spelarnas FIDE-ID, födelsedatum och federationskoder före slutlig inlämning.
+  </p>
+
+  <p class="small-note">
+    Detta program stöder inte efteranmälningar, accelererad lottning eller hängpartier. 
+    De inbyggda testerna är regressionstester för utvecklare, inte FIDE:s officiella godkännandesvit.
+  </p>
+
   <ul>
-    <li><a href="https://handbook.fide.com/chapter/C040403202602" target="_blank" rel="noopener">Lim-regler</a></li>
-    <li><a href="https://handbook.fide.com/chapter/GeneralHandlingRulesForSwissTournaments202602" target="_blank" rel="noopener">Allmänna hanteringsregler</a></li>
-    <li><a href="https://handbook.fide.com/chapter/TieBreakRegulations032026" target="_blank" rel="noopener">Särskiljningsregler</a></li>
-    <li><a href="https://mats-winther.github.io/bg/schacklottning.htm"
-     target="_blank" rel="noopener">Schacklottning: en genomgång av Monrad, Schweizer och Berger</a></li>
+    <li>
+      <a href="https://handbook.fide.com/chapter/C040403202602" target="_blank" rel="noopener">
+        Officiella regler för Lim-systemet
+      </a>
+    </li>
+    <li>
+      <a href="https://handbook.fide.com/chapter/GeneralHandlingRulesForSwissTournaments202602" target="_blank" rel="noopener">
+        Allmänna regler för schweizerturneringar
+      </a>
+    </li>
+    <li>
+      <a href="https://handbook.fide.com/chapter/TieBreakRegulations032026" target="_blank" rel="noopener">
+        Regler för särspel och särskiljning
+      </a>
+    </li>
+    <li>
+      <a href="https://mats-winther.github.io/bg/schacklottning.htm" target="_blank" rel="noopener">
+        Schacklottning: en genomgång av Monrad, Schweizer och Berger
+      </a>
+    </li>
   </ul>
-  <p class="small-note">FIDE Lim-lottningssystem utvecklades av Mats Winther i september 2026.<br>&nbsp;
+
+  <p class="small-note">
+    FIDE Lim-lottningsprogram utvecklades av Mats Winther i september 2026.<br>&nbsp;
   </p>
+
   <button onclick="document.getElementById('about').close()">Stäng</button>
 </dialog>
 

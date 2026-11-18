@@ -720,7 +720,8 @@ Spelarlistor kan importeras via fil (.txt, .csv, .trf) eller klistras in direkt.
 <p><strong>Lottningsberäkning &amp; export: </strong> 
 Lottningar beräknas i en Web Worker i bakgrunden med en strikt tidsgräns (timeout). Det maximala antalet simuleringsronder är 30, men simuleringen avbryts tidigare om lottningsmotorn inte längre kan hitta någon giltig rond enligt FIDE:s regler. När samtliga ronder i turneringen har slutförts visas knappen <strong>Save TRF-file</strong>. TRF-exporten innehåller endast tävlingsresultaten och den information som registrerats i applikationen; tävlingsledaren måste komplettera filen med spelarnas FIDE-ID, födelsedatum och federationskoder före slutlig inlämning.</p>
 
-<p>Denna applikation stöder inte efteranmälningar, accelererad lottning eller hängpartier.</p>
+<p class="small-note">Denna applikation stöder inte efteranmälningar, accelererad lottning eller hängpartier. De inbyggda testerna är 
+    regressionstester för utvecklare, inte FIDE:s officiella godkännandesvit.</p>
   <ul style=padding-left:70px;>
     <li><a href="https://handbook.fide.com/chapter/C040401202602" target="_blank" rel="noopener">Dubov-regler</a></li>
     <li><a href="https://handbook.fide.com/chapter/GeneralHandlingRulesForSwissTournaments202602" target="_blank" rel="noopener">Allmänna hanteringsregler</a></li>
