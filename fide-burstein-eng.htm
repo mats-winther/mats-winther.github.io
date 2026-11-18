@@ -562,108 +562,111 @@ a { color:var(--blue); }
 <dialog id="aboutDialog">
   <h2>About this implementation</h2>
 
-<p>
-  Experimental bounded implementation of the FIDE Burstein
-  System effective February 1, 2026. It is not FIDE-endorsed and
-  must not be treated as a certified pairing checker.
-</p>
-<p>
-  The main advantage of the Burstein System is that it aims to make
-  the opposition faced by players on the same score as equal as
-  possible over the course of the tournament.
-<p>
-<p>
-  The first half of the scheduled rounds, rounded down and capped
-  at four rounds, are paired using the embedded FIDE Dutch engine.
-  Subsequent rounds use the Burstein System.
-</p>
-
-<p>
-  The post-seeding pairing ranking is Buchholz, then
-  Sonneborn-Berger, then ascending TPN. Player scores define the
-  scoregroups but are not part of the in-bracket ranking.
-</p>
-
-<p>
-  The pairing-allocated bye is assigned before bracket pairing.
-  Brackets are then searched in the candidate order prescribed by
-  the Burstein rules, applying criteria C1 through C8 in priority
-  order.
-</p>
-
-<p>
-  Pairing Index calculations treat an unplayed game as a game
-  against oneself. The special treatment of consecutive trailing
-  zero-point byes is applied when evaluating the scores used by
-  actual over-the-board opponents.
-</p>
-
-<p>
-  Pairing searches use fixed time and node limits.
-  An interrupted search never publishes a provisional pairing.
-  The maximum number of simulator rounds is 30, but the simulator
-  will stop early if the pairing engine can no longer find a legal
-  round under FIDE rules.
-</p>
-
-<p>
-  <b>Note:</b> The maximum number of participants is 70.
-</p>
-
-<p>
-  Once a round is confirmed, an incorrectly recorded result can be 
-  corrected through the GUI, provided that a tournament backup was 
-  previously created using the "Save Tournament" function.
-</p>
-
   <p>
-     You can run separate tournaments simultaneously in different
-     browsers (for example, Chrome and Edge). Each browser maintains
-     its own autosave, so a tournament should be resumed in the browser
-     where it was started. Avoid running separate tournaments in multiple
-     tabs or windows within the same browser profile, as their autosaves
-     may overwrite one another. 
+    Experimental implementation of the FIDE Burstein System effective February 1, 2026, 
+    with embedded FIDE Dutch seeding. It is not FIDE-endorsed and must not be treated 
+    as a certified pairing checker.
   </p>
+
   <p>
-    Browser storage saves automatically when available. For added safety,
-    save JSON backups regularly. No data is sent to a server and tabs do
-    not synchronize.
+    The main advantage of the Burstein System is that it aims to equalize the strength 
+    of opposition faced by players on the same score over the course of the tournament.
   </p>
-  <p>
-    Not implemented: acceleration, arbitrary additional pairing restrictions,
-    adjournments, or an administrative workflow for altering published
-    pairings and correcting archived results. The built-in tests are
-    developer regression tests, not the official FIDE endorsement suite.
+
+  <p><strong>Tournament Seeding &amp; Pairing Structure:</strong><br>
+    &bull; <strong>Dutch Seeding:</strong> The first half of the scheduled rounds (rounded down, 
+    capped at a maximum of four rounds) are paired using the embedded FIDE Dutch reference engine.<br>
+    &bull; <strong>Burstein Pairings:</strong> Subsequent rounds are paired using the Burstein System.<br>
+    &bull; <strong>In-Bracket Ranking:</strong> After seeding, players within each Burstein bracket 
+    are ranked by pairing Index: Buchholz, then Sonneborn-Berger, then ascending TPN (Article 1.8). 
+    Player scores define the scoregroups but are not part of the in-bracket ranking.<br>
+    &bull; <strong>Pairing Index:</strong> Index calculations treat an unplayed game as a game against 
+    oneself. Consecutive trailing zero-point byes are evaluated under Article 1.7 for the benefit 
+    of actual over-the-board opponents.<br>
+    &bull; <strong>Bye &amp; Bracket Order:</strong> The pairing-allocated bye (PAB) is determined before 
+    bracket pairing. Brackets are then searched in the candidate order prescribed by Article 4, applying 
+    criteria C1 through C8 in priority order.
+  </p>
+
+  <p><strong>Engine &amp; Search Limits:</strong><br>
+    Calculations execute in a background Web Worker with fixed time and node limits. Interrupted 
+    calculations never publish a provisional pairing. Fixed homogeneous Dutch partitions utilize exact 
+    minimum-cost bipartite matching, while Burstein brackets utilize an exact bounded branch-and-bound 
+    search. The maximum number of tournament rounds is 30, but simulation will stop early if the engine 
+    cannot find a legal completion under FIDE rules.
+  </p>
+
+  <p><strong>Standings &amp; Tie-Break Calculations:</strong><br>
+    Final results are ranked by points, Buchholz Cut 1 (BH-1), Buchholz (BH), and Sonneborn-Berger (SB). 
+    Players still equal share a rank; TPN controls only the display order. Calculations implement the 
+    individual Swiss provisions of the FIDE Play-Off and Tie-Break Regulations effective March 1, 2026, 
+    including adjusted opponent scores, dummy-score caps for unplayed rounds, and the voluntary-unplayed-round 
+    exception for BH-1. Under 3 / 1 / 0 scoring, SB uses the actual points scored against each opponent.
+  </p>
+
+  <p><strong>Autosave &amp; Backups:</strong><br>
+    Settings and tournament data autosave continuously to browser storage (<code>localStorage</code>). 
+    To run separate tournaments simultaneously without overwriting data, use different browsers 
+    (e.g., Chrome and Edge) or different browser profiles. Save a JSON backup after each round. 
+    To correct a previously entered result, restore the backup from that round and re-enter the results.
+  </p>
+
+  <p><strong>Registration &amp; Player Capacity:</strong><br>
+    The tournament is limited to a maximum of <strong>70 participants</strong>. Once Round 1 pairings 
+    are generated, registration closes permanently (no new players may be added) and tournament settings lock. 
+    Between rounds, players can be edited, withdrawn, reinstated, or assigned unplayed rounds 
+    (zero, draw, or win value).
+  </p>
+
+  <p><strong>Importing Player Lists:</strong><br>
+    Player lists can be imported via file (<code>.txt</code>, <code>.csv</code>, <code>.trf</code>) or pasted directly. 
+    Lines starting with <code>#</code> or <code>//</code>, as well as blank lines, are ignored.<br>
+    &bull; <strong>Delimited Text:</strong> Fields separated by semicolons (<code>;</code>), tabs (<code>\t</code>), 
+    or commas (<code>,</code>). Ratings default to 1500 if omitted. Names with commas should be quoted CSV 
+    (<code>"Carlsen, Magnus", 2832, GM</code>) or semicolon/tab-separated (<code>Carlsen, Magnus; 2832; GM</code>).<br>
+    &bull; <strong>TRF Import:</strong> Standard FIDE TRF06 / TRF26 records starting with <code>001</code> extract 
+    registration fields only (Title, Name, Rating). Previous pairings and history are ignored.
+  </p>
+
+  <p><strong>TRF Export:</strong><br>
+    Once all tournament rounds are completed, the <strong>Save TRF-file</strong> button appears. The export 
+    contains all recorded pairings, colors, and results; the tournament director must complete player FIDE IDs, 
+    birthdates, and federation codes before final submission.
+  </p>
+
+  <p class="small-note">
+    Late entries, accelerated pairings, and adjourned games are not supported. Built-in tests are developer 
+    regression tests, not the official FIDE endorsement suite.
   </p>
 
   <ul>
-  <li>
-    <a href="https://handbook.fide.com/chapter/C040402202602"
-       target="_blank" rel="noopener">
-      Official Burstein System
-    </a>
-  </li>
-  <li>
-    <a href="https://handbook.fide.com/chapter/C0403202602"
-       target="_blank" rel="noopener">
-      Official Dutch System used for seeding
-    </a>
-  </li>
-  <li>
-    <a href="https://handbook.fide.com/chapter/GeneralHandlingRulesForSwissTournaments202602"
-       target="_blank" rel="noopener">
-      General Handling Rules
-    </a>
-  </li>    
-  <li>
-      <a href="https://handbook.fide.com/chapter/TieBreakRegulations032026"
-         target="_blank" rel="noopener">Play-Off and Tie-Break Regulations</a>
+    <li>
+      <a href="https://handbook.fide.com/chapter/C040402202602" target="_blank" rel="noopener">
+        Official Burstein System Rules
+      </a>
     </li>
-  <li><a href="https://mats-winther.github.io/bg/chesspairing.htm" target="_blank" 
-	rel="noopener">Chess Pairings: A Review of Monrad, Swiss, and Berger</a>
-  </li>
-
+    <li>
+      <a href="https://handbook.fide.com/chapter/C0403202602" target="_blank" rel="noopener">
+        Official Dutch System Rules (Seeding)
+      </a>
+    </li>
+    <li>
+      <a href="https://handbook.fide.com/chapter/GeneralHandlingRulesForSwissTournaments202602" target="_blank" rel="noopener">
+        General Handling Rules for Swiss Tournaments
+      </a>
+    </li>
+    <li>
+      <a href="https://handbook.fide.com/chapter/TieBreakRegulations032026" target="_blank" rel="noopener">
+        Play-Off and Tie-Break Regulations
+      </a>
+    </li>
+    <li>
+      <a href="https://mats-winther.github.io/bg/chesspairing.htm" target="_blank" rel="noopener">
+        Chess Pairings: A Review of Monrad, Swiss, and Berger
+      </a>
+    </li>
   </ul>
+
   <p class="small-note">
     The FIDE Burstein Pairing System was developed by Mats Winther in September 2026.<br>&nbsp;
   </p>

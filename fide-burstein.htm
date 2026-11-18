@@ -541,113 +541,121 @@ a { color:var(--blue); }
 
 <dialog id="aboutDialog">
   <h2>Om denna implementation</h2>
+
   <p>
-    Experimentell implementation av FIDE:s
-    Bursteinsystem som gäller från den 1 februari 2026.
-    Programmet är inte godkänt av FIDE och ska inte betraktas som ett
-    certifierat verktyg för lottningskontroll.
-  </p>
-  <p>
-    Den främsta fördelen med Burstein-systemet är att det strävar efter
-    att göra motståndet så jämnstarkt som möjligt för spelare med samma
-    poäng under turneringens gång.
-  <p>
-  <p>
-    Den första hälften av de planerade ronderna, avrundad nedåt och
-    begränsad till högst fyra ronder, lottas med den inbyggda
-    lottningsmotorn för FIDE:s nederländska system (Dutch).
-    Efterföljande ronder använder Bursteinsystemet.
-  </p>
-  <p>
-    Efter de inledande ronderna bestäms lottningsrangordningen av Buchholz,
-    sedan Sonneborn-Berger och därefter stigande TPN.
-    Spelarnas poäng bestämmer poänggrupperna men ingår inte i
-    rangordningen inom lottningsgruppen.
-  </p>
-  <p>
-    Frironden tilldelas innan lottningsgrupperna lottas.
-    Därefter genomsöks grupperna i den kandidatordning som föreskrivs av
-    Bursteinreglerna, med kriterierna C1 till C8 tillämpade i
-    prioritetsordning.
-  </p>
-  <p>
-    Vid beräkning av lottningsindex behandlas ett ospelat parti som ett
-    parti mot spelaren själv. Den särskilda behandlingen av en avslutande
-    följd av nollpoängsronder tillämpas när spelarens poäng används
-    för motståndare som spelaren faktiskt har mött vid brädet.
-  </p>
-  <p>
-    Lottningssökningen har fasta tids- och nodgränser.
-    En avbruten sökning publicerar aldrig en preliminär lottning.
-    Det maximala antalet simuleringsronder är 30, men simuleringen avbryts
-    tidigare om lottningsmotorn inte längre kan hitta någon giltig rond
-    enligt FIDE:s regler.
-  </p>
-  <p>
-    När en rond har bekräftats kan ett felregistrerat resultat rättas
-    via användargränssnittet, förutsatt att en säkerhetskopia av turneringen
-    tidigare har skapats med funktionen ”Spara turnering”.
+    Experimentell implementation av FIDE:s Burstein-system som gäller från den 1 februari 2026, 
+    med inbäddad seedning enligt FIDE:s holländska system. Programmet är inte godkänt av FIDE 
+    och ska inte betraktas som ett certifierat verktyg för lottningskontroll.
   </p>
 
   <p>
-    <b>Obs:</b> Det maximala antalet deltagare är 70.
+    Den största fördelen med Burstein-systemet är att det syftar till att utjämna motståndarstyrkan 
+    för spelare med samma poäng under turneringens gång.
   </p>
-  <p>
-    Du kan hantera olika turneringar samtidigt i olika webbläsare
-    (till exempel Chrome och Edge). Varje webbläsare har sin egen
-    autosparning, så en turnering måste återupptas i samma webbläsare
-    som den startades i. Undvik att köra separata turneringar i flera
-    flikar eller fönster inom samma webbläsarprofil, eftersom
-    autosparningarna då kan skriva över varandra. 
-  <p>
-  <p>
-    Turneringen sparas automatiskt i webbläsaren när lagring
-    är tillgänglig. För extra säkerhet, spara regelbundet JSON-säkerhetskopior.
-    Inga uppgifter skickas till en server, och separata
-    webbläsarflikar synkroniseras inte.
+
+  <p><strong>Turneringsseedning &amp; lottningsstruktur:</strong><br>
+    &bull; <strong>Holländsk seedning:</strong> Den första halvan av de planerade ronderna (avrundat 
+    nedåt, begränsat till maximalt fyra ronder) lottas med den inbäddade referensmotorn för FIDE:s 
+    holländska system.<br>
+    &bull; <strong>Burstein-lottning:</strong> Efterföljande ronder lottas enligt Burstein-systemet.<br>
+    &bull; <strong>Rangordning inom poänggruppen:</strong> Efter seedningen rangordnas spelarna inom 
+    varje Burstein-grupp efter lottningsindex: Buchholz, därefter Sonneborn-Berger och slutligen 
+    stigande startnummer (artikel 1.8). Spelarnas poäng definierar poänggrupperna men ingår inte 
+    i rangordningen inom gruppen.<br>
+    &bull; <strong>Lottningsindex:</strong> Beräkningen av lottningsindex behandlar ett ospelat parti 
+    som ett parti mot sig själv. Flera på varandra följande avslutande nollpoängsfrironder utvärderas 
+    enligt artikel 1.7 till förmån för de faktiska motståndarna vid brädet.<br>
+    &bull; <strong>Frirond och gruppordning:</strong> Lottningsfrirond (PAB) tilldelas innan poänggrupperna 
+    lottas. Grupperna genomsöks därefter i den kandidatordning som föreskrivs i artikel 4, där 
+    kriterierna C1 till C8 tillämpas i prioritetsordning.
   </p>
-  <p>
-    Följande är inte implementerat: acceleration, godtyckliga ytterligare
-    lottningsrestriktioner, avbrutna partier eller ett administrativt
-    arbetsflöde för att ändra publicerade lottningar och rätta arkiverade
-    resultat. De inbyggda testerna är utvecklarens regressionstester,
-    inte FIDE:s officiella tester för godkännande.
+
+  <p><strong>Lottningsmotor &amp; sökgränser:</strong><br>
+    Beräkningar körs i en bakgrundsprocess (Web Worker) med fasta tids- och nodgränser. Avbrutna 
+    beräkningar publicerar aldrig en preliminär lottning. Fasta homogena holländska indelningar använder 
+    exakt tvådelad matchning med minsta kostnad, medan Burstein-grupper använder en exakt begränsad 
+    branch-and-bound-sökning. Maximalt antal turneringsronder är 30, men simuleringen avbryts tidigare 
+    om motorn inte längre kan finna en giltig lottning enligt FIDE:s regler.
   </p>
+
+  <p><strong>Slutställning &amp; beräkning av särskiljning:</strong><br>
+    Slutresultatet rangordnas efter poäng, Buchholz med lägsta värdet struket (BH-1), Buchholz (BH) 
+    och Sonneborn-Berger (SB). Spelare som fortfarande är lika delar placering; startnumret styr 
+    endast visningsordningen. Beräkningarna följer bestämmelserna för individuella schweizerturneringar 
+    i FIDE:s regler för särspel och särskiljning från den 1 mars 2026, inklusive justerade motståndarpoäng, 
+    begränsningar av fiktiva motståndarpoäng för ospelade ronder och undantaget för frivilligt ospelade 
+    ronder vid BH-1. Vid poängsystemet 3 / 1 / 0 använder SB de faktiska poäng som tagits mot varje motståndare.
+  </p>
+
+  <p><strong>Autosparande &amp; säkerhetskopior:</strong><br>
+    Inställningar och turneringsdata sparas automatiskt och kontinuerligt i webbläsarens lagringsutrymme 
+    (<code>localStorage</code>). För att köra separata turneringar samtidigt utan att skriva över data, 
+    använd olika webbläsare (t.ex. Chrome och Edge) eller separata webbläsarprofiler. Spara en 
+    JSON-säkerhetskopia efter varje rond. För att korrigera ett tidigare inrapporterat resultat, återställ 
+    säkerhetskopian från den ronden och mata in resultaten på nytt.
+  </p>
+
+  <p><strong>Registrering &amp; spelarkapacitet:</strong><br>
+    Turneringen är begränsad till maximalt <strong>70 deltagare</strong>. Så snart lottningen för 
+    rond 1 har skapats stängs registreringen permanent (inga nya spelare kan läggas till) och 
+    turneringsinställningarna låses. Mellan ronderna kan spelare redigeras, avanmälas, återinsättas 
+    eller tilldelas ospelade ronder (noll-, remi- eller vinstvärde).
+  </p>
+
+  <p><strong>Importera spelarlistor:</strong><br>
+    Spelarlistor kan importeras via fil (<code>.txt</code>, <code>.csv</code>, <code>.trf</code>) eller 
+    klistras in direkt. Rader som börjar med <code>#</code> eller <code>//</code>, samt tomma rader, ignoreras.<br>
+    &bull; <strong>Avgränsad text:</strong> Fälten separeras med semikolon (<code>;</code>), tabbar 
+    (<code>\t</code>) eller kommatecken (<code>,</code>). Standardvärdet för rating är 1500 om fältet 
+    utelämnas. Namn som innehåller kommatecken bör anges som citatteckenomgivet CSV-fält 
+    (<code>"Carlsen, Magnus", 2832, GM</code>) eller semikolon-/tabbseparerat (<code>Carlsen, Magnus; 2832; GM</code>).<br>
+    &bull; <strong>TRF-import:</strong> Standard FIDE TRF06- / TRF26-poster som börjar med <code>001</code> 
+    extraherar endast registreringsfält (titel, namn, rating). Tidigare lottningar och historik ignoreras.
+  </p>
+
+  <p><strong>TRF-export:</strong><br>
+    När samtliga ronder i turneringen har slutförts visas knappen <strong>Spara TRF-fil</strong>. Exporten 
+    innehåller alla registrerade lottningar, färger och resultat; tävlingsledaren måste komplettera filen 
+    med spelarnas FIDE-ID, födelsedatum och federationskoder före slutlig inlämning.
+  </p>
+
+  <p class="small-note">
+    Efteranmälningar, accelererad lottning och hängpartier stöds inte. De inbyggda testerna är 
+    regressionstester för utvecklare, inte FIDE:s officiella godkännandesvit.
+  </p>
+
   <ul>
     <li>
-      <a href="https://handbook.fide.com/chapter/C040402202602"
-         target="_blank" rel="noopener">
-        Officiella regler för Bursteinsystemet
+      <a href="https://handbook.fide.com/chapter/C040402202602" target="_blank" rel="noopener">
+        Officiella regler för Burstein-systemet
       </a>
     </li>
     <li>
-      <a href="https://handbook.fide.com/chapter/C0403202602"
-         target="_blank" rel="noopener">
-        Officiella regler för det nederländska systemet som används i inledningsronderna
+      <a href="https://handbook.fide.com/chapter/C0403202602" target="_blank" rel="noopener">
+        Officiella regler för det holländska systemet (seedning)
       </a>
     </li>
     <li>
-      <a href="https://handbook.fide.com/chapter/GeneralHandlingRulesForSwissTournaments202602"
-         target="_blank" rel="noopener">
-        Allmänna regler för genomförandet
+      <a href="https://handbook.fide.com/chapter/GeneralHandlingRulesForSwissTournaments202602" target="_blank" rel="noopener">
+        Allmänna regler för schweizerturneringar
       </a>
     </li>
     <li>
-      <a href="https://handbook.fide.com/chapter/TieBreakRegulations032026"
-         target="_blank" rel="noopener">
+      <a href="https://handbook.fide.com/chapter/TieBreakRegulations032026" target="_blank" rel="noopener">
         Regler för särspel och särskiljning
       </a>
     </li>
     <li>
-      <a href="https://mats-winther.github.io/bg/schacklottning.htm"
-         target="_blank" rel="noopener">
+      <a href="https://mats-winther.github.io/bg/schacklottning.htm" target="_blank" rel="noopener">
         Schacklottning: en genomgång av Monrad, Schweizer och Berger
       </a>
     </li>
   </ul>
-<p class="small-note">
-FIDE Burstein-lottningssystem utvecklades av Mats Winther i september 2026.<br>&nbsp;
-</p>
+
+  <p class="small-note">
+    FIDE Burstein-lottningsprogram utvecklades av Mats Winther i september 2026.<br>&nbsp;
+  </p>
+
   <button onclick="document.getElementById('aboutDialog').close()">Stäng</button>
 </dialog>
 
