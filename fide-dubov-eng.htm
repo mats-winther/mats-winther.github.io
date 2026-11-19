@@ -875,7 +875,8 @@ function Dubov2026Core() {
 
   function calculateARO(
     player,
-    playersMap
+    playersMap,
+    ratingById = null
   ) {
     let sum = 0;
     let count = 0;
@@ -887,13 +888,21 @@ function Dubov2026Core() {
       const opponent =
         playersMap.get(opponentId);
 
-      if (
-        opponent &&
-        Number.isFinite(
-          opponent.rating
-        )
-      ) {
-        sum += opponent.rating;
+      const rating =
+        opponent && Number.isFinite(opponent.rating)
+          ? opponent.rating
+          : (
+              ratingById &&
+              Object.prototype.hasOwnProperty.call(
+                ratingById,
+                opponentId
+              )
+                ? Number(ratingById[opponentId])
+                : NaN
+            );
+
+      if (Number.isFinite(rating) && rating > 0) {
+        sum += rating;
         count++;
       }
     }
@@ -2275,11 +2284,18 @@ function Dubov2026Core() {
         return player;
       });
 
+    const ratingById =
+      input.ratingById &&
+      typeof input.ratingById === "object"
+        ? input.ratingById
+        : null;
+
     players.forEach(player => {
       player.aro =
         calculateARO(
           player,
-          rawMap
+          rawMap,
+          ratingById
         );
 
       player.pref =
@@ -4139,6 +4155,96 @@ function Dubov2026Core() {
           aro === 2451,
           "Expected 2451, got " +
           aro
+        );
+      }
+    );
+
+    test(
+      "ARO retains withdrawn/absent opponents via ratingById (Art. 1.7.1)",
+      () => {
+        const input = {
+          roundNumber:2,
+          totalRounds:5,
+          winPoints:1,
+          initialColor:"W",
+          ratingById:{
+            W1:2600,
+            W2:1800,
+            W3:2000,
+            W4:2000
+          },
+          players:[
+            {
+              id:"A",
+              tpn:1,
+              name:"A",
+              rating:2400,
+              score:1,
+              opponents:["W3"],
+              playedOpponents:["W3"],
+              playedColors:["W"],
+              floats:["-"],
+              hadPAB:false,
+              hadUnplayedWin:false
+            },
+            {
+              id:"B",
+              tpn:2,
+              name:"B",
+              rating:2000,
+              score:1,
+              opponents:["W4"],
+              playedOpponents:["W4"],
+              playedColors:["W"],
+              floats:["-"],
+              hadPAB:false,
+              hadUnplayedWin:false
+            },
+            {
+              id:"C",
+              tpn:3,
+              name:"C",
+              rating:2200,
+              score:1,
+              opponents:["W1"],
+              playedOpponents:["W1"],
+              playedColors:["B"],
+              floats:["-"],
+              hadPAB:false,
+              hadUnplayedWin:false
+            },
+            {
+              id:"D",
+              tpn:4,
+              name:"D",
+              rating:2100,
+              score:1,
+              opponents:["W2"],
+              playedOpponents:["W2"],
+              playedColors:["B"],
+              floats:["-"],
+              hadPAB:false,
+              hadUnplayedWin:false
+            }
+          ]
+        };
+
+        const result = solve(input, { seconds:5 });
+
+        // D (ARO 1800) must precede C (ARO 2600) in S1, so D plays A (TPN 1)
+        // and C plays B (TPN 2).
+        check(
+          result.pairs.some(
+            p => p.whiteId === "D" && p.blackId === "A"
+          ),
+          "Expected D (lower ARO via withdrawn opponent) to be paired against A"
+        );
+
+        check(
+          result.pairs.some(
+            p => p.whiteId === "C" && p.blackId === "B"
+          ),
+          "Expected C (higher ARO via withdrawn opponent) to be paired against B"
         );
       }
     );
@@ -6606,6 +6712,12 @@ function generateRound() {
       players:
         JSON.parse(
           JSON.stringify(toPair)
+        ),
+      ratingById:
+        Object.fromEntries(
+          tournament.players.map(
+            player => [player.id, player.rating]
+          )
         )
     };
 
@@ -7007,7 +7119,12 @@ function runNextEmulatedRound(tally) {
     totalRounds:tournament.totalRounds,
     winPoints:tournament.winPoints,
     initialColor:tournament.initialColor,
-    players:JSON.parse(JSON.stringify(toPair))
+    players:JSON.parse(JSON.stringify(toPair)),
+    ratingById:Object.fromEntries(
+      tournament.players.map(
+        player => [player.id, player.rating]
+      )
+    )
   };
 
   const finishRound = result => {
