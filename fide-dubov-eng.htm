@@ -314,7 +314,7 @@ a { color:var(--accent); }
 
 <input id="tournamentFile"
        type="file"
-       accept=".json"
+       accept=".json,.trf,.txt"
        hidden
        onchange="loadTournamentFile(event)">
 
@@ -616,8 +616,7 @@ a { color:var(--accent); }
       </div>
 
       <p class="muted no-print">
-        The pairing sheet of any round can be printed. In all pairing
-        printouts, the result field displays a minus sign in the middle.
+        Pairing sheets for any round can be printed with blank result fields.
       </p>
 
       <div id="historyBody"></div>
@@ -714,7 +713,7 @@ Player lists can be imported via file (.txt, .csv, .trf) or pasted directly. Lin
      &bull; Four unquoted comma-separated fields: Carlsen, Magnus, 2832, GM<br>
      &bull; Semicolon or tab-separated: Carlsen, Magnus; 2832; GM</p>
 
-<p>2. <strong>TRF Import: </strong>Standard FIDE TRF06 / TRF26 records starting with 001 extract only registration fields (Title: cols 11–13, Name: cols 15–47, Rating: cols 49–52). Previous pairings and history are ignored.</p>
+<p>2. <strong>TRF Import: </strong>Standard FIDE TRF06 / TRF16 / TRF26 files can be opened via <strong>Open tournament</strong> (or imported/pasted) to load the full tournament—including tournament name, round count (<code>XXR</code>), initial color (<code>XXC</code>), player TPNs, ratings, titles, and complete round-by-round pairings, results, forfeits, and byes. Registration-only <code>001</code> lines without round history are also supported.</p>
 
 <p><strong>Pairing Search &amp; Export: </strong> 
 Pairings are calculated in a background Web Worker with a strict timeout setting. The maximum number of simulator rounds is 30, but the simulator will stop early if the pairing engine can no longer find a legal round under FIDE rules. Once all tournament rounds are completed, the <strong>Save TRF-file </strong>button appears. The TRF export includes only the tournament results and data recorded in the app; the tournament director must add player FIDE IDs, birthdates, and federation codes before final submission.</p>
@@ -5725,6 +5724,311 @@ function saveTournament() {
   });
 }
 
+function looksLikeTRF(text) {
+  const lines = String(text || "")
+    .replace(/^\uFEFF/, "")
+    .split(/\r?\n/);
+
+  return lines.some(rawLine => {
+    const line = rawLine.trim();
+    return /^(001|012|XXR|XXC)\s/.test(line);
+  });
+}
+
+function parseTRFTournament(text) {
+  const lines = String(text || "")
+    .replace(/^\uFEFF/, "")
+    .split(/\r?\n/);
+
+  let tName = "FIDE Dubov Tournament";
+  let xxrRounds = null;
+  let initialColor = "W";
+  let winPoints = 1;
+  let drawPoints = 0.5;
+  let lossPoints = 0;
+
+  const rawPlayers = [];
+
+  for (const rawLine of lines) {
+    const line = rawLine.replace(/\r$/, "");
+    const trimmed = line.trim();
+
+    if (
+      !trimmed ||
+      trimmed.startsWith("#") ||
+      trimmed.startsWith("//")
+    ) {
+      continue;
+    }
+
+    if (/^012\s+/.test(trimmed)) {
+      const parsedName = trimmed.slice(4).trim();
+      if (parsedName) {
+        tName = parsedName;
+      }
+      continue;
+    }
+
+    if (/^XXR\s+/i.test(trimmed)) {
+      const r = parseInt(trimmed.slice(4).trim(), 10);
+      if (Number.isInteger(r) && r >= 1 && r <= 30) {
+        xxrRounds = r;
+      }
+      continue;
+    }
+
+    if (/^XXC\s+/i.test(trimmed)) {
+      const val = trimmed.slice(4).trim().toUpperCase();
+      if (val.startsWith("B")) {
+        initialColor = "B";
+      } else if (val.startsWith("W")) {
+        initialColor = "W";
+      }
+      continue;
+    }
+
+    if (/^XXS\s+/i.test(trimmed)) {
+      const wMatch = trimmed.match(/\b(?:WW|W)=([0-9.]+)/i);
+      const dMatch = trimmed.match(/\b(?:WD|D)=([0-9.]+)/i);
+      const lMatch = trimmed.match(/\b(?:WL|L)=([0-9.]+)/i);
+      if (wMatch) winPoints = Number(wMatch[1]);
+      if (dMatch) drawPoints = Number(dMatch[1]);
+      if (lMatch) lossPoints = Number(lMatch[1]);
+      continue;
+    }
+
+    if (!/^001\s/.test(line)) {
+      continue;
+    }
+
+    const parsedTpn = parseInt(line.slice(4, 8).trim(), 10);
+    const title = line.slice(10, 13).trim().toUpperCase();
+    const name = line.slice(14, 47).trim() || `Player ${rawPlayers.length + 1}`;
+    const importedRating = Number(line.slice(48, 52).trim());
+    const rating =
+      Number.isFinite(importedRating) && importedRating > 0
+        ? importedRating
+        : 1500;
+
+    // Parse round slots starting at index 89 (10 chars per round: "  0000 c r")
+    const roundSlots = [];
+    if (line.length > 89) {
+      const maxSlots = Math.ceil((line.length - 89) / 10);
+      for (let r = 0; r < maxSlots; r++) {
+        const base = 89 + r * 10;
+        const slot = line.slice(base, base + 10);
+        if (!slot.trim()) {
+          roundSlots.push(null);
+          continue;
+        }
+        const oppTpn = parseInt(line.slice(base + 2, base + 6).trim(), 10) || 0;
+        const color = line.slice(base + 7, base + 8).trim().toLowerCase();
+        const res = line.slice(base + 9, base + 10).trim();
+        roundSlots.push({ oppTpn, color, res });
+      }
+    }
+
+    // Trim trailing empty slots
+    while (
+      roundSlots.length > 0 &&
+      roundSlots[roundSlots.length - 1] === null
+    ) {
+      roundSlots.pop();
+    }
+
+    rawPlayers.push({
+      tpn: Number.isInteger(parsedTpn) && parsedTpn > 0 ? parsedTpn : null,
+      title,
+      name,
+      rating,
+      roundSlots
+    });
+  }
+
+  if (!rawPlayers.length) {
+    throw new Error("No valid 001 player records were found in the TRF file.");
+  }
+
+  // Assign/preserve TPNs
+  const usedTpns = new Set();
+  let nextTpn = 1;
+  const players = rawPlayers.map(raw => {
+    let tpn = raw.tpn;
+    if (!tpn || usedTpns.has(tpn)) {
+      while (usedTpns.has(nextTpn)) nextTpn++;
+      tpn = nextTpn;
+    }
+    usedTpns.add(tpn);
+    return {
+      ...makePlayer(raw.name, raw.rating, raw.title),
+      tpn,
+      _roundSlots: raw.roundSlots
+    };
+  });
+
+  players.sort((a, b) => a.tpn - b.tpn);
+  const playerByTpn = new Map(players.map(p => [p.tpn, p]));
+
+  const completedRoundsCount = players.reduce(
+    (max, p) => Math.max(max, p._roundSlots.length),
+    0
+  );
+
+  const rounds = [];
+
+  for (let r = 0; r < completedRoundsCount; r++) {
+    const pairings = [];
+    const processed = new Set();
+
+    for (const p of players) {
+      if (processed.has(p.tpn)) {
+        continue;
+      }
+
+      const entry = p._roundSlots[r] || null;
+
+      // Missing slot or no opponent -> PAB or unplayed round
+      if (!entry || entry.oppTpn === 0) {
+        processed.add(p.tpn);
+        const code = entry ? entry.res.toUpperCase() : "Z";
+
+        if (code === "U") {
+          pairings.push({
+            kind: "pab",
+            board: null,
+            pabId: p.id,
+            result: "AUTO",
+            awardedPoints: winPoints
+          });
+        } else if (code === "F" || code === "+" || code === "1") {
+          pairings.push({
+            kind: "unplayed",
+            board: null,
+            unplayedId: p.id,
+            result: "AUTO",
+            awardedPoints: winPoints,
+            label: "unplayed-win"
+          });
+        } else if (code === "H" || code === "=" || code === "D") {
+          pairings.push({
+            kind: "unplayed",
+            board: null,
+            unplayedId: p.id,
+            result: "AUTO",
+            awardedPoints: drawPoints,
+            label: "unplayed-draw"
+          });
+        } else {
+          pairings.push({
+            kind: "unplayed",
+            board: null,
+            unplayedId: p.id,
+            result: "AUTO",
+            awardedPoints: lossPoints,
+            label: "unplayed-zero"
+          });
+        }
+        continue;
+      }
+
+      const opp = playerByTpn.get(entry.oppTpn);
+      if (!opp) {
+        throw new Error(
+          `Round ${r + 1}: TPN ${p.tpn} references unknown opponent TPN ${entry.oppTpn}.`
+        );
+      }
+
+      const oppEntry = opp._roundSlots[r] || null;
+
+      let white = p;
+      let black = opp;
+      let whiteRes = entry.res;
+      let blackRes = oppEntry ? oppEntry.res : "";
+
+      if (entry.color === "b" || (entry.color !== "w" && oppEntry && oppEntry.color === "w")) {
+        white = opp;
+        black = p;
+        whiteRes = oppEntry ? oppEntry.res : "";
+        blackRes = entry.res;
+      }
+
+      const wCode = String(whiteRes || "").toUpperCase();
+      const bCode = String(blackRes || "").toUpperCase();
+
+      let result;
+      if (wCode === "1" || wCode === "W" || bCode === "0" || bCode === "L") {
+        result = "1-0";
+      } else if (wCode === "0" || wCode === "L" || bCode === "1" || bCode === "W") {
+        result = "0-1";
+      } else if (wCode === "=" || wCode === "D" || bCode === "=" || bCode === "D") {
+        result = "½-½";
+      } else if (wCode === "+" && bCode !== "+") {
+        result = "1-0F";
+      } else if (bCode === "+" && wCode !== "+") {
+        result = "0-1F";
+      } else if (wCode === "-" && bCode === "-") {
+        result = "0-0F";
+      } else {
+        throw new Error(
+          `Round ${r + 1}: Unsupported result codes ("${wCode}" / "${bCode}") between TPN ${white.tpn} and TPN ${black.tpn}.`
+        );
+      }
+
+      pairings.push({
+        kind: "game",
+        board: 0,
+        whiteId: white.id,
+        blackId: black.id,
+        result
+      });
+
+      processed.add(p.tpn);
+      processed.add(opp.tpn);
+    }
+
+    // Number game boards sequentially
+    let boardNum = 1;
+    for (const rec of pairings) {
+      if (rec.kind === "game") {
+        rec.board = boardNum++;
+      }
+    }
+
+    rounds.push({
+      roundNumber: r + 1,
+      pairings,
+      audit: null
+    });
+  }
+
+  for (const p of players) {
+    delete p._roundSlots;
+  }
+
+  const totalRounds = xxrRounds
+    ? Math.max(xxrRounds, completedRoundsCount)
+    : Math.max(1, completedRoundsCount || 5);
+
+  const data = {
+    ...emptyTournament(),
+    name: tName,
+    totalRounds,
+    initialColor,
+    winPoints,
+    drawPoints,
+    lossPoints,
+    pabPoints: winPoints,
+    settingsFrozen: completedRoundsCount > 0,
+    listClosed: completedRoundsCount > 0,
+    highestPairedRound: completedRoundsCount,
+    currentRound: completedRoundsCount,
+    players,
+    rounds
+  };
+
+  return normalizeTournament(data);
+}
+
 async function loadTournamentFile(
   event
 ) {
@@ -5743,27 +6047,29 @@ async function loadTournamentFile(
     const text =
       await file.text();
 
-    const data =
-      JSON.parse(text);
+    let loaded;
+    const trimmed = text.replace(/^\uFEFF/, "").trimStart();
 
-    if (
-      !data ||
-      !Array.isArray(data.players)
-    ) {
+    if (trimmed.startsWith("{")) {
+      const data = JSON.parse(text);
+      loaded = normalizeTournament(data);
+    } else if (looksLikeTRF(text)) {
+      loaded = parseTRFTournament(text);
+    } else {
       throw new Error(
-        "Invalid tournament JSON file."
+        "Unrecognized file format. Expected a tournament JSON or FIDE TRF file."
       );
     }
 
-    tournament =
-      normalizeTournament(data);
+    tournament = loaded;
 
     rebuildState();
     renderAll();
     autoSave();
 
     message(
-      "Tournament file loaded successfully.",
+      `Tournament loaded successfully (${tournament.players.length} players, ` +
+      `${tournament.rounds.length} completed round(s)).`,
       "success"
     );
   } catch (error) {
@@ -6045,6 +6351,40 @@ function parsePlayersText(text) {
   return list;
 }
 
+function tryLoadFullTRFFromImport(text) {
+  if (!looksLikeTRF(text)) {
+    return false;
+  }
+
+  const parsed = parseTRFTournament(text);
+  if (parsed.rounds.length === 0) {
+    return false;
+  }
+
+  if (
+    tournament.players.length > 0 &&
+    !confirm(
+      `This TRF contains ${parsed.rounds.length} completed round(s) and ` +
+      `${parsed.players.length} players. Load the entire tournament ` +
+      `(replacing the current one)?`
+    )
+  ) {
+    return false;
+  }
+
+  tournament = parsed;
+  rebuildState();
+  renderAll();
+  autoSave();
+
+  message(
+    `TRF tournament loaded (${tournament.players.length} players, ` +
+    `${tournament.rounds.length} completed round(s)).`,
+    "success"
+  );
+  return true;
+}
+
 async function loadPlayersFile(
   event
 ) {
@@ -6062,6 +6402,10 @@ async function loadPlayersFile(
 
     const text =
       await file.text();
+
+    if (tryLoadFullTRFFromImport(text)) {
+      return;
+    }
 
     const list =
       parsePlayersText(text);
@@ -6084,12 +6428,20 @@ async function loadPlayersFile(
 
 function importPastedPlayers() {
   guarded(() => {
+    requireIdle(true);
+
     const text =
       $("pasteText")
         .value
         .trim();
 
     if (!text) {
+      return;
+    }
+
+    if (tryLoadFullTRFFromImport(text)) {
+      $("pasteText").value = "";
+      $("pasteDialog").close();
       return;
     }
 
