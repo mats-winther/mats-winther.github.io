@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description"
-      content="Experimental browser-based FIDE Dutch pairing system with Buchholz and Sonneborn-Berger calculations.">
+      content="Experimental browser-based Dutch pairing system with Buchholz and Sonneborn-Berger calculations.">
 <meta name="author" content="Mats Winther">
 <link
   rel="canonical"
   href="https://mats-winther.github.io/fide-dutch.htm"
 >
 
-<title>Experimental FIDE Dutch Pairing System</title>
+<title>Experimental Dutch Pairing System</title>
 
 <style>
 :root {
@@ -273,7 +273,7 @@ a { color:var(--blue); }
 
 <header>
   <div>
-    <h1>Experimental FIDE Dutch Pairing System</h1>
+    <h1>Experimental Dutch Pairing System</h1>
     <div class="subtitle">
       2026 rules · strict reference search · not FIDE-endorsed
     </div>
@@ -335,7 +335,7 @@ a { color:var(--blue); }
 
       <div class="grid">
         <label>Tournament name
-          <input id="tName" value="FIDE Swiss Open 2026">
+          <input id="tName" value="Swiss Open 2026">
         </label>
 
         <label>Number of rounds
@@ -653,7 +653,7 @@ a { color:var(--blue); }
       </a>
     </li>
   </ul>
-  <p class="small-note">FIDE Dutch Pairing System was developed by Mats Winther in September 2026.<br>&nbsp;</p>
+  <p class="small-note">The Dutch Pairing System was developed by Mats Winther in September 2026.<br>&nbsp;</p>
 
   <button onclick="document.getElementById('aboutDialog').close()">
     Close
@@ -3659,7 +3659,7 @@ function emptyTournament() {
   return {
     formatVersion:4,
     engineVersion:Core.VERSION,
-    name:"FIDE Swiss Open 2026",
+    name:"Swiss Open 2026",
     totalRounds:5,
     initialColor:"W",
     winPoints:1,
@@ -6288,7 +6288,7 @@ window.addEventListener("beforeprint", () => {
 });
 
 /* ============================================================
-   TRF Export for FIDE Dutch System
+   TRF Export for Dutch System
    ============================================================ */
 
 function formatPlayerName(name) {
@@ -6323,7 +6323,7 @@ function generateTRF() {
     .replace(/[\r\n]+/g, ' ')
     .trim();
 
-  lines.push(`012 ${tName || 'FIDE Dutch Tournament'}`);
+  lines.push(`012 ${tName || 'Dutch Tournament'}`);
   lines.push('022 (City)');
   lines.push('032 (Federation)');
   lines.push('102 (Chief Arbiter)');

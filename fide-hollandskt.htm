@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description"
-      content="Experimentellt webbläsarbaserat lottningsprogram för FIDE:s holländska system med beräkning av Buchholz och Sonneborn-Berger.">
+      content="Experimentellt webbläsarbaserat lottningsprogram för det holländska systemet (Dutch) med beräkning av Buchholz och Sonneborn-Berger.">
 <meta name="author" content="Mats Winther">
 <link rel="canonical" href="https://mats-winther.github.io/fide-hollandskt.htm">
-<title>Experimentellt lottningsprogram för FIDE:s holländska system</title>
+<title>Experimentellt lottningsprogram för de holländska systemet (Dutch)</title>
 
 <style>
 :root {
@@ -228,7 +228,7 @@ a { color:var(--blue); }
 <body data-tab="setup">
 <header>
   <div>
-    <h1>Experimentellt lottningsprogram för FIDE:s holländska system</h1>
+    <h1>Experimentellt lottningsprogram för det holländska systemet (Dutch)</h1>
     <div class="subtitle">
       2026 års regler · strikt referenssökning · Ej FIDE-godkänd
     </div>
@@ -277,7 +277,7 @@ a { color:var(--blue); }
       <h2>Turneringsinställningar</h2>
       <div class="grid">
         <label>Turneringens namn
-          <input id="tName" value="FIDE öppen schweizerturnering 2026">
+          <input id="tName" value="Öppen schweizerturnering 2026">
         </label>
         <label>Antal ronder
           <input id="tRounds" type="number" min="1" max="30" value="5">
@@ -549,7 +549,7 @@ a { color:var(--blue); }
          target="_blank" rel="noopener">Schacklottning: en genomgång av Monrad, Schweizer och Berger</a>
     </li>
   </ul>
-  <p class="small-note">FIDE Holländskt-lottningsprogram utvecklades av Mats Winther i september 2026.<br>&nbsp;
+  <p class="small-note">Holländskt-lottningsprogram (Dutch) utvecklades av Mats Winther i september 2026.<br>&nbsp;
   </p>
 
   <button onclick="document.getElementById('aboutDialog').close()">Stäng</button>
@@ -3542,7 +3542,7 @@ function emptyTournament() {
   return {
     formatVersion:4,
     engineVersion:Core.VERSION,
-    name:"FIDE öppen schweizerturnering 2026",
+    name:"Öppen schweizerturnering 2026",
     totalRounds:5,
     initialColor:"W",
     winPoints:1,
@@ -5433,7 +5433,7 @@ window.addEventListener("beforeprint", () => {
 });
 
 /* ============================================================
-   TRF Export for FIDE Dutch System
+   TRF Export for Dutch System
    ============================================================ */
 
 function formatPlayerName(name) {
@@ -5468,7 +5468,7 @@ function generateTRF() {
     .replace(/[\r\n]+/g, ' ')
     .trim();
 
-  lines.push(`012 ${tName || 'FIDE Dutch Tournament'}`);
+  lines.push(`012 ${tName || 'Dutch Tournament'}`);
   lines.push('022 (City)');
   lines.push('032 (Federation)');
   lines.push('102 (Chief Arbiter)');
