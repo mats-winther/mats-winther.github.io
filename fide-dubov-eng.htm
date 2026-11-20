@@ -2528,6 +2528,13 @@ function Dubov2026Core() {
               players[a].tpn
           );
 
+      if (eligible.length === 0) {
+        throw fault(
+          "NO_LEGAL_COMPLETION",
+          "No player is eligible for a Pairing-Allocated Bye satisfying [C2]."
+        );
+      }
+
       for (
         const candidate of
         eligible

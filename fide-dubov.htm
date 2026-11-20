@@ -2536,6 +2536,13 @@ function calculateARO(
               players[a].tpn
           );
 
+      if (eligible.length === 0) {
+        throw fault(
+          "NO_LEGAL_COMPLETION",
+          "Ingen spelare är berättigad till en lottad frirond som uppfyller [C2]."
+        );
+      }
+
       for (
         const candidate of
         eligible
