@@ -65,23 +65,24 @@ main {
 .between { justify-content:space-between; }
 .grid {
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  gap:.8rem;
+  grid-template-columns:repeat(auto-fit,minmax(145px,1fr));
+  gap:.65rem;
 }
 label {
   display:block;
-  font-size:.84rem;
+  font-size:.82rem;
   font-weight:600;
 }
 input,select,textarea,button { font:inherit; }
 input,select,textarea {
   width:100%;
-  margin-top:.25rem;
-  padding:.48rem .6rem;
+  margin-top:.2rem;
+  padding:.35rem .5rem;
   border:1px solid var(--border);
   border-radius:5px;
   background:white;
   color:var(--text);
+  font-size:.88rem;
 }
 textarea {
   min-height:200px;
@@ -417,6 +418,14 @@ a { color:var(--accent); }
                  min="0"
                  step="0.5"
                  value="1">
+        </label>
+
+        <label title="Baku-accelerering enligt FIDE C.04.7 (kräver vinst = 2 × remi, förlust = 0)">
+          Baku-accelerering
+          <select id="tBaku">
+            <option value="0" selected>Av</option>
+            <option value="1">På</option>
+          </select>
         </label>
       </div>
 
@@ -794,12 +803,15 @@ Spelarlistor kan importeras via fil (.txt, .csv, .trf) eller klistras in direkt.
 
 <p>Innan den slutliga inlämningen måste tävlingsledaren ange varje spelares FIDE-ID, födelsedatum och federationskod. Om dessa uppgifter inte har lagts till med knappen Komplettera/redigera TRF kommer den exporterade TRF-filen endast att innehålla spelarnas namn, turneringens namn och turneringsresultaten. Alla övriga obligatoriska fält markeras med platshållare och kan enkelt ersättas i en textredigerare.</p>
 
-<p class="small-note">Denna applikation stöder inte efteranmälningar, accelererad lottning eller hängpartier. De inbyggda testerna är 
-    regressionstester för utvecklare, inte FIDE:s officiella godkännandesvit.</p>
+<p><strong>Baku-accelerering:</strong>
+Valfri Baku-accelerering (FIDE Handbook C.04.7, gällande från februari 2026) kan aktiveras genom att sätta <strong>Baku-accelerering</strong> till <strong>På</strong> (standardvärde <strong>Av</strong> = av). Före rond 1 delas spelarna in i en övre grupp <strong>GA</strong> (den övre halvan, avrundad uppåt till närmaste jämna antal) och en nedre grupp <strong>GB</strong>. Under den första halvan av turneringen (avrundad uppåt) får spelarna i GA virtuella poäng: fullt värde under den första halvan av de accelererade ronderna (avrundad uppåt) och halvt värde under återstående accelererade ronder. Detta minskar obalanserade möten i de tidiga ronderna i turneringar med stor ratingspridning. Virtuella poäng påverkar endast poäng för lottning och bordsordning, aldrig den faktiska ställningen, särskiljning eller TRF-exporter. Enligt FIDE:s regler är Baku-accelerering endast tillgänglig när en vinst är värd två remier och en förlust ger noll poäng (inaktiverad för poängsystemet 3 / 1 / 0).</p>
+
+<p class="small-note">Denna applikation stöder inte efteranmälningar eller hängpartier. Stöd finns för valfri Baku-accelerering enligt FIDE C.04.7 (med undantag för efteranmälningar). De inbyggda testerna är regressionstester för utvecklare, inte FIDE:s officiella godkännandesvit.</p>
   <ul style=padding-left:70px;>
     <li><a href="https://handbook.fide.com/chapter/C040401202602" target="_blank" rel="noopener">Dubov-regler</a></li>
     <li><a href="https://handbook.fide.com/chapter/GeneralHandlingRulesForSwissTournaments202602" target="_blank" rel="noopener">Allmänna hanteringsregler</a></li>
     <li><a href="https://handbook.fide.com/chapter/TieBreakRegulations032026" target="_blank" rel="noopener">Särskiljningsreglemente</a></li>
+    <li><a href="https://handbook.fide.com/chapter/C0407202602" target="_blank" rel="noopener">FIDE-godkända accelererade lottningssystem</a></li>
     <li><a href="https://mats-winther.github.io/bg/schacklottning.htm" target="_blank" rel="noopener">Schacklottning: en genomgång av Monrad, Schweizer och Berger</a></li>
   </ul>
   <p class="small-note">Dubov-lottningssystem utvecklades av Mats Winther i september 2026.<br>&nbsp;
@@ -4826,6 +4838,51 @@ function calculateARO(
       }
     );
 
+    test(
+      "Baku acceleration Round 1 (16 players: GA 1–8 and GB 9–16)",
+      () => {
+        const players = Array.from(
+          { length:16 },
+          (_, index) => ({
+            id:"B" + (index + 1),
+            tpn:index + 1,
+            name:"Player " + (index + 1),
+            rating:2600 - index * 15,
+            score:index < 8 ? 1 : 0,
+            opponents:[],
+            playedOpponents:[],
+            playedColors:[],
+            floats:[],
+            hadPAB:false,
+            hadUnplayedWin:false
+          })
+        );
+
+        const result = solve(
+          {
+            roundNumber:1,
+            totalRounds:9,
+            winPoints:1,
+            initialColor:"W",
+            players
+          },
+          { seconds:5 }
+        );
+
+        check(result.pairs.length === 8, "Expected 8 boards");
+        check(
+          result.pairs[0].whiteId === "B1" &&
+          result.pairs[0].blackId === "B5",
+          "Expected Board 1: B1 White vs B5 Black"
+        );
+        check(
+          result.pairs[4].whiteId === "B9" &&
+          result.pairs[4].blackId === "B13",
+          "Expected Board 5: B9 White vs B13 Black"
+        );
+      }
+    );
+
     return {
       passed:passed.length,
       tests:passed
@@ -4915,6 +4972,8 @@ function emptyTournament() {
     drawPoints:0.5,
     lossPoints:0,
     pabPoints:1,
+    bakuPoints:0,
+    bakuLastGaTpn:0,
     trfCity:"",
     trfFederation:"",
     trfChiefArbiter:"",
@@ -5026,9 +5085,11 @@ function normalizeTournament(data) {
   normalized.trfCity = String(data.trfCity || "").trim();
   normalized.trfFederation = String(data.trfFederation || "").trim();
   normalized.trfChiefArbiter = String(data.trfChiefArbiter || "").trim();
-
-  normalized.engineVersion =
-    Core.VERSION;
+  normalized.bakuPoints = Number(data.bakuPoints) > 0 ? 1 : 0;
+  const rawGaTpn = Number(data.bakuLastGaTpn || 0);
+  normalized.bakuLastGaTpn =
+    Number.isInteger(rawGaTpn) && rawGaTpn > 0 ? rawGaTpn : 0;
+  normalized.engineVersion = Core.VERSION;
 
   return normalized;
 }
@@ -5227,6 +5288,71 @@ function tournamentComplete(
     target.activePairings.length ===
       0
   );
+}
+
+function bakuAllowedForScoring(target = tournament) {
+  return (
+    target.winPoints === 2 * target.drawPoints &&
+    target.lossPoints === 0
+  );
+}
+
+function bakuVirtualPointsForRound(roundNumber, target = tournament) {
+  if (!target.bakuPoints || !bakuAllowedForScoring(target)) {
+    return 0;
+  }
+  const acceleratedRounds = Math.ceil(target.totalRounds / 2);
+  if (roundNumber > acceleratedRounds) {
+    return 0;
+  }
+  const fullRounds = Math.ceil(acceleratedRounds / 2);
+  return roundNumber <= fullRounds
+    ? target.winPoints
+    : target.winPoints / 2;
+}
+
+function computeBakuLastGaTpn(playersList) {
+  if (!playersList.length) {
+    return 0;
+  }
+  const sorted = [...playersList].sort((a, b) => a.tpn - b.tpn);
+  const gaCount = Math.min(
+    2 * Math.ceil(sorted.length / 4),
+    sorted.length
+  );
+  return sorted[gaCount - 1].tpn;
+}
+
+function preparePairingPlayers(toPair, roundNumber) {
+  const virtualPoints = bakuVirtualPointsForRound(roundNumber);
+  const lastGaTpn =
+    virtualPoints > 0
+      ? (
+          roundNumber === 1 || !tournament.bakuLastGaTpn
+            ? computeBakuLastGaTpn(
+                roundNumber === 1 ? toPair : tournament.players
+              )
+            : tournament.bakuLastGaTpn
+        )
+      : 0;
+
+  const cloned = JSON.parse(JSON.stringify(toPair));
+
+  if (virtualPoints > 0 && lastGaTpn > 0) {
+    for (const player of cloned) {
+      if (player.tpn <= lastGaTpn) {
+        player.score += virtualPoints;
+      }
+    }
+  }
+
+  return {
+    players: cloned,
+    bakuInfo:
+      virtualPoints > 0 && lastGaTpn > 0
+        ? { virtualPoints, lastGaTpn }
+        : null
+  };
 }
 
 /* ========================================================================== */
@@ -6843,6 +6969,17 @@ function generateRound() {
       );
     }
 
+    if (
+      tournament.bakuPoints &&
+      !bakuAllowedForScoring()
+    ) {
+      throw new Error(
+        "Baku-accelerering kan endast användas med poängsystem där en vinst är värd två remier och en förlust ger noll poäng (FIDE C.04.7 art. 1.1)."
+      );
+    }
+
+    const prepared = preparePairingPlayers(toPair, roundNumber);
+
     const input = {
       roundNumber,
       totalRounds:
@@ -6852,9 +6989,7 @@ function generateRound() {
       initialColor:
         tournament.initialColor,
       players:
-        JSON.parse(
-          JSON.stringify(toPair)
-        ),
+        prepared.players,
       ratingById:
         Object.fromEntries(
           tournament.players.map(
@@ -6937,11 +7072,7 @@ function generateRound() {
             event.data.type ===
             "done"
           ) {
-            commitRound(
-              event.data.result,
-              roundNumber,
-              scheduled
-            );
+	  commitRound(event.data.result, roundNumber, scheduled, prepared.bakuInfo);
           } else {
             $("pairButton").disabled =
               false;
@@ -6995,11 +7126,7 @@ function generateRound() {
           { seconds:30 }
         );
 
-      commitRound(
-        result,
-        roundNumber,
-        scheduled
-      );
+      commitRound(result, roundNumber, scheduled, prepared.bakuInfo);
     }
   });
 }
@@ -7027,7 +7154,8 @@ function cancelSearch() {
 function commitRound(
   result,
   roundNumber,
-  scheduled
+  scheduled,
+  bakuInfo = null
 ) {
   const records =
     result.pairs.map(
@@ -7087,9 +7215,14 @@ function commitRound(
       ? [...result.upfloaterIds]
       : [];
 
+  if (roundNumber === 1 && bakuInfo) {
+    tournament.bakuLastGaTpn = bakuInfo.lastGaTpn;
+  }
+
   tournament.activeAudit = {
     engineVersion:
       result.engineVersion,
+    baku:bakuInfo,
     stats:result.stats,
     brackets:result.trace
   };
@@ -7256,12 +7389,14 @@ function runNextEmulatedRound(tally) {
     player => player.nextRoundStatus !== "pair"
   );
 
+  const prepared = preparePairingPlayers(toPair, roundNumber);
+
   const input = {
     roundNumber,
     totalRounds:tournament.totalRounds,
     winPoints:tournament.winPoints,
     initialColor:tournament.initialColor,
-    players:JSON.parse(JSON.stringify(toPair)),
+    players:prepared.players,
     ratingById:Object.fromEntries(
       tournament.players.map(
         player => [player.id, player.rating]
@@ -7270,7 +7405,7 @@ function runNextEmulatedRound(tally) {
   };
 
   const finishRound = result => {
-    commitRound(result, roundNumber, scheduled);
+    commitRound(result, roundNumber, scheduled, prepared.bakuInfo);
     assignEmulatedResults(tally);
     finalizeActiveRound();
     runNextEmulatedRound(tally);
@@ -7446,6 +7581,9 @@ function renderSettings() {
   $("tPab").value =
     tournament.pabPoints;
 
+  $("tBaku").value =
+    tournament.bakuPoints ? "1" : "0";
+
   $("listStatus").textContent =
     tournament.listClosed
       ? "Anmälan stängd."
@@ -7570,9 +7708,17 @@ function renderPairings() {
         ? "Turneringen är avslutad"
         : `Nästa rond: ${tournament.rounds.length + 1}`;
 
+  const bakuAudit = tournament.activeAudit && tournament.activeAudit.baku;
   $("roundProvenance").textContent =
     active
-      ? "Lottning genererad enligt FIDE Handbook C.04.4.1."
+      ? (
+          "Lottning genererad enligt FIDE Handbook C.04.4.1" +
+          (
+            bakuAudit
+              ? ` (Baku-accelerering: +${bakuAudit.virtualPoints} virtuella poäng för GA, TPN 1–${bakuAudit.lastGaTpn}).`
+              : "."
+          )
+        )
       : "Ingen aktiv rond pågår just nu.";
 
   const games = [];
@@ -7968,6 +8114,10 @@ function updateControls() {
 
   $("tPab").disabled =
     tournament.settingsFrozen;
+
+  $("tBaku").disabled =
+    tournament.settingsFrozen ||
+    !bakuAllowedForScoring();
 
   $("sampleButton").disabled =
     tournamentStarted();
@@ -8683,6 +8833,23 @@ function saveTRF() {
       $("tPab").value =
         win;
 
+      if (!bakuAllowedForScoring()) {
+        tournament.bakuPoints = 0;
+        $("tBaku").value = "0";
+      }
+      updateControls();
+      autoSave();
+    }
+  );
+
+  $("tBaku").addEventListener(
+    "change",
+    event => {
+      tournament.bakuPoints =
+        event.target.value === "1" && bakuAllowedForScoring()
+          ? 1
+          : 0;
+      $("tBaku").value = String(tournament.bakuPoints);
       autoSave();
     }
   );

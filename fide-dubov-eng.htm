@@ -65,23 +65,24 @@ main {
 .between { justify-content:space-between; }
 .grid {
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  gap:.8rem;
+  grid-template-columns:repeat(auto-fit,minmax(145px,1fr));
+  gap:.65rem;
 }
 label {
   display:block;
-  font-size:.84rem;
+  font-size:.82rem;
   font-weight:600;
 }
 input,select,textarea,button { font:inherit; }
 input,select,textarea {
   width:100%;
-  margin-top:.25rem;
-  padding:.48rem .6rem;
+  margin-top:.2rem;
+  padding:.35rem .5rem;
   border:1px solid var(--border);
   border-radius:5px;
   background:white;
   color:var(--text);
+  font-size:.88rem;
 }
 textarea {
   min-height:200px;
@@ -417,6 +418,13 @@ a { color:var(--accent); }
                  min="0"
                  step="0.5"
                  value="1">
+        </label>
+        <label title="FIDE C.04.7 Baku acceleration (requires win = 2 × draw, loss = 0)">
+          Baku acceleration
+          <select id="tBaku">
+            <option value="0" selected>Off</option>
+            <option value="1">On</option>
+          </select>
         </label>
       </div>
 
@@ -791,11 +799,15 @@ Player lists can be imported via file (.txt, .csv, .trf) or pasted directly. Lin
 <p><strong>Pairing Search &amp; Export: </strong> 
 Pairings are calculated in a background Web Worker with a strict timeout setting. The maximum number of simulator rounds is 30, but the simulator will stop early if the pairing engine can no longer find a legal round under FIDE rules. Once all tournament rounds have been completed, the <strong>Save TRF File</strong> button becomes available. Before final submission, the tournament director must enter each player's FIDE ID, date of birth, and federation code. If this information has not been added using the <strong>Complete/Edit TRF</strong> button, the exported TRF file will contain only the player names, tournament name, and tournament results. All other required fields will be marked with placeholders and can be easily replaced in a text editor.</p>
 
-<p class="small-note">This application does not support late entries, accelerated pairings, or adjourned games. The built-in tests are developer regression tests, not the official FIDE endorsement suite.</p>
+<p><strong>Baku Acceleration:</strong>
+Optional Baku Acceleration (FIDE Handbook C.04.7, effective February 2026) can be enabled by setting <strong>Baku acceleration</strong> to <strong>On</strong> (default <strong>Off</strong>). Before Round 1, players are split into an upper group <strong>GA</strong> (the top half, rounded up to the nearest even number) and a lower group <strong>GB</strong>. During the first half of the tournament (rounded up), players in GA receive virtual points equal to a win in the first half of the accelerated rounds (rounded up) and half a win in the remaining accelerated rounds. This reduces one-sided early-round mismatches in tournaments with wide rating spreads. Virtual points affect only pairing scores and board order, never actual standings, tie-breaks, or TRF exports. Per FIDE rules, Baku acceleration is only available when a win equals two draws and a loss is zero (disabled for 3 / 1 / 0 scoring).</p>
+
+<p class="small-note">This application does not support late entries or adjourned games. Optional Baku acceleration (FIDE C.04.7, excluding late entries) is supported. The built-in tests are developer regression tests, not the official FIDE endorsement suite.</p>
   <ul style=padding-left:70px;>
     <li><a href="https://handbook.fide.com/chapter/C040401202602" target="_blank" rel="noopener">Dubov rules</a></li>
     <li><a href="https://handbook.fide.com/chapter/GeneralHandlingRulesForSwissTournaments202602" target="_blank" rel="noopener">General handling rules</a></li>
     <li><a href="https://handbook.fide.com/chapter/TieBreakRegulations032026" target="_blank" rel="noopener">Tie-break regulations</a></li>
+    <li><a href="https://handbook.fide.com/chapter/C0407202602" target="_blank" rel="noopener">FIDE-approved accelerated systems</a></li>
     <li><a href="https://mats-winther.github.io/bg/chesspairing.htm" target="_blank" rel="noopener">Chess Pairings: A Review of Monrad, Swiss, and Berger</a></li>
   </ul>
   <p class="small-note">The Dubov Swiss Pairing System was developed by Mats Winther in September 2026.<br>&nbsp;
@@ -4779,6 +4791,51 @@ function Dubov2026Core() {
     );
 
     test(
+      "Baku acceleration Round 1 (16 players: GA 1–8 and GB 9–16)",
+      () => {
+        const players = Array.from(
+          { length:16 },
+          (_, index) => ({
+            id:"B" + (index + 1),
+            tpn:index + 1,
+            name:"Player " + (index + 1),
+            rating:2600 - index * 15,
+            score:index < 8 ? 1 : 0,
+            opponents:[],
+            playedOpponents:[],
+            playedColors:[],
+            floats:[],
+            hadPAB:false,
+            hadUnplayedWin:false
+          })
+        );
+
+        const result = solve(
+          {
+            roundNumber:1,
+            totalRounds:9,
+            winPoints:1,
+            initialColor:"W",
+            players
+          },
+          { seconds:5 }
+        );
+
+        check(result.pairs.length === 8, "Expected 8 boards");
+        check(
+          result.pairs[0].whiteId === "B1" &&
+          result.pairs[0].blackId === "B5",
+          "Expected Board 1: B1 White vs B5 Black"
+        );
+        check(
+          result.pairs[4].whiteId === "B9" &&
+          result.pairs[4].blackId === "B13",
+          "Expected Board 5: B9 White vs B13 Black"
+        );
+      }
+    );
+
+    test(
       "Zero rating is rejected",
       () => {
         let rejected = false;
@@ -4911,6 +4968,8 @@ function emptyTournament() {
     drawPoints:0.5,
     lossPoints:0,
     pabPoints:1,
+    bakuPoints:0,
+    bakuLastGaTpn:0,
     trfCity:"",
     trfFederation:"",
     trfChiefArbiter:"",
@@ -5023,6 +5082,10 @@ function normalizeTournament(data) {
   normalized.trfCity = String(data.trfCity || "").trim();
   normalized.trfFederation = String(data.trfFederation || "").trim();
   normalized.trfChiefArbiter = String(data.trfChiefArbiter || "").trim();
+  normalized.bakuPoints = Number(data.bakuPoints) > 0 ? 1 : 0;
+  const rawGaTpn = Number(data.bakuLastGaTpn || 0);
+  normalized.bakuLastGaTpn =
+    Number.isInteger(rawGaTpn) && rawGaTpn > 0 ? rawGaTpn : 0;
   normalized.engineVersion = Core.VERSION;
 
   return normalized;
@@ -5222,6 +5285,71 @@ function tournamentComplete(
     target.activePairings.length ===
       0
   );
+}
+
+function bakuAllowedForScoring(target = tournament) {
+  return (
+    target.winPoints === 2 * target.drawPoints &&
+    target.lossPoints === 0
+  );
+}
+
+function bakuVirtualPointsForRound(roundNumber, target = tournament) {
+  if (!target.bakuPoints || !bakuAllowedForScoring(target)) {
+    return 0;
+  }
+  const acceleratedRounds = Math.ceil(target.totalRounds / 2);
+  if (roundNumber > acceleratedRounds) {
+    return 0;
+  }
+  const fullRounds = Math.ceil(acceleratedRounds / 2);
+  return roundNumber <= fullRounds
+    ? target.winPoints
+    : target.winPoints / 2;
+}
+
+function computeBakuLastGaTpn(playersList) {
+  if (!playersList.length) {
+    return 0;
+  }
+  const sorted = [...playersList].sort((a, b) => a.tpn - b.tpn);
+  const gaCount = Math.min(
+    2 * Math.ceil(sorted.length / 4),
+    sorted.length
+  );
+  return sorted[gaCount - 1].tpn;
+}
+
+function preparePairingPlayers(toPair, roundNumber) {
+  const virtualPoints = bakuVirtualPointsForRound(roundNumber);
+  const lastGaTpn =
+    virtualPoints > 0
+      ? (
+          roundNumber === 1 || !tournament.bakuLastGaTpn
+            ? computeBakuLastGaTpn(
+                roundNumber === 1 ? toPair : tournament.players
+              )
+            : tournament.bakuLastGaTpn
+        )
+      : 0;
+
+  const cloned = JSON.parse(JSON.stringify(toPair));
+
+  if (virtualPoints > 0 && lastGaTpn > 0) {
+    for (const player of cloned) {
+      if (player.tpn <= lastGaTpn) {
+        player.score += virtualPoints;
+      }
+    }
+  }
+
+  return {
+    players: cloned,
+    bakuInfo:
+      virtualPoints > 0 && lastGaTpn > 0
+        ? { virtualPoints, lastGaTpn }
+        : null
+  };
 }
 
 /* ========================================================================== */
@@ -6838,6 +6966,17 @@ function generateRound() {
       );
     }
 
+    if (
+      tournament.bakuPoints &&
+      !bakuAllowedForScoring()
+    ) {
+      throw new Error(
+        "Baku acceleration requires scoring where win = 2 × draw and loss = 0 (FIDE C.04.7 Art. 1.1)."
+      );
+    }
+
+    const prepared = preparePairingPlayers(toPair, roundNumber);
+
     const input = {
       roundNumber,
       totalRounds:
@@ -6847,9 +6986,7 @@ function generateRound() {
       initialColor:
         tournament.initialColor,
       players:
-        JSON.parse(
-          JSON.stringify(toPair)
-        ),
+        prepared.players,
       ratingById:
         Object.fromEntries(
           tournament.players.map(
@@ -6932,11 +7069,7 @@ function generateRound() {
             event.data.type ===
             "done"
           ) {
-            commitRound(
-              event.data.result,
-              roundNumber,
-              scheduled
-            );
+          commitRound(event.data.result, roundNumber, scheduled, prepared.bakuInfo);
           } else {
             $("pairButton").disabled =
               false;
@@ -6990,11 +7123,7 @@ function generateRound() {
           { seconds:30 }
         );
 
-      commitRound(
-        result,
-        roundNumber,
-        scheduled
-      );
+    commitRound(result, roundNumber, scheduled, prepared.bakuInfo);
     }
   });
 }
@@ -7022,7 +7151,8 @@ function cancelSearch() {
 function commitRound(
   result,
   roundNumber,
-  scheduled
+  scheduled,
+  bakuInfo = null
 ) {
   const records =
     result.pairs.map(
@@ -7082,9 +7212,14 @@ function commitRound(
       ? [...result.upfloaterIds]
       : [];
 
+  if (roundNumber === 1 && bakuInfo) {
+    tournament.bakuLastGaTpn = bakuInfo.lastGaTpn;
+  }
+
   tournament.activeAudit = {
     engineVersion:
       result.engineVersion,
+    baku:bakuInfo,
     stats:result.stats,
     brackets:result.trace
   };
@@ -7251,12 +7386,14 @@ function runNextEmulatedRound(tally) {
     player => player.nextRoundStatus !== "pair"
   );
 
+  const prepared = preparePairingPlayers(toPair, roundNumber);
+
   const input = {
     roundNumber,
     totalRounds:tournament.totalRounds,
     winPoints:tournament.winPoints,
     initialColor:tournament.initialColor,
-    players:JSON.parse(JSON.stringify(toPair)),
+    players:prepared.players,
     ratingById:Object.fromEntries(
       tournament.players.map(
         player => [player.id, player.rating]
@@ -7265,7 +7402,7 @@ function runNextEmulatedRound(tally) {
   };
 
   const finishRound = result => {
-    commitRound(result, roundNumber, scheduled);
+    commitRound(result, roundNumber, scheduled, prepared.bakuInfo);
     assignEmulatedResults(tally);
     finalizeActiveRound();
     runNextEmulatedRound(tally);
@@ -7440,6 +7577,8 @@ function renderSettings() {
 
   $("tPab").value =
     tournament.pabPoints;
+  $("tBaku").value =
+    tournament.bakuPoints ? "1" : "0";
 
   $("listStatus").textContent =
     tournament.listClosed
@@ -7565,9 +7704,17 @@ function renderPairings() {
         ? "Tournament Complete"
         : `Next Round: ${tournament.rounds.length + 1}`;
 
+  const bakuAudit = tournament.activeAudit && tournament.activeAudit.baku;
   $("roundProvenance").textContent =
     active
-      ? "Pairings generated by this implementation of FIDE Handbook C.04.4.1."
+      ? (
+          "Pairings generated by this implementation of FIDE Handbook C.04.4.1" +
+          (
+            bakuAudit
+              ? ` (Baku acceleration: +${bakuAudit.virtualPoints} virtual pt(s) for GA, TPN 1–${bakuAudit.lastGaTpn}).`
+              : "."
+          )
+        )
       : "No round currently in progress.";
 
   const games = [];
@@ -7955,6 +8102,10 @@ $("pairButton").disabled =
 
   $("tPab").disabled =
     tournament.settingsFrozen;
+
+  $("tBaku").disabled =
+    tournament.settingsFrozen ||
+    !bakuAllowedForScoring();
 
   $("sampleButton").disabled =
     tournamentStarted();
@@ -8669,6 +8820,24 @@ function saveTRF() {
       $("tPab").value =
         win;
 
+      if (!bakuAllowedForScoring()) {
+        tournament.bakuPoints = 0;
+        $("tBaku").value = "0";
+      }
+
+      updateControls();
+      autoSave();
+    }
+  );
+
+  $("tBaku").addEventListener(
+    "change",
+    event => {
+      tournament.bakuPoints =
+        event.target.value === "1" && bakuAllowedForScoring()
+          ? 1
+          : 0;
+      $("tBaku").value = String(tournament.bakuPoints);
       autoSave();
     }
   );
