@@ -10,7 +10,7 @@
 >
 <meta name="description" content="A streamlined web tool for chess tournaments. Manage Burstein Swiss pairings, record results, and automatically track standings and color allocation.">
 
-<title>Experimental FIDE Burstein Pairing System</title>
+<title>Experimental Burstein Pairing System</title>
 
 <style>
 :root {
@@ -276,7 +276,7 @@ a { color:var(--blue); }
 
 <header>
   <div>
-   <h1>Experimental FIDE Burstein Pairing System</h1>
+   <h1>Experimental Burstein Pairing System</h1>
    <div class="subtitle">
      2026 rules · variable Dutch seeding · bounded Burstein search · not FIDE-endorsed
    </div>  
@@ -336,7 +336,7 @@ a { color:var(--blue); }
 
       <div class="grid">
         <label>Tournament name
-          <input id="tName" value="FIDE Burstein Open 2026">
+          <input id="tName" value="Burstein Open 2026">
         </label>
 
         <label>Number of rounds
@@ -566,7 +566,7 @@ a { color:var(--blue); }
   <h2>About this implementation</h2>
 
   <p>
-    Experimental implementation of the FIDE Burstein System effective February 1, 2026, 
+    Experimental implementation of the Burstein System effective February 1, 2026, 
     with embedded FIDE Dutch seeding. It is not FIDE-endorsed and must not be treated 
     as a certified pairing checker.
   </p>
@@ -671,7 +671,7 @@ a { color:var(--blue); }
   </ul>
 
   <p class="small-note">
-    The FIDE Burstein Pairing System was developed by Mats Winther in September 2026.<br>&nbsp;
+    The Burstein Pairing System was developed by Mats Winther in September 2026.<br>&nbsp;
   </p>
 
   <button onclick="document.getElementById('aboutDialog').close()">Close</button>
@@ -6114,7 +6114,7 @@ return {
     formatVersion:5,
     pairingSystem:"BURSTEIN_2026",
     engineVersion:Core.VERSION,
-    name:"FIDE Burstein Open 2026",
+    name:"Burstein Open 2026",
     totalRounds:5,
     initialColor:"W",
     winPoints:1,
@@ -8934,7 +8934,7 @@ window.addEventListener("beforeprint",() => {
 });
 
 /* ============================================================
-   TRF Export for FIDE Burstein System
+   TRF Export for Burstein System
    ============================================================ */
 
 function formatPlayerName(name) {
@@ -8969,7 +8969,7 @@ function generateTRF() {
     .replace(/[\r\n]+/g, ' ')
     .trim();
 
-  lines.push(`012 ${tName || 'FIDE Burstein Tournament'}`);
+  lines.push(`012 ${tName || 'Burstein Tournament'}`);
   lines.push('022 (City)');
   lines.push('032 (Federation)');
   lines.push('102 (Chief Arbiter)');

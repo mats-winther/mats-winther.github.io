@@ -7,7 +7,7 @@
 <link rel="canonical" href="https://mats-winther.github.io/fide-burstein-eng.htm">
 <meta name="description" content="Ett lättanvänt webbverktyg för schackturneringar. Hantera Bursteinlottning, registrera resultat och följ poängställning och färgfördelning automatiskt.">
 
-<title>Experimentellt FIDE Burstein-lottningssystem</title>
+<title>Experimentellt Burstein-lottningssystem</title>
 
 <style>
 :root {
@@ -271,7 +271,7 @@ a { color:var(--blue); }
 <body data-tab="setup">
 <header>
   <div>
-    <h1>Experimentellt FIDE Burstein-lottningssystem</h1>
+    <h1>Experimentellt Burstein-lottningssystem</h1>
     <div class="subtitle">
       2026 års regler · varierande antal inledningsronder enligt Dutch ·
       resursbegränsad Bursteinsökning · ej FIDE-godkänd
@@ -328,7 +328,7 @@ a { color:var(--blue); }
       <h2>Turneringsinställningar</h2>
       <div class="grid">
         <label>Turneringens namn
-          <input id="tName" value="FIDE Burstein Open 2026">
+          <input id="tName" value="Burstein Open 2026">
         </label>
         <label>Antal ronder
           <input id="tRounds" type="number" min="1" max="30" value="5">
@@ -656,7 +656,7 @@ a { color:var(--blue); }
   </ul>
 
   <p class="small-note">
-    FIDE Burstein-lottningsprogram utvecklades av Mats Winther i september 2026.<br>&nbsp;
+    Burstein-lottningsprogram utvecklades av Mats Winther i september 2026.<br>&nbsp;
   </p>
 
   <button onclick="document.getElementById('aboutDialog').close()">Stäng</button>
@@ -5155,7 +5155,7 @@ function emptyTournament() {
     formatVersion:5,
     pairingSystem:"BURSTEIN_2026",
     engineVersion:Core.VERSION,
-    name:"FIDE Burstein Open 2026",
+    name:"Burstein Open 2026",
     totalRounds:5,
     initialColor:"W",
     winPoints:1,
@@ -7376,7 +7376,7 @@ window.addEventListener("beforeprint",() => {
 });
 
 /* ============================================================
-   TRF Export for FIDE Burstein System
+   TRF Export for Burstein System
    ============================================================ */
 
 function formatPlayerName(name) {
@@ -7411,7 +7411,7 @@ function generateTRF() {
     .replace(/[\r\n]+/g, ' ')
     .trim();
 
-  lines.push(`012 ${tName || 'FIDE Burstein Tournament'}`);
+  lines.push(`012 ${tName || 'Burstein Tournament'}`);
   lines.push('022 (City)');
   lines.push('032 (Federation)');
   lines.push('102 (Chief Arbiter)');
