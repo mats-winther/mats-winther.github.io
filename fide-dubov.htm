@@ -7,7 +7,7 @@
       content="Dubov-lottning enligt FIDE Handbook C.04.4.1, direkt i webbläsaren.">
 <meta name="author" content="Mats Winther">
 <link rel="canonical" href="https://mats-winther.github.io/fide-dubov.htm">
-<title>FIDE Dubov-lottningssystem</title>
+<title>Dubov-lottningssystem</title>
 
 <style>
 :root {
@@ -302,7 +302,7 @@ a { color:var(--accent); }
 
 <header>
   <div>
-    <h1>FIDE Dubov-lottningssystem</h1>
+    <h1>Dubov-lottningssystem</h1>
     <div class="subtitle">
       FIDE C.04.4.1 (2026 års regler) · ARO-utjämning · Endast uppflyttningar (upfloaters) · Ej FIDE-godkänd
     </div>
@@ -334,7 +334,7 @@ a { color:var(--accent); }
 
 <main>
   <div id="printHeading" class="print-only">
-    <h2 id="printTitle">FIDE Dubov schweiziskt lottningssystem</h2>
+    <h2 id="printTitle">Dubov schweiziskt lottningssystem</h2>
     <p>Dubov schweiziskt lottningssystem</p>
   </div>
 
@@ -382,7 +382,7 @@ a { color:var(--accent); }
       <div class="grid">
         <label>
           Turneringens namn
-          <input id="tName" value="FIDE Dubov Open 2026">
+          <input id="tName" value="Dubov Open 2026">
         </label>
 
         <label>
@@ -610,7 +610,7 @@ a { color:var(--accent); }
 
   <section id="standings" class="tab">
     <div class="card">
-      <h2 id="scoreTournamentName">FIDE Dubov Open 2026</h2>
+      <h2 id="scoreTournamentName">Dubov Open 2026</h2>
       <h3 id="scoreTitle">Tabell &amp; resultat</h3>
 
       <div id="standingsNotice" class="notice no-print"></div>
@@ -802,7 +802,7 @@ Spelarlistor kan importeras via fil (.txt, .csv, .trf) eller klistras in direkt.
     <li><a href="https://handbook.fide.com/chapter/TieBreakRegulations032026" target="_blank" rel="noopener">Särskiljningsreglemente</a></li>
     <li><a href="https://mats-winther.github.io/bg/schacklottning.htm" target="_blank" rel="noopener">Schacklottning: en genomgång av Monrad, Schweizer och Berger</a></li>
   </ul>
-  <p class="small-note">FIDE Dubov-lottningssystem utvecklades av Mats Winther i september 2026.<br>&nbsp;
+  <p class="small-note">Dubov-lottningssystem utvecklades av Mats Winther i september 2026.<br>&nbsp;
   </p>
   <button onclick="document.getElementById('aboutDialog').close()">
     Stäng
@@ -4908,7 +4908,7 @@ function emptyTournament() {
   return {
     formatVersion:1,
     engineVersion:Core.VERSION,
-    name:"FIDE Dubov Open 2026",
+    name:"Dubov Open 2026",
     totalRounds:5,
     initialColor:"W",
     winPoints:1,
@@ -5948,7 +5948,7 @@ function parseTRFTournament(text) {
     .replace(/^\uFEFF/, "")
     .split(/\r?\n/);
 
-  let tName = "FIDE Dubov-turnering";
+  let tName = "Dubov-turnering";
   let trfCity = "";
   let trfFederation = "";
   let trfChiefArbiter = "";
@@ -8099,7 +8099,7 @@ function renderAll() {
 }
 
 /* ============================================================
-   TRF Export for FIDE Dubov Swiss System
+   TRF Export for Dubov Swiss System
    ============================================================ */
 
 function formatPlayerName(name) {
@@ -8257,7 +8257,7 @@ function generateTRF() {
     String(value || '').replace(/[\r\n]+/g, ' ').trim();
 
   // Tournament Section: mandatory or warning-if-wrong records (TRF16).
-  const tName = cleanLineText(tournament.name) || 'FIDE Dubov Tournament';
+  const tName = cleanLineText(tournament.name) || 'Dubov Tournament';
   const cityVal = cleanLineText(tournament.trfCity);
   const tFedVal = cleanLineText(tournament.trfFederation);
   const arbiterVal = cleanLineText(tournament.trfChiefArbiter);
