@@ -321,6 +321,10 @@ a { color:var(--accent); }
 
     <button onclick="printPage()">Skriv ut</button>
 
+    <button onclick="window.open('https://ratings.fide.com/index.phtml', '_blank', 'noopener')">
+      FIDE:s ratinglista
+    </button>
+
     <button onclick="document.getElementById('aboutDialog').showModal()">
       Om Dubov
     </button>
@@ -804,7 +808,7 @@ Spelarlistor kan importeras via fil (.txt, .csv, .trf) eller klistras in direkt.
 <p>Innan den slutliga inlämningen måste tävlingsledaren ange varje spelares FIDE-ID, födelsedatum och federationskod. Om dessa uppgifter inte har lagts till med knappen Komplettera/redigera TRF kommer den exporterade TRF-filen endast att innehålla spelarnas namn, turneringens namn och turneringsresultaten. Alla övriga obligatoriska fält markeras med platshållare och kan enkelt ersättas i en textredigerare.</p>
 
 <p><strong>Baku-accelerering:</strong>
-Valfri Baku-accelerering (FIDE Handbook C.04.7, gällande från februari 2026) kan aktiveras genom att sätta <strong>Baku-accelerering</strong> till <strong>På</strong> (standardvärde <strong>Av</strong> = av). Före rond 1 delas spelarna in i en övre grupp <strong>GA</strong> (den övre halvan, avrundad uppåt till närmaste jämna antal) och en nedre grupp <strong>GB</strong>. Under den första halvan av turneringen (avrundad uppåt) får spelarna i GA virtuella poäng: fullt värde under den första halvan av de accelererade ronderna (avrundad uppåt) och halvt värde under återstående accelererade ronder. Detta minskar obalanserade möten i de tidiga ronderna i turneringar med stor ratingspridning. Virtuella poäng påverkar endast poäng för lottning och bordsordning, aldrig den faktiska ställningen, särskiljning eller TRF-exporter. Enligt FIDE:s regler är Baku-accelerering endast tillgänglig när en vinst är värd två remier och en förlust ger noll poäng (inaktiverad för poängsystemet 3 / 1 / 0).</p>
+Valfri Baku-accelerering (FIDE Handbook C.04.7, gällande från februari 2026) kan aktiveras genom att sätta <strong>Baku-accelerering</strong> till <strong>På</strong> (standardvärde <strong>Av</strong>). Före rond 1 delas spelarna in i en övre grupp <strong>GA</strong> (den övre halvan, avrundad uppåt till närmaste jämna antal) och en nedre grupp <strong>GB</strong>. Under den första halvan av turneringen (avrundad uppåt) får spelarna i GA virtuella poäng: fullt värde under den första halvan av de accelererade ronderna (avrundad uppåt) och halvt värde under återstående accelererade ronder. Detta minskar obalanserade möten i de tidiga ronderna i turneringar med stor ratingspridning. Virtuella poäng påverkar endast poäng för lottning och bordsordning, aldrig den faktiska ställningen, särskiljning eller TRF-exporter. Enligt FIDE:s regler är Baku-accelerering endast tillgänglig när en vinst är värd två remier och en förlust ger noll poäng (inaktiverad för poängsystemet 3 / 1 / 0).</p>
 
 <p class="small-note">Denna applikation stöder inte efteranmälningar eller hängpartier. Stöd finns för valfri Baku-accelerering enligt FIDE C.04.7 (med undantag för efteranmälningar). De inbyggda testerna är regressionstester för utvecklare, inte FIDE:s officiella godkännandesvit.</p>
   <ul style=padding-left:70px;>
@@ -8791,18 +8795,35 @@ function saveTRF() {
     }
   );
 
+function checkPabWarning() {
+    if (tournament.pabPoints !== tournament.winPoints) {
+      message(
+        `Andra värden än ${tournament.winPoints} stöds inte längre av FIDE.`,
+        "warning"
+      );
+    } else {
+      message(
+        "Inställningarna sparades automatiskt.",
+        ""
+      );
+    }
+  }
+
   $("tPab").addEventListener(
     "change",
     event => {
-      tournament.pabPoints =
-        numberValue(
-          event.target.value,
-          "poäng vid frirond (PAB)",
-          0,
-          100
-        );
+      guarded(() => {
+        tournament.pabPoints =
+          numberValue(
+            event.target.value,
+            "frirondspoäng",
+            0,
+            100
+          );
 
-      autoSave();
+        autoSave();
+        checkPabWarning();
+      });
     }
   );
 
@@ -8837,8 +8858,10 @@ function saveTRF() {
         tournament.bakuPoints = 0;
         $("tBaku").value = "0";
       }
+
       updateControls();
       autoSave();
+      checkPabWarning();
     }
   );
 
