@@ -4,13 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="Mats Winther">
+<meta name="keywords" content="pairing program, tournament handler, free, chess, Swiss, web-based, Burstein">
 <link
   rel="canonical"
   href="https://mats-winther.github.io/fide-burstein-eng.htm"
 >
 <meta name="description" content="A streamlined web tool for chess tournaments. Manage Burstein Swiss pairings, record results, and automatically track standings and color allocation.">
 
-<title>Experimental Burstein Pairing System</title>
+<title>Burstein Swiss Tournament Handler</title>
 
 <style>
 :root {
@@ -276,9 +277,9 @@ a { color:var(--blue); }
 
 <header>
   <div>
-   <h1>Experimental Burstein Pairing System</h1>
+   <h1>Burstein Swiss Tournament Handler</h1>
    <div class="subtitle">
-     2026 rules · variable Dutch seeding · bounded Burstein search · not FIDE-endorsed
+     2026 rules · variable Dutch seeding · bounded Burstein search
    </div>  
 </div>
 
@@ -566,20 +567,20 @@ a { color:var(--blue); }
   <h2>About this implementation</h2>
 
   <p>
-    Experimental implementation of the Burstein System effective February 1, 2026, 
+    Experimental implementation of the Burstein Swiss system effective February 1, 2026, 
     with embedded FIDE Dutch seeding. It is not FIDE-endorsed and must not be treated 
     as a certified pairing checker.
   </p>
 
   <p>
-    The main advantage of the Burstein System is that it aims to equalize the strength 
+    The main advantage of the Burstein system is that it aims to equalize the strength 
     of opposition faced by players on the same score over the course of the tournament.
   </p>
 
   <p><strong>Tournament Seeding &amp; Pairing Structure:</strong><br>
     &bull; <strong>Dutch Seeding:</strong> The first half of the scheduled rounds (rounded down, 
     capped at a maximum of four rounds) are paired using the embedded FIDE Dutch reference engine.<br>
-    &bull; <strong>Burstein Pairings:</strong> Subsequent rounds are paired using the Burstein System.<br>
+    &bull; <strong>Burstein Pairings:</strong> Subsequent rounds are paired using the Burstein system.<br>
     &bull; <strong>In-Bracket Ranking:</strong> After seeding, players within each Burstein bracket 
     are ranked by pairing Index: Buchholz, then Sonneborn-Berger, then ascending TPN (Article 1.8). 
     Player scores define the scoregroups but are not part of the in-bracket ranking.<br>
@@ -671,7 +672,7 @@ a { color:var(--blue); }
   </ul>
 
   <p class="small-note">
-    The Burstein Pairing System was developed by Mats Winther in September 2026.<br>&nbsp;
+    The Burstein Swiss Tournament Handler was developed by Mats Winther in September 2026.<br>&nbsp;
   </p>
 
   <button onclick="document.getElementById('aboutDialog').close()">Close</button>
