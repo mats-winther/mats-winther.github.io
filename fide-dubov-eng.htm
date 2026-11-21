@@ -326,7 +326,7 @@ a { color:var(--accent); }
       FIDE rating list
     </button>
 
-    <button onclick="document.getElementById('aboutDialog').showModal()">
+    <button onclick="const d = document.getElementById('aboutDialog'); d.showModal(); d.scrollTop = 0;">
       About Dubov
     </button>
   </div>
@@ -734,7 +734,7 @@ a { color:var(--accent); }
 </dialog>
 
 <dialog id="aboutDialog">
-  <h2>About the Dubov System</h2>
+  <h2 tabindex="-1" autofocus>About the Dubov System</h2>
 
   <p>
     The <strong>Dubov Swiss pairing system</strong>
@@ -815,7 +815,7 @@ Optional Baku Acceleration (FIDE Handbook C.04.7, effective February 2026) can b
     <li><a href="https://handbook.fide.com/chapter/C0407202602" target="_blank" rel="noopener">FIDE-approved accelerated systems</a></li>
     <li><a href="https://mats-winther.github.io/bg/chesspairing.htm" target="_blank" rel="noopener">Chess Pairings: A Review of Monrad, Swiss, and Berger</a></li>
   </ul>
-  <p class="small-note">The Dubov Swiss Tournament Handler was developed by Mats Winther in September 2026. It is not FIDE-endorsed.<br>&nbsp;
+  <p class="small-note">The Dubov Swiss Tournament Handler was developed by Mats Winther in September 2026. As the system is not endorsed by FIDE, it must not be used in norm-qualifying tournaments.<br>&nbsp;
   </p>
   <button onclick="document.getElementById('aboutDialog').close()">
     Close

@@ -295,7 +295,7 @@ a { color:var(--blue); }
     <button onclick="window.open('https://ratings.fide.com/index.phtml', '_blank', 'noopener')">
       FIDE rating list
     </button>
-    <button onclick="document.getElementById('aboutDialog').showModal()">
+    <button onclick="const d = document.getElementById('aboutDialog'); d.showModal(); d.scrollTop = 0;">
       About
     </button>
   </div>
@@ -573,7 +573,7 @@ a { color:var(--blue); }
 </dialog>
 
 <dialog id="aboutDialog">
-  <h2>About this implementation</h2>
+  <h2 tabindex="-1" autofocus>About this implementation</h2>
 
   <p>
     Experimental implementation of the Burstein Swiss system effective February 1, 2026, 
@@ -681,7 +681,8 @@ a { color:var(--blue); }
   </ul>
 
   <p class="small-note">
-    The Burstein Swiss Tournament Handler was developed by Mats Winther in September 2026.<br>&nbsp;
+    The Burstein Swiss Tournament Handler was developed by Mats Winther in September 2026. As the
+    system is not endorsed by FIDE, it must not be used in norm-qualifying tournaments.<br>&nbsp;
   </p>
 
   <button onclick="document.getElementById('aboutDialog').close()">Close</button>

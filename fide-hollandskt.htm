@@ -244,7 +244,7 @@ a { color:var(--blue); }
     <button onclick="window.open('https://ratings.fide.com/index.phtml', '_blank', 'noopener')">
       FIDE:s ratinglista
     </button>
-    <button onclick="document.getElementById('aboutDialog').showModal()">
+    <button onclick="const d = document.getElementById('aboutDialog'); d.showModal(); d.scrollTop = 0;">
       Om programmet
     </button>
   </div>
@@ -476,7 +476,7 @@ a { color:var(--blue); }
 </dialog>
 
 <dialog id="aboutDialog">
-  <h2>Om denna implementation</h2>
+  <h2 tabindex="-1" autofocus>Om denna implementation</h2>
   <p>
     Experimentell referensimplementation av reglerna för FIDE:s holländska system (Dutch)
     som gäller från den 1 februari 2026. Den är inte godkänd av FIDE
@@ -559,7 +559,9 @@ a { color:var(--blue); }
          target="_blank" rel="noopener">Schacklottning: en genomgång av Monrad, Schweizer och Berger</a>
     </li>
   </ul>
-  <p class="small-note">Holländsk Turneringshanterare (Dutch) utvecklades av Mats Winther i september 2026.<br>&nbsp;
+  <p class="small-note">Holländsk Turneringshanterare (Dutch) utvecklades av Mats Winther
+  i september 2026. Eftersom systemet inte har godkänts av FIDE får det inte användas i
+  normkvalificerande turneringar.<br>&nbsp;
   </p>
 
   <button onclick="document.getElementById('aboutDialog').close()">Stäng</button>

@@ -326,7 +326,7 @@ a { color:var(--accent); }
       FIDE:s ratinglista
     </button>
 
-    <button onclick="document.getElementById('aboutDialog').showModal()">
+    <button onclick="const d = document.getElementById('aboutDialog'); d.showModal(); d.scrollTop = 0;">
       Om Dubov
     </button>
   </div>
@@ -737,7 +737,7 @@ a { color:var(--accent); }
 </dialog>
 
 <dialog id="aboutDialog">
-  <h2>Om Dubov Turneringshanterare</h2>
+  <h2 tabindex="-1" autofocus>Om Dubov-systemet</h2>
 
   <p>
     <strong>Dubovs schweiziska lottningssystem</strong>
@@ -818,7 +818,7 @@ Valfri Baku-accelerering (FIDE Handbook C.04.7, gällande från februari 2026) k
     <li><a href="https://handbook.fide.com/chapter/C0407202602" target="_blank" rel="noopener">FIDE-godkända accelererade lottningssystem</a></li>
     <li><a href="https://mats-winther.github.io/bg/schacklottning.htm" target="_blank" rel="noopener">Schacklottning: en genomgång av Monrad, Schweizer och Berger</a></li>
   </ul>
-  <p class="small-note">Dubov Turneringshanterare utvecklades av Mats Winther i september 2026. Systemet har ej godkänts av FIDE.<br>&nbsp;
+  <p class="small-note">Dubov Turneringshanterare utvecklades av Mats Winther i september 2026. Eftersom systemet inte har godkänts av FIDE får det inte användas i normkvalificerande turneringar.<br>&nbsp;
   </p>
   <button onclick="document.getElementById('aboutDialog').close()">
     Stäng

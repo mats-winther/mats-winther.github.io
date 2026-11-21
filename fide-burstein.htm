@@ -288,7 +288,7 @@ a { color:var(--blue); }
     <button onclick="window.open('https://ratings.fide.com/index.phtml', '_blank', 'noopener')">
       FIDE:s ratinglista
     </button>
-    <button onclick="document.getElementById('aboutDialog').showModal()">
+    <button onclick="const d = document.getElementById('aboutDialog'); d.showModal(); d.scrollTop = 0;">
       Om programmet
     </button>
   </div>
@@ -551,7 +551,7 @@ a { color:var(--blue); }
 </dialog>
 
 <dialog id="aboutDialog">
-  <h2>Om denna implementation</h2>
+  <h2 tabindex="-1" autofocus>Om denna implementation</h2>
 
   <p>
     Experimentell implementation av FIDE:s Burstein-system som gäller från den 1 februari 2026, 
@@ -664,7 +664,8 @@ a { color:var(--blue); }
   </ul>
 
   <p class="small-note">
-    Burstein Turneringshanterare utvecklades av Mats Winther i september 2026.<br>&nbsp;
+    Burstein Turneringshanterare utvecklades av Mats Winther i september 2026. Eftersom
+    systemet inte har godkänts av FIDE får det inte användas i normkvalificerande turneringar.<br>&nbsp;
   </p>
 
   <button onclick="document.getElementById('aboutDialog').close()">Stäng</button>

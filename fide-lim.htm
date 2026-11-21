@@ -279,7 +279,9 @@ code {
     <button onclick="window.open('https://ratings.fide.com/index.phtml', '_blank', 'noopener')">
       FIDE:s ratinglista
     </button>
-    <button onclick="document.getElementById('about').showModal()">Om programmet</button>
+    <button onclick="const d = document.getElementById('about'); d.showModal(); d.scrollTop = 0;">
+        Om programmet
+    </button>
   </div>
 </header>
 <input id="openFile" type="file" accept=".json" hidden onchange="openTournament(event)">
@@ -397,7 +399,7 @@ code {
     <button class="primary" onclick="importPaste()">Importera</button></div>
 </dialog>
 <dialog id="about">
-  <h2>Om denna implementation</h2>
+  <h2 tabindex="-1" autofocus>Om denna implementation</h2>
 
   <p>
     Experimentell referensimplementation av FIDE:s Lim-system (Handbok C.04.4.3), 
@@ -502,7 +504,8 @@ code {
   </ul>
 
   <p class="small-note">
-    Lim Turneringshanterare utvecklades av Mats Winther i september 2026.<br>&nbsp;
+    Lim Turneringshanterare utvecklades av Mats Winther i september 2026. Eftersom systemet
+    inte har godkänts av FIDE får det inte användas i normkvalificerande turneringar.<br>&nbsp;
   </p>
 
   <button onclick="document.getElementById('about').close()">Stäng</button>
