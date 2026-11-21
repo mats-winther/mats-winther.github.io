@@ -358,10 +358,13 @@ a { color:var(--blue); }
         </label>
 
         <label>Pairing bye points (PAB)
-          <input id="tPab" type="number" min="0" step="0.5" value="1">
+          <select id="tPab">
+            <option value="1">1 (standard)</option>
+	    <option value="0.5">½ (deprecated by FIDE)</option>
+	    <option value="0">0 (deprecated by FIDE)</option>
+          </select>
         </label>
       </div>
-
       <p id="listStatus" class="muted"></p>
       <p class="muted">
         Settings are saved automatically. Registration closes when the
@@ -402,6 +405,8 @@ a { color:var(--blue); }
 
       <input id="playersFile" type="file" accept=".txt,.csv,.trf"
              hidden onchange="loadPlayersFile(event)">
+
+      <div style="height: 30px;"></div>
 
       <div class="grid no-print" style="margin-bottom:1rem">
         <label>Name

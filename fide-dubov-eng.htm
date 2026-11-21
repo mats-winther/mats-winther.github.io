@@ -416,14 +416,14 @@ a { color:var(--accent); }
           </select>
         </label>
 
-        <label>
-          Pairing bye points
-          <input id="tPab"
-                 type="number"
-                 min="0"
-                 step="0.5"
-                 value="1">
+        <label>Pairing bye points
+          <select id="tPab">
+            <option value="1">1 (standard)</option>
+	    <option value="0.5">½ (deprecated by FIDE)</option>
+	    <option value="0">0 (deprecated by FIDE)</option>
+          </select>
         </label>
+
         <label title="FIDE C.04.7 Baku acceleration (requires win = 2 × draw, loss = 0)">
           Baku acceleration
           <select id="tBaku">

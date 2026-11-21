@@ -307,7 +307,7 @@ code {
         </label>
         <label>Pairing bye points (PAB)
           <select id="tPab">
-            <option value="1">1 (ordinary)</option>
+            <option value="1">1 (standard)</option>
             <option value="0.5">½ (deprecated by FIDE)</option>
             <option value="0">0 (deprecated by FIDE)</option>
           </select>
@@ -327,6 +327,7 @@ code {
           <button class="danger" onclick="resetTournament()">Reset</button>
         </div>
       </div>
+      <div style="height: 30px;"></div>
       <input id="playersFile" type="file" accept=".csv,.txt,.trf" hidden onchange="importFile(event)">
       <div class="grid no-print">
         <label>Name<input id="pName" placeholder="Surname, First name"></label>
