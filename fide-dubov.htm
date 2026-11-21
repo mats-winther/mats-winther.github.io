@@ -5369,8 +5369,8 @@ function preparePairingPlayers(toPair, roundNumber) {
 function renderPabOptions(winPoints, drawPoints, selectedValue) {
   const options = [
     [winPoints, `${winPoints} (standard)`],
-    [drawPoints, `${drawPoints === 0.5 ? "½" : drawPoints} (deprecated by FIDE)`],
-    [0, "0 (deprecated by FIDE)"]
+    [drawPoints, `${drawPoints === 0.5 ? "½" : drawPoints} (stöds ej längre av FIDE)`],
+    [0, "0 (stöds ej längre av FIDE)"]
   ];
 
   const selected = Number(selectedValue);
@@ -5378,7 +5378,7 @@ function renderPabOptions(winPoints, drawPoints, selectedValue) {
     Number.isFinite(selected) &&
     !options.some(([v]) => v === selected)
   ) {
-    options.splice(1, 0, [selected, `${selected} (deprecated by FIDE)`]);
+    options.splice(1, 0, [selected, `${selected} (stöds ej längre av FIDE)`]);
   }
 
   $("tPab").innerHTML = options.map(([val, label]) =>
