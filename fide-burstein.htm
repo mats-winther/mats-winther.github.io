@@ -5289,6 +5289,28 @@ function tournamentComplete(t = tournament) {
   return t.rounds.length >= t.totalRounds && t.activePairings.length === 0;
 }
 
+function renderPabOptions(winPoints, drawPoints, selectedValue) {
+  const options = [
+    [winPoints, `${winPoints} (standard)`],
+    [drawPoints, `${drawPoints === 0.5 ? "½" : drawPoints} (deprecated by FIDE)`],
+    [0, "0 (deprecated by FIDE)"]
+  ];
+
+  const selected = Number(selectedValue);
+  if (
+    Number.isFinite(selected) &&
+    !options.some(([v]) => v === selected)
+  ) {
+    options.splice(1, 0, [selected, `${selected} (deprecated by FIDE)`]);
+  }
+
+  $("tPab").innerHTML = options.map(([val, label]) =>
+    `<option value="${val}">${label}</option>`
+  ).join("");
+
+  $("tPab").value = String(selectedValue);
+}
+
 /* ========================================================================== */
 /* AUTOMATIC SETTINGS                                                         */
 /* ========================================================================== */
@@ -6925,7 +6947,12 @@ function renderSettings() {
   $("tPoints").value = [
     tournament.winPoints,tournament.drawPoints,tournament.lossPoints
   ].join(",");
-  $("tPab").value = tournament.pabPoints;
+
+  renderPabOptions(
+    tournament.winPoints,
+    tournament.drawPoints,
+    tournament.pabPoints
+  );
 
   const seedingRounds = Core.seedingRoundCount(tournament.totalRounds);
   const seedingDescription = seedingRounds
@@ -7369,9 +7396,11 @@ for (const id of ["tName","tRounds","tColor","tPab"]) {
   $(id).addEventListener("change",saveSettingsAutomatically);
 }
 
-$("tPoints").addEventListener("change",() => {
+$("tPoints").addEventListener("change", () => {
   if (tournament.settingsFrozen || job) return;
-  $("tPab").value = $("tPoints").value.split(",")[0];
+
+  const [win, draw] = $("tPoints").value.split(",").map(Number);
+  renderPabOptions(win, draw, win);
   saveSettingsAutomatically();
 });
 

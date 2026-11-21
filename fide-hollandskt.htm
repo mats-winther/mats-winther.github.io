@@ -5430,7 +5430,9 @@ for (const id of ["tName","tRounds","tColor","tPab"]) {
 
 $("tPoints").addEventListener("change", () => {
   if (tournament.settingsFrozen || job) return;
-  $("tPab").value = $("tPoints").value.split(",")[0];
+
+  const [win, draw] = $("tPoints").value.split(",").map(Number);
+  renderPabOptions(win, draw, win);
   saveSettingsAutomatically();
 });
 

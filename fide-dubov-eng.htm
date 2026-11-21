@@ -5364,6 +5364,28 @@ function preparePairingPlayers(toPair, roundNumber) {
   };
 }
 
+function renderPabOptions(winPoints, drawPoints, selectedValue) {
+  const options = [
+    [winPoints, `${winPoints} (standard)`],
+    [drawPoints, `${drawPoints === 0.5 ? "½" : drawPoints} (deprecated by FIDE)`],
+    [0, "0 (deprecated by FIDE)"]
+  ];
+
+  const selected = Number(selectedValue);
+  if (
+    Number.isFinite(selected) &&
+    !options.some(([v]) => v === selected)
+  ) {
+    options.splice(1, 0, [selected, `${selected} (deprecated by FIDE)`]);
+  }
+
+  $("tPab").innerHTML = options.map(([val, label]) =>
+    `<option value="${val}">${label}</option>`
+  ).join("");
+
+  $("tPab").value = String(selectedValue);
+}
+
 /* ========================================================================== */
 /* RESULTS AND STATE REBUILDING                                               */
 /* ========================================================================== */
@@ -7587,8 +7609,12 @@ function renderSettings() {
     `${tournament.drawPoints},` +
     `${tournament.lossPoints}`;
 
-  $("tPab").value =
-    tournament.pabPoints;
+  renderPabOptions(
+    tournament.winPoints,
+    tournament.drawPoints,
+    tournament.pabPoints
+  );
+
   $("tBaku").value =
     tournament.bakuPoints ? "1" : "0";
 
@@ -8846,8 +8872,7 @@ function checkPabWarning() {
       tournament.pabPoints =
         win;
 
-      $("tPab").value =
-        win;
+      renderPabOptions(win, draw, win);
 
       if (!bakuAllowedForScoring()) {
         tournament.bakuPoints = 0;
