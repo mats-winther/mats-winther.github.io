@@ -302,14 +302,14 @@ code {
       <div class="grid">
         <label>Tournament name<input id="tName" value="Lim Swiss Open"></label>
         <label>Number of rounds<input id="tRounds" type="number" min="1" max="30" value="5"></label>
-        <label>Round-one colour drawn for TPN 1
-          <select id="tColor"><option value="W">White</option><option value="B">Black</option></select>
+        <label>Round 1 colors (drawn)
+          <select id="tColor"><option value="W">1st player White</option><option value="B">1st player Black</option></select>
         </label>
-        <label>Pairing-allocated bye points
+        <label>Pairing bye points (PAB)
           <select id="tPab">
             <option value="1">1 (ordinary)</option>
-            <option value="0.5">½ (only if tournament regulations allow)</option>
-            <option value="0">0 (only if tournament regulations allow)</option>
+            <option value="0.5">½ (deprecated by FIDE)</option>
+            <option value="0">0 (deprecated by FIDE)</option>
           </select>
         </label>
       </div>
