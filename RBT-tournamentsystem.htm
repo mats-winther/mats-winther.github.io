@@ -120,6 +120,11 @@
     outline-offset: 2px;
   }
 
+  code {
+    font-size: 0.9rem;  
+    font-family: Courier New, Courier New;
+  }
+
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -1088,7 +1093,7 @@ Optimization priorities:
     number of rematches. Rematches are marked.
   </p>
 
-  <h3>Swiss colours and byes</h3>
+  <h3>Swiss colours &amp; byes</h3>
 
   <p>
     Both colour assignments are compared. Priority is given to limiting
@@ -1118,7 +1123,7 @@ Optimization priorities:
     not a guarantee of rematch-free continuation.
   </p>
 
-  <h3>Standings and tie-breaks</h3>
+  <h3>Standings &amp; tie-breaks</h3>
 
   <p>
     With Swiss Rounds = 0, the original RBT scoring and tie-break
@@ -1170,7 +1175,7 @@ Repeated played encounters contribute separately.</div>
     unlock results or terminate an unfinished Swiss phase.
   </p>
 
-  <h3>Withdrawals and saving</h3>
+  <h3>Withdrawals &amp; saving</h3>
 
   <p>
     Before Swiss starts, RBT withdrawal/reinstatement retains the
@@ -1189,27 +1194,23 @@ Repeated played encounters contribute separately.</div>
     scheduled game was not played.
   </p>
 
-  <h3>Running tournaments in parallel</h3> 
+  <h3>Autosave &amp; backups</h3> 
 
   <p>
-     You can run separate tournaments simultaneously in different
-     browsers (for example, Chrome and Edge). Each browser maintains
-     its own autosave, so a tournament should be resumed in the browser
-     where it was started. Avoid running separate tournaments in multiple
-     tabs or windows within the same browser profile, as their autosaves
-     may overwrite one another. 
-  </p>
-  <p>
-    Browser storage saves automatically when available. For added safety,
-    save JSON backups regularly. No data is sent to a server and tabs do
-    not synchronize.
+     Settings and tournament data autosave continuously to browser storage
+    (<code>localStorage</code>). To run separate tournaments simultaneously
+    without overwriting data, use different browsers (e.g., Chrome and Edge)
+    or different browser profiles. For added safety, save JSON backups regularly.
+    To correct a previously entered result from an earlier round, restore the
+    backup from that round and re-enter the results.
   </p>
   <p>
     &bull; <a href="https://ratings.fide.com/index.phtml" target="_blank" rel="noopener">FIDE rating list</a>
   </p>
   <p class="small-note">
-    This uses the custom Swiss engine from Berger-Swiss, not FIDE Dutch,
-    and is not a claim of FIDE approval. The sample roster is illustrative.
+    This uses the custom Swiss engine from Berger-Swiss, not FIDE Dutch. The sample
+    roster is illustrative. As the system has not been approved by FIDE, it may not
+    be used in norm-qualifying tournaments.
   </p>
 
   <p class="small-note">
