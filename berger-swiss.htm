@@ -163,6 +163,11 @@
     margin: 14px 0;
   }
 
+  code {
+    font-size: 0.9rem;  
+    font-family: Courier New, Courier New;
+  }
+
   .settings-grid {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr;
@@ -972,20 +977,15 @@ postponed games are excluded.</div>
     possible after withdrawals.
   </p>
 
-  <h3>Running tournaments in parallel</h3> 
+  <h3>Autosave &amp; Backups</h3> 
 
   <p>
-     You can run separate tournaments simultaneously in different
-     browsers (for example, Chrome and Edge). Each browser maintains
-     its own autosave, so a tournament should be resumed in the browser
-     where it was started. Avoid running separate tournaments in multiple
-     tabs or windows within the same browser profile, as their autosaves
-     may overwrite one another. 
-  </p>
-  <p>
-    Browser storage saves automatically when available. For added safety,
-    save JSON backups regularly. No data is sent to a server and tabs do
-    not synchronize.
+     Settings and tournament data autosave continuously to browser storage
+    (<code>localStorage</code>). To run separate tournaments simultaneously
+    without overwriting data, use different browsers (e.g., Chrome and Edge)
+    or different browser profiles. For added safety, save JSON backups regularly.
+    To correct a previously entered result from an earlier round, restore the
+    backup from that round and re-enter the results.
   </p>
 
 
@@ -1009,7 +1009,8 @@ postponed games are excluded.</div>
 
   <p class="hint">
     The sample roster contains illustrative names and ratings. The Swiss pairing
-    engine is a proprietary implementation and has not been approved by FIDE.
+    engine is a proprietary implementation. As the system has not been approved by
+    FIDE, it may not be used in norm-qualifying tournaments.
   </p>
   <p class="hint">
     The Berger-Swiss system was developed by Mats Winther in October 2026.<br>&nbsp;

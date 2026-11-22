@@ -155,6 +155,11 @@
     cursor: default;
   }
 
+  code {
+    font-size: 0.9rem;  
+    font-family: Courier New, Courier New;
+  }
+
   .btn-bar {
     display: flex;
     flex-wrap: wrap;
@@ -979,21 +984,16 @@ olösta uppskjutna partier utesluts.</div>
     planerade ronder går att genomföra efter spelaravhopp.
   </p>
 
-  <h3>Köra flera turneringar parallellt</h3>
+  <h3>Autosparande och säkerhetskopior</h3>
   <p>
-    Du kan hantera olika turneringar samtidigt i olika webbläsare
-    (till exempel Chrome och Edge). Varje webbläsare har sin egen
-    autosparning, så en turnering måste återupptas i samma webbläsare
-    som den startades i. Undvik att köra separata turneringar i flera
-    flikar eller fönster inom samma webbläsarprofil, eftersom
-    autosparningarna då kan skriva över varandra. 
+    Inställningar och turneringsdata sparas automatiskt och kontinuerligt i 
+    webbläsarens lagringsutrymme (<code>localStorage</code>). För att köra
+    separata turneringar samtidigt utan att skriva över data, använd olika
+    webbläsare (t.ex. Chrome och Edge) eller separata webbläsarprofiler. För
+    extra säkerhet, spara en JSON-säkerhetskopia efter varje rond. För att
+    korrigera ett tidigare inrapporterat resultat från en tidigare rond,
+    återställ säkerhetskopian från den ronden och mata in resultaten på nytt. 
   <p>
-  <p>
-    Turneringen sparas automatiskt i webbläsaren när lagring
-    är tillgänglig. För extra säkerhet, spara regelbundet JSON-säkerhetskopior.
-    Inga uppgifter skickas till en server, och separata
-    webbläsarflikar synkroniseras inte.
-  </p>
 
   <h3>Källor</h3>
 
@@ -1015,8 +1015,8 @@ olösta uppskjutna partier utesluts.</div>
 
   <p class="hint">
     Den inbyggda deltagarlistan innehåller illustrativa namn och ratingtal.
-    Schweizermotorn är en anpassad implementation och saknar
-    godkännande från FIDE.
+    Schweizermotorn är en anpassad implementation. Eftersom systemet inte har
+    godkänts av FIDE får det inte användas i normkvalificerande turneringar.
   </p>
   <p class="hint">
     Berger-Schweizersystemet utvecklades av Mats Winther i oktober 2026.<br>&nbsp;
