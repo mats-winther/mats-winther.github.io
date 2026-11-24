@@ -2290,13 +2290,13 @@ function generateTRF() {
   }
 
   const lines = [];
-  lines.push('### Replace the following placeholders within their fixed-width fields:');
-  lines.push('### ?: sex code (m or w), immediately followed by the three-character title field, with no separator.');
-  lines.push('### (E): FIDE Elo rating (4 characters)');
-  lines.push('### (F): FIDE federation code (3 characters)');
-  lines.push('### (FIDE ID): numeric FIDE ID (up to 11 characters)');
-  lines.push('### (Birth Dt): birth date in YYYY/MM/DD format (10 characters)');
-  lines.push('### Remove these comment lines before submitting the TRF file.');
+ 	lines.push('### Ersätt följande platshållare inom respektive fält med fast bredd:');
+	lines.push('### ?: könskod (m eller w), omedelbart följd av det trebokstäviga titelfältet utan mellanrum.');
+	lines.push('### (_E): FIDE Elo-tal (4 tecken)');
+	lines.push('### (F): FIDE-federationskod (3 tecken)');
+	lines.push('### (__FIDE ID): numeriskt FIDE-ID (upp till 11 tecken)');
+	lines.push('### (Birth Dt): födelsedatum i formatet ÅÅÅÅ/MM/DD (10 tecken)');
+	lines.push('### Ta bort dessa kommentarsrader innan TRF-filen skickas in.');
 
   // Tournament Section
   const tName = String(tournamentName || '')
@@ -2374,13 +2374,13 @@ function generateTRF() {
     const sexStr = '?';
     const nameStr = formatPlayerName(p.name);
     const fedStr = '(F)';
-    const fideNumStr = '(FIDE ID)';
+    const fideNumStr = '(__FIDE ID)';
     const birthDateStr = '(Birth Dt)';
 
     // Export rating if present, otherwise placeholder
     const rating = Number(p.rating);
     const hasValidRating = Number.isInteger(rating) && rating > 0 && rating <= 9999;
-    const fideRatingStr = hasValidRating ? String(rating) : '(E)';
+    const fideRatingStr = hasValidRating ? String(rating) : '(_E)';
 
     const pts = p.score;
     if (!Number.isFinite(pts) || pts < 0) {
