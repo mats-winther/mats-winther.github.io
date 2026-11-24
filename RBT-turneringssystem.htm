@@ -337,6 +337,20 @@
     white-space: nowrap;
   }
 
+  .colour-sequence {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono",
+                 "Courier New", monospace;
+    font-size: 0.82rem;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .standings-table th,
+  .standings-table td {
+    padding: 9px 7px;
+  }
+
   .player-box {
     display: flex;
     align-items: center;
@@ -2787,6 +2801,7 @@ function calculateScheduleReport(data) {
     target: info.targets[player.id]
   }));
 
+
   let distance = 0;
 
   for (const round of data.rounds.slice(0, roundCount)) {
@@ -4102,6 +4117,9 @@ function calculateHybridStandings(useAllRounds) {
       cumulative: stats.cumulative,
       buchholz: stats.buchholz,
       wnt: stats.wnt,
+      colours: stats.history.map(entry =>
+        entry.color === "W" ? "V" : entry.color === "B" ? "S" : "–"
+      ),
       position: 0,
       tied: false
     };
@@ -4130,9 +4148,11 @@ function calculateStandings(useAllRounds = false) {
     wnt: 0,
     opponents: [],
     records: [],
+    colours: [],
     position: 0,
     tied: false
   }));
+
 
   const limit = useAllRounds || data.scope === "all"
     ? data.rounds.length
@@ -4143,7 +4163,12 @@ function calculateStandings(useAllRounds = false) {
     const hasResults = round.games.some(game => game.result !== null);
     if (!hasResults) continue;
 
+    const roundColours = new Map();
+
     for (const game of round.games) {
+      roundColours.set(game.w, "V");
+      roundColours.set(game.b, "S");
+
       if (game.result === null) continue;
       const result = RESULT_DEFINITIONS[game.result];
 
@@ -4156,7 +4181,10 @@ function calculateStandings(useAllRounds = false) {
       rows[round.bye].byes++;
     }
 
-    for (const row of rows) row.cumulative += row.points;
+    for (const row of rows) {
+      row.colours.push(roundColours.get(row.id) || "–");
+      row.cumulative += row.points;
+    }
   }
 
   function addResult(id, opponent, score, played) {
@@ -4373,6 +4401,9 @@ function standingsTableHTML(standings, showClub = false) {
   const body = standings.rows.map(row => {
     const player = tournament.players[row.id];
     const titlePart = player.title ? " (" + html(player.title) + ")" : "";
+    const colours = row.colours && row.colours.length
+      ? row.colours.join("")
+      : "—";
 
     return `
       <tr class="${row.position === 1 ? "leader-row" : ""}">
@@ -4390,10 +4421,9 @@ function standingsTableHTML(standings, showClub = false) {
         <td class="numeric">${player.rating}</td>
         <td class="numeric">${formatNumber(info.targets[row.id])}</td>
         <td class="numeric">${row.played}</td>
-        <td class="numeric">${row.wins}</td>
-        <td class="numeric">${row.draws}</td>
-        <td class="numeric">${row.losses}</td>
+        <td class="numeric">${row.wins}–${row.draws}–${row.losses}</td>
         <td class="numeric"><strong>${formatPoints(row.points)}</strong></td>
+        <td class="colour-sequence" title="Färger per rond: V = Vit, S = Svart, – = frirond eller ospelat">${html(colours)}</td>
         <td class="numeric">${formatNumber(row[tournament.tb], 2)}</td>
       </tr>
     `;
@@ -4401,7 +4431,7 @@ function standingsTableHTML(standings, showClub = false) {
 
   return `
     <div class="table-scroll">
-      <table>
+      <table class="standings-table">
         <thead>
           <tr>
             <th class="numeric">Plac.</th>
@@ -4411,11 +4441,10 @@ function standingsTableHTML(standings, showClub = false) {
             <th class="numeric">Rating</th>
             <th class="numeric">RBT-målrating</th>
             <th class="numeric">Spelade</th>
-            <th class="numeric" title="Vinster">V</th>
-            <th class="numeric" title="Remier">R</th>
-            <th class="numeric" title="Förluster">F</th>
+	    <th class="numeric" title="Vinster–Remier–Förluster">V–R–F</th>
             <th class="numeric">Poäng</th>
-            <th class="numeric">${html(TIE_BREAKS[tournament.tb])}</th>
+            <th title="Färger per rond: V = Vit, S = Svart, – = frirond eller ospelat">Färger</th>
+            <th class="numeric" title="Kvalitetspoäng">${html(TIE_BREAKS[tournament.tb])}</th>
           </tr>
         </thead>
         <tbody>${body}</tbody>
@@ -4425,7 +4454,7 @@ function standingsTableHTML(standings, showClub = false) {
       Målrating är den fasta medelratingen för spelarens personliga
       grupp och påverkar inte ställningen.
       ”Spelade” räknar faktiskt spelade partier.
-      V/R/F = vinster/remier/förluster och inkluderar registrerade
+      V-R-F = vinster/remier/förluster och inkluderar registrerade
       walkoverresultat.
       ”=” anger delad placering efter vald särskiljning.
       ${isHybrid()
@@ -5758,6 +5787,12 @@ function openPrintPage(title, content) {
   }
   th { background: #f1f5f9; }
   .numeric { text-align: center; white-space: nowrap; }
+  .colour-sequence {
+    font-family: "Courier New", monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
   .player-box { display: block; }
   .badge { font-size: 0.75rem; margin-left: 4px; }
   .rematch-badge { color: #92400e; }

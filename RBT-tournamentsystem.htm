@@ -337,6 +337,20 @@
     white-space: nowrap;
   }
 
+  .colour-sequence {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono",
+                 "Courier New", monospace;
+    font-size: 0.82rem;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .standings-table th,
+  .standings-table td {
+    padding: 9px 7px;
+  }
+
   .player-box {
     display: flex;
     align-items: center;
@@ -4001,6 +4015,9 @@ function calculateHybridStandings(useAllRounds) {
       cumulative: stats.cumulative,
       buchholz: stats.buchholz,
       wnt: stats.wnt,
+      colours: stats.history.map(entry =>
+        entry.color === "W" ? "W" : entry.color === "B" ? "B" : "–"
+      ),
       position: 0,
       tied: false
     };
@@ -4029,6 +4046,7 @@ function calculateStandings(useAllRounds = false) {
     wnt: 0,
     opponents: [],
     records: [],
+    colours: [],
     position: 0,
     tied: false
   }));
@@ -4042,7 +4060,12 @@ function calculateStandings(useAllRounds = false) {
     const hasResults = round.games.some(game => game.result !== null);
     if (!hasResults) continue;
 
+    const roundColours = new Map();
+
     for (const game of round.games) {
+      roundColours.set(game.w, "W");
+      roundColours.set(game.b, "B");
+
       if (game.result === null) continue;
       const result = RESULT_DEFINITIONS[game.result];
 
@@ -4055,7 +4078,10 @@ function calculateStandings(useAllRounds = false) {
       rows[round.bye].byes++;
     }
 
-    for (const row of rows) row.cumulative += row.points;
+    for (const row of rows) {
+      row.colours.push(roundColours.get(row.id) || "–");
+      row.cumulative += row.points;
+    }
   }
 
   function addResult(id, opponent, score, played) {
@@ -4268,6 +4294,9 @@ function standingsTableHTML(standings, showClub = false) {
   const body = standings.rows.map(row => {
     const player = tournament.players[row.id];
     const titlePart = player.title ? " (" + html(player.title) + ")" : "";
+    const colours = row.colours && row.colours.length
+      ? row.colours.join("")
+      : "—";
 
     return `
       <tr class="${row.position === 1 ? "leader-row" : ""}">
@@ -4285,10 +4314,9 @@ function standingsTableHTML(standings, showClub = false) {
         <td class="numeric">${player.rating}</td>
         <td class="numeric">${formatNumber(info.targets[row.id])}</td>
         <td class="numeric">${row.played}</td>
-        <td class="numeric">${row.wins}</td>
-        <td class="numeric">${row.draws}</td>
-        <td class="numeric">${row.losses}</td>
+        <td class="numeric">${row.wins}–${row.draws}–${row.losses}</td>
         <td class="numeric"><strong>${formatPoints(row.points)}</strong></td>
+        <td class="colour-sequence" title="Colours by round: W = White, B = Black, – = rest or no game">${html(colours)}</td>
         <td class="numeric">${formatNumber(row[tournament.tb], 2)}</td>
       </tr>
     `;
@@ -4296,7 +4324,7 @@ function standingsTableHTML(standings, showClub = false) {
 
   return `
     <div class="table-scroll">
-      <table>
+      <table class="standings-table">
         <thead>
           <tr>
             <th class="numeric">Rank</th>
@@ -4306,11 +4334,10 @@ function standingsTableHTML(standings, showClub = false) {
             <th class="numeric">Rating</th>
             <th class="numeric">RBT target mean</th>
             <th class="numeric">Pld</th>
-            <th class="numeric" title="Wins">W</th>
-	    <th class="numeric" title="Draws">D</th>
-	    <th class="numeric" title="Losses">L</th>
+            <th class="numeric" title="Wins–Draws–Losses">W–D–L</th>
             <th class="numeric">Points</th>
-            <th class="numeric">${html(TIE_BREAKS[tournament.tb])}</th>
+            <th title="Colours by round: W = White, B = Black, – = rest or no game">Colours</th>
+            <th class="numeric" title="Tie-break score">${html(TIE_BREAKS[tournament.tb])}</th>
           </tr>
         </thead>
         <tbody>${body}</tbody>
@@ -4319,7 +4346,9 @@ function standingsTableHTML(standings, showClub = false) {
     <p class="small-note">
       Target mean is the fixed average rating of the player's personal
       group; it does not affect standings. Pld counts played games.
-      W/D/L include recorded forfeits. “=” indicates a shared rank.
+      W–D–L includes recorded forfeits. The colour string lists the
+      played colours in round order, with – for a rest or a round with
+      no played game. “=” indicates a shared rank.
       ${isHybrid()
         ? "Only complete RBT rounds and submitted Swiss rounds are included. " +
           "WNT excludes direct forfeit and bye contributions; its denominator " +
@@ -5588,6 +5617,12 @@ function openPrintPage(title, content) {
   }
   th { background: #f1f5f9; }
   .numeric { text-align: center; white-space: nowrap; }
+  .colour-sequence {
+    font-family: "Courier New", monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
   .player-box { display: block; }
   .badge { font-size: 0.75rem; margin-left: 4px; }
   .rematch-badge { color: #92400e; }
