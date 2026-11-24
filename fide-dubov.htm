@@ -374,7 +374,7 @@ a { color:var(--accent); }
       Rondhistorik
     </button>
     <button id="edit-trf-button" onclick="openTRFDialog()" style="display:none">
-        Komplettera/redigera TRF
+        Komplettera/Redigera TRF
     </button>
     <button id="save-trf-button" onclick="saveTRF()" style="display:none">
         Spara TRF-fil
@@ -680,7 +680,7 @@ a { color:var(--accent); }
 </dialog>
 
 <dialog id="trfDialog">
-  <h2>Komplettera/redigera TRF</h2>
+  <h2>Komplettera/Redigera TRF</h2>
 
   <p class="muted">
     Fyll i turneringsmetadata och spelaruppgifter för FIDE TRF16-inlämning.
@@ -803,9 +803,9 @@ Spelarlistor kan importeras via fil (.txt, .csv, .trf) eller klistras in direkt.
 
 <p>2. <strong>TRF-import:</strong> Standardiserade FIDE TRF06-, TRF16- och TRF26-filer kan öppnas via <strong>Öppna turnering</strong> (eller importeras/klistras in) för att läsa in hela turneringen, inklusive turneringsnamn, antal ronder (<code>XXR</code>), startfärg (<code>XXC</code>), spelarnas TPN-nummer, ratingtal, titlar samt fullständig rond-för-rond-information om lottningar, resultat, frironder och wo-partier. Registreringsfiler med enbart <code>001</code>-rader utan rondhistorik stöds också.</p>
 
-<p><strong>Lottningssökning och export: </strong>Lottningarna beräknas i en bakgrundsprocess (Web Worker) med en strikt tidsgräns. Det maximala antalet simulerade ronder är 30, men simuleringen avbryts tidigare om lottningsmotorn inte längre kan hitta en giltig rond enligt FIDE:s regler. När samtliga ronder i turneringen har slutförts blir knappen Spara TRF-fil tillgänglig.</p>
+<p><strong>Lottningssökning och export: </strong>Lottningarna beräknas i en bakgrundsprocess (Web Worker) med en strikt tidsgräns. Det maximala antalet simulerade ronder är 30, men simuleringen avbryts tidigare om lottningsmotorn inte längre kan hitta en giltig rond enligt FIDE:s regler. När samtliga ronder i turneringen har slutförts blir knappen <strong>Spara TRF-fil</strong> tillgänglig.</p>
 
-<p>Innan den slutliga inlämningen måste tävlingsledaren ange varje spelares FIDE-ID, födelsedatum och federationskod. Om dessa uppgifter inte har lagts till med knappen Komplettera/redigera TRF kommer den exporterade TRF-filen endast att innehålla spelarnas namn, turneringens namn och turneringsresultaten. Alla övriga obligatoriska fält markeras med platshållare och kan enkelt ersättas i en textredigerare.</p>
+<p>Innan den slutliga inlämningen måste tävlingsledaren ange varje spelares FIDE-ID, födelsedatum och federationskod. Om dessa uppgifter inte har lagts till med knappen <strong>Komplettera/Redigera TRF</strong> kommer den exporterade TRF-filen endast att innehålla spelarnas namn, turneringens namn och turneringsresultaten. Alla övriga obligatoriska fält markeras med platshållare och kan enkelt ersättas i en textredigerare.</p>
 
 <p><strong>Baku-accelerering:</strong>
 Valfri Baku-accelerering (FIDE Handbook C.04.7, gällande från februari 2026) kan aktiveras genom att sätta <strong>Baku-accelerering</strong> till <strong>På</strong> (standardvärde <strong>Av</strong>). Före rond 1 delas spelarna in i en övre grupp <strong>GA</strong> (den övre halvan, avrundad uppåt till närmaste jämna antal) och en nedre grupp <strong>GB</strong>. Under den första halvan av turneringen (avrundad uppåt) får spelarna i GA virtuella poäng: fullt värde under den första halvan av de accelererade ronderna (avrundad uppåt) och halvt värde under återstående accelererade ronder. Detta minskar obalanserade möten i de tidiga ronderna i turneringar med stor ratingspridning. Virtuella poäng påverkar endast poäng för lottning och bordsordning, aldrig den faktiska ställningen, särskiljning eller TRF-exporter. Enligt FIDE:s regler är Baku-accelerering endast tillgänglig när en vinst är värd två remier och en förlust ger noll poäng (inaktiverad för poängsystemet 3 / 1 / 0).</p>
