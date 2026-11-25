@@ -4742,9 +4742,9 @@ function generateTRF(slotIndex) {
   const lines = [];
   lines.push('### Replace the following placeholders within their fixed-width fields:');
   lines.push('### ?: sex code (m or w), immediately followed by the three-character title field, with no separator.');
-  lines.push('### (E): FIDE Elo rating (4 characters)');
+  lines.push('### (_E): FIDE Elo rating (4 characters)');
   lines.push('### (F): FIDE federation code (3 characters)');
-  lines.push('### (FIDE ID): numeric FIDE ID (up to 11 characters)');
+  lines.push('### (__FIDE ID): numeric FIDE ID (up to 11 characters)');
   lines.push('### (Birth Dt): birth date in YYYY/MM/DD format (10 characters)');
   lines.push('### Remove these comment lines before submitting the TRF file.');
 
@@ -4800,7 +4800,7 @@ function generateTRF(slotIndex) {
     const sexStr = '?';
     const nameStr = formatPlayerName(parsed.name);
     const fedStr = '(F)';
-    const fideNumStr = '(FIDE ID)';
+    const fideNumStr = '(__FIDE ID)';
     const birthDateStr = '(Birth Dt)';
 
     const rating = Number(parsed.rating);
@@ -4809,7 +4809,7 @@ function generateTRF(slotIndex) {
     }
 
     // A zero rating means no rating is available.
-    const fideRatingStr = rating > 0 ? String(rating) : '(E)';
+    const fideRatingStr = rating > 0 ? String(rating) : '(_E)';
 
     const pts = pointsMap.get(id) ?? 0;
     if (!Number.isFinite(pts) || pts < 0) {
@@ -4929,8 +4929,8 @@ function saveTRF(slotIndex) {
     const dateStr = `${yyyy}-${mm}-${dd}`;
 
     a.download = cleanName
-      ? `TRF26_${cleanName}_${dateStr}.txt`
-      : `TRF26_${dateStr}.txt`;
+      ? `TRF16_${cleanName}_${dateStr}.txt`
+      : `TRF16_${dateStr}.txt`;
 
     document.body.appendChild(a);
     a.click();
