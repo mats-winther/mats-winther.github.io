@@ -211,6 +211,19 @@ dialog {
   padding:1.2rem;
 }
 dialog::backdrop { background:rgba(0,0,0,.45); }
+
+#trfDialog {
+  width:min(960px,95vw);
+}
+#trfDialog input,
+#trfDialog select {
+  margin-top:0;
+  padding:.32rem .45rem;
+}
+#trfDialog table th,
+#trfDialog table td {
+  padding:.4rem .45rem;
+}
 a { color:var(--blue); }
 #scoreTournamentName {
   margin-bottom:.3rem;
@@ -328,6 +341,9 @@ a { color:var(--blue); }
     </button>
     <button id="tabButton-history" onclick="showTab('history')">
       Round history
+    </button>
+    <button id="edit-trf-button" onclick="openTRFDialog()" style="display:none">
+        Complete/Edit TRF
     </button>
     <button id="save-trf-button" onclick="saveTRF()" style="display:none">
         Save TRF-file
@@ -569,6 +585,62 @@ a { color:var(--blue); }
       Cancel
     </button>
     <button class="success" onclick="importPastedPlayers()">Import</button>
+  </div>
+</dialog>
+
+<dialog id="trfDialog">
+  <h2>Complete/Edit TRF Data</h2>
+
+  <p class="muted">
+    Fill in tournament metadata and player details for FIDE TRF16 submission.
+    Fields left blank will export with placeholders. Data is stored with the tournament JSON.
+  </p>
+
+  <div id="trfDialogError" class="notice error" style="display:none"></div>
+
+  <h3>Tournament Section</h3>
+  <div class="grid" style="margin-bottom:1rem">
+    <label>
+      City (022)
+      <input id="trfCity" placeholder="e.g. Stockholm">
+    </label>
+
+    <label>
+      Federation (032)
+      <input id="trfFederation" placeholder="e.g. SWE">
+    </label>
+
+    <label>
+      Chief Arbiter (102)
+      <input id="trfChiefArbiter" placeholder="e.g. IA Smith, John">
+    </label>
+  </div>
+
+  <h3>Player Section</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>TPN</th>
+          <th>Name</th>
+          <th>Sex</th>
+          <th>Federation (3)</th>
+          <th>FIDE ID (≤11)</th>
+          <th>Birth Date (YYYY/MM/DD)</th>
+        </tr>
+      </thead>
+      <tbody id="trfPlayersBody"></tbody>
+    </table>
+  </div>
+
+  <div class="row" style="justify-content:flex-end;margin-top:1rem">
+    <button onclick="document.getElementById('trfDialog').close()">
+      Cancel
+    </button>
+
+    <button class="success" onclick="saveTRFEdits()">
+      Save TRF data
+    </button>
   </div>
 </dialog>
 
@@ -6132,6 +6204,9 @@ return {
     drawPoints:.5,
     lossPoints:0,
     pabPoints:1,
+    trfCity:"",
+    trfFederation:"",
+    trfChiefArbiter:"",
     settingsFrozen:false,
     listClosed:false,
     highestPairedRound:0,
@@ -6259,6 +6334,10 @@ function makePlayer(name,rating,title) {
     name:cleanName,
     rating:numberValue(rating,"rating",0,9999,true),
     title:titleValue(title),
+    sex:"",
+    federation:"",
+    fideId:"",
+    birthDate:"",
     registrationOrder:nextRegistrationOrder(),
     active:true,
     nextRoundStatus:"pair"
@@ -7098,6 +7177,10 @@ if (
     raw.pabPoints ?? t.winPoints,"PAB points",t.winPoints
   );
 
+  t.trfCity = String(raw.trfCity || "").trim();
+  t.trfFederation = String(raw.trfFederation || "").trim();
+  t.trfChiefArbiter = String(raw.trfChiefArbiter || "").trim();
+
   const ids = new Set();
   const tpns = new Set();
 
@@ -7142,6 +7225,21 @@ if (
         p.rating ?? 1500,"rating",0,9999,true
       ),
       title:titleValue(p.title),
+      sex:/^(m|w)$/i.test(String(p.sex || "").trim())
+        ? String(p.sex).trim().toLowerCase()
+        : "",
+      federation:String(p.federation || "")
+        .trim()
+        .toUpperCase()
+        .slice(0, 3),
+      fideId:String(p.fideId || "")
+        .trim()
+        .replace(/\D+/g, "")
+        .slice(0, 11),
+      birthDate:String(p.birthDate || "")
+        .trim()
+        .replace(/-/g, "/")
+        .slice(0, 10),
       registrationOrder:index+1,
       active:p.active !== false,
       nextRoundStatus:status
@@ -8809,7 +8907,12 @@ function updateControls() {
   const pending = tournament.activePairings.length > 0;
   const finished = tournamentComplete();
 
-  // Toggle TRF button visibility when all rounds are completed
+  // Toggle TRF buttons visibility when all rounds are completed
+  const editTrfBtn = $("edit-trf-button");
+  if (editTrfBtn) {
+    editTrfBtn.style.display = finished ? "" : "none";
+  }
+
   const trfBtn = $("save-trf-button");
   if (trfBtn) {
     trfBtn.style.display = finished ? "" : "none";
@@ -8981,6 +9084,143 @@ function formatPlayerName(name) {
   return String(name || '').trim() || '(Name)';
 }
 
+function isValidTRFBirthDate(value) {
+  if (!/^\d{4}\/\d{2}\/\d{2}$/.test(value)) {
+    return false;
+  }
+  const [y, m, d] = value.split('/').map(Number);
+  if (m < 1 || m > 12 || d < 1 || d > 31) {
+    return false;
+  }
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return (
+    dt.getUTCFullYear() === y &&
+    dt.getUTCMonth() === m - 1 &&
+    dt.getUTCDate() === d
+  );
+}
+
+function openTRFDialog() {
+  guarded(() => {
+    requireIdle();
+
+    $("trfDialogError").style.display = "none";
+    $("trfDialogError").textContent = "";
+
+    $("trfCity").value = tournament.trfCity || "";
+    $("trfFederation").value = tournament.trfFederation || "";
+    $("trfChiefArbiter").value = tournament.trfChiefArbiter || "";
+
+    const byTpn = [...tournament.players].sort((a, b) => a.tpn - b.tpn);
+
+    $("trfPlayersBody").innerHTML = byTpn.map(p => `
+      <tr data-player-id="${escapeHtml(p.id)}">
+        <td><strong>${p.tpn}</strong></td>
+        <td>
+          ${escapeHtml(p.name)}
+          ${p.title ? `<span class="muted">(${escapeHtml(p.title)})</span>` : ""}
+        </td>
+        <td>
+          <select class="trf-sex" style="width:4.2rem">
+            <option value="" ${!p.sex ? "selected" : ""}>—</option>
+            <option value="m" ${p.sex === "m" ? "selected" : ""}>m</option>
+            <option value="w" ${p.sex === "w" ? "selected" : ""}>w</option>
+          </select>
+        </td>
+        <td>
+          <input class="trf-fed"
+                 maxlength="3"
+                 placeholder="SWE"
+                 value="${escapeHtml(p.federation || "")}"
+                 style="width:4.8rem;text-transform:uppercase">
+        </td>
+        <td>
+          <input class="trf-fideid"
+                 maxlength="11"
+                 inputmode="numeric"
+                 placeholder="1234567"
+                 value="${escapeHtml(p.fideId || "")}"
+                 style="width:8.5rem">
+        </td>
+        <td>
+          <input class="trf-birth"
+                 maxlength="10"
+                 placeholder="YYYY/MM/DD"
+                 value="${escapeHtml(p.birthDate || "")}"
+                 style="width:8.5rem">
+        </td>
+      </tr>
+    `).join("");
+
+    $("trfDialog").showModal();
+  });
+}
+
+function saveTRFEdits() {
+  const errBox = $("trfDialogError");
+  errBox.style.display = "none";
+  errBox.textContent = "";
+
+  const errors = [];
+  const updates = [];
+
+  const byId = new Map(tournament.players.map(p => [p.id, p]));
+
+  const rows = $("trfPlayersBody").querySelectorAll("tr[data-player-id]");
+  rows.forEach(row => {
+    const id = row.dataset.playerId;
+    const player = byId.get(id);
+    if (!player) return;
+
+    const sex = row.querySelector(".trf-sex").value.trim().toLowerCase();
+    const fed = row.querySelector(".trf-fed").value.trim().toUpperCase();
+    const fideId = row.querySelector(".trf-fideid").value.trim();
+    const birthRaw = row.querySelector(".trf-birth").value.trim().replace(/-/g, "/");
+
+    if (sex && sex !== "m" && sex !== "w") {
+      errors.push(`TPN ${player.tpn} (${player.name}): Sex must be "m" or "w".`);
+    }
+    if (fed && !/^[A-Z]{3}$/.test(fed)) {
+      errors.push(`TPN ${player.tpn} (${player.name}): Federation must be 3 letters (e.g. SWE).`);
+    }
+    if (fideId && !/^\d{1,11}$/.test(fideId)) {
+      errors.push(`TPN ${player.tpn} (${player.name}): FIDE ID must be numeric (up to 11 digits).`);
+    }
+    if (birthRaw && !isValidTRFBirthDate(birthRaw)) {
+      errors.push(`TPN ${player.tpn} (${player.name}): Birth date must be YYYY/MM/DD.`);
+    }
+
+    updates.push({ player, sex, fed, fideId, birthDate: birthRaw });
+  });
+
+  if (errors.length) {
+    errBox.textContent = errors.join("\n");
+    errBox.style.display = "block";
+    return;
+  }
+
+  tournament.trfCity = $("trfCity").value.trim();
+  tournament.trfFederation = $("trfFederation").value.trim();
+  tournament.trfChiefArbiter = $("trfChiefArbiter").value.trim();
+
+  for (const u of updates) {
+    u.player.sex = u.sex;
+    u.player.federation = u.fed;
+    u.player.fideId = u.fideId;
+    u.player.birthDate = u.birthDate;
+  }
+
+  autoSave();
+  $("trfDialog").close();
+  message("TRF data saved. It will be included in TRF exports and saved tournament JSON.", "success");
+}
+
+/* Drop the invalid highlight as soon as the field is corrected. */
+document.addEventListener("input", event => {
+  const field = event.target.closest?.(".trf-input-invalid, .trf-invalid");
+  if (field) field.classList.remove("trf-invalid", "trf-input-invalid");
+});
+
 function generateTRF() {
   if (
     !tournament ||
@@ -8993,24 +9233,26 @@ function generateTRF() {
   // Ensure player scores and histories are up to date.
   rebuildState(tournament);
 
-  const lines = [];
-  lines.push('### Replace the following placeholders within their fixed-width fields:');
-  lines.push('### ?: sex code (m or w), immediately followed by the three-character title field, with no separator.');
-  lines.push('### (_E): FIDE Elo rating (4 characters)');
-  lines.push('### (F): FIDE federation code (3 characters)');
-  lines.push('### (__FIDE ID): numeric FIDE ID (up to 11 characters)');
-  lines.push('### (Birth Dt): birth date in YYYY/MM/DD format (10 characters)');
-  lines.push('### Remove these comment lines before submitting the TRF file.');
+  let hasPlaceholders = false;
+  const bodyLines = [];
 
-  // Tournament Section: mandatory or warning-if-wrong records.
-  const tName = String(tournament.name || '')
-    .replace(/[\r\n]+/g, ' ')
-    .trim();
+  const cleanLineText = value =>
+    String(value || '').replace(/[\r\n]+/g, ' ').trim();
 
-  lines.push(`012 ${tName || 'Burstein Tournament'}`);
-  lines.push('022 (City)');
-  lines.push('032 (Federation)');
-  lines.push('102 (Chief Arbiter)');
+  // Tournament Section: mandatory or warning-if-wrong records (TRF16).
+  const tName = cleanLineText(tournament.name) || 'Burstein Tournament';
+  const cityVal = cleanLineText(tournament.trfCity);
+  const tFedVal = cleanLineText(tournament.trfFederation);
+  const arbiterVal = cleanLineText(tournament.trfChiefArbiter);
+
+  if (!cityVal || !tFedVal || !arbiterVal) {
+    hasPlaceholders = true;
+  }
+
+  bodyLines.push(`012 ${tName}`);
+  bodyLines.push(`022 ${cityVal || '(City)'}`);
+  bodyLines.push(`032 ${tFedVal || '(Federation)'}`);
+  bodyLines.push(`102 ${arbiterVal || '(Chief Arbiter)'}`);
 
   // Match the standings and shared ranks shown by the application.
   const final = tournamentComplete(tournament);
@@ -9088,13 +9330,23 @@ function generateTRF() {
       throw new Error(`Invalid starting-rank number for ${p.name}.`);
     }
 
-    const sexStr = '?';
-    const nameStr = formatPlayerName(p.name);
-    const fedStr = '(F)';
-    const fideNumStr = '(__FIDE ID)';
-    const birthDateStr = '(Birth Dt)';
+    const validSex = /^(m|w)$/i.test(String(p.sex || '').trim());
+    const sexStr = validSex ? String(p.sex).trim().toLowerCase() : '?';
 
-    
+    const nameStr = formatPlayerName(p.name);
+
+    const cleanFed = String(p.federation || '').trim().toUpperCase();
+    const validFed = /^[A-Z]{3}$/.test(cleanFed);
+    const fedStr = validFed ? cleanFed : '(F)';
+
+    const cleanFideId = String(p.fideId || '').trim();
+    const validFideId = /^\d{1,11}$/.test(cleanFideId);
+    const fideNumStr = validFideId ? cleanFideId : '(__FIDE ID)';
+
+    const cleanBirth = String(p.birthDate || '').trim();
+    const validBirth = /^\d{4}\/\d{2}\/\d{2}$/.test(cleanBirth);
+    const birthDateStr = validBirth ? cleanBirth : '(Birth Dt)';
+
     // Export the rating stored in the player record.
     const rating = Number(p.rating);
 
@@ -9108,6 +9360,16 @@ function generateTRF() {
 
     // A zero rating means no rating is available.
     const fideRatingStr = rating > 0 ? String(rating) : '(_E)';
+
+    if (
+      !validSex ||
+      !validFed ||
+      !validFideId ||
+      !validBirth ||
+      rating <= 0
+    ) {
+      hasPlaceholders = true;
+    }
 
     const pts = tiebreaks.get(p.id)?.score;
 
@@ -9126,7 +9388,7 @@ function generateTRF() {
       field(nameStr, 33) + ' ' +
       field(fideRatingStr, 4, true) + ' ' +
       field(fedStr, 3) + ' ' +
-      field(fideNumStr, 11) + ' ' +
+      field(fideNumStr, 11, validFideId) + ' ' +
       field(birthDateStr, 10) + ' ' +
       numericField(pointsStr, 4, 'Score') + ' ' +
       numericField(rank, 4, 'Rank');
@@ -9215,10 +9477,22 @@ function generateTRF() {
       line += `  ${oppId} ${color} ${resChar}`;
     }
 
-    lines.push(line);
+    bodyLines.push(line);
   });
 
-  return lines.join('\r\n') + '\r\n';
+  const headerLines = hasPlaceholders
+    ? [
+        '### Replace the following placeholders within their fixed-width fields:',
+        '### ?: sex code (m or w), immediately followed by the three-character title field, with no separator.',
+        '### (_E): FIDE Elo rating (4 characters)',
+        '### (F): FIDE federation code (3 characters)',
+        '### (__FIDE ID): numeric FIDE ID (up to 11 characters)',
+        '### (Birth Dt): birth date in YYYY/MM/DD format (10 characters)',
+        '### Remove these comment lines before submitting the TRF file.'
+      ]
+    : [];
+
+  return [...headerLines, ...bodyLines].join('\r\n') + '\r\n';
 }
 
 function saveTRF() {
