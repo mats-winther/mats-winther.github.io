@@ -503,7 +503,7 @@ a { color:var(--blue); }
 </dialog>
 
 <dialog id="trfDialog">
-  <h2>Komplettera/Redigera TRF</h2>
+  <h2>Komplettera/Redigera TRF-data</h2>
 
   <p class="muted">
     Fill in tournament metadata and player details for FIDE TRF16 submission.
@@ -512,35 +512,35 @@ a { color:var(--blue); }
 
   <div id="trfDialogError" class="notice error" style="display:none"></div>
 
-  <h3>Tournament Section</h3>
+  <h3>Turneringssektion</h3>
   <div class="grid" style="margin-bottom:1rem">
     <label>
-      City (022)
-      <input id="trfCity" placeholder="e.g. Stockholm">
+      Stad (022)
+      <input id="trfCity" placeholder="t.ex. Stockholm">
     </label>
 
     <label>
       Federation (032)
-      <input id="trfFederation" placeholder="e.g. SWE">
+      <input id="trfFederation" placeholder="t.ex. SWE">
     </label>
 
     <label>
-      Chief Arbiter (102)
-      <input id="trfChiefArbiter" placeholder="e.g. IA Smith, John">
+      Överdomare (102)
+      <input id="trfChiefArbiter" placeholder="t.ex. IA Svensson, Johan">
     </label>
   </div>
 
-  <h3>Player Section</h3>
+  <h3>Spelarsektion</h3>
   <div class="table-wrap">
     <table>
       <thead>
         <tr>
           <th>TPN</th>
-          <th>Name</th>
-          <th>Sex</th>
+          <th>Namn</th>
+          <th>Kön</th>
           <th>Federation (3)</th>
           <th>FIDE ID (≤11)</th>
-          <th>Birth Date (YYYY/MM/DD)</th>
+          <th>Födelsedatum (ÅÅÅÅ/MM/DD)</th>
         </tr>
       </thead>
       <tbody id="trfPlayersBody"></tbody>
@@ -5631,7 +5631,7 @@ function openTRFDialog() {
         <td>
           <input class="trf-birth"
                  maxlength="10"
-                 placeholder="YYYY/MM/DD"
+                 placeholder="ÅÅÅÅ/MM/DD"
                  value="${escapeHtml(p.birthDate || "")}"
                  style="width:8.5rem">
         </td>
@@ -5892,7 +5892,7 @@ function generateTRF() {
 
     const cleanFideId = String(p.fideId || '').trim();
     const validFideId = /^\d{1,11}$/.test(cleanFideId);
-    const fideNumStr = validFideId ? cleanFideId : '(FIDE ID)';
+    const fideNumStr = validFideId ? cleanFideId : '(__FIDE ID)';
 
     const cleanBirth = String(p.birthDate || '').trim();
     const validBirth = /^\d{4}\/\d{2}\/\d{2}$/.test(cleanBirth);
@@ -5910,7 +5910,7 @@ function generateTRF() {
     }
 
     /* A zero rating means no rating is available. */
-    const fideRatingStr = rating > 0 ? String(rating) : '(E)';
+    const fideRatingStr = rating > 0 ? String(rating) : '(_E)';
 
     if (
       !validSex ||
@@ -6035,9 +6035,9 @@ function generateTRF() {
     ? [
         '### Replace the following placeholders within their fixed-width fields:',
         '### ?: sex code (m or w), immediately followed by the three-character title field, with no separator.',
-        '### (E): FIDE Elo rating (4 characters)',
+        '### (_E): FIDE Elo rating (4 characters)',
         '### (F): FIDE federation code (3 characters)',
-        '### (FIDE ID): numeric FIDE ID (up to 11 characters)',
+        '### (__FIDE ID): numeric FIDE ID (up to 11 characters)',
         '### (Birth Dt): birth date in YYYY/MM/DD format (10 characters)',
         '### Remove these comment lines before submitting the TRF file.'
       ]
