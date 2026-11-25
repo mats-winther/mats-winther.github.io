@@ -8530,7 +8530,7 @@ function generateTRF() {
 
     const cleanFideId = String(p.fideId || '').trim();
     const validFideId = /^\d{1,11}$/.test(cleanFideId);
-    const fideNumStr = validFideId ? cleanFideId : '(FIDE ID)';
+    const fideNumStr = validFideId ? cleanFideId : '(__FIDE ID)';
 
     const cleanBirth = String(p.birthDate || '').trim();
     const validBirth = /^\d{4}\/\d{2}\/\d{2}$/.test(cleanBirth);
@@ -8545,7 +8545,7 @@ function generateTRF() {
       throw new Error(`Ratingtalet för ${p.name} är ogiltigt.`);
     }
 
-    const fideRatingStr = rating > 0 ? String(rating) : '(E)';
+    const fideRatingStr = rating > 0 ? String(rating) : '(_E)';
 
     if (
       !validSex ||
@@ -8668,9 +8668,9 @@ function generateTRF() {
     ? [
         '### Ersätt följande platshållare inom respektive fält med fast bredd:',
         '### ?: könskod (m eller w), direkt följd av den trebokstaviga titelkoden, utan mellanslag eller annan avskiljare.',
-        '### (E): FIDE Elo-rating (4 siffror)',
+        '### (_E): FIDE Elo-rating (4 siffror)',
         '### (F): FIDE federationskod (3 bokstäver)',
-        '### (FIDE ID): numeriskt FIDE-ID (högst 11 siffror)',
+        '### (__FIDE ID): numeriskt FIDE-ID (högst 11 siffror)',
         '### (Birth Dt): födelsedatum i formatet ÅÅÅÅ/MM/DD (10 tecken)',
         '### Ta bort dessa kommentarsrader innan TRF-filen skickas in.'
       ]

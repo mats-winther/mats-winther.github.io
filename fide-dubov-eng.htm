@@ -8519,7 +8519,7 @@ function generateTRF() {
 
     const cleanFideId = String(p.fideId || '').trim();
     const validFideId = /^\d{1,11}$/.test(cleanFideId);
-    const fideNumStr = validFideId ? cleanFideId : '(FIDE ID)';
+    const fideNumStr = validFideId ? cleanFideId : '(__FIDE ID)';
 
     const cleanBirth = String(p.birthDate || '').trim();
     const validBirth = /^\d{4}\/\d{2}\/\d{2}$/.test(cleanBirth);
@@ -8534,7 +8534,7 @@ function generateTRF() {
       throw new Error(`Invalid rating for ${p.name}.`);
     }
 
-    const fideRatingStr = rating > 0 ? String(rating) : '(E)';
+    const fideRatingStr = rating > 0 ? String(rating) : '(_E)';
 
     if (
       !validSex ||
@@ -8657,9 +8657,9 @@ function generateTRF() {
     ? [
         '### Replace the following placeholders within their fixed-width fields:',
         '### ?: sex code (m or w), immediately followed by the three-character title field, with no separator.',
-        '### (E): FIDE Elo rating (4 characters)',
+        '### (_E): FIDE Elo rating (4 characters)',
         '### (F): FIDE federation code (3 characters)',
-        '### (FIDE ID): numeric FIDE ID (up to 11 characters)',
+        '### (__FIDE ID): numeric FIDE ID (up to 11 characters)',
         '### (Birth Dt): birth date in YYYY/MM/DD format (10 characters)',
         '### Remove these comment lines before submitting the TRF file.'
       ]
