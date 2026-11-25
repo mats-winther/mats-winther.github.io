@@ -1827,9 +1827,9 @@ function generateTRF() {
   const lines = [];
   lines.push('### Replace the following placeholders within their fixed-width fields:');
   lines.push('### ?: sex code (m or w), immediately followed by the three-character title field, with no separator.');
-  lines.push('### (E): FIDE Elo rating (4 characters)');
+  lines.push('### (_E): FIDE Elo rating (4 characters)');
   lines.push('### (F): FIDE federation code (3 characters)');
-  lines.push('### (FIDE ID): numeric FIDE ID (up to 11 characters)');
+  lines.push('### (__FIDE ID): numeric FIDE ID (up to 11 characters)');
   lines.push('### (Birth Dt): birth date in YYYY/MM/DD format (10 characters)');
   lines.push('### Remove these comment lines before submitting the TRF file.');
 
@@ -1895,14 +1895,14 @@ function generateTRF() {
     const sexStr = '?';
     const nameStr = formatPlayerName(p.name);
     const fedStr = '(F)';
-    const fideNumStr = '(FIDE ID)';
+    const fideNumStr = '(__FIDE ID)';
     const birthDateStr = '(Birth Dt)';
 
     // Export rating if present and valid, otherwise placeholder
     const rating = Number(p.rating);
     const hasValidRating =
       Number.isInteger(rating) && rating > 0 && rating <= 9999;
-    const fideRatingStr = hasValidRating ? String(rating) : '(E)';
+    const fideRatingStr = hasValidRating ? String(rating) : '(_E)';
 
     const pts = p.score;
     if (!Number.isFinite(pts) || pts < 0) {
@@ -2048,8 +2048,8 @@ function saveTRF() {
     const dateStr = `${yyyy}-${mm}-${dd}`;
 
     a.download = cleanName
-      ? `TRF26_${cleanName}_${dateStr}.txt`
-      : `TRF26_${dateStr}.txt`;
+      ? `TRF16_${cleanName}_${dateStr}.txt`
+      : `TRF16_${dateStr}.txt`;
 
     document.body.appendChild(a);
     a.click();
