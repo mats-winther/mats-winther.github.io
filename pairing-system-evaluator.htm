@@ -6802,7 +6802,9 @@ async function simulateAllSystems() {
       block += `<table><thead><tr>
         <th>Rank</th><th>TPN</th><th>Title</th><th>Name</th><th>Rating</th>
         <th>Pts</th><th>BH-1</th><th>BH</th><th>SB</th>
-        <th title="White and Black games played">Colors</th><th>Floats</th>
+        <th title="White and Black games played">Colors</th>
+        <th title="Color balance (White minus Black)">CB</th>
+        <th>Floats</th>
       </tr></thead><tbody>`;
 
       let rank = 1;
@@ -6823,6 +6825,12 @@ async function simulateAllSystems() {
           ? escapeHtml(p.roundColors.join(""))
           : "—";
 
+        const colorBalance = p.playedColors.reduce(
+          (sum, c) => sum + (c === "W" ? 1 : c === "B" ? -1 : 0),
+          0
+        );
+        const cbHtml = colorBalance > 0 ? `+${colorBalance}` : String(colorBalance);
+
         const floatsHtml = p.floatMarks.length
           ? p.floatMarks.map(m => `<span title="${escapeHtml(m.title)}">${m.symbol}</span>`).join("")
           : "—";
@@ -6838,6 +6846,7 @@ async function simulateAllSystems() {
           <td class="mono">${p.bh.toFixed(1)}</td>
           <td class="mono">${p.sb.toFixed(2)}</td>
           <td class="mono">${colorsHtml}</td>
+          <td class="mono">${cbHtml}</td>
           <td class="mono" style="letter-spacing: 2px;">${floatsHtml}</td>
         </tr>`;
       });
