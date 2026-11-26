@@ -713,7 +713,7 @@ function LimCore() {
         const firstRoundTie = !last(a) && !last(b)
           ? +((white.tpn % 2 ? "W" : "B") !== input.initialColor)
           : 0;
-        const value = [hard,alternate,equalise,precedent,
+        const value = [hard,equalise,alternate,precedent,
                        firstRoundTie,white.tpn];
         if (!best || lex(value,best.value) < 0)
           best = {whiteId:white.id,blackId:black.id,value};
@@ -894,156 +894,348 @@ function LimCore() {
     // Pair a fixed even collection: incoming floaters first, then
     // top-half/bottom-half proposals, attempting exchanges when needed.
     // Among complete pairings, favour legal colour alternation/equalisation.
-function matchBest(items, incoming, region) {
+function colorLowerBound(list) {
+      const k = list.length >> 1;
+      let hardBoth = 0, mustB = 0, mustW = 0;
+      let eqB = 0, eqW = 0;
+      let altB = 0, altW = 0;
+      const isEvenRound = round % 2 === 0;
+
+      for (let i = 0; i < list.length; i++) {
+        const p = list[i];
+        const canW = permissible(p, "W");
+        const canB = permissible(p, "B");
+        if (!canW && !canB) hardBoth++;
+        else if (!canW) mustB++;
+        else if (!canB) mustW++;
+
+        if (isEvenRound) {
+          const d = cd(p);
+          if (d >= 1) eqB++;
+          else if (d <= -1) eqW++;
+        }
+
+        const l = last(p);
+        if (l === "W") altB++;
+        else if (l === "B") altW++;
+      }
+
+      return [
+        hardBoth + Math.max(0, mustB - k) + Math.max(0, mustW - k),
+        isEvenRound ? Math.max(0, eqB - k) + Math.max(0, eqW - k) : 0,
+        Math.max(0, altB - k) + Math.max(0, altW - k)
+      ];
+    }
+
+    function minCostAssignment(cost) {
+      const n = cost.length;
+      if (n === 0) return [];
+      const u = new Array(n + 1).fill(0n);
+      const v = new Array(n + 1).fill(0n);
+      const p = new Int32Array(n + 1);
+      const way = new Int32Array(n + 1);
+
+      for (let row = 1; row <= n; row++) {
+        tick();
+        p[0] = row;
+        const minv = new Array(n + 1).fill(null);
+        const used = new Uint8Array(n + 1);
+        let col0 = 0;
+
+        do {
+          used[col0] = 1;
+          const row0 = p[col0];
+          const matRow = cost[row0 - 1];
+          let delta = null;
+          let col1 = -1;
+
+          for (let col = 1; col <= n; col++) {
+            if (used[col]) continue;
+            const raw = matRow[col - 1];
+            if (raw !== null) {
+              const cur = raw - u[row0] - v[col];
+              if (minv[col] === null || cur < minv[col]) {
+                minv[col] = cur;
+                way[col] = col0;
+              }
+            }
+            if (minv[col] !== null && (delta === null || minv[col] < delta)) {
+              delta = minv[col];
+              col1 = col;
+            }
+          }
+
+          if (col1 === -1) return null;
+
+          for (let col = 0; col <= n; col++) {
+            if (used[col]) {
+              u[p[col]] += delta;
+              v[col] -= delta;
+            } else if (minv[col] !== null) {
+              minv[col] -= delta;
+            }
+          }
+          col0 = col1;
+        } while (p[col0] !== 0);
+
+        do {
+          const prevCol = way[col0];
+          p[col0] = p[prevCol];
+          col0 = prevCol;
+        } while (col0 !== 0);
+      }
+
+      const result = new Array(n).fill(-1);
+      for (let col = 1; col <= n; col++) {
+        result[p[col] - 1] = col - 1;
+      }
+      return result;
+    }
+
+    function solveBipartiteResidents(prefixPairs, prefixTotals, rest, region) {
+      const h = rest.length / 2;
+      if (h === 0) return { pairs: prefixPairs, totals: prefixTotals };
+
+      const top = rest.slice(0, h);
+      const bot = rest.slice(h);
+      const B = BigInt(2 * h + 1);
+      const tieScale = BigInt(h * h + 1);
+      const cost = Array.from({ length: h }, (_, i) =>
+        Array.from({ length: h }, (_, j) => {
+          const info = pairInfo(top[i], bot[j], region);
+          if (!info) return null;
+          const v = info.value;
+          const q = ((((BigInt(v[0]) * B + BigInt(v[1])) * B + BigInt(v[2])) *
+                      B + BigInt(v[3])) * B + BigInt(v[4]));
+          return q * tieScale + BigInt(i === j ? 0 : 1 + Math.abs(i - j));
+        })
+      );
+
+      const assign = minCostAssignment(cost);
+      if (!assign) return null;
+
+      const pairs = [...prefixPairs];
+      const totals = [...prefixTotals];
+      for (let i = 0; i < h; i++) {
+        const info = pairInfo(top[i], bot[assign[i]], region);
+        pairs.push({ whiteId: info.whiteId, blackId: info.blackId });
+        for (let k = 0; k < 5; k++) totals[k] += info.value[k];
+      }
+      return { pairs, totals };
+    }
+
+    function matchBest(items, incoming, region) {
       if (items.length % 2) return null;
       if (!items.length) return { pairs: [] };
 
       const incomingSet = new Set(incoming.map(p => p.id));
       const ordered = [...items].sort(byTPN);
-      const floaterList = incoming.slice();               // preserve incoming order
+      const floaterList = incoming.slice();
       const residentList = ordered.filter(p => !incomingSet.has(p.id));
+      const lb = colorLowerBound(items);
 
-      // Pair each incoming floater with the nearest available resident:
-      // top-down for "above"/"median", bottom-up for "below".
+      let bestResult = null;
+      let bestTotals = null;
+
+      function considerCandidate(pairs, totals) {
+        if (!bestTotals || lex(totals, bestTotals) < 0) {
+          bestResult = { pairs };
+          bestTotals = totals;
+        }
+      }
+
+      function hitsLowerBound(totals) {
+        return totals[0] === lb[0] && totals[1] === lb[1] && totals[2] === lb[2];
+      }
+
       function placeFloaters() {
         const pairs = [];
         const work = residentList.slice();
+        const totals = [0, 0, 0, 0, 0];
         for (const f of floaterList) {
-          let idx = -1;
-          if (region === "below") {
-            for (let i = work.length - 1; i >= 0; i--) {
-              if (pairInfo(f, work[i], region)) { idx = i; break; }
-            }
-          } else {
-            for (let i = 0; i < work.length; i++) {
-              if (pairInfo(f, work[i], region)) { idx = i; break; }
+          let bestIdx = -1;
+          let bestVal = null;
+          const start = region === "below" ? work.length - 1 : 0;
+          const step = region === "below" ? -1 : 1;
+          for (let i = start; i >= 0 && i < work.length; i += step) {
+            const info = pairInfo(f, work[i], region);
+            if (!info) continue;
+            const val = info.value.slice(0, 5);
+            if (!bestVal || lex(val, bestVal) < 0) {
+              bestVal = val;
+              bestIdx = i;
+              if (val[0] === 0 && val[1] === 0 && val[2] === 0 &&
+                  val[3] === 0 && val[4] === 0) break;
             }
           }
-          if (idx === -1) return null;
-          const r = work[idx];
+          if (bestIdx === -1) return null;
+          const r = work[bestIdx];
           const info = pairInfo(f, r, region);
           pairs.push({ whiteId: info.whiteId, blackId: info.blackId });
-          work.splice(idx, 1);
+          for (let k = 0; k < 5; k++) totals[k] += info.value[k];
+          work.splice(bestIdx, 1);
         }
-        return { pairs, rest: work };
+        return { pairs, rest: work, totals };
       }
 
-      // ---- Strategy 1: floaters first, then natural top/bottom resident pairing.
-      {
-        const placed = placeFloaters();
-        if (placed) {
-          const h = placed.rest.length / 2;
-          let ok = true;
-          for (let i = 0; i < h; i++) {
-            const info = pairInfo(placed.rest[i], placed.rest[i + h], region);
-            if (!info) { ok = false; break; }
-            placed.pairs.push({ whiteId: info.whiteId, blackId: info.blackId });
+      const placed = placeFloaters();
+      if (placed) {
+        const h = placed.rest.length / 2;
+        if (h === 0) return { pairs: placed.pairs };
+
+        // ---- Strategy 1: floaters first, then natural top/bottom resident pairing.
+        let ok = true;
+        const natPairs = [...placed.pairs];
+        const natTotals = [...placed.totals];
+        for (let i = 0; i < h; i++) {
+          const info = pairInfo(placed.rest[i], placed.rest[i + h], region);
+          if (!info) { ok = false; break; }
+          natPairs.push({ whiteId: info.whiteId, blackId: info.blackId });
+          for (let k = 0; k < 5; k++) natTotals[k] += info.value[k];
+        }
+        if (ok) {
+          considerCandidate(natPairs, natTotals);
+          if (hitsLowerBound(natTotals) && natTotals[3] === 0 && natTotals[4] === 0) {
+            return { pairs: natPairs };
           }
-          if (ok) return { pairs: placed.pairs };
+        }
+
+        // ---- Strategy 2: floaters first, then minimum-cost bipartite matching
+        // of residents (second scrutiny with colour exchanges).
+        const bip = solveBipartiteResidents(placed.pairs, placed.totals, placed.rest, region);
+        if (bip) {
+          considerCandidate(bip.pairs, bip.totals);
+          if (hitsLowerBound(bip.totals)) {
+            return { pairs: bip.pairs };
+          }
         }
       }
 
-      // ---- Strategy 2: floaters first, then bipartite matching of residents
-      // so a rematch on one "diagonal" can be resolved by exchanging partners
-      // while still pairing top-half vs bottom-half.
-      {
-        const placed = placeFloaters();
-        if (placed) {
-          const h = placed.rest.length / 2;
-          const top = placed.rest.slice(0, h);
-          const bot = placed.rest.slice(h);
-          const matchR = new Array(h).fill(-1);          // bot index -> top index
-          function augment(i, seen) {
-            for (let j = 0; j < h; j++) {
-              if (seen[j]) continue;
-              if (!pairInfo(top[i], bot[j], region)) continue;
-              seen[j] = true;
-              if (matchR[j] === -1 || augment(matchR[j], seen)) {
-                matchR[j] = i;
-                return true;
-              }
+      // ---- Try alternative resident partners for a single incoming floater.
+      if (floaterList.length === 1 && (!bestTotals || !hitsLowerBound(bestTotals))) {
+        const f = floaterList[0];
+        const rLen = residentList.length;
+        for (let stepIdx = 0; stepIdx < rLen; stepIdx++) {
+          const rIdx = region === "below" ? rLen - 1 - stepIdx : stepIdx;
+          const info = pairInfo(f, residentList[rIdx], region);
+          if (!info) continue;
+          const fTotals = info.value.slice(0, 5);
+          if (bestTotals && fTotals[0] > bestTotals[0]) continue;
+          const rest = residentList.filter((_, idx) => idx !== rIdx);
+          const bip = solveBipartiteResidents(
+            [{ whiteId: info.whiteId, blackId: info.blackId }],
+            fTotals,
+            rest,
+            region
+          );
+          if (bip) {
+            considerCandidate(bip.pairs, bip.totals);
+            if (hitsLowerBound(bip.totals)) {
+              return { pairs: bip.pairs };
             }
-            return false;
-          }
-          let ok = true;
-          for (let i = 0; i < h; i++) {
-            const seen = new Array(h).fill(false);
-            if (!augment(i, seen)) { ok = false; break; }
-          }
-          if (ok) {
-            const topToBot = new Array(h).fill(-1);
-            for (let j = 0; j < h; j++) topToBot[matchR[j]] = j;
-            for (let i = 0; i < h; i++) {
-              const info = pairInfo(top[i], bot[topToBot[i]], region);
-              placed.pairs.push({ whiteId: info.whiteId, blackId: info.blackId });
-            }
-            return { pairs: placed.pairs };
           }
         }
       }
 
-      // ---- Fallback: exhaustive search with memoization.
-      const memo = new Map();
-      const MEMO_CAP = 500000;
+      if (bestResult && hitsLowerBound(bestTotals)) {
+        return bestResult;
+      }
 
-      function visit(left) {
+      // ---- Fallback: branch-and-bound general matching.
+      const dominanceMemo = new Map();
+      const MEMO_CAP = 200000;
+      const path = [];
+      let improveSteps = 0;
+      const MAX_IMPROVE_STEPS = 150000;
+      let stopImprove = false;
+
+      function visit(left, acc0, acc1, acc2, acc3, acc4) {
         tick();
-        if (!left.length)
-          return { pairs: [], totalsAdd: [0, 0, 0, 0, 0], signatureAdd: [] };
+        if (stopImprove) return;
+        if (bestResult) {
+          improveSteps++;
+          if (improveSteps > MAX_IMPROVE_STEPS) {
+            stopImprove = true;
+            return;
+          }
+        }
+
+        if (!left.length) {
+          const cur = [acc0, acc1, acc2, acc3, acc4];
+          if (!bestTotals || lex(cur, bestTotals) < 0) {
+            if (!bestTotals) improveSteps = 0;
+            bestResult = { pairs: path.slice() };
+            bestTotals = cur;
+            if (hitsLowerBound(bestTotals)) stopImprove = true;
+          }
+          return;
+        }
+
+        const remLB = colorLowerBound(left);
+        if (bestTotals) {
+          if (acc0 + remLB[0] > bestTotals[0]) return;
+          if (acc0 + remLB[0] === bestTotals[0]) {
+            if (acc1 + remLB[1] > bestTotals[1]) return;
+            if (acc1 + remLB[1] === bestTotals[1] && acc2 + remLB[2] > bestTotals[2]) {
+              return;
+            }
+          }
+        }
+
+        if (!bestResult && left.length >= 6 && !canMatch(left)) return;
 
         let key = null;
         if (left.length <= 24) {
-          key = left.map(p => p.id).sort().join(",");
-          const hit = memo.get(key);
-          if (hit !== undefined) return hit;
+          key = left.map(p => p.tpn).join(",");
+          const curAcc = [acc0, acc1, acc2, acc3, acc4];
+          const earlier = dominanceMemo.get(key);
+          if (earlier && lex(earlier, curAcc) <= 0) return;
+          if (dominanceMemo.size >= MEMO_CAP) dominanceMemo.clear();
+          dominanceMemo.set(key, curAcc);
         }
 
-        const floats = left.filter(p => incomingSet.has(p.id));
-        let anchor;
-        if (floats.length) anchor = floats[0];
-        else {
-          anchor = left[0];
-          if (region === "below")
-            for (const p of left) if (p.tpn > anchor.tpn) anchor = p;
-          else
-            for (const p of left) if (p.tpn < anchor.tpn) anchor = p;
-        }
-
-        const candidates = left
-          .filter(p => p !== anchor)
-          .map(p => ({ p, info: pairInfo(anchor, p, region) }))
-          .filter(x => x.info);
-
-        let bestSub = null, bestQuality = null;
-        for (const { p, info } of candidates) {
-          const next = left.filter(q => q !== anchor && q !== p);
-          const sub = visit(next);
-          if (!sub) continue;
-          const addTotals =
-            sub.totalsAdd.map((n, i) => n + info.value[i]);
-          const addSig = [p.tpn, ...sub.signatureAdd];
-          const quality = [...addTotals, ...addSig];
-          if (!bestQuality || lex(quality, bestQuality) < 0) {
-            bestQuality = quality;
-            bestSub = {
-              pairs: [
-                { whiteId: info.whiteId, blackId: info.blackId },
-                ...sub.pairs
-              ],
-              totalsAdd: addTotals,
-              signatureAdd: addSig
-            };
+        let anchor = null;
+        let candidates = null;
+        for (let i = 0; i < left.length; i++) {
+          const u = left[i];
+          const opts = [];
+          for (let j = 0; j < left.length; j++) {
+            if (i === j) continue;
+            const info = pairInfo(u, left[j], region);
+            if (info) opts.push({ p: left[j], info });
+          }
+          if (!opts.length) return;
+          if (!candidates || opts.length < candidates.length) {
+            anchor = u;
+            candidates = opts;
+            if (opts.length === 1) break;
           }
         }
-        if (key !== null) {
-          memo.set(key, bestSub);
-          if (memo.size > MEMO_CAP) memo.clear();
+
+        candidates.sort((a, b) => lex(a.info.value, b.info.value));
+
+        for (let i = 0; i < candidates.length; i++) {
+          if (stopImprove) return;
+          const { p, info } = candidates[i];
+          const n0 = acc0 + info.value[0];
+          const n1 = acc1 + info.value[1];
+          const n2 = acc2 + info.value[2];
+          if (bestTotals) {
+            if (n0 > bestTotals[0]) continue;
+            if (n0 === bestTotals[0]) {
+              if (n1 > bestTotals[1]) continue;
+              if (n1 === bestTotals[1] && n2 > bestTotals[2]) continue;
+            }
+          }
+          const next = left.filter(q => q !== anchor && q !== p);
+          path.push({ whiteId: info.whiteId, blackId: info.blackId });
+          visit(next, n0, n1, n2, acc3 + info.value[3], acc4 + info.value[4]);
+          path.pop();
         }
-        return bestSub;
       }
 
-      const result = visit(items);
-      return result && { pairs: result.pairs };
+      visit(ordered, 0, 0, 0, 0, 0);
+      return bestResult;
     }
 
     function* subsets(list,count,start=0,chosen=[]) {
@@ -2598,7 +2790,7 @@ function saveTRF() {
     const dd = String(today.getDate()).padStart(2, '0');
     const dateStr = `${yyyy}-${mm}-${dd}`;
 
-    a.download = cleanName ? `TRF26_${cleanName}_${dateStr}.txt` : `TRF26_${dateStr}.txt`;
+    a.download = cleanName ? `TRF16_${cleanName}_${dateStr}.txt` : `TRF16_${dateStr}.txt`;
     document.body.appendChild(a);
     a.click();
     a.remove();

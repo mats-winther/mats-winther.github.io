@@ -5481,11 +5481,11 @@ function Burstein2026Core(DutchCore) {
 
 
 /* ========================================================================== */
-/* 4. FIDE LIM PAIRING CORE (verbatim from fide-lim-eng.txt)                  */
+/* 4. FIDE LIM PAIRING CORE (repaired)                                        */
 /* ========================================================================== */
 
 function LimCore() {
-  const VERSION = "lim-experimental-2026-1";
+  const VERSION = "lim-experimental-2026-2";
 
   function fail(code, text) {
     const e = new Error(text);
@@ -5567,9 +5567,10 @@ function LimCore() {
 
     function colourPriority(a,b,region) {
       const x = a.colors, y = b.colors;
+      const target = last(a);
       for (let k = 1; k <= Math.min(x.length,y.length); k++) {
         const cx = x[x.length-k], cy = y[y.length-k];
-        if (cx !== cy) return inverse(cx) === "W" ? a : b;
+        if (cx !== cy) return cx === target ? a : b;
       }
       if (!x.length && !y.length) return null;
       return region === "below"
@@ -5637,9 +5638,155 @@ function LimCore() {
     const matchMemo = new Map();
     const MEMO_CAP = Math.max(50000, nodeLimit >> 3);
 
+    function maxMatchingSizeGraph(graph) {
+      tick();
+      const n = graph.length;
+      if (n < 2) return 0;
+
+      const mate = new Int32Array(n).fill(-1);
+      let matched = 0;
+
+      for (let v = 0; v < n; v++) {
+        if (mate[v] !== -1) continue;
+        for (const u of graph[v]) {
+          tick();
+          if (mate[u] === -1) {
+            mate[v] = u;
+            mate[u] = v;
+            matched += 2;
+            break;
+          }
+        }
+      }
+
+      if (matched >= n - 1) return matched >> 1;
+
+      const parent = new Int32Array(n);
+      const base = new Int32Array(n);
+      const queue = new Int32Array(n);
+      const used = new Uint8Array(n);
+      const blossom = new Uint8Array(n);
+      const ancestor = new Uint8Array(n);
+
+      function lca(a, b) {
+        ancestor.fill(0);
+        while (true) {
+          tick();
+          a = base[a];
+          ancestor[a] = 1;
+          if (mate[a] === -1) break;
+          a = parent[mate[a]];
+        }
+        while (true) {
+          tick();
+          b = base[b];
+          if (ancestor[b]) return b;
+          b = parent[mate[b]];
+        }
+      }
+
+      function markPath(v, blossomBase, child) {
+        while (base[v] !== blossomBase) {
+          tick();
+          blossom[base[v]] = 1;
+          blossom[base[mate[v]]] = 1;
+          parent[v] = child;
+          child = mate[v];
+          v = parent[mate[v]];
+        }
+      }
+
+      function findAugmentingEndpoint(root) {
+        parent.fill(-1);
+        used.fill(0);
+        for (let v = 0; v < n; v++) base[v] = v;
+
+        let head = 0, tail = 0;
+        queue[tail++] = root;
+        used[root] = 1;
+
+        while (head < tail) {
+          const v = queue[head++];
+          for (const u of graph[v]) {
+            tick();
+            if (base[v] === base[u] || mate[v] === u) continue;
+            if (u === root || (mate[u] !== -1 && parent[mate[u]] !== -1)) {
+              const blossomBase = lca(v, u);
+              blossom.fill(0);
+              markPath(v, blossomBase, u);
+              markPath(u, blossomBase, v);
+              for (let i = 0; i < n; i++) {
+                tick();
+                if (!blossom[base[i]]) continue;
+                base[i] = blossomBase;
+                if (!used[i]) {
+                  used[i] = 1;
+                  queue[tail++] = i;
+                }
+              }
+            } else if (parent[u] === -1) {
+              parent[u] = v;
+              if (mate[u] === -1) return u;
+              const next = mate[u];
+              if (!used[next]) {
+                used[next] = 1;
+                queue[tail++] = next;
+              }
+            }
+          }
+        }
+        return -1;
+      }
+
+      for (let root = 0; root < n; root++) {
+        if (mate[root] !== -1) continue;
+        let v = findAugmentingEndpoint(root);
+        if (v === -1) continue;
+        while (v !== -1) {
+          tick();
+          const p = parent[v];
+          const next = p === -1 ? -1 : mate[p];
+          mate[v] = p;
+          if (p !== -1) mate[p] = v;
+          v = next;
+        }
+        matched += 2;
+        if (matched >= n - 1) return matched >> 1;
+      }
+
+      return matched >> 1;
+    }
+
+    function buildInducedGraph(list) {
+      const n = list.length;
+      const idxOf = new Map();
+      for (let i = 0; i < n; i++) idxOf.set(list[i].id, i);
+      const graph = Array.from({ length: n }, () => []);
+      for (let i = 0; i < n; i++) {
+        for (const qid of legalAdj.get(list[i].id)) {
+          const j = idxOf.get(qid);
+          if (j !== undefined && j > i) {
+            graph[i].push(j);
+            graph[j].push(i);
+          }
+        }
+      }
+      return graph;
+    }
+
+    function maxMatchingSize(list) {
+      if (list.length < 2) return 0;
+      return maxMatchingSizeGraph(buildInducedGraph(list));
+    }
+
     function canMatch(list) {
-      if (list.length % 2) return false;
-      if (!list.length) return true;
+      const n = list.length;
+      if (n % 2) return false;
+      if (!n) return true;
+
+      let key = 0n;
+      for (let i = 0; i < n; i++) key |= 1n << BigInt(list[i].tpn);
+      if (matchMemo.has(key)) return matchMemo.get(key);
 
       const inside = new Set(list.map(p => p.id));
 
@@ -5648,7 +5795,11 @@ function LimCore() {
         for (const qid of legalAdj.get(p.id)) {
           if (inside.has(qid)) { ok = true; break; }
         }
-        if (!ok) return false;
+        if (!ok) {
+          if (matchMemo.size >= MEMO_CAP) matchMemo.clear();
+          matchMemo.set(key, false);
+          return false;
+        }
       }
 
       const seenComp = new Set();
@@ -5665,43 +5816,17 @@ function LimCore() {
             if (inside.has(qid) && !seenComp.has(qid)) stack.push(qid);
           }
         }
-        if (size % 2) return false;
+        if (size % 2) {
+          if (matchMemo.size >= MEMO_CAP) matchMemo.clear();
+          matchMemo.set(key, false);
+          return false;
+        }
       }
 
-      function visit(xs) {
-        tick();
-        if (xs.length % 2) return false;
-        if (!xs.length) return true;
-        const key = xs.map(p => p.tpn).sort((a,b) => a-b).join(",");
-        if (matchMemo.has(key)) return matchMemo.get(key);
-
-        let chosen = null, options = null;
-        for (const p of xs) {
-          const adj = legalAdj.get(p.id);
-          const available = [];
-          for (const q of xs) {
-            if (q !== p && adj.has(q.id)) available.push(q);
-          }
-          if (!available.length) {
-            matchMemo.set(key,false);
-            return false;
-          }
-          if (!options || available.length < options.length) {
-            chosen = p;
-            options = available;
-          }
-        }
-        for (const q of options) {
-          if (visit(xs.filter(p => p !== chosen && p !== q))) {
-            matchMemo.set(key,true);
-            return true;
-          }
-        }
-        matchMemo.set(key,false);
-        if (matchMemo.size > MEMO_CAP) matchMemo.clear();
-        return false;
-      }
-      return visit(list);
+      const ok = maxMatchingSizeGraph(buildInducedGraph(list)) * 2 === n;
+      if (matchMemo.size >= MEMO_CAP) matchMemo.clear();
+      matchMemo.set(key, ok);
+      return ok;
     }
 
     if (!players.length) fail("INPUT", "No players to pair.");
@@ -5759,149 +5884,256 @@ function LimCore() {
     const traces = [];
     const blocks = {above:[],below:[]};
 
+    function minCostBipartite(leftArr, rightArr, region) {
+      const h = leftArr.length;
+      if (h === 0) return { pairs: [], totals: [0, 0, 0, 0, 0] };
+
+      const B = BigInt(2 * h + 2);
+      const scale = BigInt(h + 2);
+      const w0 = (B ** 4n) * scale;
+      const w1 = (B ** 3n) * scale;
+      const w2 = (B ** 2n) * scale;
+      const w3 = B * scale;
+      const w4 = scale;
+
+      const cost = Array.from({ length: h }, (_, i) => {
+        const a = leftArr[i];
+        const row = new Array(h).fill(null);
+        for (let j = 0; j < h; j++) {
+          const info = pairInfo(a, rightArr[j], region);
+          if (!info) continue;
+          const v = info.value;
+          row[j] =
+            BigInt(v[0]) * w0 +
+            BigInt(v[1]) * w1 +
+            BigInt(v[2]) * w2 +
+            BigInt(v[3]) * w3 +
+            BigInt(v[4]) * w4 +
+            (i === j ? 0n : 1n);
+        }
+        return row;
+      });
+
+      const u = new Array(h + 1).fill(0n);
+      const v = new Array(h + 1).fill(0n);
+      const p = new Int32Array(h + 1);
+      const way = new Int32Array(h + 1);
+
+      for (let row = 1; row <= h; row++) {
+        tick();
+        p[0] = row;
+        const minv = new Array(h + 1).fill(null);
+        const used = new Uint8Array(h + 1);
+        let col0 = 0;
+        do {
+          used[col0] = 1;
+          const row0 = p[col0];
+          const matRow = cost[row0 - 1];
+          let delta = null;
+          let col1 = -1;
+          for (let col = 1; col <= h; col++) {
+            if (used[col]) continue;
+            tick();
+            const raw = matRow[col - 1];
+            if (raw !== null) {
+              const reduced = raw - u[row0] - v[col];
+              if (minv[col] === null || reduced < minv[col]) {
+                minv[col] = reduced;
+                way[col] = col0;
+              }
+            }
+            if (minv[col] !== null && (delta === null || minv[col] < delta)) {
+              delta = minv[col];
+              col1 = col;
+            }
+          }
+          if (col1 === -1) return null;
+          for (let col = 0; col <= h; col++) {
+            if (used[col]) {
+              u[p[col]] += delta;
+              v[col] -= delta;
+            } else if (minv[col] !== null) {
+              minv[col] -= delta;
+            }
+          }
+          col0 = col1;
+        } while (p[col0] !== 0);
+        do {
+          const prevCol = way[col0];
+          p[col0] = p[prevCol];
+          col0 = prevCol;
+        } while (col0 !== 0);
+      }
+
+      const assigned = new Array(h);
+      for (let col = 1; col <= h; col++) assigned[p[col] - 1] = col - 1;
+
+      const pairs = [];
+      const totals = [0, 0, 0, 0, 0];
+      for (let i = 0; i < h; i++) {
+        const info = pairInfo(leftArr[i], rightArr[assigned[i]], region);
+        if (!info) return null;
+        pairs.push({ whiteId: info.whiteId, blackId: info.blackId });
+        for (let k = 0; k < 5; k++) totals[k] += info.value[k];
+      }
+      return { pairs, totals };
+    }
+
+    function generalMatch(ordered, incomingSet, region) {
+      let bestPairs = null;
+      let bestTotals = null;
+      let searchNodes = 0;
+      const NODE_CAP = 50000;
+
+      function search(left, accPairs, accTotals) {
+        tick();
+        if (++searchNodes > NODE_CAP) return;
+        if (bestTotals && lex(accTotals, bestTotals) >= 0) return;
+
+        if (!left.length) {
+          bestPairs = accPairs.slice();
+          bestTotals = accTotals.slice();
+          return;
+        }
+
+        let anchor = null;
+        for (const p of left) {
+          if (incomingSet.has(p.id)) { anchor = p; break; }
+        }
+        if (!anchor) {
+          anchor = region === "below" ? left[left.length - 1] : left[0];
+        }
+
+        const halfPos = left.length >> 1;
+        const aIdx = left.indexOf(anchor);
+        const candidates = [];
+
+        for (let idx = 0; idx < left.length; idx++) {
+          const p = left[idx];
+          if (p === anchor) continue;
+          const info = pairInfo(anchor, p, region);
+          if (!info) continue;
+          const sameHalf = (aIdx < halfPos) === (idx < halfPos) ? 1 : 0;
+          const dist = Math.abs(Math.abs(idx - aIdx) - halfPos);
+          candidates.push({ p, info, sameHalf, dist });
+        }
+
+        candidates.sort((x, y) => {
+          for (let k = 0; k < 5; k++) {
+            if (x.info.value[k] !== y.info.value[k]) {
+              return x.info.value[k] - y.info.value[k];
+            }
+          }
+          return x.sameHalf - y.sameHalf || x.dist - y.dist || x.p.tpn - y.p.tpn;
+        });
+
+        for (const { p, info } of candidates) {
+          const nextTotals = [
+            accTotals[0] + info.value[0],
+            accTotals[1] + info.value[1],
+            accTotals[2] + info.value[2],
+            accTotals[3] + info.value[3],
+            accTotals[4] + info.value[4]
+          ];
+          if (bestTotals && lex(nextTotals, bestTotals) >= 0) continue;
+
+          const next = left.filter(q => q !== anchor && q !== p);
+          if (!canMatch(next)) continue;
+
+          accPairs.push({ whiteId: info.whiteId, blackId: info.blackId });
+          search(next, accPairs, nextTotals);
+          accPairs.pop();
+
+          if (bestTotals &&
+              bestTotals[0] === 0 && bestTotals[1] === 0 &&
+              bestTotals[2] === 0 && bestTotals[3] === 0 &&
+              bestTotals[4] === 0) {
+            return;
+          }
+          if (searchNodes > NODE_CAP) return;
+        }
+      }
+
+      search(ordered, [], [0, 0, 0, 0, 0]);
+      return bestPairs ? { pairs: bestPairs, totals: bestTotals } : null;
+    }
+
     function matchBest(items, incoming, region) {
       if (items.length % 2) return null;
       if (!items.length) return { pairs: [] };
+      if (!canMatch(items)) return null;
 
       const incomingSet = new Set(incoming.map(p => p.id));
       const ordered = [...items].sort(byTPN);
       const floaterList = incoming.slice();
       const residentList = ordered.filter(p => !incomingSet.has(p.id));
 
-      function placeFloaters() {
-        const pairs = [];
-        const workList = residentList.slice();
-        for (const f of floaterList) {
-          let idx = -1;
-          if (region === "below") {
-            for (let i = workList.length - 1; i >= 0; i--) {
-              if (pairInfo(f, workList[i], region)) { idx = i; break; }
-            }
-          } else {
-            for (let i = 0; i < workList.length; i++) {
-              if (pairInfo(f, workList[i], region)) { idx = i; break; }
-            }
-          }
-          if (idx === -1) return null;
-          const r = workList[idx];
-          const info = pairInfo(f, r, region);
-          pairs.push({ whiteId: info.whiteId, blackId: info.blackId });
-          workList.splice(idx, 1);
-        }
-        return { pairs, rest: workList };
-      }
-
-      {
-        const placed = placeFloaters();
-        if (placed) {
-          const h = placed.rest.length / 2;
-          let ok = true;
-          for (let i = 0; i < h; i++) {
-            const info = pairInfo(placed.rest[i], placed.rest[i + h], region);
-            if (!info) { ok = false; break; }
-            placed.pairs.push({ whiteId: info.whiteId, blackId: info.blackId });
-          }
-          if (ok) return { pairs: placed.pairs };
-        }
-      }
-
-      {
-        const placed = placeFloaters();
-        if (placed) {
-          const h = placed.rest.length / 2;
-          const top = placed.rest.slice(0, h);
-          const bot = placed.rest.slice(h);
-          const matchR = new Array(h).fill(-1);
-          function augment(i, seen) {
-            for (let j = 0; j < h; j++) {
-              if (seen[j]) continue;
-              if (!pairInfo(top[i], bot[j], region)) continue;
-              seen[j] = true;
-              if (matchR[j] === -1 || augment(matchR[j], seen)) {
-                matchR[j] = i;
-                return true;
-              }
-            }
-            return false;
-          }
-          let ok = true;
-          for (let i = 0; i < h; i++) {
-            const seen = new Array(h).fill(false);
-            if (!augment(i, seen)) { ok = false; break; }
-          }
-          if (ok) {
-            const topToBot = new Array(h).fill(-1);
-            for (let j = 0; j < h; j++) topToBot[matchR[j]] = j;
-            for (let i = 0; i < h; i++) {
-              const info = pairInfo(top[i], bot[topToBot[i]], region);
-              placed.pairs.push({ whiteId: info.whiteId, blackId: info.blackId });
-            }
-            return { pairs: placed.pairs };
-          }
-        }
-      }
-
-      const memo = new Map();
-      const MEMO_CAP = 500000;
-
-      function visit(left) {
-        tick();
-        if (!left.length)
-          return { pairs: [], totalsAdd: [0, 0, 0, 0, 0], signatureAdd: [] };
-
-        let key = null;
-        if (left.length <= 24) {
-          key = left.map(p => p.id).sort().join(",");
-          const hit = memo.get(key);
-          if (hit !== undefined) return hit;
-        }
-
-        const floats = left.filter(p => incomingSet.has(p.id));
-        let anchor;
-        if (floats.length) anchor = floats[0];
-        else {
-          anchor = left[0];
-          if (region === "below")
-            for (const p of left) if (p.tpn > anchor.tpn) anchor = p;
-          else
-            for (const p of left) if (p.tpn < anchor.tpn) anchor = p;
-        }
-
-        const candidates = left
-          .filter(p => p !== anchor)
-          .map(p => ({ p, info: pairInfo(anchor, p, region) }))
-          .filter(x => x.info);
-
-        let bestSub = null, bestQuality = null;
-        for (const { p, info } of candidates) {
-          const next = left.filter(q => q !== anchor && q !== p);
-          const sub = visit(next);
-          if (!sub) continue;
-          const addTotals =
-            sub.totalsAdd.map((n, i) => n + info.value[i]);
-          const addSig = [p.tpn, ...sub.signatureAdd];
-          const quality = [...addTotals, ...addSig];
-          if (!bestQuality || lex(quality, bestQuality) < 0) {
-            bestQuality = quality;
-            bestSub = {
-              pairs: [
-                { whiteId: info.whiteId, blackId: info.blackId },
-                ...sub.pairs
-              ],
-              totalsAdd: addTotals,
-              signatureAdd: addSig
+      let fast = null;
+      if (residentList.length >= floaterList.length) {
+        function placeAndPair(fIdx, workList, accPairs, accTotals) {
+          if (fIdx === floaterList.length) {
+            const h = workList.length / 2;
+            const bip = minCostBipartite(workList.slice(0, h), workList.slice(h), region);
+            if (!bip) return null;
+            return {
+              pairs: [...accPairs, ...bip.pairs],
+              totals: accTotals.map((n, k) => n + bip.totals[k])
             };
           }
+
+          const f = floaterList[fIdx];
+          const choices = [];
+          for (let i = 0; i < workList.length; i++) {
+            const pos = region === "below" ? workList.length - 1 - i : i;
+            const info = pairInfo(f, workList[pos], region);
+            if (!info) continue;
+            choices.push({ pos, info, order: i });
+          }
+          choices.sort((a, b) => {
+            for (let k = 0; k < 5; k++) {
+              if (a.info.value[k] !== b.info.value[k]) {
+                return a.info.value[k] - b.info.value[k];
+              }
+            }
+            return a.order - b.order;
+          });
+
+          let bestHere = null;
+          let tried = 0;
+          const limit = floaterList.length === 1 ? 6 : 4;
+          for (const ch of choices) {
+            if (tried >= limit) break;
+            if (bestHere && lex(ch.info.value.slice(0, 5), bestHere.totals) >= 0) break;
+            const nextWork = workList.slice();
+            nextWork.splice(ch.pos, 1);
+            if (!canMatch(nextWork)) continue;
+            tried++;
+            const nextTotals = accTotals.map((n, k) => n + ch.info.value[k]);
+            accPairs.push({ whiteId: ch.info.whiteId, blackId: ch.info.blackId });
+            const res = placeAndPair(fIdx + 1, nextWork, accPairs, nextTotals);
+            accPairs.pop();
+            if (res) {
+              if (!bestHere || lex(res.totals, bestHere.totals) < 0) bestHere = res;
+              if (bestHere.totals[0] === 0 && bestHere.totals[1] === 0 &&
+                  bestHere.totals[2] === 0 && bestHere.totals[3] === 0 &&
+                  bestHere.totals[4] === 0) {
+                return bestHere;
+              }
+              if (floaterList.length > 1) return bestHere;
+            }
+          }
+          return bestHere;
         }
-        if (key !== null) {
-          memo.set(key, bestSub);
-          if (memo.size > MEMO_CAP) memo.clear();
-        }
-        return bestSub;
+
+        fast = placeAndPair(0, residentList, [], [0, 0, 0, 0, 0]);
+        if (fast && fast.totals[0] === 0) return { pairs: fast.pairs };
       }
 
-      const result = visit(items);
-      return result && { pairs: result.pairs };
+      const fallback = generalMatch(ordered, incomingSet, region);
+      if (fast && (!fallback || lex(fast.totals, fallback.totals) <= 0)) {
+        return { pairs: fast.pairs };
+      }
+      return fallback && { pairs: fallback.pairs };
     }
 
     function* subsets(list,count,start=0,chosen=[]) {
@@ -5949,7 +6181,6 @@ function LimCore() {
       const items=[...incoming,...residents];
       const nextScore=sequence[index+1];
       const next=nextScore===undefined ? medianResidents : group(nextScore);
-      const min=items.length % 2;
 
       const nextKey = nextScore === undefined
         ? "M" + medianScore : "S" + nextScore;
@@ -5964,14 +6195,50 @@ function LimCore() {
         hasNext.set(p.id, v);
       }
 
-      for (let count=min;count<=items.length;count+=2) {
+      const itemSet = new Set(items.map(p => p.id));
+      const forcedOut = [];
+      const freeItems = [];
+      for (const p of items) {
+        let hasPartner = false;
+        for (const qid of legalAdj.get(p.id)) {
+          if (itemSet.has(qid)) { hasPartner = true; break; }
+        }
+        if (hasPartner) freeItems.push(p);
+        else forcedOut.push(p);
+      }
+
+      freeItems.sort((a, b) => {
+        const pa = a.score !== score;
+        const pb = b.score !== score;
+        const ha = hasNext.get(a.id) ? 1 : 0;
+        const hb = hasNext.get(b.id) ? 1 : 0;
+        const ta = (!pa && ha) ? 0 : !pa ? 1 : ha ? 2 : 3;
+        const tb = (!pb && hb) ? 0 : !pb ? 1 : hb ? 2 : 3;
+        if (ta !== tb) return ta - tb;
+        const ra = (a.floats[round - 2] && a.floats[round - 2] !== "-") ? 1 : 0;
+        const rb = (b.floats[round - 2] && b.floats[round - 2] !== "-") ? 1 : 0;
+        if (ra !== rb) return ra - rb;
+        return dir === "above" ? b.tpn - a.tpn : a.tpn - b.tpn;
+      });
+
+      const minFloat = items.length - 2 * maxMatchingSize(items);
+      const startCount = Math.max(forcedOut.length + ((items.length - forcedOut.length) % 2), minFloat);
+
+      for (let count=startCount;count<=items.length;count+=2) {
+        const need = count - forcedOut.length;
+        if (need < 0 || need > freeItems.length) continue;
+
         const options=[];
-        for (const out of subsets(items,count)) {
+        let tested = 0;
+        for (const picked of subsets(freeItems, need)) {
+          tested++;
+          const out = forcedOut.length ? [...forcedOut, ...picked] : picked;
           const outSet = new Set(out.map(p => p.id));
           const left = items.filter(p => !outSet.has(p.id));
           if (!canMatch(left)) continue;
           options.push({out, outSet, left,
             cost:floaterCost(out, left, dir, hasNext, score)});
+          if (options.length >= 256 && tested >= 4000) break;
         }
         options.sort((a,b) => lex(a.cost,b.cost));
 
