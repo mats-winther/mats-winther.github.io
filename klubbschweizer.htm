@@ -713,7 +713,7 @@ function countDelimiterOutsideQuotes(line, delimiter) {
 }
 
 function detectDelimiter(line) {
-  const candidates = ["\t", ";"];
+  const candidates = ["\t", ";", ","];
 
   const counts = candidates.map(delimiter => ({
     delimiter,
