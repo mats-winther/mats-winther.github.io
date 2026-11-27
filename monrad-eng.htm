@@ -524,6 +524,7 @@ button.about-button:hover {
           <th style="width: 90px;">Points</th>
           <th id="th-tiebreak" style="width: 110px;">WNT</th>
           <th style="width: 120px;">Colours</th>
+          <th style="width: 60px;" title="Colour Balance">CB</th>
         </tr>
       </thead>
       <tbody id="final-tbody"></tbody>
@@ -1843,12 +1844,16 @@ function getColourSequence(player) {
         tbValue = p.cumulativeScore;
       }
 
+      const diff = (p.whites || 0) - (p.blacks || 0);
+      const cbStr = diff > 0 ? `+${diff}` : String(diff);
+
       tr.innerHTML = `
         <td style="font-weight: bold; color: #64748b;">${idx + 1}</td>
         <td>${getFinalPlayerDisplayName(p)}</td>
         <td><span class="score-badge">${formatPoints(p.score)}</span></td>
         <td style="font-weight: 600;">${formatTieBreak(tbValue, tieBreakSystem)}</td>
         <td style="font-family: monospace; overflow-wrap: anywhere;">${getColourSequence(p)}</td>
+        <td>${cbStr}</td>
       `;
       tbody.appendChild(tr);
     });
