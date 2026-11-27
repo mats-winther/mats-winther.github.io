@@ -396,6 +396,7 @@ function fillHeaderRow(row, headers) {
   headers.forEach(h => {
     const th = document.createElement('th');
     th.textContent = h;
+    if (h === 'FB') th.title = 'Färgbalans';
     row.appendChild(th);
   });
 }
@@ -1605,12 +1606,12 @@ function showFinalStandings() {
   recalculateTiebreaks();
   document.getElementById('final-section').style.display = 'block';
 
-  const tName = (state.name || 'Schweizisk turnering').trim();
-  document.getElementById('final-standings-title').textContent = `🏆 ${tName} – Slutresultat`;
+  const tName = (state.name || 'Schweizerturnering').trim();
+  document.getElementById('final-standings-title').textContent = `🏆 ${tName} — Slutresultat`;
 
   fillHeaderRow(
     document.getElementById('final-thead-row'),
-    ['Plac.', 'Seed', 'Spelare', 'Klubb', 'Rating', 'Poäng', ...tiebreakHeaders(), 'Färger']
+    ['Plac.', 'Seed', 'Spelare', 'Klubb', 'Rating', 'Poäng', ...tiebreakHeaders(), 'Färger', 'FB']
   );
 
   const tbody = document.getElementById('final-table-body');
@@ -1620,6 +1621,8 @@ function showFinalStandings() {
     const colorHistory = (p.history || [])
       .map(h => (h.color && h.color !== '-') ? (h.color === 'W' ? 'V' : (h.color === 'B' ? 'S' : h.color)) : '-')
       .join('');
+    const { diff } = getColorStats(p);
+    const cbStr = diff > 0 ? `+${diff}` : String(diff);
     const titlePart = p.title ? ` (${escapeHtml(p.title)})` : '';
 
     const tr = document.createElement('tr');
@@ -1632,6 +1635,7 @@ function showFinalStandings() {
       <td><strong>${escapeHtml(p.score)}</strong></td>
       ${tiebreakCells(p)}
       <td style="font-family: monospace; letter-spacing: 1px;">${escapeHtml(colorHistory)}</td>
+      <td>${escapeHtml(cbStr)}</td>
     `;
     tbody.appendChild(tr);
   });

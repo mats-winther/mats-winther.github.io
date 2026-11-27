@@ -396,6 +396,7 @@ function fillHeaderRow(row, headers) {
   headers.forEach(h => {
     const th = document.createElement('th');
     th.textContent = h;
+    if (h === 'CB') th.title = 'Color Balance';
     row.appendChild(th);
   });
 }
@@ -1610,7 +1611,7 @@ function showFinalStandings() {
 
   fillHeaderRow(
     document.getElementById('final-thead-row'),
-    ['Pos.', 'Seed', 'Player', 'Club', 'Rating', 'Score', ...tiebreakHeaders(), 'Colors']
+    ['Pos.', 'Seed', 'Player', 'Club', 'Rating', 'Score', ...tiebreakHeaders(), 'Colors', 'CB']
   );
 
   const tbody = document.getElementById('final-table-body');
@@ -1620,6 +1621,8 @@ function showFinalStandings() {
     const colorHistory = (p.history || [])
       .map(h => (h.color && h.color !== '-') ? h.color : '-')
       .join('');
+    const { diff } = getColorStats(p);
+    const cbStr = diff > 0 ? `+${diff}` : String(diff);
     const titlePart = p.title ? ` (${escapeHtml(p.title)})` : '';
 
     const tr = document.createElement('tr');
@@ -1632,6 +1635,7 @@ function showFinalStandings() {
       <td><strong>${escapeHtml(p.score)}</strong></td>
       ${tiebreakCells(p)}
       <td style="font-family: monospace; letter-spacing: 1px;">${escapeHtml(colorHistory)}</td>
+      <td>${escapeHtml(cbStr)}</td>
     `;
     tbody.appendChild(tr);
   });
