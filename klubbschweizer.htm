@@ -373,6 +373,7 @@ function fillHeaderRow(row, headers) {
   headers.forEach(h => {
     const th = document.createElement('th');
     th.textContent = h;
+    if (h === 'FB') th.title = 'Färgbalans';
     row.appendChild(th);
   });
 }
@@ -1518,10 +1519,10 @@ function getSortedStandings() {
 }
 
 function standingsHeaders(withColors) {
-  const h = ['Plac.', 'Startnr'];
-  if (state.useGroups) h.push('Grupp');
+  const h = ['Pos.', 'Seed'];
+  if (state.useGroups) h.push('Group');
   h.push('Spelare', 'Klubb', 'Rating', 'Poäng', ...tiebreakHeaders());
-  if (withColors) h.push('Färger');
+  if (withColors) h.push('Färger', 'FB');
   return h;
 }
 
@@ -1533,7 +1534,9 @@ function standingsRowHtml(p, idx, withColors) {
     const colorHistory = (p.history || [])
       .map(h => colorLabel(h.color))
       .join('');
-    colorCell = `<td style="font-family: monospace; letter-spacing: 1px;">${escapeHtml(colorHistory)}</td>`;
+    const { diff } = getColorStats(p);
+    const cbStr = diff > 0 ? `+${diff}` : String(diff);
+    colorCell = `<td style="font-family: monospace; letter-spacing: 1px;">${escapeHtml(colorHistory)}</td><td>${escapeHtml(cbStr)}</td>`;
   }
   return `
       <td>${idx + 1}</td>

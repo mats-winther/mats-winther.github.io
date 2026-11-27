@@ -372,6 +372,7 @@ function fillHeaderRow(row, headers) {
   headers.forEach(h => {
     const th = document.createElement('th');
     th.textContent = h;
+    if (h === 'CB') th.title = 'Color Balance';
     row.appendChild(th);
   });
 }
@@ -1520,7 +1521,7 @@ function standingsHeaders(withColors) {
   const h = ['Pos.', 'Seed'];
   if (state.useGroups) h.push('Group');
   h.push('Player', 'Club', 'Rating', 'Score', ...tiebreakHeaders());
-  if (withColors) h.push('Colors');
+  if (withColors) h.push('Colors', 'CB');
   return h;
 }
 
@@ -1532,7 +1533,9 @@ function standingsRowHtml(p, idx, withColors) {
     const colorHistory = (p.history || [])
       .map(h => colorLabel(h.color))
       .join('');
-    colorCell = `<td style="font-family: monospace; letter-spacing: 1px;">${escapeHtml(colorHistory)}</td>`;
+    const { diff } = getColorStats(p);
+    const cbStr = diff > 0 ? `+${diff}` : String(diff);
+    colorCell = `<td style="font-family: monospace; letter-spacing: 1px;">${escapeHtml(colorHistory)}</td><td>${escapeHtml(cbStr)}</td>`;
   }
   return `
       <td>${idx + 1}</td>
