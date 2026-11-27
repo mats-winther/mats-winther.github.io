@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="style4.css" rel="stylesheet" type="text/css">
+  <meta name="description" content="An examination of standard Swiss pairing and its advantages over modern FIDE pairing systems.">
+  <meta name="keywords" content="Swiss, Dutch, Dubov, Burstein, Lim, pairing systems, chess">
+  <meta name="author" content="Mats Winther">
+  <link rel="canonical" href="https://mats-winther.github.io/bg/swissargument.htm">
+  <title>A Case for Standard Swiss Pairing over Modern FIDE Pairing Systems</title>
+  <style>
+
+  :root {
+    --primary: #1e3a8a;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #cbd5e1;
+    --stripe: #f1f5f9;
+  }
+  * {
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  body {
+    margin: 0 auto;
+    padding: 0 20px;
+    text-align: left;
+  }
+  .container {
+    max-width: 820px;
+    margin: 0 auto;
+    background: var(--card);
+    padding: 24px 28px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+  h1 {
+    margin: 0 0 6px 0;
+    font-size: 20px;
+    color: var(--primary);
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 10px;
+  }
+  .subtitle {
+    margin: 0 0 20px 0;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+  h2 {
+    margin: 26px 0 8px 0;
+    font-size: 16.5px;
+    color: var(--primary);
+  }
+  h3 {
+    margin: 20px 0 6px 0;
+    font-size: 14.5px;
+    color: var(--text);
+  }
+  h3 span {
+    font-weight: 400;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 14px;
+    font-size: 13px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 6px 8px;
+    text-align: right;
+  }
+  th {
+    background: var(--stripe);
+    font-weight: 600;
+    color: var(--text);
+  }
+  th:first-child, td:first-child {
+    text-align: left;
+  }
+  tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+  .avg-table th {
+    text-align: right;
+  }
+  .avg-table th:first-child {
+    text-align: left;
+  }
+  .mono {
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  }
+  @media print {
+    body { background: #fff; padding: 0; }
+    .container { box-shadow: none; border: none; padding: 0; max-width: 100%; }
+  }
+
+  </style>
+</head>
+<body>
+  <p></p><a class="c1" href="chessvar.htm" title="Chess variants"><img src="gifs/ghome_but.gif" alt="HOME"></a>
+  <a href="https://www.academia.edu/176387716/Chess_Pairings_A_Review_of_Monrad_Swiss_and_Berger" class="c2"><img src=
+  "gifs/pdfdwn1.gif" alt="PDF"></a>
+  <p><br></p>
+  <h1>A Case for Standard Swiss Pairing over Modern FIDE Pairing Systems</h1>
+  <p><br>
+  FIDE&rsquo;s pairing algorithms (Dutch, Dubov, Lim, and Burstein) aim to reduce the number of upfloats and downfloats
+  between score brackets as well as the number of double colours (WW and BB). The question is why.<br>
+  <br>
+  FIDE seems to assume that a colour sequence such as WBWBWBWBW is better than WWBBWWBBW. However, this
+  is not self-evident. On the contrary, one could argue that the latter pattern is advantageous for the player. Someone
+  playing the same colour as in the previous round recalls their preparation more easily and does not need to readjust
+  mentally. After all, playing with White versus Black involves two fundamentally different tasks. A tennis player
+  would hardly want to switch between grass and clay before every match.<br>
+  <br>
+  One can therefore argue that a player who receives the colour sequence BBWWBBWWB is favoured over a player who
+  receives BWBWBWBWB. If this is true, the colour restrictions used in Dutch, Dubov, and Burstein may
+  paradoxically increase rather than decrease unfairness. In a 9-round tournament with 60 participants, roughly 45% of
+  players receive perfect colour alternation, while the remaining players may get sequences such as WBWWBBWWB or
+  BWBWBBWWB.<br>
+  <br>
+  How does this increase fairness? If double colours actually represent an advantage, it seems fairer for all players
+  to receive roughly the same type of colour distribution. This is also what happens in normal Swiss pairing, where
+  only triple colours are prevented while both double colours and float history are otherwise ignored. In such a
+  system, practically all players receive double colours. Dutch, Dubov, and Burstein, on the other hand, result in
+  nearly half the players getting perfect colour alternation while the rest get double colours. If double colours are
+  advantageous, this means that some players are deprived of a benefit that other players enjoy.<br>
+  <br>
+  The likely explanation is that players have complained when given three Black games in a row, which is completely
+  understandable. This happened frequently in the past when pairings were done manually with cards, for example under
+  the Monrad system. There, a player could even get four games in a row with the same colour.<br>
+  <br>
+  However, it does not follow from this that two games in a row with the same colour is a problem. Because triple
+  colours are undesirable, it has been assumed that double colours should also be avoided. This has led to restrictions
+  that limit pairing freedom without any proof that double colours carry a disadvantage. Triple colours never appear to
+  occur in normal Swiss pairing.<br>
+  <br>
+  FIDE&rsquo;s pairing algorithms also suppress floats between score brackets (floaters), albeit not as radically. A
+  downfloat means that a player is paired against an opponent with a lower score. An upfloat means the opposite. In
+  Dutch, Dubov, and Burstein, floats are reduced by approximately 20% compared to normal Swiss pairing.<br>
+  <br>
+  In this respect too, natural Swiss pairing is degraded. Repeated upfloats are viewed as a potential disadvantage, as
+  the player may face stronger opponents, and repeated downfloats as a potential advantage, as the player may face
+  easier opposition. Historically, multiple upfloats or downfloats for the same player have been regarded negatively
+  because FIDE views floats as an advantage or disadvantage that should be distributed evenly among
+  participants&#8239;&mdash;&thinsp;not because there is strong evidence that repeated floats reduce tournament
+  quality.<br>
+  <br>
+  In modern Swiss pairing, players within each score bracket are ranked by tiebreak points. The player ranked highest
+  in the bracket has performed best and is therefore the natural candidate for an upfloat. Such a player often faces an
+  opponent in the higher score bracket whose tiebreak score is lower than his own. Correspondingly, the lowest-ranked
+  player is the natural candidate for a downfloat. Floats are therefore not an unfair element, but a natural
+  consequence of the players&rsquo; standings in the tournament. A player leading a score bracket has, through his
+  results, earned a tougher test&#8239;&mdash;&thinsp;something many players also welcome. The lowest-ranked player has
+  correspondingly earned an opportunity to recover against slightly weaker opposition.<br>
+  <br>
+  If one compares the number of floats in a tournament with 60 participants and 9 rounds, the question arises whether
+  the reduction from approximately 83 floats (in normal Swiss pairing) to approximately 70 floats actually leads to any
+  measurable improvement in tournament results. The Dutch system sacrifices pairing freedom to eliminate about 13
+  floats. What measurable benefit is achieved by eliminating these floats? This mindset may, for instance, have emerged
+  from recurring complaints such as, &quot;I was floated up three times.&quot; However, such objections do not prove
+  that repeated floats are inherently unfair, especially towards the end of the tournament when score brackets become
+  smaller.<br>
+  <br>
+  <span class="bigger">Conclusion</span><br>
+  <br>
+  FIDE&rsquo;s pairing systems appear largely to optimize formal criteria rather than competitive fairness. By
+  counteracting double colours and floats, pairing freedom is restricted without any demonstration that these
+  restrictions lead to better tournament outcomes.<br>
+  <br>
+  Normal Swiss pairing contains fewer artificial restrictions and allows the dynamics of the tournament to govern which
+  players meet to a greater extent. Therefore, it appears to be a more natural and likely also a fairer alternative.
+  The fact that the Dubov system can occasionally result in the two tournament leaders never having met by the end of
+  the final round illustrates how far modern algorithms can deviate from the fundamental idea of the Swiss system: that
+  the best-performing players should progressively be pitted against one another.<br>
+  <br>
+  FIDE should instead support normal Swiss pairing: seeded pairing in the first round, a ban on triple colours, general
+  colour balance (so that players receive roughly as many White as Black games), and ranking within score brackets by
+  points, tiebreak score, and TPN. Double colours and float history, however, should not influence the pairings.<br>
+  <br>
+  <span class="bigger">Pairing Engine Simulation Statistics</span><br>
+  <br>
+  The following statistics were generated using my program <a href="../pairing-system-evaluator.htm" title=
+  "A pairing system evaluator program for Dutch, Dubov, Burstein, Lim, and standard Swiss">Pairing System
+  Evaluator</a>, which simultaneously simulates tournaments using five different pairing algorithms.<br>
+  &nbsp;</p>
+  <div class="container">
+    <h1>Pairing Engine Simulation Statistics</h1>
+    <p class="subtitle">Ten 9-round tournaments with 60 players using five different pairing engines</p>
+    <h2>Average Values</h2>
+    <table class="avg-table">
+      <thead>
+        <tr>
+          <th>Engine</th>
+          <th>Score Variance</th>
+          <th>Upfloaters</th>
+          <th>Downfloaters</th>
+          <th>Total Floaters</th>
+          <th>Double-colours</th>
+          <th>Triple-colours</th>
+          <th>Perfect Colour Streaks</th>
+        </tr>
+      </thead>
+      <tbody class="mono">
+        <tr>
+          <td><strong>Dutch</strong></td>
+          <td>1.623</td>
+          <td>34.8</td>
+          <td>34.8</td>
+          <td>69.6</td>
+          <td>52.2</td>
+          <td>0.0</td>
+          <td>25.6 / 60 (42.7%)</td>
+        </tr>
+        <tr>
+          <td><strong>Dubov</strong></td>
+          <td>1.675</td>
+          <td>37.7</td>
+          <td>0.0</td>
+          <td>37.7</td>
+          <td>46.6</td>
+          <td>0.0</td>
+          <td>28.6 / 60 (47.7%)</td>
+        </tr>
+        <tr>
+          <td><strong>Burstein</strong></td>
+          <td>1.692</td>
+          <td>32.5</td>
+          <td>32.5</td>
+          <td>65.0</td>
+          <td>52.6</td>
+          <td>0.0</td>
+          <td>25.2 / 60 (42.0%)</td>
+        </tr>
+        <tr>
+          <td><strong>Lim</strong></td>
+          <td>1.636</td>
+          <td>32.3</td>
+          <td>32.3</td>
+          <td>64.6</td>
+          <td>52.6</td>
+          <td>0.1</td>
+          <td>22.5 / 60 (37.5%)</td>
+        </tr>
+        <tr>
+          <td><strong>Club Swiss</strong></td>
+          <td>1.621</td>
+          <td>41.6</td>
+          <td>41.6</td>
+          <td>83.2</td>
+          <td>141.2</td>
+          <td>0.0</td>
+          <td>0.5 / 60 (0.8%)</td>
+        </tr>
+      </tbody>
+    </table>
+    <h2>Ten Tournament Simulations per Engine</h2>
+    <h3>Dutch</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Run</th>
+          <th>Score Var.</th>
+          <th>Up (&uarr;)</th>
+          <th>Down (&darr;)</th>
+          <th>Total Floats</th>
+          <th>Double (WW/BB)</th>
+          <th>Triple (WWW/BBB)</th>
+          <th>Perfect Streaks</th>
+        </tr>
+      </thead>
+      <tbody class="mono">
+        <tr>
+          <td>1</td>
+          <td>1.542</td>
+          <td>33</td>
+          <td>33</td>
+          <td>66</td>
+          <td>56</td>
+          <td>0</td>
+          <td>24 / 60</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>1.675</td>
+          <td>28</td>
+          <td>28</td>
+          <td>56</td>
+          <td>50</td>
+          <td>0</td>
+          <td>24 / 60</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>1.750</td>
+          <td>43</td>
+          <td>43</td>
+          <td>86</td>
+          <td>66</td>
+          <td>0</td>
+          <td>16 / 60</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>1.633</td>
+          <td>35</td>
+          <td>35</td>
+          <td>70</td>
+          <td>36</td>
+          <td>0</td>
+          <td>33 / 60</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>1.583</td>
+          <td>37</td>
+          <td>37</td>
+          <td>74</td>
+          <td>50</td>
+          <td>0</td>
+          <td>29 / 60</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td>1.600</td>
+          <td>32</td>
+          <td>32</td>
+          <td>64</td>
+          <td>36</td>
+          <td>0</td>
+          <td>35 / 60</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td>1.758</td>
+          <td>41</td>
+          <td>41</td>
+          <td>82</td>
+          <td>72</td>
+          <td>0</td>
+          <td>17 / 60</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td>1.542</td>
+          <td>34</td>
+          <td>34</td>
+          <td>68</td>
+          <td>58</td>
+          <td>0</td>
+          <td>23 / 60</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td>1.575</td>
+          <td>28</td>
+          <td>28</td>
+          <td>56</td>
+          <td>58</td>
+          <td>0</td>
+          <td>25 / 60</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td>1.575</td>
+          <td>37</td>
+          <td>37</td>
+          <td>74</td>
+          <td>40</td>
+          <td>0</td>
+          <td>30 / 60</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>Dubov</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Run</th>
+          <th>Score Var.</th>
+          <th>Up (&uarr;)</th>
+          <th>Down (&darr;)</th>
+          <th>Total Floats</th>
+          <th>Double (WW/BB)</th>
+          <th>Triple (WWW/BBB)</th>
+          <th>Perfect Streaks</th>
+        </tr>
+      </thead>
+      <tbody class="mono">
+        <tr>
+          <td>1</td>
+          <td>1.517</td>
+          <td>37</td>
+          <td>0</td>
+          <td>37</td>
+          <td>36</td>
+          <td>0</td>
+          <td>36 / 60</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>1.650</td>
+          <td>30</td>
+          <td>0</td>
+          <td>30</td>
+          <td>40</td>
+          <td>0</td>
+          <td>32 / 60</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>1.817</td>
+          <td>37</td>
+          <td>0</td>
+          <td>37</td>
+          <td>38</td>
+          <td>0</td>
+          <td>31 / 60</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>1.750</td>
+          <td>42</td>
+          <td>0</td>
+          <td>42</td>
+          <td>38</td>
+          <td>0</td>
+          <td>32 / 60</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>1.525</td>
+          <td>41</td>
+          <td>0</td>
+          <td>41</td>
+          <td>44</td>
+          <td>0</td>
+          <td>30 / 60</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td>1.642</td>
+          <td>45</td>
+          <td>0</td>
+          <td>45</td>
+          <td>52</td>
+          <td>0</td>
+          <td>23 / 60</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td>1.700</td>
+          <td>39</td>
+          <td>0</td>
+          <td>39</td>
+          <td>54</td>
+          <td>0</td>
+          <td>29 / 60</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td>1.708</td>
+          <td>39</td>
+          <td>0</td>
+          <td>39</td>
+          <td>44</td>
+          <td>0</td>
+          <td>31 / 60</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td>1.667</td>
+          <td>34</td>
+          <td>0</td>
+          <td>34</td>
+          <td>56</td>
+          <td>0</td>
+          <td>23 / 60</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td>1.775</td>
+          <td>33</td>
+          <td>0</td>
+          <td>33</td>
+          <td>64</td>
+          <td>0</td>
+          <td>19 / 60</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>Burstein</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Run</th>
+          <th>Score Var.</th>
+          <th>Up (&uarr;)</th>
+          <th>Down (&darr;)</th>
+          <th>Total Floats</th>
+          <th>Double (WW/BB)</th>
+          <th>Triple (WWW/BBB)</th>
+          <th>Perfect Streaks</th>
+        </tr>
+      </thead>
+      <tbody class="mono">
+        <tr>
+          <td>1</td>
+          <td>1.758</td>
+          <td>39</td>
+          <td>39</td>
+          <td>78</td>
+          <td>58</td>
+          <td>0</td>
+          <td>27 / 60</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>1.750</td>
+          <td>32</td>
+          <td>32</td>
+          <td>64</td>
+          <td>44</td>
+          <td>0</td>
+          <td>29 / 60</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>1.625</td>
+          <td>31</td>
+          <td>31</td>
+          <td>62</td>
+          <td>74</td>
+          <td>0</td>
+          <td>20 / 60</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>1.650</td>
+          <td>32</td>
+          <td>32</td>
+          <td>64</td>
+          <td>42</td>
+          <td>0</td>
+          <td>26 / 60</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>1.608</td>
+          <td>38</td>
+          <td>38</td>
+          <td>76</td>
+          <td>54</td>
+          <td>0</td>
+          <td>26 / 60</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td>1.700</td>
+          <td>30</td>
+          <td>30</td>
+          <td>60</td>
+          <td>46</td>
+          <td>0</td>
+          <td>27 / 60</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td>1.575</td>
+          <td>34</td>
+          <td>34</td>
+          <td>68</td>
+          <td>70</td>
+          <td>0</td>
+          <td>17 / 60</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td>1.800</td>
+          <td>34</td>
+          <td>34</td>
+          <td>68</td>
+          <td>38</td>
+          <td>0</td>
+          <td>32 / 60</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td>1.775</td>
+          <td>23</td>
+          <td>23</td>
+          <td>46</td>
+          <td>54</td>
+          <td>0</td>
+          <td>23 / 60</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td>1.683</td>
+          <td>32</td>
+          <td>32</td>
+          <td>64</td>
+          <td>46</td>
+          <td>0</td>
+          <td>25 / 60</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>Lim</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Run</th>
+          <th>Score Var.</th>
+          <th>Up (&uarr;)</th>
+          <th>Down (&darr;)</th>
+          <th>Total Floats</th>
+          <th>Double (WW/BB)</th>
+          <th>Triple (WWW/BBB)</th>
+          <th>Perfect Streaks</th>
+        </tr>
+      </thead>
+      <tbody class="mono">
+        <tr>
+          <td>1</td>
+          <td>1.817</td>
+          <td>40</td>
+          <td>40</td>
+          <td>80</td>
+          <td>48</td>
+          <td>0</td>
+          <td>25 / 60</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>1.733</td>
+          <td>32</td>
+          <td>32</td>
+          <td>64</td>
+          <td>66</td>
+          <td>0</td>
+          <td>15 / 60</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>1.567</td>
+          <td>22</td>
+          <td>22</td>
+          <td>44</td>
+          <td>60</td>
+          <td>0</td>
+          <td>19 / 60</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>1.708</td>
+          <td>32</td>
+          <td>32</td>
+          <td>64</td>
+          <td>50</td>
+          <td>0</td>
+          <td>21 / 60</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>1.625</td>
+          <td>34</td>
+          <td>34</td>
+          <td>68</td>
+          <td>52</td>
+          <td>0</td>
+          <td>21 / 60</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td>1.517</td>
+          <td>29</td>
+          <td>29</td>
+          <td>58</td>
+          <td>44</td>
+          <td>1</td>
+          <td>27 / 60</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td>1.567</td>
+          <td>31</td>
+          <td>31</td>
+          <td>62</td>
+          <td>52</td>
+          <td>0</td>
+          <td>24 / 60</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td>1.542</td>
+          <td>36</td>
+          <td>36</td>
+          <td>72</td>
+          <td>60</td>
+          <td>0</td>
+          <td>21 / 60</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td>1.633</td>
+          <td>32</td>
+          <td>32</td>
+          <td>64</td>
+          <td>50</td>
+          <td>0</td>
+          <td>26 / 60</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td>1.650</td>
+          <td>35</td>
+          <td>35</td>
+          <td>70</td>
+          <td>44</td>
+          <td>0</td>
+          <td>26 / 60</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>Club Swiss <span>(normal Swiss without floater or double-colour restrictions)</span></h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Run</th>
+          <th>Score Var.</th>
+          <th>Up (&uarr;)</th>
+          <th>Down (&darr;)</th>
+          <th>Total Floats</th>
+          <th>Double (WW/BB)</th>
+          <th>Triple (WWW/BBB)</th>
+          <th>Perfect Streaks</th>
+        </tr>
+      </thead>
+      <tbody class="mono">
+        <tr>
+          <td>1</td>
+          <td>1.483</td>
+          <td>33</td>
+          <td>33</td>
+          <td>66</td>
+          <td>144</td>
+          <td>0</td>
+          <td>0 / 60</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>1.808</td>
+          <td>36</td>
+          <td>36</td>
+          <td>72</td>
+          <td>130</td>
+          <td>0</td>
+          <td>1 / 60</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>1.683</td>
+          <td>33</td>
+          <td>33</td>
+          <td>66</td>
+          <td>152</td>
+          <td>0</td>
+          <td>0 / 60</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>1.525</td>
+          <td>50</td>
+          <td>50</td>
+          <td>100</td>
+          <td>146</td>
+          <td>0</td>
+          <td>1 / 60</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>1.600</td>
+          <td>35</td>
+          <td>35</td>
+          <td>70</td>
+          <td>128</td>
+          <td>0</td>
+          <td>0 / 60</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td>1.558</td>
+          <td>36</td>
+          <td>36</td>
+          <td>72</td>
+          <td>140</td>
+          <td>0</td>
+          <td>1 / 60</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td>1.608</td>
+          <td>50</td>
+          <td>50</td>
+          <td>100</td>
+          <td>150</td>
+          <td>0</td>
+          <td>2 / 60</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td>1.725</td>
+          <td>48</td>
+          <td>48</td>
+          <td>96</td>
+          <td>142</td>
+          <td>0</td>
+          <td>0 / 60</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td>1.517</td>
+          <td>50</td>
+          <td>50</td>
+          <td>100</td>
+          <td>142</td>
+          <td>0</td>
+          <td>0 / 60</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td>1.700</td>
+          <td>45</td>
+          <td>45</td>
+          <td>90</td>
+          <td>138</td>
+          <td>0</td>
+          <td>0 / 60</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p></p>
+  <p><br>
+  <br>
+  <br>
+  <br>
+  <br></p>
+  <p class="cn"><a href="chessvar.htm"><img src="home.gif" alt="HOME"></a></p>
+  <p><br>
+  <br>
+  <br></p>
+  <p><br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br></p>
+</body>
+</html>
