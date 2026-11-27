@@ -1632,7 +1632,7 @@ function countDelimiterOutsideQuotes(line, delimiter) {
 }
 
 function detectDelimiter(line) {
-  const candidates = ["\t", ";"];
+  const candidates = ["\t", ";", ","];
 
   const counts = candidates.map(delimiter => ({
     delimiter,
@@ -1652,7 +1652,7 @@ function parseDelimitedLine(line, delimiter) {
       return [value.slice(1, -1).replaceAll('""', '"')];
     }
 
-    return [value];
+    return [value.replaceAll('"', '')];
   }
 
   const fields = [];
@@ -1686,7 +1686,11 @@ function parseDelimitedLine(line, delimiter) {
 }
 
 function splitPlayerLine(line) {
-  return parseDelimitedLine(line, detectDelimiter(line));
+  const delimiter = detectDelimiter(line);
+  return {
+    delimiter,
+    parts: parseDelimitedLine(line, delimiter)
+  };
 }
 
 function looksLikePlayerHeader(parts) {
@@ -1704,6 +1708,9 @@ function parsePlayerEntries(text) {
   const players = [];
   let firstMeaningfulLine = true;
 
+  const isTitle = val => /^(gm|im|fm|cm|wgm|wim|wfm|wcm)$/i.test(val);
+  const isRating = val => val !== "" && !isNaN(Number(val));
+
   for (const originalLine of lines) {
     const raw = originalLine.trim();
 
@@ -1711,7 +1718,8 @@ function parsePlayerEntries(text) {
       continue;
     }
 
-    const parts = splitPlayerLine(raw).map(part => part.trim());
+    const { delimiter, parts: rawParts } = splitPlayerLine(raw);
+    const parts = rawParts.map(part => part.trim());
 
     if (firstMeaningfulLine && looksLikePlayerHeader(parts)) {
       firstMeaningfulLine = false;
@@ -1720,7 +1728,26 @@ function parsePlayerEntries(text) {
 
     firstMeaningfulLine = false;
 
-    const name = parts[0] || "";
+    let name = parts[0] || "";
+    let meta = parts.slice(1);
+
+
+    // Handle unquoted "Surname, Firstname, ..." when comma is the delimiter
+    if (
+      delimiter === "," &&
+      !raw.startsWith('"') &&
+      parts.length >= 3 &&
+      parts[1] !== "" &&
+      !isTitle(parts[1]) &&
+      !isRating(parts[1]) &&
+      ((!parts[0].includes(" ") && !parts[1].includes(" ")) ||
+        isTitle(parts[2]) ||
+        isRating(parts[2]))
+    ) {
+      name = `${parts[0]}, ${parts[1]}`;
+      meta = parts.slice(2);
+    }
+
     if (!name) {
       continue;
     }
@@ -1729,31 +1756,25 @@ function parsePlayerEntries(text) {
     let club = "";
     let ratingText = "";
 
-    if (parts.length >= 4) {
-      title = parts[1] || "";
-      club = parts[2] || "";
-      ratingText = parts[3] || "";
-    } else if (parts.length === 3) {
-      const isKnownTitle = /^(gm|im|fm|cm|wgm|wim|wfm|wcm)$/i.test(parts[1]);
-      const lastIsRating = parts[2] !== "" && !isNaN(Number(parts[2]));
-      if (isKnownTitle) {
-        title = parts[1];
-        if (lastIsRating) {
-          ratingText = parts[2];
-        } else {
-          club = parts[2];
+    // Keep strict 4-column Name;Title;Club;Rating positional support
+    if (
+      meta.length >= 3 &&
+      (meta[0] === "" || isTitle(meta[0])) &&
+      (meta[2] === "" || isRating(meta[2]))
+    ) {
+      title = meta[0] || "";
+      club = meta[1] || "";
+      ratingText = meta[2] || "";
+    } else {
+      // Flexible order: detect title, rating, and club by value
+      for (const item of meta) {
+        if (!title && isTitle(item)) {
+          title = item;
+        } else if (!ratingText && isRating(item)) {
+          ratingText = item;
+        } else if (!club && item !== "") {
+          club = item;
         }
-      } else {
-        club = parts[1];
-        ratingText = parts[2];
-      }
-    } else if (parts.length === 2) {
-      if (/^(gm|im|fm|cm|wgm|wim|wfm|wcm)$/i.test(parts[1])) {
-        title = parts[1];
-      } else if (parts[1] !== "" && !isNaN(Number(parts[1].replace(",", ".")))) {
-        ratingText = parts[1];
-      } else {
-        club = parts[1];
       }
     }
 
