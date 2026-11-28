@@ -6340,7 +6340,7 @@ function LimCore() {
 }
 
 /* ========================================================================== */
-/* 5. CLUB SWISS PAIRING CORE (adapted from club-swiss3.txt)                  */
+/* 5. CLUB SWISS PAIRING CORE (adapted from club-swiss.txt)                   */
 /* ========================================================================== */
 
 function ClubSwissCore() {
@@ -6454,7 +6454,21 @@ function ClubSwissCore() {
 
   function pairSwissPool(players, opts = {}) {
     const penalty = opts.penalty || null;
+    const preferOppositeColor = !!opts.preferOppositeColor;
     const available = [...players].sort(compareClubStandings);
+
+    const colorDiff = preferOppositeColor
+      ? new Map(available.map(p => [p.id, getColorStats(p).diff]))
+      : null;
+
+    function colorBalancePenalty(p1, p2) {
+      const d1 = colorDiff.get(p1.id) || 0;
+      if (d1 === 0) return 0;
+      const d2 = colorDiff.get(p2.id) || 0;
+      if (d1 * d2 < 0) return 0; // opposite sign: both move toward 0
+      if (d2 === 0) return 1;    // neutral: p1 moves toward 0, p2 moves to ±1
+      return 2;                  // same sign: one player pushed to ±2
+    }
 
     let byeCandidates = [null];
     if (available.length % 2 !== 0) {
@@ -6485,10 +6499,11 @@ function ClubSwissCore() {
         candidates.push({ p2, met });
       }
 
-      if (penalty) {
+      if (penalty || preferOppositeColor) {
         candidates.sort((a, b) =>
           (Math.abs(p1.score - a.p2.score) - Math.abs(p1.score - b.p2.score)) ||
-          (penalty(p1, a.p2) - penalty(p1, b.p2))
+          (penalty ? penalty(p1, a.p2) - penalty(p1, b.p2) : 0) ||
+          (preferOppositeColor ? colorBalancePenalty(p1, a.p2) - colorBalancePenalty(p1, b.p2) : 0)
         );
       }
       if (relaxed) candidates.sort((a, b) => Number(a.met) - Number(b.met));
@@ -6547,6 +6562,9 @@ function ClubSwissCore() {
 
   function solve(input) {
     const roundNumber = Number(input.roundNumber);
+    const totalRounds = Number(input.totalRounds);
+    const isFinalEvenRound =
+      roundNumber === totalRounds && totalRounds % 2 === 0;
     const players = [...input.players].sort((a, b) => a._clubSeed - b._clubSeed);
     const useGroups = Boolean(input.useGroups);
 
@@ -6583,7 +6601,7 @@ function ClubSwissCore() {
     if (roundNumber === 2 && useGroups) {
       const ab = players.filter(p => p._clubGroup === "A" || p._clubGroup === "B");
       const c = players.filter(p => p._clubGroup === "C");
-      const opts = { penalty: round2Penalty };
+      const opts = { penalty: round2Penalty, preferOppositeColor: isFinalEvenRound };
 
       if (ab.length % 2 === 1 && c.length % 2 === 1) {
         const res = pairSwissPool(players, opts);
@@ -6599,7 +6617,7 @@ function ClubSwissCore() {
       };
     }
 
-    const res = pairSwissPool(players);
+    const res = pairSwissPool(players, { preferOppositeColor: isFinalEvenRound });
     return { engineVersion: VERSION, ...res };
   }
 
