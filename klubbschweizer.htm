@@ -231,6 +231,23 @@ code {
 <!-- Final Standings -->
   <div id="final-section" style="display:none;">
     <h2 id="final-standings-title">Slutställning</h2>
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+      <h2 id="final-standings-title" style="margin: 0;">Final Standings</h2>
+      <div class="no-print" style="display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid var(--border); padding: 6px 10px; border-radius: 6px; font-size: 13px;">
+        <label style="display: inline-flex; align-items: center; gap: 6px; margin: 0; cursor: pointer;">
+          <input type="checkbox" id="weighted-scoring-enabled" onchange="toggleWeightedScoring()">
+          <span>Viktade poäng</span>
+        </label>
+        <input type="text" id="weighted-scoring-input" value="3:1:0,5;6:2:1;9:4:1,5"
+               title="Format: rond:vinst:remi (1–4 posetr, separerade med ; eller mellanslag)"
+               style="width: 195px; padding: 4px 8px; font-size: 13px; font-family: monospace;"
+               oninput="onWeightedScoringInput()">
+        <button type="button" onclick="openWeightedModal(event)"
+                title="Om viktade poäng"
+                aria-label="Om viktade poäng"
+                style="width: 22px; height: 22px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background: #f1f5f9; color: #475569; border: 1px solid var(--border); border-radius: 4px; font-size: 12px; font-weight: 700; line-height: 1; flex-shrink: 0;">?</button>
+      </div>
+    </div>
 
     <table>
       <thead>
@@ -321,7 +338,42 @@ Pᵢ / N = motståndarens poängandel (kvot uttryckt som decimaltal mellan 0 och
   </div>
 </div>
 
+<!-- Modal: Weighted Scoring Information -->
+<div id="weighted-modal" class="modal-overlay" onclick="if(event.target === this) closeWeightedModal()">
+  <div class="modal-box" style="max-width: 560px;">
+    <button class="close-btn" onclick="closeWeightedModal()">&times;</button>
+    <h2 style="margin-top: 0; color: var(--primary); font-size: 1.2rem;">Viktade poäng</h2>
+    <p style="font-size: 0.95rem; line-height: 1.5; color: #334155;">
+      Viktad poängsättning gör det möjligt att ge olika poängvärden åt olika faser av en mixed-turnering, till exempel blixt-, snabb- och långpartironder.
+    </p>
+    <div style="font-family: monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.9rem; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; color: #0f172a;">Format: rond:vinst:remi (1 till 4 grupper)
+Exempel: 3:1:0,5;6:2:1;9:4:1,5
+
+• Rond 1–3: 1 poäng för vinst, 0,5 poäng för remi och 0 poäng för förlust (blixt).
+• Rond 4–6: 2 poäng för vinst, 1 poäng för remi och 0 poäng för förlust (snabbschack).
+• Rond 7–9: 4 poäng för vinst, 1,5 poäng för remi och 0 poäng för förlust (långparti).</div>
+    <p style="font-size: 0.92rem; line-height: 1.5; color: #334155; margin-bottom: 18px;">
+      Grupper kan separeras med semikolon (<code>;</code>) eller mellanslag. Markera rutan <strong>Viktade poäng</strong> för att räkna om kolumnen <strong>Poäng</strong> i slutställningen. Lottning och särskiljning baseras fortfarande på den vanliga poängberäkningen.
+    </p>
+    <div class="btn-bar" style="justify-content: flex-end; margin-top: 0;">
+      <button type="button" onclick="closeWeightedModal()">Stäng</button>
+    </div>
+  </div>
+</div>
+
 <script>
+
+function openWeightedModal(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  document.getElementById('weighted-modal').style.display = 'flex';
+}
+
+function closeWeightedModal() {
+  document.getElementById('weighted-modal').style.display = 'none';
+}
 
 function finishTournament() {
   state.finished = true;
@@ -1534,6 +1586,20 @@ function compareStandings(a, b) {
   return a.seed - b.seed;
 }
 
+function compareFinalStandings(a, b) {
+  const scoreA = getDisplayScore(a);
+  const scoreB = getDisplayScore(b);
+  if (Math.abs(scoreB - scoreA) > 0.0001) return scoreB - scoreA;
+
+  if (state.tieBreakSystem === 'wnt') {
+    if (Math.abs(b.wnt - a.wnt) > 0.0001) return b.wnt - a.wnt;
+  } else {
+    if (b.buchholz !== a.buchholz) return b.buchholz - a.buchholz;
+    if (b.sonneborn !== a.sonneborn) return b.sonneborn - a.sonneborn;
+  }
+  return a.seed - b.seed;
+}
+
 function getSortedStandings() {
   return [...state.players].sort(compareStandings);
 }
@@ -1546,9 +1612,70 @@ function standingsHeaders(withColors) {
   return h;
 }
 
+function parseWeightedScoring(spec) {
+  const tokens = String(spec || '').trim().split(/[\s;]+/).filter(Boolean);
+  if (tokens.length < 1 || tokens.length > 4) return null;
+
+  const tiers = [];
+  let prevRound = 0;
+
+  for (const token of tokens) {
+    const parts = token.split(':');
+    if (parts.length !== 3 || parts.some(x => x === '')) return null;
+
+    const maxRound = Number(parts[0]);
+    const win = Number(parts[1].replace(',', '.'));
+    const draw = Number(parts[2].replace(',', '.'));
+
+    if (!Number.isInteger(maxRound) || maxRound <= prevRound) return null;
+    if (!Number.isFinite(win) || win < 0 || !Number.isFinite(draw) || draw < 0) return null;
+
+    tiers.push({ maxRound, win, draw });
+    prevRound = maxRound;
+  }
+
+  return tiers;
+}
+
+function getDisplayScore(p) {
+  const cb = document.getElementById('weighted-scoring-enabled');
+  const input = document.getElementById('weighted-scoring-input');
+  if (!cb || !cb.checked || !input) return p.score;
+
+  const tiers = parseWeightedScoring(input.value);
+  if (!tiers) return p.score;
+
+  let total = 0;
+  for (const h of (p.history || [])) {
+    const tier = tiers.find(t => h.round <= t.maxRound) || { win: 1, draw: 0.5 };
+    if (h.result === '1-0') total += tier.win;
+    else if (h.result === '0.5-0.5') total += tier.draw;
+  }
+  return total;
+}
+
+function toggleWeightedScoring() {
+  const cb = document.getElementById('weighted-scoring-enabled');
+  const input = document.getElementById('weighted-scoring-input');
+  if (cb.checked && !parseWeightedScoring(input.value)) {
+    alert('Ogiltigt format. Använd 1 till 4 poster, såsom 3:1:0,5;6:2:1;9:4:1,5 (separerade med ; eller mellanslag).');
+    cb.checked = false;
+    return;
+  }
+  showFinalStandings();
+}
+
+function onWeightedScoringInput() {
+  const cb = document.getElementById('weighted-scoring-enabled');
+  if (cb && cb.checked && parseWeightedScoring(document.getElementById('weighted-scoring-input').value)) {
+    showFinalStandings();
+  }
+}
+
 function standingsRowHtml(p, idx, withColors) {
   const groupCell = state.useGroups ? `<td>${escapeHtml(p.group || '')}</td>` : '';
   const titlePart = p.title ? ` (${escapeHtml(p.title)})` : '';
+  const displayScore = withColors ? getDisplayScore(p) : p.score;
   let colorCell = '';
   if (withColors) {
     const colorHistory = (p.history || [])
@@ -1565,7 +1692,7 @@ function standingsRowHtml(p, idx, withColors) {
       <td>${escapeHtml(p.name)}${titlePart}${p.withdrawn ? ' (Utgått)' : ''}</td>
       <td>${escapeHtml(p.club || '')}</td>
       <td>${p.rating ?? ''}</td>
-      <td><strong>${escapeHtml(fmtNum(p.score))}</strong></td>
+                <td><strong>${escapeHtml(fmtNum(displayScore))}</strong></td>
       ${tiebreakCells(p)}
       ${colorCell}
     `;
@@ -1583,10 +1710,10 @@ function showFinalStandings() {
   const tbody = document.getElementById('final-table-body');
   tbody.innerHTML = '';
 
-  getSortedStandings().forEach((p, idx) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = standingsRowHtml(p, idx, true);
-    tbody.appendChild(tr);
+     [...state.players].sort(compareFinalStandings).forEach((p, idx) => {
+         const tr = document.createElement('tr');
+         tr.innerHTML = standingsRowHtml(p, idx, true);
+         tbody.appendChild(tr);
   });
 }
 

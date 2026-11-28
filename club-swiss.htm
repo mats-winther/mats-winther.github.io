@@ -231,7 +231,23 @@ Settings and tournament data autosave continuously to browser storage (<code>loc
 
 <!-- Final Standings -->
   <div id="final-section" style="display:none;">
-    <h2 id="final-standings-title">Final Standings</h2>
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+      <h2 id="final-standings-title" style="margin: 0;">Final Standings</h2>
+<div class="no-print" style="display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid var(--border); padding: 6px 10px; border-radius: 6px; font-size: 13px;">
+        <label style="display: inline-flex; align-items: center; gap: 6px; margin: 0; cursor: pointer;">
+          <input type="checkbox" id="weighted-scoring-enabled" onchange="toggleWeightedScoring()">
+          <span>Weighted Scoring</span>
+        </label>
+        <input type="text" id="weighted-scoring-input" value="3:1:0.5;6:2:1;9:4:1.5"
+               title="Format: rounds:win:draw (1–4 groups, separated by ; or space)"
+               style="width: 195px; padding: 4px 8px; font-size: 13px; font-family: monospace;"
+               oninput="onWeightedScoringInput()">
+        <button type="button" onclick="openWeightedModal(event)"
+                title="About Weighted Scoring"
+                aria-label="About Weighted Scoring"
+                style="width: 22px; height: 22px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background: #f1f5f9; color: #475569; border: 1px solid var(--border); border-radius: 4px; font-size: 12px; font-weight: 700; line-height: 1; flex-shrink: 0;">?</button>
+      </div>
+    </div>
 
     <table>
       <thead>
@@ -322,7 +338,42 @@ Pᵢ / N = opponent's score share (ratio expressed as a decimal between 0 and 1)
   </div>
 </div>
 
+<!-- Modal: Weighted Scoring Information -->
+<div id="weighted-modal" class="modal-overlay" onclick="if(event.target === this) closeWeightedModal()">
+  <div class="modal-box" style="max-width: 560px;">
+    <button class="close-btn" onclick="closeWeightedModal()">&times;</button>
+    <h2 style="margin-top: 0; color: var(--primary); font-size: 1.2rem;">Weighted Scoring</h2>
+    <p style="font-size: 0.95rem; line-height: 1.5; color: #334155;">
+      Weighted Scoring lets you assign different point values to different phases of a mixed tournament (for example, blitz, rapid, and classical rounds).
+    </p>
+    <div style="font-family: monospace; background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.9rem; line-height: 1.5; margin-bottom: 14px; white-space: pre-wrap; color: #0f172a;">Format: round:win:draw (1 to 4 groups)
+Example: 3:1:0.5;6:2:1;9:4:1.5
+
+• Rounds 1–3: 1 for win, 0.5 for draw, 0 for loss (blitz)
+• Rounds 4–6: 2 for win, 1 for draw, 0 for loss (rapid)
+• Rounds 7–9: 4 for win, 1.5 for draw, 0 for loss (classical)</div>
+    <p style="font-size: 0.92rem; line-height: 1.5; color: #334155; margin-bottom: 18px;">
+      Groups may be separated by semicolons (<code>;</code>) or spaces. Check the <strong>Weighted Scoring</strong> box to recalculate the <strong>Score</strong> column in Final Standings. Pairings and tie-breaks remain based on standard scoring.
+    </p>
+    <div class="btn-bar" style="justify-content: flex-end; margin-top: 0;">
+      <button type="button" onclick="closeWeightedModal()">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
+
+function openWeightedModal(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  document.getElementById('weighted-modal').style.display = 'flex';
+}
+
+function closeWeightedModal() {
+  document.getElementById('weighted-modal').style.display = 'none';
+}
 
 function finishTournament() {
   state.finished = true;
@@ -1533,6 +1584,20 @@ function compareStandings(a, b) {
   return a.seed - b.seed;
 }
 
+function compareFinalStandings(a, b) {
+  const scoreA = getDisplayScore(a);
+  const scoreB = getDisplayScore(b);
+  if (Math.abs(scoreB - scoreA) > 0.0001) return scoreB - scoreA;
+
+  if (state.tieBreakSystem === 'wnt') {
+    if (Math.abs(b.wnt - a.wnt) > 0.0001) return b.wnt - a.wnt;
+  } else {
+    if (b.buchholz !== a.buchholz) return b.buchholz - a.buchholz;
+    if (b.sonneborn !== a.sonneborn) return b.sonneborn - a.sonneborn;
+  }
+  return a.seed - b.seed;
+}
+
 function getSortedStandings() {
   return [...state.players].sort(compareStandings);
 }
@@ -1545,9 +1610,70 @@ function standingsHeaders(withColors) {
   return h;
 }
 
+function parseWeightedScoring(spec) {
+  const tokens = String(spec || '').trim().split(/[\s;]+/).filter(Boolean);
+  if (tokens.length < 1 || tokens.length > 4) return null;
+
+  const tiers = [];
+  let prevRound = 0;
+
+  for (const token of tokens) {
+    const parts = token.split(':');
+    if (parts.length !== 3 || parts.some(x => x === '')) return null;
+
+    const maxRound = Number(parts[0]);
+    const win = Number(parts[1].replace(',', '.'));
+    const draw = Number(parts[2].replace(',', '.'));
+
+    if (!Number.isInteger(maxRound) || maxRound <= prevRound) return null;
+    if (!Number.isFinite(win) || win < 0 || !Number.isFinite(draw) || draw < 0) return null;
+
+    tiers.push({ maxRound, win, draw });
+    prevRound = maxRound;
+  }
+
+  return tiers;
+}
+
+function getDisplayScore(p) {
+  const cb = document.getElementById('weighted-scoring-enabled');
+  const input = document.getElementById('weighted-scoring-input');
+  if (!cb || !cb.checked || !input) return p.score;
+
+  const tiers = parseWeightedScoring(input.value);
+  if (!tiers) return p.score;
+
+  let total = 0;
+  for (const h of (p.history || [])) {
+    const tier = tiers.find(t => h.round <= t.maxRound) || { win: 1, draw: 0.5 };
+    if (h.result === '1-0') total += tier.win;
+    else if (h.result === '0.5-0.5') total += tier.draw;
+  }
+  return total;
+}
+
+function toggleWeightedScoring() {
+  const cb = document.getElementById('weighted-scoring-enabled');
+  const input = document.getElementById('weighted-scoring-input');
+  if (cb.checked && !parseWeightedScoring(input.value)) {
+  alert('Invalid format. Use 1 to 4 entries like 3:1:0.5;6:2:1;9:4:1.5 (separated by ; , or space).');
+    cb.checked = false;
+    return;
+  }
+  showFinalStandings();
+}
+
+function onWeightedScoringInput() {
+  const cb = document.getElementById('weighted-scoring-enabled');
+  if (cb && cb.checked && parseWeightedScoring(document.getElementById('weighted-scoring-input').value)) {
+    showFinalStandings();
+  }
+}
+
 function standingsRowHtml(p, idx, withColors) {
   const groupCell = state.useGroups ? `<td>${escapeHtml(p.group || '')}</td>` : '';
   const titlePart = p.title ? ` (${escapeHtml(p.title)})` : '';
+     const displayScore = withColors ? getDisplayScore(p) : p.score;
   let colorCell = '';
   if (withColors) {
     const colorHistory = (p.history || [])
@@ -1564,7 +1690,7 @@ function standingsRowHtml(p, idx, withColors) {
       <td>${escapeHtml(p.name)}${titlePart}${p.withdrawn ? ' (Withdrawn)' : ''}</td>
       <td>${escapeHtml(p.club || '')}</td>
       <td>${p.rating ?? ''}</td>
-      <td><strong>${escapeHtml(fmtNum(p.score))}</strong></td>
+                 <td><strong>${escapeHtml(fmtNum(displayScore))}</strong></td>
       ${tiebreakCells(p)}
       ${colorCell}
     `;
@@ -1582,11 +1708,11 @@ function showFinalStandings() {
   const tbody = document.getElementById('final-table-body');
   tbody.innerHTML = '';
 
-  getSortedStandings().forEach((p, idx) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = standingsRowHtml(p, idx, true);
-    tbody.appendChild(tr);
-  });
+  [...state.players].sort(compareFinalStandings).forEach((p, idx) => {
+        const tr = document.createElement('tr');
+       tr.innerHTML = standingsRowHtml(p, idx, true);
+       tbody.appendChild(tr);
+     });
 }
 
 function openStandingsModal() {
