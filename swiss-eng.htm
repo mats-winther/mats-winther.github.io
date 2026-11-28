@@ -1124,12 +1124,14 @@ function generateRound2() {
   });
 
   // 3. Remaining player count is now guaranteed to be even
-const remaining = state.players.filter(p => !paired.has(p.id) && !p.withdrawn);
-if (remaining.length > 0) {
-  const extra = pairRound3Plus(remaining);
-  if (extra === null) return false;
-  extra.forEach(p => pairings.push({ ...p, board: board++ }));
-}
+  const remaining = state.players.filter(p => !paired.has(p.id) && !p.withdrawn);
+  if (remaining.length > 0) {
+    const extra = pairRound3Plus(remaining, {
+      preferOppositeColor: state.totalRounds === 2
+    });
+    if (extra === null) return false;
+    extra.forEach(p => pairings.push({ ...p, board: board++ }));
+  }
 
   // 4. Add the bye pairing at the bottom board
   if (byePlayer) {
@@ -1262,10 +1264,25 @@ function getValidColorAssignment(p1, p2, maxStreakAllowed = 3) {
   return null;
 }
 
-function pairRound3Plus(players) {
+function pairRound3Plus(players, opts = {}) {
+  const preferOppositeColor = !!opts.preferOppositeColor;
+
   const available = players
     .filter(p => !p.withdrawn)
     .sort(compareStandings);
+
+  const colorDiff = preferOppositeColor
+    ? new Map(available.map(p => [p.id, getColorStats(p).diff]))
+    : null;
+
+  function colorBalancePenalty(p1, p2) {
+    const d1 = colorDiff.get(p1.id) || 0;
+    if (d1 === 0) return 0;
+    const d2 = colorDiff.get(p2.id) || 0;
+    if (d1 * d2 < 0) return 0; // opposite sign: both move toward 0
+    if (d2 === 0) return 1;    // neutral: p1 moves toward 0, p2 moves to ±1
+    return 2;                  // same sign: one player pushed to ±2
+  }
 
   let byePairing = null;
 
@@ -1301,6 +1318,15 @@ function pairRound3Plus(players) {
       if (met && !relaxed) continue;
       candidates.push({ p2, met });
     }
+
+    // On the final round of an even-round tournament, prefer opposite-balance
+    // opponents within the same score group (stable sort preserves standings order)
+    if (preferOppositeColor) {
+      candidates.sort((a, b) =>
+        (Math.abs(p1.score - a.p2.score) - Math.abs(p1.score - b.p2.score)) ||
+        (colorBalancePenalty(p1, a.p2) - colorBalancePenalty(p1, b.p2))
+      );
+    }
     // In the relaxed pass, prefer opponents not yet met (sort is stable)
     if (relaxed) candidates.sort((a, b) => Number(a.met) - Number(b.met));
 
@@ -1332,20 +1358,20 @@ function pairRound3Plus(players) {
 
   outer:
   for (const pass of passes) {
-   for (const bi of byeCandidates) {
-    const toPair = (bi === null)
-      ? [...available]
-      : available.filter((_, i) => i !== bi);
-    nodes = 0;
-    failed = new Set();
-    solution = solve(toPair, pass.streak, pass.relaxed);
-    if (solution !== null) {
-      if (bi !== null) {
-        byePairing = { white: available[bi], black: null, result: '1-0 (Bye)' };
+    for (const bi of byeCandidates) {
+      const toPair = (bi === null)
+        ? [...available]
+        : available.filter((_, i) => i !== bi);
+      nodes = 0;
+      failed = new Set();
+      solution = solve(toPair, pass.streak, pass.relaxed);
+      if (solution !== null) {
+        if (bi !== null) {
+          byePairing = { white: available[bi], black: null, result: '1-0 (Bye)' };
+        }
+        break outer;
       }
-      break outer;
     }
-   }
   }
 
   if (solution === null) return null;
@@ -1399,7 +1425,7 @@ function renderPairings() {
     } else {
       const select = document.createElement('select');
       select.innerHTML = `
-        <option value="">Väntar</option>
+        <option value="">Waiting</option>
         <option value="1-0" ${pair.result === '1-0' ? 'selected' : ''}>1-0</option>
         <option value="0.5-0.5" ${pair.result === '0.5-0.5' ? 'selected' : ''}>½-½</option>
         <option value="0-1" ${pair.result === '0-1' ? 'selected' : ''}>0-1</option>
@@ -1520,7 +1546,11 @@ function submitRound() {
       return;
     }
   } else {
-    const pairings = pairRound3Plus(active);
+    const isFinalEvenRound =
+      nextRound === state.totalRounds && state.totalRounds % 2 === 0;
+    const pairings = pairRound3Plus(active, {
+      preferOppositeColor: isFinalEvenRound
+    });
     if (pairings === null) {
       alert(`Could not generate pairings for round ${nextRound}. The tournament ends here.`);
       finishTournament();
